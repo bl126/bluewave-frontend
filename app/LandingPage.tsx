@@ -28,7 +28,7 @@ export default function LandingPage() {
       const tg = (window as any).Telegram.WebApp;
       tg.ready(); // Required by Telegram Mini App
       // Verify user authenticity
-      fetch("http://localhost:8000/api/verify_telegram", {
+      fetch("https://bluewave-backend-wj70.onrender.com/api/verify_telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ initData: tg.initData }),
@@ -49,7 +49,7 @@ export default function LandingPage() {
   // 💰 Fetch balance from backend when Telegram ID is ready
   const fetchBalance = async (tgId: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/balance/${tgId}`);
+      const res = await fetch(`https://bluewave-backend-wj70.onrender.com/api/balance/${tgId}`);
       const data = await res.json();
       if (data.balance !== undefined) setBalance(data.balance);
     } catch (e) {

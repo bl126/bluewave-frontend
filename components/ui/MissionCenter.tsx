@@ -25,7 +25,7 @@ export default function MissionCenter({ isOpen, onClose }: MissionCenterProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch("http://localhost:8000/api/missions")
+    fetch("https://bluewave-backend-wj70.onrender.com/api/missions")
       .then((res) => res.json())
       .then((data) => {
         setMissions(data);
@@ -43,7 +43,7 @@ export default function MissionCenter({ isOpen, onClose }: MissionCenterProps) {
 
   const handleClaim = async (id: string) => {
     try {
-      const res = await fetch("http://localhost:8000/api/claim_mission", {
+      const res = await fetch("https://bluewave-backend-wj70.onrender.com/api/claim_mission", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

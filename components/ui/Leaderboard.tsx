@@ -16,7 +16,7 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch("http://localhost:8000/api/leaderboard")
+    fetch("https://bluewave-backend-wj70.onrender.com/api/leaderboard")
       .then((res) => res.json())
       .then((data) => {
         setLeaders(data);
