@@ -5,7 +5,7 @@ import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { useEffect, useRef, useState, useMemo } from "react";
 
-function GlobeScene() {
+function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
   const [borders, setBorders] = useState<THREE.Group | null>(null);
   const globeRef = useRef<THREE.Group>(null!);
   const logoRef = useRef<THREE.Mesh>(null!);
@@ -87,6 +87,10 @@ function GlobeScene() {
       }
 
       if (isMounted) setBorders(group);
+      if (isMounted) {
+        setBorders(group);
+        onLoaded?.(); // ✅ tell landing page we’re done loading
+      }
     };
 
     loadBorders();
@@ -219,7 +223,7 @@ function GlobeScene() {
   );
 }
 
-export default function BluewaveGlobe() {
+export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   return (
     <div
       style={{
@@ -249,7 +253,7 @@ export default function BluewaveGlobe() {
           speed={0.15}
         />
 
-        <GlobeScene />
+        <GlobeScene onLoaded={onLoaded} />
       </Canvas>
     </div>
   );

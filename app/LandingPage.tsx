@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import BluewaveGlobe from "../components/ui/BluewaveGlobe";
 import MissionCenter from "../components/ui/MissionCenter";
@@ -8,6 +8,8 @@ import Leaderboard from "../components/ui/Leaderboard";
 import Marketplace from "../components/ui/Marketplace";
 import Profile from "../components/ui/Profile";
 import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
+import LoadingScreen from "./LoadingScreen";
+
 
 export default function LandingPage() {
   // 👤 Store Telegram user info
@@ -17,13 +19,30 @@ export default function LandingPage() {
   const [isLeaderboardOpen, setLeaderboardOpen] = useState(false);
   const [isMarketOpen, setMarketOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   // 🧠 Initialize Telegram WebApp and extract user info
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
       const tg = (window as any).Telegram.WebApp;
       tg.ready(); // Required by Telegram Mini App
-      setTelegramUser(tg.initDataUnsafe?.user);
+      // Verify user authenticity
+      fetch("http://localhost:8000/api/verify_telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: tg.initData }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.ok) {
+            setTelegramUser(tg.initDataUnsafe?.user);
+            console.log("✅ Telegram user verified");
+          } else {
+            console.error("❌ Verification failed:", data.error);
+          }
+        })
+        .catch((err) => console.error("Error verifying Telegram user:", err));
     }
   }, []);
 
@@ -68,7 +87,7 @@ export default function LandingPage() {
     >
       {/* 🌍 Background Globe */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <BluewaveGlobe />
+        <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
       </div>
 
       {/* 💰 Top-left Balance */}
@@ -130,6 +149,18 @@ export default function LandingPage() {
       <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
       <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
       <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="fixed inset-0 z-50"
+          >
+            <LoadingScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
