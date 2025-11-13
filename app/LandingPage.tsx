@@ -86,7 +86,9 @@ export default function LandingPage() {
   // 💰 Fetch balance from backend when Telegram ID is ready
   const fetchBalance = async (tgId: number) => {
     try {
-      const res = await fetch(`https://bluewave-backend-wj70.onrender.com/api/balance/${tgId}`);
+      const res = await fetch(`https://bluewave-backend-wj70.onrender.com/api/balance/${tgId}`, {
+        method: "GET",
+      });
       const data = await res.json();
       if (data.balance !== undefined) setBalance(data.balance);
     } catch (e) {
