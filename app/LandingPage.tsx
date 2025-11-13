@@ -31,7 +31,7 @@ export default function LandingPage() {
       fetch("https://bluewave-backend-wj70.onrender.com/api/verify_telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData: tg.initData }),
+        body: JSON.stringify({ init_data: tg.initData })
       })
         .then((res) => res.json())
         .then((data) => {
