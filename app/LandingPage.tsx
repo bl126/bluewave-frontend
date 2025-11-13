@@ -57,11 +57,13 @@ export default function LandingPage() {
                 photo_url: unsafeUser?.photo_url
               })
             })
-              .then(res => res.json())
               .then(user => {
-                setTelegramUser(user);
+                setTelegramUser({
+                  id: unsafeUser?.id,  // ⭐ REAL Telegram ID
+                  ...user              // ⭐ Merge DB fields
+                });
               });
-
+              
           } else {
             console.error("❌ Verification failed:", data.error);
           }
