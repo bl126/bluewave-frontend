@@ -57,13 +57,24 @@ export default function LandingPage() {
                 photo_url: unsafeUser?.photo_url
               })
             })
+              .then(res => res.json())
               .then(user => {
                 setTelegramUser({
-                  id: unsafeUser?.id,  // ⭐ REAL Telegram ID
-                  ...user              // ⭐ Merge DB fields
+                  id: unsafeUser?.id,          // Real Telegram ID
+                  tg_id: unsafeUser?.id,       // Required for Profile + Missions
+                  first_name: user.first_name,
+                  last_name: user.last_name,
+                  username: user.username,
+                  photo_url: user.photo_url,
+                  points_balance: user.points_balance,
+                  referral_earnings_pending: user.referral_earnings_pending,
+                  total_referrals: user.total_referrals,
+                  inactive_referrals_cache: user.inactive_referrals_cache,
+                  streak: user.streak_days,
+                  joined_at: user.joined_at,
                 });
               });
-              
+
           } else {
             console.error("❌ Verification failed:", data.error);
           }

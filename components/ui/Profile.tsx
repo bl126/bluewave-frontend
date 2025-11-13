@@ -19,11 +19,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   useEffect(() => {
     if (!isOpen || !telegram_id) return;
 
-    fetch("https://bluewave-backend-wj70.onrender.com/api/user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tg_id: telegram_id })
-    })
+    fetch(`https://bluewave-backend-wj70.onrender.com/api/user/${telegram_id}`)
+
       .then(res => res.json())
       .then(user => {
         setUser(user);

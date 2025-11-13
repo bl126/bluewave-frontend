@@ -44,6 +44,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   };
 
   const handleClaim = async (id: string) => {
+    if (!telegram_id) {
+      console.error("Telegram ID missing — cannot claim mission");
+      return;
+    }
+
     try {
       const res = await fetch("https://bluewave-backend-wj70.onrender.com/api/claim_mission", {
         method: "POST",
