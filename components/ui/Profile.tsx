@@ -40,7 +40,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       setUser((prev: any) => ({
         ...prev,
         referral_earnings: 0,
-        balance: result.new_balance,
+        points_balance: result.new_balance,
       }));
 
       // Dispatch global balance update
@@ -103,10 +103,10 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                     alt="avatar"
                     className="w-20 h-20 rounded-full border border-cyan-400/40 mb-2"
                   />
-                  {user.streak > 0 && (
-                    <div className="text-orange-400 text-xs">
-                      🔥 {user.streak} Day Streak
-                    </div>
+                  {user.streak_days > 0 && (
+                      <div className="text-orange-400 text-xs">
+                          🔥 {user.streak_days} Day Streak
+                      </div>
                   )}
                 </div>
 
