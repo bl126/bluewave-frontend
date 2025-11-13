@@ -17,15 +17,20 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const telegram_id = telegramUser?.id;
 
   useEffect(() => {
-    if (!isOpen) return;
-    fetch(`https://bluewave-backend-wj70.onrender.com/api/user/${telegram_id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data);
+    if (!isOpen || !telegram_id) return;
+
+    fetch("https://bluewave-backend-wj70.onrender.com/api/user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tg_id: telegram_id })
+    })
+      .then(res => res.json())
+      .then(user => {
+        setUser(user);
         setLoading(false);
       })
       .catch(() => setError("Could not load profile"));
-  }, [isOpen]);
+  }, [isOpen, telegram_id]);
 
   const handleClaim = async () => {
     const res = await fetch("https://bluewave-backend-wj70.onrender.com/api/claim_referral", {
@@ -126,7 +131,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   <p>
                     Inactive Referrals:{" "}
                     <span className="text-cyan-300">
-                      {user.inactive_referrals}
+                      {user.inactive_referrals_cache}
                     </span>
                   </p>
                 </div>
@@ -135,19 +140,19 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   <p>
                     Referral Earnings:{" "}
                     <span className="text-cyan-300">
-                      {user.referral_earnings} $BWAVE
+                      {user.referral_earnings_pending} $BWAVE
                     </span>
                   </p>
                   <button
                     onClick={handleClaim}
-                    disabled={user.referral_earnings === 0}
+                    disabled={user.referral_earnings_pending === 0}
                     className={`px-3 py-1 mt-1 text-xs rounded-md border ${
-                      user.referral_earnings === 0
+                      user.referral_earnings_pending === 0
                         ? "bg-gray-700 text-gray-400 border-gray-600"
                         : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30"
                     }`}
                   >
-                    {user.referral_earnings === 0 ? "Claimed" : "Claim"}
+                    {user.referral_earnings_pending === 0 ? "Claimed" : "Claim"}
                   </button>
                 </div>
 

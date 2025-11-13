@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 interface MissionCenterProps {
   isOpen: boolean;
   onClose: () => void;
+  telegramUser: any;
 }
 
 interface Mission {
@@ -17,7 +18,8 @@ interface Mission {
   status: string;
 }
 
-export default function MissionCenter({ isOpen, onClose }: MissionCenterProps) {
+export default function MissionCenter({ isOpen, onClose, telegramUser }: MissionCenterProps) {  
+  const telegram_id = telegramUser?.id;   // ← ADD THIS EXACTLY HERE
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,7 +49,7 @@ export default function MissionCenter({ isOpen, onClose }: MissionCenterProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          telegram_id: 123456789, // Temporary static until Telegram Mini App connected
+          telegram_id,
           mission_id: id,
         }),
       });

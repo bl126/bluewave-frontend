@@ -26,18 +26,42 @@ export default function LandingPage() {
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
       const tg = (window as any).Telegram.WebApp;
-      tg.ready(); // Required by Telegram Mini App
-      // Verify user authenticity
+      tg.ready(); // required
+
+      const rawInitData = tg.initData; // ⭐ RAW STRING FROM TELEGRAM
+      const unsafeUser = tg.initDataUnsafe?.user; // ⭐ PARSED USER OBJECT
+
+      if (!rawInitData) {
+        console.error("❌ Telegram initData missing");
+        return;
+      }
+
+      // Verify authenticity with backend
       fetch("https://bluewave-backend-wj70.onrender.com/api/verify_telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ init_data: tg.initData })
+        body: JSON.stringify({ init_data: rawInitData })
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.ok) {
-            setTelegramUser(tg.initDataUnsafe?.user);
-            console.log("✅ Telegram user verified");
+            console.log("✅ Telegram verified:", unsafeUser);
+            fetch("https://bluewave-backend-wj70.onrender.com/api/user", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tg_id: unsafeUser?.id,
+                first_name: unsafeUser?.first_name,
+                last_name: unsafeUser?.last_name,
+                username: unsafeUser?.username,
+                photo_url: unsafeUser?.photo_url
+              })
+            })
+              .then(res => res.json())
+              .then(user => {
+                setTelegramUser(user);
+              });
+
           } else {
             console.error("❌ Verification failed:", data.error);
           }
@@ -145,7 +169,7 @@ export default function LandingPage() {
       </motion.div>
 
       {/* 🎯 Overlays */}
-      <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} />
+      <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
       <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
       <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
       <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
