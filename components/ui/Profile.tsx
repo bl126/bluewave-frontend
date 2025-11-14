@@ -19,7 +19,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   useEffect(() => {
     if (!isOpen || !telegram_id) return;
 
-    fetch(`https://bluewave-backend-wj70.onrender.com/api/user/${telegram_id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegram_id}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     })
@@ -32,7 +32,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   }, [isOpen, telegram_id]);
 
   const handleClaim = async () => {
-    const res = await fetch("https://bluewave-backend-wj70.onrender.com/api/claim_referral", {
+    const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id }),
@@ -52,7 +52,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
 
   const handleNotify = async () => {
-    await fetch("https://bluewave-backend-wj70.onrender.com/api/notify_inactive", {
+    await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id }),

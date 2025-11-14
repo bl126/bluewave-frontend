@@ -37,7 +37,7 @@ export default function LandingPage() {
       }
 
       // Verify authenticity with backend
-      fetch("https://bluewave-backend-wj70.onrender.com/api/verify_telegram", {
+      fetch("${process.env.NEXT_PUBLIC_API_URL}/api/verify_telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ init_data: rawInitData })
@@ -46,7 +46,7 @@ export default function LandingPage() {
         .then((data) => {
           if (data.ok) {
             console.log("✅ Telegram verified:", unsafeUser);
-            fetch("https://bluewave-backend-wj70.onrender.com/api/user", {
+            fetch("${process.env.NEXT_PUBLIC_API_URL}/api/user", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -86,7 +86,7 @@ export default function LandingPage() {
   // 💰 Fetch balance from backend when Telegram ID is ready
   const fetchBalance = async (tgId: number) => {
     try {
-      const res = await fetch(`https://bluewave-backend-wj70.onrender.com/api/balance/${tgId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/balance/${tgId}`, {
         method: "GET",
       });
       const data = await res.json();
