@@ -37,10 +37,20 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   }, [isOpen]);
 
   const handleOpen = (id: string, url: string) => {
+    // 1. Open the mission link
     window.open(url, "_blank");
+
+    // 2. Immediately show user “opened”
     setMissions((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: "claim" } : m))
+      prev.map((m) => (m.id === id ? { ...m, status: "waiting" } : m))
     );
+
+    // 3. After 10 seconds, allow claiming
+    setTimeout(() => {
+      setMissions((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, status: "claim" } : m))
+      );
+    }, 10000); // 10 seconds
   };
 
   const handleClaim = async (id: string) => {
@@ -129,6 +139,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       className="px-3 py-1 text-xs bg-cyan-500/20 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/30"
                     >
                       Open
+                    </button>
+                  )}
+                  {m.status === "waiting" && (
+                    <button
+                      disabled
+                      className="px-3 py-1 text-xs bg-yellow-600/20 border border-yellow-400 text-yellow-200 rounded-md"
+                    >
+                      Waiting...
                     </button>
                   )}
                   {m.status === "claim" && (
