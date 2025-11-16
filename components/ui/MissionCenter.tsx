@@ -14,7 +14,7 @@ interface Mission {
   id: string;
   name: string;
   points: number;
-  link_url: string;
+  url: string;
   status: string;
 }
 
@@ -27,7 +27,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`)
       .then((res) => res.json())
       .then((data) => {
         setMissions(data);
@@ -133,9 +133,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                     <p className="text-xs text-cyan-500">{m.points} $BWAVE</p>
                   </div>
 
-                  {m.status === "active" && (
+                  {m.status === "open" && (
                     <button
-                      onClick={() => handleOpen(m.id, m.link_url)}
+                      onClick={() => handleOpen(m.id, m.url)}
                       className="px-3 py-1 text-xs bg-cyan-500/20 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/30"
                     >
                       Open
