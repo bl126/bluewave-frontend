@@ -16,7 +16,7 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch("${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`)
       .then((res) => res.json())
       .then((data) => {
         setLeaders(data);

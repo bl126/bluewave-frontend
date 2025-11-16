@@ -37,7 +37,7 @@ export default function LandingPage() {
       }
 
       // Verify authenticity with backend
-      fetch("${process.env.NEXT_PUBLIC_API_URL}/api/verify_telegram", {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/verify_telegram`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ init_data: rawInitData })
@@ -46,7 +46,7 @@ export default function LandingPage() {
         .then((data) => {
           if (data.ok) {
             console.log("✅ Telegram verified:", unsafeUser);
-            fetch("${process.env.NEXT_PUBLIC_API_URL}/api/user", {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

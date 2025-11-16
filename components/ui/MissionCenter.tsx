@@ -27,7 +27,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch("${process.env.NEXT_PUBLIC_API_URL}/api/missions")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions`)
       .then((res) => res.json())
       .then((data) => {
         setMissions(data);
@@ -50,7 +50,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     }
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/claim_mission", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_mission`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -32,7 +32,7 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
   useEffect(() => {
     let isMounted = true;
     const loadBorders = async () => {
-      const res = await fetch("/data/countries.geojson");
+      const res = await fetch(`/data/countries.geojson`);
       const geoData = await res.json();
 
       const group = new THREE.Group();
