@@ -13,6 +13,8 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
   const [leaders, setLeaders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [progressData, setProgressData] = useState<any>(null);
+
 
   useEffect(() => {
     if (!isOpen) return;
@@ -24,6 +26,18 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
       })
       .catch(() => setError("Could not load leaderboard"));
   }, [isOpen]);
+
+  // Fetch level progress for the current user
+useEffect(() => {
+  // Read tg_id from telegram initData
+  const tg = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  if (!tg) return;
+
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/level_progress/${tg}`)
+    .then(r => r.json())
+    .then(d => setProgressData(d))
+    .catch(() => {});
+}, []);
 
   return (
     <AnimatePresence>
@@ -89,7 +103,35 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
                     </div>
                   </div>
                 ))}
-              </div>
+                {/* ----------------------- */}
+                {/* YOUR LEVEL PROGRESS BAR */}
+                {/* ----------------------- */}
+                {progressData && (
+                  <div className="mt-4 bg-black/40 border border-cyan-800 rounded-xl p-4 shadow-[0_0_20px_#00e6ff20]">
+                    <p className="text-cyan-400 text-sm mb-2">
+                      Your Level: {progressData.current_level}
+                    </p>
+
+                    {progressData.next_level ? (
+                      <>
+                        <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-cyan-900">
+                          <div
+                            className="h-full bg-cyan-400/80 transition-all duration-500"
+                            style={{ width: `${progressData.progress}%` }}
+                          ></div>
+                        </div>
+
+                        <p className="text-[11px] text-cyan-300 mt-1">
+                          {progressData.progress}% — {progressData.remaining} points to reach{" "}
+                          {progressData.next_level}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[12px] text-cyan-300 mt-1">🔥 Max Level Achieved</p>
+                    )}
+                  </div>
+                )}
+              </div>            
             )}
           </motion.div>
         </>

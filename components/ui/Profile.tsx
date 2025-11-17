@@ -18,6 +18,18 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
   const telegram_id = telegramUser?.id;
 
+  // ⭐ ADD THIS NEW LEVEL LOGIC HERE
+  const [level, setLevel] = useState("Loading...");
+
+  useEffect(() => {
+    if (!telegram_id) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user_level/${telegram_id}`)
+      .then(r => r.json())
+      .then(d => setLevel(d.level));
+  }, [telegram_id]);
+
+
   useEffect(() => {
     if (!isOpen || !telegram_id) return;
 
@@ -117,7 +129,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 </div>
 
                 <div className="text-center text-cyan-400 text-xs mb-3">
-                  Level 3 — Blue Seed
+                  Level — {level}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
