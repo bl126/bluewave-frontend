@@ -94,7 +94,12 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                       <span className="text-cyan-400 font-bold text-sm">#{u.rank}</span>
                       <span>{u.country_flag}</span>
                       <span className="text-cyan-200 text-sm truncate max-w-[130px]">
-                        {u.name} {u.telegram_id === tg ? "(You)" : ""}
+                        {u.name}
+                        {u.telegram_id === tg && (
+                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
+                            YOU                        
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="text-right">
@@ -119,7 +124,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-cyan-900">
                           <div
                             className="h-full bg-cyan-400/80 transition-all duration-500"
-                            style={{ width: `${progressData.progress}%` }}
+                            style={{
+                              width: 0,
+                              animation: `fillBar 1.2s ease-out forwards`,
+                              ["--target" as any]: `${progressData.progress}%`
+                            }}
                           ></div>
                         </div>
 

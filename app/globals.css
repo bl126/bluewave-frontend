@@ -143,4 +143,8 @@ html, body {
   overflow: clip;  /* stronger than hidden for canvases */
 }
 
+@keyframes fillBar {
+  from { width: 0%; }
+  to   { width: var(--target); }
+}
 

@@ -20,6 +20,34 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
 
   const telegram_id = telegramUser?.id;
+  const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("notifyNextTime");
+    if (saved) setNextNotifyAt(Number(saved));
+  }, []);
+
+  useEffect(() => {
+    if (!nextNotifyAt) return;
+
+    const interval = setInterval(() => {
+      const diff = nextNotifyAt - Date.now();
+
+      if (diff <= 0) {
+        setNextNotifyAt(null);
+        localStorage.removeItem("notifyNextTime");
+        return;
+      }
+
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+
+      setCooldownText(`${h}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [nextNotifyAt]);
 
   // ⭐ ADD THIS NEW LEVEL LOGIC HERE
   const [level, setLevel] = useState("Loading...");
@@ -135,8 +163,10 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       return;
     }
 
-    // Success – start cooldown
-    setCooldown(4 * 60 * 60 * 1000);
+    const next = Date.now() + 4 * 60 * 60 * 1000;
+
+    localStorage.setItem("notifyNextTime", String(next));
+    setNextNotifyAt(next);
   };
 
   return (
@@ -237,15 +267,15 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 <div>
                   <button
                     onClick={handleNotify}
-                    disabled={cooldown !== null}
+                    disabled={nextNotifyAt !== null}
                     className={`w-full mt-2 text-xs px-3 py-1 border rounded-md
-                      ${cooldown !== null
+                      ${nextNotifyAt !== null
                         ? "border-gray-700 text-gray-500 bg-gray-800 opacity-60"
                         : "border-cyan-400 text-cyan-300 hover:bg-cyan-500/20"
                       }
                     `}
                   >
-                    {cooldown !== null ? `Wait ${cooldownText}` : "Notify Them"}
+                    {nextNotifyAt !== null ? `Wait ${cooldownText}` : "Notify Them"}
                   </button>
                 </div>
 

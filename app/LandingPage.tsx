@@ -149,7 +149,11 @@ export default function LandingPage() {
             ? `${balance.toLocaleString()} $BWAVE`
             : telegramUser
             ? "Loading..."
-            : "Connect to begin"}
+            : (
+                <span className="text-cyan-400 animate-pulse">
+                  Connecting…
+                </span>
+              )}
         </span>
       </div>
 
