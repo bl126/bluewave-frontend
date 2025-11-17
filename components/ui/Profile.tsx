@@ -7,13 +7,15 @@ import { useEffect, useState } from "react";
 interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
-  telegramUser: any; // add this line
+  telegramUser: any;
 }
 
 export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
   const telegram_id = telegramUser?.id;
 
   useEffect(() => {
@@ -37,19 +39,21 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id }),
     });
+
     const result = await res.json();
+
     if (result.claimed) {
       setUser((prev: any) => ({
         ...prev,
-        referral_earnings: 0,
+        referral_earnings_pending: 0,
         points_balance: result.new_balance,
       }));
 
-      // Dispatch global balance update
-      window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
+      window.dispatchEvent(
+        new CustomEvent("updateBalance", { detail: result.new_balance })
+      );
     }
   };
-
 
   const handleNotify = async () => {
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
@@ -172,12 +176,14 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                       {user.referral_link}
                     </span>
                     <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(user.referral_link)
-                      }
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(user.referral_link);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1500);
+                      }}
                       className="text-[11px] px-2 py-0.5 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/20"
                     >
-                      Copy
+                      {copied ? "Copied" : "Copy"}
                     </button>
                   </div>
                 </div>
