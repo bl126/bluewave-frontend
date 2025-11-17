@@ -61,12 +61,12 @@ export default function LandingPage() {
           tg_id: tgIdNum,
           username: user.username,
           first_name: user.name,
-          photo_url: user.photo_url,
-          points_balance: user.points_balance,
-          referral_earnings_pending: user.referral_earnings_pending,
-          total_referrals: user.total_referrals,
-          inactive_referrals_cache: user.inactive_referrals_cache,
-          streak: user.streak_days,
+          photo_url: user.photo_url || null,
+          points_balance: user.points_balance ?? 0,
+          referral_earnings_pending: user.referral_earnings_pending ?? 0,
+          total_referrals: user.total_referrals ?? 0,
+          inactive_referrals_cache: user.inactive_referrals_cache ?? 0,
+          streak: user.streak_days ?? 0,
           joined_at: user.joined_at,
         });
 
@@ -126,7 +126,9 @@ export default function LandingPage() {
       id: tgId,
       tg_id: tgId,
       username: user.username,
-      points_balance: user.points_balance,
+      first_name: user.first_name,
+      photo_url: user.photo_url || null,
+      points_balance: user.points_balance ?? null,
     });
 
     setBalance(user.points_balance ?? null);

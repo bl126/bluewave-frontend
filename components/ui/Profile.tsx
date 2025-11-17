@@ -101,6 +101,19 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     return () => clearInterval(interval);
   }, [cooldown]);
 
+  // Auto-refresh profile picture daily
+  useEffect(() => {
+    if (!telegram_id) return;
+    const interval = setInterval(() => {
+      setUser((prev: any) => ({
+        ...prev,
+        photo_url: prev.photo_url ? `${prev.photo_url}?r=${Date.now()}` : null
+      }));
+    }, 24 * 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [telegram_id]);
+
   const handleClaim = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
@@ -207,17 +220,28 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
             {user && (
               <div className="space-y-3 text-sm">
-                {/* Avatar */}
+
+                {/* Avatar container */}
                 <div className="flex flex-col items-center mb-2">
-                  <img
-                    src={user.photo_url || "https://via.placeholder.com/80"}
-                    alt="avatar"
-                    className="w-20 h-20 rounded-full border border-cyan-400/40 mb-2"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full blur-xl bg-cyan-500/20"></div>
+
+                    <img
+                      src={
+                        user.photo_url
+                          ? `${user.photo_url}?r=${Date.now()}`
+                          : "/default-avatar.png"
+                      }
+                      alt="avatar"
+                      className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50]"
+                    />
+                  </div>
+
+                  {/* streak untouched */}
                   {user.streak_days > 0 && (
-                      <div className="text-orange-400 text-xs">
-                          🔥 {user.streak_days} Day Streak
-                      </div>
+                    <div className="text-orange-400 text-xs mt-2">
+                      🔥 {user.streak_days} Day Streak
+                    </div>
                   )}
                 </div>
 
