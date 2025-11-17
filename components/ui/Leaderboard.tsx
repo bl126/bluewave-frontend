@@ -7,17 +7,21 @@ import { useEffect, useState } from "react";
 interface LeaderboardProps {
   isOpen: boolean;
   onClose: () => void;
+  telegramUser: any;
 }
 
-export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
+export default function Leaderboard({ isOpen, onClose, telegramUser }: LeaderboardProps) {
   const [leaders, setLeaders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [progressData, setProgressData] = useState<any>(null);
 
+  // user ID
+  const tg = telegramUser?.id;
 
   useEffect(() => {
     if (!isOpen) return;
+
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`)
       .then((res) => res.json())
       .then((data) => {
@@ -27,17 +31,15 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
       .catch(() => setError("Could not load leaderboard"));
   }, [isOpen]);
 
-  // Fetch level progress for the current user
-useEffect(() => {
-  // Read tg_id from telegram initData
-  const tg = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id;
-  if (!tg) return;
+  // Fetch user progress
+  useEffect(() => {
+    if (!tg) return;
 
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/level_progress/${tg}`)
-    .then(r => r.json())
-    .then(d => setProgressData(d))
-    .catch(() => {});
-}, []);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/level_progress/${tg}`)
+      .then((r) => r.json())
+      .then((d) => setProgressData(d))
+      .catch(() => {});
+  }, [tg]);
 
   return (
     <AnimatePresence>
@@ -91,8 +93,8 @@ useEffect(() => {
                     <div className="flex items-center space-x-2">
                       <span className="text-cyan-400 font-bold text-sm">#{u.rank}</span>
                       <span>{u.country_flag}</span>
-                      <span className="text-cyan-200 text-sm truncate max-w-[100px]">
-                        {u.name}
+                      <span className="text-cyan-200 text-sm truncate max-w-[130px]">
+                        {u.name} {u.telegram_id === tg ? "(You)" : ""}
                       </span>
                     </div>
                     <div className="text-right">

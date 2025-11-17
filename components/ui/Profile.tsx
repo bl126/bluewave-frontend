@@ -15,6 +15,9 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [cooldown, setCooldown] = useState<number | null>(null);
+  const [cooldownText, setCooldownText] = useState("00:00:00");
+
 
   const telegram_id = telegramUser?.id;
 
@@ -43,7 +46,32 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
         setLoading(false);
       })
       .catch(() => setError("Could not load profile"));
+      loadCooldown();
   }, [isOpen, telegram_id]);
+
+  useEffect(() => {
+    if (cooldown === null) return;
+
+    const interval = setInterval(() => {
+      setCooldown(prev => {
+        if (!prev || prev <= 1000) {
+          setCooldown(null);
+          return null;
+        }
+        const next = prev - 1000;
+
+        const h = String(Math.floor(next / 3600000)).padStart(2, "0");
+        const m = String(Math.floor((next % 3600000) / 60000)).padStart(2, "0");
+        const s = String(Math.floor((next % 60000) / 1000)).padStart(2, "0");
+
+        setCooldownText(`${h}:${m}:${s}`);
+
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const handleClaim = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
@@ -67,13 +95,48 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   };
 
+  async function loadCooldown() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegram_id}`);
+  const data = await res.json();
+
+  if (!data.last_sent) {
+    setCooldown(null);
+    return;
+  }
+
+  const lastSent = new Date(data.last_sent).getTime();
+  const now = Date.now();
+  const cooldownMs = 4 * 60 * 60 * 1000; // 4 hours
+
+  const remaining = lastSent + cooldownMs - now;
+
+  if (remaining > 0) {
+    setCooldown(remaining);
+  } else {
+    setCooldown(null);
+  }
+}
+
   const handleNotify = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
+
+    if (cooldown !== null) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id }),
     });
-    alert("Inactive referrals notified 🚀");
+
+    const result = await res.json();
+
+    if (result.blocked) {
+      // Start a fresh 4h timer
+      setCooldown(4 * 60 * 60 * 1000);
+      return;
+    }
+
+    // Success – start cooldown
+    setCooldown(4 * 60 * 60 * 1000);
   };
 
   return (
@@ -174,9 +237,15 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 <div>
                   <button
                     onClick={handleNotify}
-                    className="w-full mt-2 text-xs px-3 py-1 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/20"
+                    disabled={cooldown !== null}
+                    className={`w-full mt-2 text-xs px-3 py-1 border rounded-md
+                      ${cooldown !== null
+                        ? "border-gray-700 text-gray-500 bg-gray-800 opacity-60"
+                        : "border-cyan-400 text-cyan-300 hover:bg-cyan-500/20"
+                      }
+                    `}
                   >
-                    Notify Them
+                    {cooldown !== null ? `Wait ${cooldownText}` : "Notify Them"}
                   </button>
                 </div>
 

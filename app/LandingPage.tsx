@@ -181,7 +181,7 @@ export default function LandingPage() {
 
       {/* 🎯 Overlays */}
       <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
-      <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} />
+      <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser}/>
       <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
       <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
 
