@@ -33,7 +33,7 @@ useEffect(() => {
   const tg = (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id;
   if (!tg) return;
 
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/level_progress/${tg}`)
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/level_progress/${tg}`)
     .then(r => r.json())
     .then(d => setProgressData(d))
     .catch(() => {});
