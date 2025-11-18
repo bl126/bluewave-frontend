@@ -41,11 +41,114 @@ const TOP_COUNTRIES = [
   // You can extend this list or plug a full country list later
 ];
 
+// FULL COUNTRY LIST (Alphabetical)
+const ALL_COUNTRIES = [
+  { code: "AF", name: "Afghanistan" },
+  { code: "AL", name: "Albania" },
+  { code: "DZ", name: "Algeria" },
+  { code: "AD", name: "Andorra" },
+  { code: "AO", name: "Angola" },
+  { code: "AR", name: "Argentina" },
+  { code: "AM", name: "Armenia" },
+  { code: "AU", name: "Australia" },
+  { code: "AT", name: "Austria" },
+  { code: "AZ", name: "Azerbaijan" },
+  { code: "BH", name: "Bahrain" },
+  { code: "BD", name: "Bangladesh" },
+  { code: "BY", name: "Belarus" },
+  { code: "BE", name: "Belgium" },
+  { code: "BZ", name: "Belize" },
+  { code: "BJ", name: "Benin" },
+  { code: "BO", name: "Bolivia" },
+  { code: "BR", name: "Brazil" },
+  { code: "BG", name: "Bulgaria" },
+  { code: "KH", name: "Cambodia" },
+  { code: "CM", name: "Cameroon" },
+  { code: "CA", name: "Canada" },
+  { code: "CL", name: "Chile" },
+  { code: "CN", name: "China" },
+  { code: "CO", name: "Colombia" },
+  { code: "CR", name: "Costa Rica" },
+  { code: "HR", name: "Croatia" },
+  { code: "CY", name: "Cyprus" },
+  { code: "CZ", name: "Czech Republic" },
+  { code: "DK", name: "Denmark" },
+  { code: "EG", name: "Egypt" },
+  { code: "EE", name: "Estonia" },
+  { code: "FI", name: "Finland" },
+  { code: "FR", name: "France" },
+  { code: "GA", name: "Gabon" },
+  { code: "DE", name: "Germany" },
+  { code: "GH", name: "Ghana" },
+  { code: "GR", name: "Greece" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "HU", name: "Hungary" },
+  { code: "IS", name: "Iceland" },
+  { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" },
+  { code: "IR", name: "Iran" },
+  { code: "IQ", name: "Iraq" },
+  { code: "IE", name: "Ireland" },
+  { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" },
+  { code: "JM", name: "Jamaica" },
+  { code: "JP", name: "Japan" },
+  { code: "JO", name: "Jordan" },
+  { code: "KZ", name: "Kazakhstan" },
+  { code: "KE", name: "Kenya" },
+  { code: "KR", name: "Korea" },
+  { code: "KW", name: "Kuwait" },
+  { code: "LB", name: "Lebanon" },
+  { code: "LY", name: "Libya" },
+  { code: "LT", name: "Lithuania" },
+  { code: "LU", name: "Luxembourg" },
+  { code: "MG", name: "Madagascar" },
+  { code: "MW", name: "Malawi" },
+  { code: "MY", name: "Malaysia" },
+  { code: "ML", name: "Mali" },
+  { code: "MX", name: "Mexico" },
+  { code: "MA", name: "Morocco" },
+  { code: "MZ", name: "Mozambique" },
+  { code: "NP", name: "Nepal" },
+  { code: "NL", name: "Netherlands" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "NG", name: "Nigeria" },
+  { code: "NO", name: "Norway" },
+  { code: "OM", name: "Oman" },
+  { code: "PK", name: "Pakistan" },
+  { code: "PH", name: "Philippines" },
+  { code: "PL", name: "Poland" },
+  { code: "PT", name: "Portugal" },
+  { code: "QA", name: "Qatar" },
+  { code: "RO", name: "Romania" },
+  { code: "RU", name: "Russia" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "SN", name: "Senegal" },
+  { code: "SG", name: "Singapore" },
+  { code: "ZA", name: "South Africa" },
+  { code: "ES", name: "Spain" },
+  { code: "SE", name: "Sweden" },
+  { code: "CH", name: "Switzerland" },
+  { code: "TZ", name: "Tanzania" },
+  { code: "TH", name: "Thailand" },
+  { code: "TN", name: "Tunisia" },
+  { code: "TR", name: "Türkiye" },
+  { code: "UG", name: "Uganda" },
+  { code: "UA", name: "Ukraine" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "US", name: "United States" },
+  { code: "VN", name: "Vietnam" },
+  { code: "ZM", name: "Zambia" },
+  { code: "ZW", name: "Zimbabwe" },
+];
+
 export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [country, setCountry] = useState("");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verifiedUser, setVerifiedUser] = useState<VerifyResponse | null>(null);
@@ -278,19 +381,46 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
 
                 <label className="text-xs text-cyan-300">
                   Country
+
+                  {/* SEARCH BOX */}
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search country..."
+                    className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
+                               focus:outline-none focus:border-cyan-400 mb-2"
+                  />
+
+                  {/* TOP 20 COUNTRIES */}
+                  <div className="text-[10px] text-cyan-500 mb-1">Popular Countries</div>
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
-                               focus:outline-none focus:border-cyan-400"
+                    className="w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
+                               focus:outline-none focus:border-cyan-400 mb-3"
                   >
                     <option value="">Select your country</option>
                     {TOP_COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.name}
-                      </option>
+                      <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
                   </select>
+
+                  {/* ALL COUNTRIES - FILTERED */}
+                  <div className="text-[10px] text-cyan-500 mb-1">All Countries</div>
+                  <div className="max-h-32 overflow-y-auto border border-cyan-900 rounded-md bg-black/30 p-2">
+                    {ALL_COUNTRIES.filter(c =>
+                      c.name.toLowerCase().includes(search.toLowerCase())
+                    ).map((c) => (
+                      <div
+                        key={c.code}
+                        className={`px-2 py-1 text-sm rounded-md cursor-pointer hover:bg-cyan-500/10
+                                    ${country === c.code ? "bg-cyan-600/20" : ""}`}
+                        onClick={() => setCountry(c.code)}
+                      >
+                        {c.name}
+                      </div>
+                    ))}
+                  </div>
                 </label>
 
                 <button

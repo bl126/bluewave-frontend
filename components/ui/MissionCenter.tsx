@@ -22,6 +22,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const telegram_id = telegramUser?.id;   // ← ADD THIS EXACTLY HERE
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
   const [balance, setBalance] = useState(120); // temporary for now until live profile data
 
@@ -54,32 +55,60 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   };
 
   const handleClaim = async (id: string) => {
-    if (!telegram_id) {
-      console.error("Telegram ID missing — cannot claim mission");
-      return;
-    }
+    if (!telegram_id) return;
+
+    // ⛔ Prevent rapid spam (3 seconds)
+    if (claimCooldown) return;
+    setClaimCooldown(true);
+    setTimeout(() => setClaimCooldown(false), 3000);
+
+    // ⭐ Step 1 — change button to "Claiming..."
+    setMissions(prev =>
+      prev.map(m =>
+        m.id === id ? { ...m, status: "claiming" } : m
+      )
+    );
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_mission`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          telegram_id,
-          mission_id: id,
-        }),
+        body: JSON.stringify({ telegram_id, mission_id: id }),
       });
 
       const result = await res.json();
+
+      // ⭐ Step 2 — Set the final state
       if (result.claimed) {
         setBalance(result.new_balance);
-        setMissions((prev) =>
-          prev.map((m) => (m.id === id ? { ...m, status: "done" } : m))
+
+        setMissions(prev =>
+          prev.map(m =>
+            m.id === id ? { ...m, status: "done" } : m
+          )
+        );
+
+      } else {
+        // Failed → revert back to "claim"
+        setMissions(prev =>
+          prev.map(m =>
+            m.id === id ? { ...m, status: "claim" } : m
+          )
         );
       }
+
     } catch (err) {
       console.error("Claim failed:", err);
+
+      // Network error → revert to claim
+      setMissions(prev =>
+        prev.map(m =>
+          m.id === id ? { ...m, status: "claim" } : m
+        )
+      );
     }
   };
+
 
   return (
     <AnimatePresence>
@@ -155,6 +184,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       className="px-3 py-1 text-xs bg-cyan-600/30 border border-cyan-400 text-cyan-200 rounded-md animate-pulse shadow-[0_0_10px_#00e6ff80]"
                     >
                       Claim
+                    </button>
+                  )}
+                  {m.status === "claiming" && (
+                    <button
+                      disabled
+                      className="px-3 py-1 text-xs bg-cyan-700/20 border border-cyan-500 text-cyan-400 rounded-md opacity-70"
+                    >
+                      Claiming...
                     </button>
                   )}
                   {m.status === "done" && (

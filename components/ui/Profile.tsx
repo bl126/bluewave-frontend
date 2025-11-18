@@ -17,6 +17,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [copied, setCopied] = useState(false);
   const [cooldown, setCooldown] = useState<number | null>(null);
   const [cooldownText, setCooldownText] = useState("00:00:00");
+  const [claiming, setClaiming] = useState(false);
 
 
   const telegram_id = telegramUser?.id;
@@ -115,6 +116,9 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   }, [telegram_id]);
 
   const handleClaim = async () => {
+    if (claiming) return;
+    setClaiming(true);
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -133,8 +137,14 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       window.dispatchEvent(
         new CustomEvent("updateBalance", { detail: result.new_balance })
       );
+
+      // ★ Move this OUTSIDE the dispatch
+      setTimeout(() => setClaiming(false), 1200);
+    } else {
+      setClaiming(false);
     }
   };
+
 
   async function loadCooldown() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegram_id}`);
@@ -284,7 +294,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                         : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30"
                     }`}
                   >
-                    {user.referral_earnings_pending === 0 ? "Claimed" : "Claim"}
+                    {claiming ? "Claiming..." :
+                    user.referral_earnings_pending === 0 ? "Done" : "Claim"}
                   </button>
                 </div>
 
