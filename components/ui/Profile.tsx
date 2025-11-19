@@ -257,6 +257,19 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                       alt="avatar"
                       className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50]"
                     />
+                    {/* 🌊 Streak Badge (3+ days) — glowing check circle */}
+                    {user.streak_days >= 3 && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full 
+                                   bg-cyan-400/30 border border-cyan-300 
+                                   shadow-[0_0_12px_#00e6ff] flex items-center justify-center"
+                      >
+                        <span className="text-[12px] text-cyan-100 font-bold">✓</span>
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* 🔥 Streak days */}
@@ -266,19 +279,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                     </div>
                   )}
 
-                  {/* 🏅 Streak badge once unlocked (e.g. 3+ days) */}
-                  {user.streak_days >= 3 && (
-                    <motion.div
-                      initial={{ opacity: 0.3 }}
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="mt-1 px-2 py-0.5 rounded-full border border-cyan-400/50
-                                 bg-cyan-500/10 text-[10px] text-cyan-200 uppercase tracking-wide
-                                 shadow-[0_0_15px_#00e6ff60]"
-                    >
-                      PRESENCE STREAK BADGE
-                    </motion.div>
-                  )}
+
                 </div>
 
                 <div className="text-center text-cyan-400 text-xs mb-3">
