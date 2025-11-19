@@ -18,10 +18,22 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [cooldown, setCooldown] = useState<number | null>(null);
   const [cooldownText, setCooldownText] = useState("00:00:00");
   const [claiming, setClaiming] = useState(false);
+  const [badgeUnlocked, setBadgeUnlocked] = useState(false);
+
 
 
   const telegram_id = telegramUser?.id;
   const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
+  
+  useEffect(() => {
+    const handler = () => {
+      setBadgeUnlocked(true);
+      setTimeout(() => setBadgeUnlocked(false), 3000);
+    };
+
+    window.addEventListener("badgeUnlocked", handler);
+    return () => window.removeEventListener("badgeUnlocked", handler);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("notifyNextTime");
@@ -247,11 +259,25 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                     />
                   </div>
 
-                  {/* streak untouched */}
+                  {/* 🔥 Streak days */}
                   {user.streak_days > 0 && (
                     <div className="text-orange-400 text-xs mt-2">
                       🔥 {user.streak_days} Day Streak
                     </div>
+                  )}
+
+                  {/* 🏅 Streak badge once unlocked (e.g. 3+ days) */}
+                  {user.streak_days >= 3 && (
+                    <motion.div
+                      initial={{ opacity: 0.3 }}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="mt-1 px-2 py-0.5 rounded-full border border-orange-400/50 
+                                 bg-orange-500/10 text-[10px] text-orange-200 uppercase tracking-wide
+                                 shadow-[0_0_15px_#ff990050]"
+                    >
+                      PRESENCE STREAK BADGE
+                    </motion.div>
                   )}
                 </div>
 
@@ -339,6 +365,20 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 </div>
               </div>
             )}
+            <AnimatePresence>
+              {badgeUnlocked && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="absolute top-4 left-1/2 -translate-x-1/2
+                             bg-orange-400/20 text-orange-200 border border-orange-400
+                             px-3 py-1 rounded-lg text-xs shadow-[0_0_20px_#ff9f00]"
+                >
+                  🔥 3-Day Streak Badge Unlocked!
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </>
       )}

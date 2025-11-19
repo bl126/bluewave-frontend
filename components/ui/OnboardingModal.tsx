@@ -17,29 +17,7 @@ interface VerifyResponse {
   points_balance?: number;
 }
 
-const TOP_COUNTRIES = [
-  { code: "NG", name: "Nigeria" },
-  { code: "GH", name: "Ghana" },
-  { code: "KE", name: "Kenya" },
-  { code: "ZA", name: "South Africa" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "CA", name: "Canada" },
-  { code: "DE", name: "Germany" },
-  { code: "FR", name: "France" },
-  { code: "IN", name: "India" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "TR", name: "Türkiye" },
-  { code: "BR", name: "Brazil" },
-  { code: "AR", name: "Argentina" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "NL", name: "Netherlands" },
-  { code: "SE", name: "Sweden" },
-  { code: "PK", name: "Pakistan" },
-  // You can extend this list or plug a full country list later
-];
+
 
 // FULL COUNTRY LIST (Alphabetical)
 const ALL_COUNTRIES = [
@@ -391,19 +369,7 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                                focus:outline-none focus:border-cyan-400 mb-2"
                   />
 
-                  {/* TOP 20 COUNTRIES */}
-                  <div className="text-[10px] text-cyan-500 mb-1">Popular Countries</div>
-                  <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
-                               focus:outline-none focus:border-cyan-400 mb-3"
-                  >
-                    <option value="">Select your country</option>
-                    {TOP_COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
-                    ))}
-                  </select>
+
 
                   {/* ALL COUNTRIES - FILTERED */}
                   <div className="text-[10px] text-cyan-500 mb-1">All Countries</div>

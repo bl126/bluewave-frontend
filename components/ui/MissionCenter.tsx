@@ -28,13 +28,28 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   useEffect(() => {
     if (!isOpen) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMissions(data);
+    async function loadMissions() {
+      try {
+        const [onboardRes, dailyRes, normalRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/onboarding/${telegram_id}`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/daily/${telegram_id}`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`)
+        ]);
+
+        const onboarding = await onboardRes.json();
+        const daily = await dailyRes.json();
+        const normal = await normalRes.json();
+
+        // Merge all missions  
+        setMissions([...onboarding, ...daily, ...normal]);
         setLoading(false);
-      })
-      .catch(() => setError("Could not fetch missions"));
+      } catch (e) {
+        console.error(e);
+        setError("Could not load missions.");
+      }
+    }
+
+    loadMissions();
   }, [isOpen]);
 
   const handleOpen = (id: string, url: string) => {
@@ -70,13 +85,31 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     );
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_mission`, {
+      let endpoint = "";
+
+      if (id === "join_channel") {
+        endpoint = "/api/claim/onboarding";
+      } 
+      else if (id === "invite_daily") {
+        endpoint = "/api/claim/daily";
+      } 
+      else {
+        endpoint = "/api/claim_mission";
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ telegram_id, mission_id: id }),
       });
 
       const result = await res.json();
+      
+      // ⭐ NEW — Trigger badge popup in Profile
+      if (result.badge_unlocked) {
+        window.dispatchEvent(new CustomEvent("badgeUnlocked"));
+      }
+
 
       // ⭐ Step 2 — Set the final state
       if (result.claimed) {
