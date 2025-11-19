@@ -25,9 +25,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
   const [balance, setBalance] = useState(120); // temporary for now until live profile data
+  // Popup message modal
+  const [popup, setPopup] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+
     async function loadMissions() {
       try {
         const [onboardRes, dailyRes, normalRes] = await Promise.all([
@@ -40,9 +43,41 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         const daily = await dailyRes.json();
         const normal = await normalRes.json();
 
-        // Merge all missions  
-        setMissions([...onboarding, ...daily, ...normal]);
+        let finalList: Mission[] = [];
+
+        // ⭐ 1. ONBOARDING — only show if not completed
+        if (onboarding.length && onboarding[0].status !== "done") {
+          finalList.push(onboarding[0]);
+        }
+
+        // ⭐ 2. DAILY (Invite 2 People)
+        // Always show and always force status to "claim" or "open"
+        if (daily.length) {
+          const d = daily[0];
+
+          // Fix: Daily mission should NEVER show "open" button
+          // If no invites yet — status should be "claim" (but claim will fail)
+          if (d.status === "open") d.status = "claim";
+
+          finalList.push(d);
+        }
+
+        // ⭐ 3. NORMAL MISSIONS (Dynamic missions)
+        normal.forEach((m: Mission) => finalList.push(m));
+
+        // ⭐ 4. Sort missions in correct static order:
+        // Onboarding → Daily → Dynamic
+        finalList.sort((a, b) => {
+          const order = {
+            "join_channel": 1,
+            "invite_daily": 2
+          };
+          return ((order as any)[a.id] ?? 100) - ((order as any)[b.id] ?? 100);
+        });
+
+        setMissions(finalList);
         setLoading(false);
+
       } catch (e) {
         console.error(e);
         setError("Could not load missions.");
@@ -104,15 +139,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       });
 
       const result = await res.json();
-      
+
       // ⭐ NEW — Trigger badge popup in Profile
       if (result.badge_unlocked) {
         window.dispatchEvent(new CustomEvent("badgeUnlocked"));
       }
 
 
-      // ⭐ Step 2 — Set the final state
+      // ⭐ BACKEND RESPONSE HANDLING
       if (result.claimed) {
+        // Success case
         setBalance(result.new_balance);
 
         setMissions(prev =>
@@ -122,12 +158,38 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         );
 
       } else {
-        // Failed → revert back to "claim"
-        setMissions(prev =>
-          prev.map(m =>
-            m.id === id ? { ...m, status: "claim" } : m
-          )
-        );
+        // ❌ FAILED CONDITIONS
+
+        if (id === "join_channel" && result.reason === "NOT_IN_CHANNEL") {
+          setPopup("Join the official Bluewave channel to claim.");
+          setTimeout(() => setPopup(null), 2500);
+
+          // Reset to OPEN state
+          setMissions(prev =>
+            prev.map(m =>
+              m.id === id ? { ...m, status: "open" } : m
+            )
+          );
+
+        } else if (id === "invite_daily" && result.reason === "NOT_ENOUGH_INVITES") {
+          setPopup("Invite 2 people today to unlock this reward.");
+          setTimeout(() => setPopup(null), 2500);
+
+          // Reset button to CLAIM (cannot go back to open)
+          setMissions(prev =>
+            prev.map(m =>
+              m.id === id ? { ...m, status: "claim" } : m
+            )
+          );
+
+        } else {
+          // Generic failure → revert to claim
+          setMissions(prev =>
+            prev.map(m =>
+              m.id === id ? { ...m, status: "claim" } : m
+            )
+          );
+        }
       }
 
     } catch (err) {
@@ -238,6 +300,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 </div>
               ))}
             </div>
+            {/* Popup Modal */}
+            <AnimatePresence>
+              {popup && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 
+                             bg-black/70 border border-cyan-500 text-cyan-200
+                             px-4 py-2 rounded-lg shadow-[0_0_15px_#00e6ff]"
+                >
+                  {popup}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </>
       )}

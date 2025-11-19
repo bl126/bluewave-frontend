@@ -261,8 +261,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
                   {/* 🔥 Streak days */}
                   {user.streak_days > 0 && (
-                    <div className="text-orange-400 text-xs mt-2">
-                      🔥 {user.streak_days} Day Streak
+                    <div className="text-cyan-400 text-xs mt-2">
+                      🌊 {user.streak_days} Day Streak
                     </div>
                   )}
 
@@ -272,9 +272,9 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                       initial={{ opacity: 0.3 }}
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="mt-1 px-2 py-0.5 rounded-full border border-orange-400/50 
-                                 bg-orange-500/10 text-[10px] text-orange-200 uppercase tracking-wide
-                                 shadow-[0_0_15px_#ff990050]"
+                      className="mt-1 px-2 py-0.5 rounded-full border border-cyan-400/50
+                                 bg-cyan-500/10 text-[10px] text-cyan-200 uppercase tracking-wide
+                                 shadow-[0_0_15px_#00e6ff60]"
                     >
                       PRESENCE STREAK BADGE
                     </motion.div>
@@ -372,8 +372,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="absolute top-4 left-1/2 -translate-x-1/2
-                             bg-orange-400/20 text-orange-200 border border-orange-400
-                             px-3 py-1 rounded-lg text-xs shadow-[0_0_20px_#ff9f00]"
+                             bg-cyan-500/20 text-cyan-200 border border-cyan-400
+                             px-3 py-1 rounded-lg text-xs shadow-[0_0_20px_#00e6ff]"
                 >
                   🔥 3-Day Streak Badge Unlocked!
                 </motion.div>
