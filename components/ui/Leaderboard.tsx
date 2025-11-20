@@ -78,7 +78,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {!loading && !error && (
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
                 {leaders.map((u, index) => (
                   <div
                     key={index}
@@ -110,6 +110,43 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                     </div>
                   </div>
                 ))}
+                {/* ----------------------- */}
+                {/* MY RANK (if not in top 10) */}
+                {/* ----------------------- */}
+                {progressData?.myRank &&
+                 !leaders.some(u => u.telegram_id === tg) && (
+                  <div
+                    className="
+                      flex justify-between items-center px-3 py-2 rounded-xl 
+                      border border-cyan-700 bg-black/40 
+                      shadow-[0_0_20px_#00e6ff70] mt-3
+                    "
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="text-cyan-400 font-bold text-sm">
+                        #{progressData.myRank.rank}
+                      </span>
+
+                      <span>{progressData.myRank.country_flag}</span>
+
+                      <span className="text-cyan-200 text-sm truncate max-w-[130px]">
+                        {progressData.myRank.name}
+                        <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md 
+                                         bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
+                          YOU
+                        </span>
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-cyan-300">
+                        {progressData.myRank.balance} $BWAVE
+                      </p>
+                      <p className="text-[10px] text-cyan-500">
+                        {progressData.myRank.referrals} Referrals
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {/* ----------------------- */}
                 {/* YOUR LEVEL PROGRESS BAR */}
                 {/* ----------------------- */}
