@@ -257,11 +257,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   ) : (
                     <div
                       className="
-                        relative w-20 h-20 rounded-full 
-                        bg-gradient-to-br from-[#00eaff] to-[#0066ff]
+                        relative w-20 h-20 rounded-full
+                        bg-[#001f2e]
                         flex items-center justify-center
-                        text-white text-3xl font-bold
-                        shadow-[0_0_25px_#00eaff90]
+                        text-[#00eaff] text-3xl font-bold
+                        shadow-[0_0_40px_#00eaff80]
+                        border border-cyan-400/40
                       "
                     >
                       {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
