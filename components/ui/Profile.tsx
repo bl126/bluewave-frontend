@@ -248,15 +248,25 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full blur-xl bg-cyan-500/20"></div>
 
-                    <img
-                      src={
-                        user.photo_url
-                          ? `${user.photo_url}?r=${Date.now()}`
-                          : "/default-avatar.png"
-                      }
+                    {user.photo_url ? (
+                      <img
+                      src={`${user.photo_url}?r=${Date.now()}`}
                       alt="avatar"
-                      className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50]"
+                      className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50] object-cover"
                     />
+                  ) : (
+                    <div
+                      className="
+                        relative w-20 h-20 rounded-full 
+                        bg-gradient-to-br from-[#00eaff] to-[#0066ff]
+                        flex items-center justify-center
+                        text-white text-3xl font-bold
+                        shadow-[0_0_25px_#00eaff90]
+                      "
+                    >
+                      {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
+                    </div>
+                  )}
                     {/* 🌊 Streak Badge (3+ days) — glowing check circle */}
                     {user.streak_days >= 3 && (
                       <motion.div
