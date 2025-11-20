@@ -78,80 +78,83 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {!loading && !error && (
-              <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
-                {leaders.map((u, index) => (
-                  <div
-                    key={index}
-                    className={`flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900 bg-black/30 ${
-                      index === 0
-                        ? "shadow-[0_0_15px_#00e6ff70]"
-                        : index === 1
-                        ? "shadow-[0_0_10px_#00e6ff40]"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-cyan-400 font-bold text-sm">#{u.rank}</span>
-                      <span>{u.country_flag}</span>
-                      <span className="text-cyan-200 text-sm truncate max-w-[130px]">
-                        {u.name}
-                        {u.telegram_id === tg && (
-                          <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
-                            YOU                        
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-cyan-300">{u.balance} $BWAVE</p>
-                      <p className="text-[10px] text-cyan-500">
-                        {u.referrals} Referrals
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {/* ----------------------- */}
-                {/* MY RANK (if not in top 10) */}
-                {/* ----------------------- */}
-                {progressData?.myRank &&
-                 !leaders.some(u => u.telegram_id === tg) && (
-                  <div
-                    className="
-                      flex justify-between items-center px-3 py-2 rounded-xl 
-                      border border-cyan-700 bg-black/40 
-                      shadow-[0_0_20px_#00e6ff70] mt-3
-                    "
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-cyan-400 font-bold text-sm">
-                        #{progressData.myRank.rank}
-                      </span>
+              <>
 
-                      <span>{progressData.myRank.country_flag}</span>
+                {/* SCROLLABLE AREA — Top 10 + Your Rank */}
+                <div className="space-y-2 max-h-[47vh] overflow-y-auto pr-1">
 
-                      <span className="text-cyan-200 text-sm truncate max-w-[130px]">
-                        {progressData.myRank.name}
-                        <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md 
-                                         bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
-                          YOU
+                  {/* Top 10 */}
+                  {leaders.map((u, index) => (
+                    <div
+                      key={index}
+                      className={`flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900 bg-black/30 ${
+                        index === 0
+                          ? "shadow-[0_0_15px_#00e6ff70]"
+                          : index === 1
+                          ? "shadow-[0_0_10px_#00e6ff40]"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span className="text-cyan-400 font-bold text-sm">#{u.rank}</span>
+                        <span>{u.country_flag}</span>
+                        <span className="text-cyan-200 text-sm truncate max-w-[130px]">
+                          {u.name}
+                          {u.telegram_id === tg && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
+                              YOU
+                            </span>
+                          )}
                         </span>
-                      </span>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-xs text-cyan-300">{u.balance} $BWAVE</p>
+                        <p className="text-[10px] text-cyan-500">{u.referrals} Referrals</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-cyan-300">
-                        {progressData.myRank.balance} $BWAVE
-                      </p>
-                      <p className="text-[10px] text-cyan-500">
-                        {progressData.myRank.referrals} Referrals
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {/* ----------------------- */}
-                {/* YOUR LEVEL PROGRESS BAR */}
-                {/* ----------------------- */}
+                  ))}
+
+                  {/* MY RANK (scrolls with list) */}
+                  {progressData?.myRank &&
+                    !leaders.some((u) => u.telegram_id === tg) && (
+                      <div className="flex justify-between items-center px-3 py-2 rounded-xl 
+                                      border border-cyan-700 bg-black/40 shadow-[0_0_20px_#00e6ff70] mt-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-cyan-400 font-bold text-sm">
+                            #{progressData.myRank.rank}
+                          </span>
+
+                          <span>{progressData.myRank.country_flag}</span>
+
+                          <span className="text-cyan-200 text-sm truncate max-w-[130px]">
+                            {progressData.myRank.name}
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md 
+                                            bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
+                              YOU
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-xs text-cyan-300">
+                            {progressData.myRank.balance} $BWAVE
+                          </p>
+                          <p className="text-[10px] text-cyan-500">
+                            {progressData.myRank.referrals} Referrals
+                          </p>
+                        </div>
+                      </div>
+                  )}
+
+                </div>
+                {/* END SCROLL DIV */}
+
+
+                {/* STATIC — Level Progress (never scrolls) */}
                 {progressData && (
                   <div className="mt-4 bg-black/40 border border-cyan-800 rounded-xl p-4 shadow-[0_0_20px_#00e6ff20]">
+
                     <p className="text-cyan-400 text-sm mb-2">
                       Your Level: {progressData.current_level}
                     </p>
@@ -162,9 +165,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                           <div
                             className="h-full bg-cyan-400/80 transition-all duration-500"
                             style={{
-                              width: 0,
-                              animation: `fillBar 1.2s ease-out forwards`,
-                              ["--target" as any]: `${progressData.progress}%`
+                              width: `${progressData.progress}%`
                             }}
                           ></div>
                         </div>
@@ -179,7 +180,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                     )}
                   </div>
                 )}
-              </div>            
+
+              </>
             )}
           </motion.div>
         </>
