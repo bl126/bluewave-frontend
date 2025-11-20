@@ -163,9 +163,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                       <>
                         <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-cyan-900">
                           <div
-                            className="h-full bg-cyan-400/80 transition-all duration-500"
+                            className="h-full bg-cyan-400/80"
                             style={{
-                              width: `${progressData.progress}%`
+                              width: 0,
+                              animation: `fillBar 1.2s ease-out forwards`,
+                              ["--target" as any]: `${progressData.progress}%`,
                             }}
                           ></div>
                         </div>
