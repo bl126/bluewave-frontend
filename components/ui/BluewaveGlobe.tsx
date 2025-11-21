@@ -17,7 +17,7 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
 useEffect(() => {
   const loadCountries = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/countries`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/countries`);
       const data = await res.json();
       setCountryDots(data);
     } catch (e) {
