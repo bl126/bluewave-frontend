@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { useEffect, useRef, useState, useMemo } from "react";
+import GlobeDot from "./GlobeDot";
 
 function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
   const [borders, setBorders] = useState<THREE.Group | null>(null);
@@ -140,90 +141,7 @@ useEffect(() => {
 
         {countryDots.map((c, i) => {
           const pos = latLonToVec3(c.lat, c.lon);
-          const rippleRef = useRef<THREE.Mesh>(null);
-          const grainsRef = useRef<THREE.Points>(null);
-
-          // Only 10 slow-moving grains
-          const positions = useMemo(() => {
-            const arr = new Float32Array(10 * 3);
-            for (let j = 0; j < arr.length; j += 3) {
-              arr[j] = (Math.random() - 0.5) * 0.05;
-              arr[j + 1] = (Math.random() - 0.5) * 0.05;
-              arr[j + 2] = (Math.random() - 0.5) * 0.05;
-            }
-            return arr;
-          }, []);
-
-          useFrame((_, delta) => {
-            // ripple loop
-            if (rippleRef.current) {
-              rippleRef.current.scale.x += delta * 0.4;
-              rippleRef.current.scale.y += delta * 0.4;
-              const mat = rippleRef.current.material as THREE.MeshBasicMaterial;
-              mat.opacity -= delta * 0.2;
-              if (mat.opacity <= 0) {
-                rippleRef.current.scale.set(1, 1, 1);
-                mat.opacity = 0.6;
-              }
-            }
-
-            // particles drift to center slowly
-            if (grainsRef.current) {
-              const positions = grainsRef.current.geometry.attributes.position as THREE.BufferAttribute;
-              const arr = positions.array as Float32Array;
-              for (let j = 0; j < arr.length; j += 3) {
-                const x = arr[j] + pos.x;
-                const y = arr[j + 1] + pos.y;
-                const z = arr[j + 2] + pos.z;
-                const dir = new THREE.Vector3(-x, -y, -z).normalize().multiplyScalar(delta * 0.1);
-                arr[j] += dir.x;
-                arr[j + 1] += dir.y;
-                arr[j + 2] += dir.z;
-              }
-              positions.needsUpdate = true;
-            }
-          });
-
-          return (
-            <group key={i} position={pos}>
-              {/* glowing dot */}
-              <mesh>
-                <sphereGeometry args={[0.02, 16, 16]} />
-                <meshStandardMaterial
-                  color="#00e6ff"
-                  emissive="#00e6ff"
-                  emissiveIntensity={2.8}
-                  toneMapped={false}
-                />
-              </mesh>
-
-              {/* visible ripple */}
-              <mesh ref={rippleRef}>
-                <ringGeometry args={[0.04, 0.06, 64]} />
-                <meshBasicMaterial
-                  color="#00e6ff"
-                  transparent
-                  opacity={0.6}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-
-              {/* 10 glowing grains drifting toward logo */}
-              <points ref={grainsRef}>
-                <bufferGeometry>
-                  <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-                </bufferGeometry>
-                <pointsMaterial
-                  size={0.01}
-                  color="#00e6ff"
-                  transparent
-                  opacity={0.8}
-                  depthWrite={false}
-                  blending={THREE.AdditiveBlending}
-                />
-              </points>
-            </group>
-          );
+          return <GlobeDot key={i} position={pos} />;
         })}
       </group>
 
