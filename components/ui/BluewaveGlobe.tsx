@@ -10,13 +10,23 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
   const globeRef = useRef<THREE.Group>(null!);
   const logoRef = useRef<THREE.Mesh>(null!);
 
-  // --- STEP 1: Country data & coordinate converter ---
-  const sampleCountries = [
-    { name: "Nigeria", lat: 9.082, lon: 8.6753 },
-    { name: "United States", lat: 37.0902, lon: -95.7129 },
-    { name: "India", lat: 20.5937, lon: 78.9629 },
-    { name: "Brazil", lat: -14.235, lon: -51.9253 },
-  ];
+  const [countryDots, setCountryDots] = useState<{ lat: number; lon: number }[]>([]);
+
+// Fetch all unique countries from backend
+useEffect(() => {
+  const loadCountries = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/countries`);
+      const data = await res.json();
+      setCountryDots(data);
+    } catch (e) {
+      console.error("Failed to load country dots", e);
+    }
+  };
+
+  loadCountries();
+}, []);
+
 
   const latLonToVec3 = (lat: number, lon: number, radius = 1.21) => {
     const phi = (90 - lat) * (Math.PI / 180);
@@ -128,7 +138,7 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
       <group ref={globeRef} position={[0, 0, 0]} scale={[1, 1, 1]}>
         {borders && <primitive object={borders} />}
 
-        {sampleCountries.map((c, i) => {
+        {countryDots.map((c, i) => {
           const pos = latLonToVec3(c.lat, c.lon);
           const rippleRef = useRef<THREE.Mesh>(null);
           const grainsRef = useRef<THREE.Points>(null);
