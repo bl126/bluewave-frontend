@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -132,6 +133,43 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
   const [verifiedUser, setVerifiedUser] = useState<VerifyResponse | null>(null);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
+
+// Prefill username via Telegram InitData → fallback to backend tg_id lookup
+useEffect(() => {
+
+  // 1️⃣ Telegram InitData (best source)
+  try {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.initDataUnsafe?.user?.username) {
+      setUsername(tg.initDataUnsafe.user.username.toLowerCase());
+      return; // Stop here — no need to use tg_id
+    }
+  } catch (e) {
+    console.log("Telegram WebApp InitData error:", e);
+  }
+
+  // 2️⃣ Fallback: backend tg_id → username lookup
+  const url = new URL(window.location.href);
+  const tg_id = url.searchParams.get("tg_id");
+  if (!tg_id) return;
+
+  const fetchUsername = async () => {
+    try {
+      const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.username) {
+        setUsername(data.username);
+      }
+    } catch (e) {
+      console.error("Prefill username error:", e);
+    }
+  };
+
+  fetchUsername();
+
+}, []);
+
 
   const handleRequestCode = async () => {
     setError(null);
@@ -294,10 +332,10 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
                   Telegram username
                   <input
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="@yourusername"
+                    readOnly
+                    placeholder="Loading..."
                     className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
-                               focus:outline-none focus:border-cyan-400"
+                               opacity-70 cursor-not-allowed"
                   />
                 </label>
 

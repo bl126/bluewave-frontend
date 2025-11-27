@@ -12,6 +12,21 @@ import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
 
 export default function LandingPage() {
+
+  // ⭐ ENSURE Telegram WebApp is initialized
+  useEffect(() => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      try {
+        tg.ready();
+        tg.expand();
+        console.log("Telegram WebApp initialized:", tg.initDataUnsafe);
+      } catch (e) {
+        console.log("WebApp init error:", e);
+      }
+    }
+  }, []);
+
   // 👤 Store Telegram user info (manual onboarding, not Telegram init)
   const [telegramUser, setTelegramUser] = useState<any>(null);
   const [balance, setBalance] = useState<number | null>(null);
