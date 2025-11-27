@@ -140,9 +140,18 @@ useEffect(() => {
   // 1️⃣ Telegram InitData (best source)
   try {
     const tg = (window as any).Telegram?.WebApp;
-    if (tg?.initDataUnsafe?.user?.username) {
-      setUsername(tg.initDataUnsafe.user.username.toLowerCase());
-      return; // Stop here — no need to use tg_id
+    const tgUser = tg?.initDataUnsafe?.user;
+
+    if (tgUser) {
+      if (tgUser.username) {
+        setUsername(tgUser.username.toLowerCase());
+        return;
+      }
+
+      // 🚨 Fallback for users WITHOUT Telegram username
+      const fallback = `bw_user_${tgUser.id}`;
+      setUsername(fallback.toLowerCase());
+      return;
     }
   } catch (e) {
     console.log("Telegram WebApp InitData error:", e);
