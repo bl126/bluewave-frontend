@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SWRConfig } from "swr";
+import { fetcher } from "@/lib/swrFetcher";
 
 
 // app/layout.tsx
@@ -13,7 +15,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⭐ Telegram Mini App Script (MUST BE HERE) */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-      <body className="h-full overflow-hidden bg-black">{children}</body>
+      <body className="h-full overflow-hidden bg-black">
+        <SWRConfig
+          value={{
+            fetcher,
+            dedupingInterval: 3000, // 3s prevent spam calls
+            revalidateOnFocus: false,
+            shouldRetryOnError: true,
+            errorRetryInterval: 5000, // avoid hammering backend
+          }}
+        >
+          {children}
+        </SWRConfig>
+      </body>
     </html>
   );
 }

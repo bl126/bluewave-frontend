@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useApi } from "@/lib/useApi";
+
 
 interface ProfileProps {
   isOpen: boolean;
@@ -23,6 +25,27 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
 
   const telegram_id = telegramUser?.id;
+  // ⭐ SWR cached user fetch (replaces old useEffect)
+  const { data: swrUser, error: swrError, loading: swrLoading } =
+    useApi(`/user/${telegram_id}`);
+  // Sync SWR data into local user state
+  useEffect(() => {
+    if (swrUser) {
+      setUser(swrUser);
+      setLoading(false);
+    }
+    if (swrError) {
+      setError("Could not load profile");
+    }
+  }, [swrUser, swrError]);
+
+  useEffect(() => {
+    if (isOpen && telegram_id) {
+      loadCooldown(); // ensure cooldown loads on open
+    }
+  }, [isOpen, telegram_id]);
+
+
   const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
   
   useEffect(() => {
@@ -73,22 +96,6 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       .then(d => setLevel(d.level));
   }, [telegram_id]);
 
-
-  useEffect(() => {
-    if (!isOpen || !telegram_id) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegram_id}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then(res => res.json())
-      .then(user => {
-        setUser(user);
-        setLoading(false);
-      })
-      .catch(() => setError("Could not load profile"));
-      loadCooldown();
-  }, [isOpen, telegram_id]);
 
   useEffect(() => {
     if (cooldown === null) return;
