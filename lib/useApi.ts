@@ -1,15 +1,17 @@
+// lib/useApi.ts
+"use client";
+
 import useSWR from "swr";
+import { fetcher } from "./swrFetcher";
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL;
+export function useApi(path: string | null) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-const fetcher = async (url: string) => {
-  const res = await fetch(apiBase + url);
-  if (!res.ok) throw new Error("API error");
-  return res.json();
-};
+  const { data, error, isLoading } = useSWR(
+    path && apiUrl ? `${apiUrl}/api${path}` : null,  // SWR: null = don't fetch
+    fetcher
+  );
 
-export function useApi(path: string) {
-  const { data, error, isLoading } = useSWR(path, fetcher);
   return {
     data,
     error,

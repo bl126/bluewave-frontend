@@ -5,14 +5,13 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
-
 interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
 }
 
-export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps) {
+export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,13 +21,21 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [claiming, setClaiming] = useState(false);
   const [badgeUnlocked, setBadgeUnlocked] = useState(false);
 
+  // ⭐ Telegram ID extracted from Mini App
+  const [telegramId, setTelegramId] = useState<number | null>(null);
 
+  useEffect(() => {
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    if (tgUser?.id) {
+      setTelegramId(Number(tgUser.id));
+    }
+  }, []);
 
-  const telegram_id = telegramUser?.id;
-  // ⭐ SWR cached user fetch (replaces old useEffect)
+  // ⭐ SWR fetch using Telegram ID (safe null)
   const { data: swrUser, error: swrError, loading: swrLoading } =
-    useApi(`/user/${telegram_id}`);
-  // Sync SWR data into local user state
+    useApi(telegramId ? `/user/${telegramId}` : null);
+
+  // ⭐ Sync SWR result
   useEffect(() => {
     if (swrUser) {
       setUser(swrUser);
@@ -39,11 +46,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   }, [swrUser, swrError]);
 
+  // ⭐ Load cooldown when opening modal + telegram id available
   useEffect(() => {
-    if (isOpen && telegram_id) {
-      loadCooldown(); // ensure cooldown loads on open
+    if (isOpen && telegramId) {
+      loadCooldown();
     }
-  }, [isOpen, telegram_id]);
+  }, [isOpen, telegramId]);
 
 
   const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
@@ -89,12 +97,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [level, setLevel] = useState("Loading...");
 
   useEffect(() => {
-    if (!telegram_id) return;
+    if (!telegramId) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user_level/${telegram_id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user_level/${telegramId}`)
       .then(r => r.json())
       .then(d => setLevel(d.level));
-  }, [telegram_id]);
+  }, [telegramId]);
 
 
   useEffect(() => {
@@ -123,7 +131,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
   // Auto-refresh profile picture daily
   useEffect(() => {
-    if (!telegram_id) return;
+    if (!telegramId) return;
     const interval = setInterval(() => {
       setUser((prev: any) => ({
         ...prev,
@@ -132,7 +140,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }, 24 * 60 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [telegram_id]);
+  }, [telegramId]);
 
   const handleClaim = async () => {
     if (claiming) return;
@@ -141,7 +149,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id }),
+      body: JSON.stringify({ telegram_id: telegramId }),
     });
 
     const result = await res.json();
@@ -166,7 +174,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
 
 
   async function loadCooldown() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegram_id}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegramId}`);
   const data = await res.json();
 
   if (!data.last_sent) {
@@ -194,7 +202,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id }),
+      body: JSON.stringify({ telegram_id: telegramId }),
     });
 
     const result = await res.json();
