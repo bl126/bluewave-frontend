@@ -25,15 +25,19 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [telegramId, setTelegramId] = useState<number | null>(null);
 
   useEffect(() => {
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (tgUser?.id) {
-      setTelegramId(Number(tgUser.id));
+    const stored = localStorage.getItem("bw_tg_id");
+    if (stored) {
+      setTelegramId(Number(stored));
     }
   }, []);
 
   // ⭐ SWR fetch using Telegram ID (safe null)
-  const { data: swrUser, error: swrError, loading: swrLoading } =
+  const { data: swrUser, error: swrError, loading: swrLoading, mutate } =
     useApi(telegramId ? `/user/${telegramId}` : null);
+  
+  useEffect(() => {
+    if (telegramId) mutate();  // force SWR refresh when ID loads
+  }, [telegramId]);
 
   // ⭐ Sync SWR result
   useEffect(() => {
@@ -149,7 +153,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: telegramId }),
+      body: JSON.stringify({ tg_id: telegramId }),
     });
 
     const result = await res.json();
@@ -202,7 +206,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: telegramId }),
+      body: JSON.stringify({ tg_id: telegramId }),
     });
 
     const result = await res.json();

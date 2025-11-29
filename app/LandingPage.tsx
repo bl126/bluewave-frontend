@@ -27,6 +27,15 @@ export default function LandingPage() {
     }
   }, []);
 
+  // ❗ Block users opening in browser – Bluewave is Telegram-only
+  useEffect(() => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (!tg) {
+      alert("Bluewave can only be opened inside Telegram.");
+      setOnboardingOpen(true);
+    }
+  }, []);
+
   // 👤 Store Telegram user info (manual onboarding, not Telegram init)
   const [telegramUser, setTelegramUser] = useState<any>(null);
   const [balance, setBalance] = useState<number | null>(null);
@@ -38,6 +47,30 @@ export default function LandingPage() {
   const [onboardingOpen, setOnboardingOpen] = useState(false); // ✅ ADD
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
+
+  // ⭐ Pull username + id from Telegram InitData, preload into state
+  useEffect(() => {
+    try {
+      const tg = (window as any).Telegram?.WebApp;
+      const tgUser = tg?.initDataUnsafe?.user;
+      if (tgUser) {
+        const autoUsername = tgUser.username?.toLowerCase() || `bw_user_${tgUser.id}`;
+        setTelegramUser({
+          id: tgUser.id,
+          tg_id: tgUser.id,
+          username: autoUsername,
+          first_name: tgUser.first_name,
+          last_name: tgUser.last_name,
+          photo_url: tgUser.photo_url || null,
+        });
+
+        // Pre-store for onboarding to pick up
+        window.localStorage.setItem("bw_tg_id", String(tgUser.id));
+      }
+    } catch (e) {
+      console.log("TG InitData error:", e);
+    }
+  }, []);
 
   // 🔥 NEW: Check onboarding status using localStorage + Supabase
   useEffect(() => {
@@ -56,6 +89,14 @@ export default function LandingPage() {
       try {
         const res = await fetch(`${apiBase}/api/user/${savedTgId}`);
         if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (err.detail === "TOO_FAST") {
+            console.warn("Rate limited. Retrying in 1.2s...");
+            setTimeout(() => {
+              window.location.reload();
+            }, 1200);
+            return;
+          }
           setOnboardingOpen(true);
           return;
         }
@@ -216,7 +257,11 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* 🔐 Onboarding LOCK SCREEN */}
-      <OnboardingModal isOpen={onboardingOpen} onComplete={handleOnboardingComplete} />
+      <OnboardingModal 
+        isOpen={onboardingOpen} 
+        onComplete={handleOnboardingComplete}
+        autoUsername={telegramUser?.username}
+      />
     </div>
   );
 }

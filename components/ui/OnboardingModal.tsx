@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: (user: any) => void;
+  autoUsername?: string;
 }
 
 interface VerifyResponse {
@@ -122,7 +123,7 @@ const ALL_COUNTRIES = [
   { code: "ZW", name: "Zimbabwe" },
 ];
 
-export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
+export default function OnboardingModal({ isOpen, onComplete, autoUsername }: OnboardingModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
@@ -136,48 +137,51 @@ export default function OnboardingModal({ isOpen, onComplete }: OnboardingModalP
 
 // Prefill username via Telegram InitData → fallback to backend tg_id lookup
 useEffect(() => {
+  // 1️⃣ If LandingPage pre-filled autoUsername, use it
+  if (autoUsername) {
+    setUsername(autoUsername.toLowerCase());
+    return;
+  }
 
-  // 1️⃣ Telegram InitData (best source)
+  // 2️⃣ Try Telegram InitData
   try {
     const tg = (window as any).Telegram?.WebApp;
     const tgUser = tg?.initDataUnsafe?.user;
 
     if (tgUser) {
-      if (tgUser.username) {
-        setUsername(tgUser.username.toLowerCase());
-        return;
-      }
-
-      // 🚨 Fallback for users WITHOUT Telegram username
-      const fallback = `bw_user_${tgUser.id}`;
-      setUsername(fallback.toLowerCase());
+      const uname =
+        tgUser.username?.toLowerCase() || `bw_user_${tgUser.id}`;
+      setUsername(uname);
       return;
     }
   } catch (e) {
-    console.log("Telegram WebApp InitData error:", e);
+    console.log("Telegram initData error:", e);
   }
 
-  // 2️⃣ Fallback: backend tg_id → username lookup
-  const url = new URL(window.location.href);
-  const tg_id = url.searchParams.get("tg_id");
-  if (!tg_id) return;
+  // 3️⃣ Fallback → extract tg_id from URL & fetch username from backend
+  try {
+    const url = new URL(window.location.href);
+    const tg_id = url.searchParams.get("tg_id");
+    if (!tg_id) return;
 
-  const fetchUsername = async () => {
-    try {
-      const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.username) {
-        setUsername(data.username);
+    const fetchUsername = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.username) {
+          setUsername(data.username.toLowerCase());
+        }
+      } catch (e) {
+        console.log("Backend username prefill error:", e);
       }
-    } catch (e) {
-      console.error("Prefill username error:", e);
-    }
-  };
+    };
 
-  fetchUsername();
-
-}, []);
+    fetchUsername();
+  } catch (e) {
+    console.log("URL parse error:", e);
+  }
+}, [autoUsername]);
 
 
   const handleRequestCode = async () => {

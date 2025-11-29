@@ -20,15 +20,13 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
   const tg = telegramUser?.id;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || leaders.length > 0) return;
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`)
-      .then((res) => res.json())
-      .then((data) => {
-        setLeaders(data);
-        setLoading(false);
-      })
-      .catch(() => setError("Could not load leaderboard"));
+      .then(r => r.json())
+      .then(d => setLeaders(d))
+      .catch(() => setError("Could not load leaderboard"))
+      .finally(() => setLoading(false));
   }, [isOpen]);
 
   // Fetch user progress
@@ -100,7 +98,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         <span>{u.country_flag}</span>
                         <span className="text-cyan-200 text-sm truncate max-w-[130px]">
                           {u.name}
-                          {u.telegram_id === tg && (
+                          {String(u.telegram_id) === String(tg) && (
                             <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
                               YOU
                             </span>
@@ -117,7 +115,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
                   {/* MY RANK (scrolls with list) */}
                   {progressData?.myRank &&
-                    !leaders.some((u) => u.telegram_id === tg) && (
+                    !leaders.some((u) => String(u.telegram_id) === String(tg)) && (
                       <div className="flex justify-between items-center px-3 py-2 rounded-xl 
                                       border border-cyan-700 bg-black/40 shadow-[0_0_20px_#00e6ff70] mt-3">
                         <div className="flex items-center space-x-2">

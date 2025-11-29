@@ -24,7 +24,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [loading, setLoading] = useState(true);
   const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
-  const [balance, setBalance] = useState(120); // temporary for now until live profile data
+  const [balance, setBalance] = useState<number | null>(null);
   // Popup message modal
   const [popup, setPopup] = useState<string | null>(null);
 
@@ -33,47 +33,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
     async function loadMissions() {
       try {
-        const [onboardRes, dailyRes, normalRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/onboarding/${telegram_id}`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/daily/${telegram_id}`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`)
-        ]);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`);
+        const data = await res.json();
 
-        const onboarding = await onboardRes.json();
-        const daily = await dailyRes.json();
-        const normal = await normalRes.json();
-
-        let finalList: Mission[] = [];
-
-        // ⭐ 1. ONBOARDING — only show if not completed
-        if (onboarding.length && onboarding[0].status !== "done") {
-          finalList.push(onboarding[0]);
-        }
-
-        // ⭐ 2. DAILY (Invite 2 People)
-        // Always show and always force status to "claim" or "open"
-        if (daily.length) {
-          const d = daily[0];
-
-          // Fix: Daily mission should NEVER show "open" button
-          // If no invites yet — status should be "claim" (but claim will fail)
-          if (d.status === "open") d.status = "claim";
-
-          finalList.push(d);
-        }
-
-        // ⭐ 3. NORMAL MISSIONS (Dynamic missions)
-        normal.forEach((m: Mission) => finalList.push(m));
-
-        // ⭐ 4. Sort missions in correct static order:
-        // Onboarding → Daily → Dynamic
-        finalList.sort((a, b) => {
-          const order = {
-            "join_channel": 1,
-            "invite_daily": 2
-          };
-          return ((order as any)[a.id] ?? 100) - ((order as any)[b.id] ?? 100);
-        });
+        let finalList: Mission[] = data.missions || [];
 
         setMissions(finalList);
         setLoading(false);
@@ -123,19 +86,19 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       let endpoint = "";
 
       if (id === "join_channel") {
-        endpoint = "/api/claim/onboarding";
-      } 
+        endpoint = "/api/missions/claim_onboarding";
+      }
       else if (id === "invite_daily") {
-        endpoint = "/api/claim/daily";
-      } 
+        endpoint = "/api/missions/claim_daily";
+      }
       else {
-        endpoint = "/api/claim_mission";
+        endpoint = "/api/missions/claim";
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegram_id, mission_id: id }),
+        body: JSON.stringify({ tg_id: telegram_id, mission_id: id }),
       });
 
       const result = await res.json();
