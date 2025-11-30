@@ -48,26 +48,68 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     }
 
     loadMissions();
-  }, [isOpen]);
+  }, [isOpen, telegram_id]);
 
   const handleOpen = async (id: string) => {
-    if (id === "story_post") {
-      // Fetch telegram story deeplink
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`
-      );
-      const data = await res.json();
+    if (!telegram_id) return;
 
-      // Open Telegram Story poster with caption
-      window.open(data.deeplink, "_blank");
+    if (id === "story_post") {
+      try {
+        // 1️⃣ Get mission entry for this user
+        const storyMission = missions.find((m) => m.id === id);
+
+        let mediaUrl = storyMission?.url;
+
+        // 2️⃣ If no cached URL yet → ask backend to generate poster NOW
+        if (!mediaUrl) {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`
+          );
+          const data = await res.json();
+          mediaUrl = data.url;
+
+          // Save URL into local missions state so we don't refetch on next open
+          if (mediaUrl) {
+            setMissions((prev) =>
+              prev.map((m) =>
+                m.id === id ? { ...m, url: mediaUrl || "" } : m
+              )
+            );
+          }
+        }
+
+        if (!mediaUrl) {
+          console.error("No media URL for story poster");
+          return;
+        }
+
+        // 3️⃣ Build referral link for the widget
+        const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
+
+        // 4️⃣ Call Telegram Mini App API → open Story composer
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg && typeof tg.shareToStory === "function") {
+          tg.shareToStory(mediaUrl, {
+            text: "Join Bluewave — the future of Presence Monetization.",
+            widget_link: {
+              url: refLink,
+              name: "Join Bluewave"
+            }
+          });
+        } else {
+          // Fallback: at least open the image URL if story API is not supported
+          window.open(mediaUrl, "_blank");
+        }
+      } catch (err) {
+        console.error("Story open failed:", err);
+      }
     }
 
-    // Change state to WAITING
+    // 🔁 Same UX as before → WAITING then CLAIM
     setMissions((prev) =>
       prev.map((m) => (m.id === id ? { ...m, status: "waiting" } : m))
     );
 
-    // After 10 seconds → CLAIM
     setTimeout(() => {
       setMissions((prev) =>
         prev.map((m) => (m.id === id ? { ...m, status: "claim" } : m))
