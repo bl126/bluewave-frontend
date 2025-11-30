@@ -36,7 +36,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`);
         const data = await res.json();
 
-        let finalList: Mission[] = data.missions || [];
+        let finalList: Mission[] = data || [];
 
         setMissions(finalList);
         setLoading(false);
@@ -50,21 +50,29 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     loadMissions();
   }, [isOpen]);
 
-  const handleOpen = (id: string, url: string) => {
-    // 1. Open the mission link
-    window.open(url, "_blank");
+  const handleOpen = async (id: string) => {
+    if (id === "story_post") {
+      // Fetch telegram story deeplink
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`
+      );
+      const data = await res.json();
 
-    // 2. Immediately show user “opened”
+      // Open Telegram Story poster with caption
+      window.open(data.deeplink, "_blank");
+    }
+
+    // Change state to WAITING
     setMissions((prev) =>
       prev.map((m) => (m.id === id ? { ...m, status: "waiting" } : m))
     );
 
-    // 3. After 10 seconds, allow claiming
+    // After 10 seconds → CLAIM
     setTimeout(() => {
       setMissions((prev) =>
         prev.map((m) => (m.id === id ? { ...m, status: "claim" } : m))
       );
-    }, 10000); // 10 seconds
+    }, 10000);
   };
 
   const handleClaim = async (id: string) => {
@@ -84,24 +92,34 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
     try {
       let endpoint = "";
+      let payload: any = {};
 
       if (id === "join_channel") {
+        // Onboarding mission
         endpoint = "/api/missions/claim_onboarding";
-      }
-      else if (id === "invite_daily") {
+        payload = { telegram_id };
+      } else if (id === "invite_daily") {
+        // Daily invite mission
         endpoint = "/api/missions/claim_daily";
-      }
-      else {
+        payload = { telegram_id };
+      } else if (id === "story_post") {
+        // New story poster mission
+        endpoint = "/api/claim/story_post";
+        payload = { telegram_id };   // backend expects { telegram_id }
+      } else {
+        // Normal missions (from missions table)
         endpoint = "/api/missions/claim";
+        payload = { telegram_id, mission_id: id };  // backend expects both
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg_id: telegram_id, mission_id: id }),
+        body: JSON.stringify(payload),
       });
 
       const result = await res.json();
+
 
       // ⭐ NEW — Trigger badge popup in Profile
       if (result.badge_unlocked) {
@@ -222,7 +240,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
                   {m.status === "open" && (
                     <button
-                      onClick={() => handleOpen(m.id, m.url)}
+                      onClick={() => handleOpen(m.id)}
                       className="px-3 py-1 text-xs bg-cyan-500/20 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/30"
                     >
                       Open
