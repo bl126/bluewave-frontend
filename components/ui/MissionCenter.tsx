@@ -33,14 +33,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
     async function loadMissions() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`);
+        // 1️⃣ Normal missions from DB
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`
+        );
         const data = await res.json();
-
         let finalList: Mission[] = data || [];
+
+        // 2️⃣ Daily "Invite 2 people" mission
+        const dailyRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/daily/${telegram_id}`
+        );
+        const dailyData = await dailyRes.json();
+
+        if (Array.isArray(dailyData) && dailyData.length > 0) {
+          finalList = [...finalList, ...dailyData];
+        }
 
         setMissions(finalList);
         setLoading(false);
-
       } catch (e) {
         console.error(e);
         setError("Could not load missions.");
@@ -52,6 +63,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   const handleOpen = async (id: string) => {
     if (!telegram_id) return;
+
+    // 🔗 For normal missions, just open their URL
+    if (id !== "story_post") {
+      const mission = missions.find((m) => m.id === id);
+      if (mission?.url) {
+        window.open(mission.url, "_blank");
+      }
+    }
 
     if (id === "story_post") {
       try {
@@ -91,8 +110,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         if (tg && typeof tg.shareToStory === "function") {
           tg.shareToStory(mediaUrl, {
             text: `This isn't a meme coin
-          This is a Presence Economy.
-          #BWAVE #TON #Bluewave`,
+This is a Presence Economy.
+#BWAVE #TON #Bluewave
+${refLink}`,
 
             widget_link: {
               url: refLink,                // auto referral
@@ -141,11 +161,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
       if (id === "join_channel") {
         // Onboarding mission
-        endpoint = "/api/missions/claim_onboarding";
+        endpoint = "/api/claim/onboarding";
         payload = { telegram_id };
       } else if (id === "invite_daily") {
         // Daily invite mission
-        endpoint = "/api/missions/claim_daily";
+        endpoint = "/api/claim/daily";
         payload = { telegram_id };
       } else if (id === "story_post") {
         // New story poster mission
@@ -153,7 +173,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         payload = { telegram_id };   // backend expects { telegram_id }
       } else {
         // Normal missions (from missions table)
-        endpoint = "/api/missions/claim";
+        endpoint = "/api/claim_mission";
         payload = { telegram_id, mission_id: id };  // backend expects both
       }
 

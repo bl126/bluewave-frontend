@@ -44,9 +44,12 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     if (swrUser) {
       setUser(swrUser);
       setLoading(false);
+      setError("");               // clear any old error
     }
-    if (swrError) {
+    // only show error if we truly have no user data
+    if (swrError && !swrUser) {
       setError("Could not load profile");
+      setLoading(false);
     }
   }, [swrUser, swrError]);
 
@@ -153,7 +156,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tg_id: telegramId }),
+      body: JSON.stringify({ telegram_id: telegramId }),
     });
 
     const result = await res.json();
@@ -206,7 +209,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tg_id: telegramId }),
+      body: JSON.stringify({ telegram_id: telegramId }),
     });
 
     const result = await res.json();
