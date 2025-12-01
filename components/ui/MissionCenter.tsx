@@ -90,10 +90,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         const tg = (window as any).Telegram?.WebApp;
         if (tg && typeof tg.shareToStory === "function") {
           tg.shareToStory(mediaUrl, {
-            text: "Join Bluewave — the future of Presence Monetization.",
+            text: `This isn't a meme coin
+          This is a Presence Economy.
+          #BWAVE #TON #Bluewave`,
+
             widget_link: {
-              url: refLink,
-              name: "Join Bluewave"
+              url: refLink,                // auto referral
+              name: "Join Bluewave"        // text shown on story
             }
           });
         } else {
