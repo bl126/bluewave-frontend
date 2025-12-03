@@ -64,80 +64,119 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const handleOpen = async (id: string) => {
     if (!telegram_id) return;
 
-    // 🔗 For normal missions, just open their URL
-    if (id !== "story_post") {
-      const mission = missions.find((m) => m.id === id);
+    const isSpecial =
+      id === "invite_daily" ||
+      id === "join_channel" ||
+      id === "story_post";
+
+    // ⭐ SPECIAL MISSIONS — use old logic (no Ai PvP)
+    if (isSpecial) {
+      // STORY POST LOGIC
+      if (id === "story_post") {
+        try {
+          let storyMission = missions.find(m => m.id === id);
+          let mediaUrl = storyMission?.url;
+
+          if (!mediaUrl) {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`
+            );
+            const data = await res.json();
+            mediaUrl = data.url;
+
+            if (mediaUrl) {
+              setMissions(prev =>
+                prev.map(m => m.id === id ? { ...m, url: mediaUrl || "" } : m)
+              );
+            }
+          }
+
+          if (mediaUrl) {
+            const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
+            const tg = (window as any).Telegram?.WebApp;
+
+            if (tg?.shareToStory) {
+              tg.shareToStory(mediaUrl, {
+                text: `This isn't a meme coin
+  This is a Presence Economy.
+  #BWAVE #TON #Bluewave
+  ${refLink}`,
+                widget_link: {
+                  url: refLink,
+                  name: "Join Bluewave"
+                }
+              });
+            } else {
+              window.open(mediaUrl, "_blank");
+            }
+          }
+        } catch (err) {
+          console.error("Story open failed:", err);
+        }
+      }
+
+      // ⭐ For ALL special missions → use fixed 10s wait
+      setMissions(prev =>
+        prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
+      );
+
+      setTimeout(() => {
+        setMissions(prev =>
+          prev.map(m => m.id === id ? { ...m, status: "claim" } : m)
+        );
+      }, 10000);
+
+      return; // 🔥 EXIT (no Ai PvP)
+    }
+
+    // ⭐ NORMAL MISSION (Ai PvP)
+    try {
+      // 1️⃣ Start PvP timer BEFORE opening URL
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/mission/open`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_id, mission_id: id }),
+        }
+      );
+
+      const data = await res.json();
+
+      // 2️⃣ Open URL NOW
+      const mission = missions.find(m => m.id === id);
       if (mission?.url) {
         window.open(mission.url, "_blank");
       }
-    }
 
-    if (id === "story_post") {
-      try {
-        // 1️⃣ Get mission entry for this user
-        const storyMission = missions.find((m) => m.id === id);
-
-        let mediaUrl = storyMission?.url;
-
-        // 2️⃣ If no cached URL yet → ask backend to generate poster NOW
-        if (!mediaUrl) {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`
-          );
-          const data = await res.json();
-          mediaUrl = data.url;
-
-          // Save URL into local missions state so we don't refetch on next open
-          if (mediaUrl) {
-            setMissions((prev) =>
-              prev.map((m) =>
-                m.id === id ? { ...m, url: mediaUrl || "" } : m
-              )
-            );
-          }
-        }
-
-        if (!mediaUrl) {
-          console.error("No media URL for story poster");
-          return;
-        }
-
-        // 3️⃣ Build referral link for the widget
-        const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
-
-        // 4️⃣ Call Telegram Mini App API → open Story composer
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg && typeof tg.shareToStory === "function") {
-          tg.shareToStory(mediaUrl, {
-            text: `This isn't a meme coin
-This is a Presence Economy.
-#BWAVE #TON #Bluewave
-${refLink}`,
-
-            widget_link: {
-              url: refLink,                // auto referral
-              name: "Join Bluewave"        // text shown on story
-            }
-          });
-        } else {
-          // Fallback: at least open the image URL if story API is not supported
-          window.open(mediaUrl, "_blank");
-        }
-      } catch (err) {
-        console.error("Story open failed:", err);
-      }
-    }
-
-    // 🔁 Same UX as before → WAITING then CLAIM
-    setMissions((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: "waiting" } : m))
-    );
-
-    setTimeout(() => {
-      setMissions((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, status: "claim" } : m))
+      // 3️⃣ Set WAITING UI
+      setMissions(prev =>
+        prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
       );
-    }, 10000);
+
+      // 4️⃣ If Ai PvP disabled for this mission → fallback to 10s
+      if (!data.ai_pvp) {
+        setTimeout(() => {
+          setMissions(prev =>
+            prev.map(m => m.id === id ? { ...m, status: "claim" } : m)
+          );
+        }, 8000);
+        return;
+      }
+
+      // 5️⃣ Dynamic unlock based on backend timing
+      const unlockTime = new Date(data.unlocks_at).getTime() - Date.now();
+      const delay = Math.max(0, unlockTime);
+
+      setTimeout(() => {
+        setMissions(prev =>
+          prev.map(m => m.id === id ? { ...m, status: "claim" } : m)
+        );
+      }, delay);
+
+    } catch (e) {
+      console.error("mission/open failed:", e);
+    }
   };
 
   const handleClaim = async (id: string) => {
@@ -225,6 +264,31 @@ ${refLink}`,
           setMissions(prev =>
             prev.map(m =>
               m.id === id ? { ...m, status: "claim" } : m
+            )
+          );
+
+        } else if (result.reason === "OPEN_REQUIRED") {
+            setPopup("Tap OPEN first before claiming this mission.");
+            setTimeout(() => setPopup(null), 2500);
+
+            setMissions(prev =>
+              prev.map(m =>
+                m.id === id ? { ...m, status: "open" } : m
+              )
+            );
+
+        } else if (
+          result.reason === "MISSION_NOT_COMPLETED" ||
+          result.reason === "TOO_FAST"
+        ) {
+          // Ai PvP: user didn't complete mission within allowed timeline
+          setPopup("Please complete the mission properly before claiming.");
+          setTimeout(() => setPopup(null), 2500);
+
+          // Reset mission back to OPEN so they must start again
+          setMissions(prev =>
+            prev.map(m =>
+              m.id === id ? { ...m, status: "open" } : m
             )
           );
 
