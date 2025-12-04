@@ -132,6 +132,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       }
 
+      // ⭐ JOIN CHANNEL — open the Telegram channel link
+      if (id === "join_channel") {
+        const mission = missions.find(m => m.id === id);
+        if (mission?.url) {
+          window.open(mission.url, "_blank");
+        }
+      }
+
       // ⭐ For ALL special missions → use fixed 10s wait
       setMissions(prev =>
         prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
