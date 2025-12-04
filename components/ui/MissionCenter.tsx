@@ -85,9 +85,44 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       id === "invite_daily" ||
       id === "join_channel" ||
       id === "story_post";
-
+    
     // ⭐ SPECIAL MISSIONS — use old logic (no Ai PvP)
     if (isSpecial) {
+    // ⭐ DAILY INVITE MISSION — open Telegram share with referral link
+    if (id === "invite_daily") {
+      const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
+      const text = `Join Bluewave — The Presence Economy starts here.\n${refLink}`;
+
+      const tg = (window as any).Telegram?.WebApp;
+
+      // Telegram share panel
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(
+          `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`
+        );
+      } else {
+        // fallback for browser testing
+        window.open(
+          `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`,
+          "_blank"
+        );
+      }
+
+      // Start countdown → 10 seconds
+      setMissions(prev =>
+        prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
+      );
+
+      setTimeout(() => {
+        setMissions(prev =>
+          prev.map(m => m.id === id ? { ...m, status: "claim" } : m)
+        );
+      }, 10000);
+
+      return; // IMPORTANT → stop further logic
+    }
+
+    
       // STORY POST LOGIC
       if (id === "story_post") {
         try {
@@ -285,10 +320,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           setPopup("Invite 2 people today to unlock this reward.");
           setTimeout(() => setPopup(null), 2500);
 
-          // Reset button to CLAIM (cannot go back to open)
+          // Reset button to open 
           setMissions(prev =>
             prev.map(m =>
-              m.id === id ? { ...m, status: "claim" } : m
+              m.id === id ? { ...m, status: "open" } : m
             )
           );
 
