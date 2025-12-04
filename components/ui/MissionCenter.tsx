@@ -50,6 +50,23 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           finalList = [...finalList, ...dailyData];
         }
 
+        // 3️⃣ Onboarding mission
+        const onboardingRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/onboarding/${telegram_id}`
+        );
+        const onboardingData = await onboardingRes.json();
+
+        if (Array.isArray(onboardingData) && onboardingData.length > 0) {
+          finalList = [...finalList, ...onboardingData];
+        }
+
+        // Ensure onboarding appears first
+        finalList.sort((a, b) => {
+          if (a.id === "join_channel") return -1;
+          if (b.id === "join_channel") return 1;
+          return 0;
+        });
+
         setMissions(finalList);
         setLoading(false);
       } catch (e) {
