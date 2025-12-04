@@ -88,27 +88,31 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     
     // ⭐ SPECIAL MISSIONS — use old logic (no Ai PvP)
     if (isSpecial) {
-    // ⭐ DAILY INVITE MISSION — open Telegram share with referral link
+    // ⭐ DAILY INVITE MISSION — open multi-platform share popup
     if (id === "invite_daily") {
       const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
-      const text = `Join Bluewave — The Presence Economy starts here.\n${refLink}`;
+      const shareText = `Join Bluewave — The Presence Economy.\n${refLink}`;
 
-      const tg = (window as any).Telegram?.WebApp;
-
-      // Telegram share panel
-      if (tg?.openTelegramLink) {
-        tg.openTelegramLink(
-          `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`
-        );
-      } else {
-        // fallback for browser testing
-        window.open(
-          `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`,
-          "_blank"
-        );
+      try {
+        // 🌍 UNIVERSAL SHARE (WhatsApp, Telegram, Instagram DM, Messenger, SMS…)
+        if (navigator.share) {
+          await navigator.share({
+            title: "Join Bluewave",
+            text: shareText,
+            url: refLink,
+          });
+        } else {
+          // Desktop fallback → Telegram share
+          window.open(
+            `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`,
+            "_blank"
+          );
+        }
+      } catch (err) {
+        console.warn("Share failed:", err);
       }
 
-      // Start countdown → 10 seconds
+      // 🔥 Start 10s countdown to unlock claim
       setMissions(prev =>
         prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
       );
@@ -119,7 +123,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         );
       }, 10000);
 
-      return; // IMPORTANT → stop further logic
+      return; // IMPORTANT — stop further processing
     }
 
     
