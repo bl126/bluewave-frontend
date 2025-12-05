@@ -68,6 +68,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         });
 
         setMissions(finalList);
+        // Force Invite Daily to always start as CLAIM
+        setMissions(prev =>
+          prev.map(m =>
+            m.id === "invite_daily"
+              ? { ...m, status: "claim" }
+              : m
+          )
+        );
         setLoading(false);
       } catch (e) {
         console.error(e);
@@ -88,44 +96,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     
     // ⭐ SPECIAL MISSIONS — use old logic (no Ai PvP)
     if (isSpecial) {
-    // ⭐ DAILY INVITE MISSION — open multi-platform share popup
-    if (id === "invite_daily") {
-      const refLink = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegram_id}`;
-      const shareText = `Join Bluewave — The Presence Economy.\n${refLink}`;
-
-      try {
-        // 🌍 UNIVERSAL SHARE (WhatsApp, Telegram, Instagram DM, Messenger, SMS…)
-        if (navigator.share) {
-          await navigator.share({
-            title: "Join Bluewave",
-            text: shareText,
-            url: refLink,
-          });
-        } else {
-          // Desktop fallback → Telegram share
-          window.open(
-            `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`,
-            "_blank"
-          );
-        }
-      } catch (err) {
-        console.warn("Share failed:", err);
-      }
-
-      // 🔥 Start 10s countdown to unlock claim
-      setMissions(prev =>
-        prev.map(m => m.id === id ? { ...m, status: "waiting" } : m)
-      );
-
-      setTimeout(() => {
-        setMissions(prev =>
-          prev.map(m => m.id === id ? { ...m, status: "claim" } : m)
-        );
-      }, 10000);
-
-      return; // IMPORTANT — stop further processing
-    }
-
     
       // STORY POST LOGIC
       if (id === "story_post") {
@@ -327,7 +297,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           // Reset button to open 
           setMissions(prev =>
             prev.map(m =>
-              m.id === id ? { ...m, status: "open" } : m
+              m.id === id ? { ...m, status: "claim" } : m
             )
           );
 
@@ -431,7 +401,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                     <p className="text-xs text-cyan-500">{m.points} $BWAVE</p>
                   </div>
 
-                  {m.status === "open" && (
+                  {m.status === "open" && m.id !== "invite_daily" && (
                     <button
                       onClick={() => handleOpen(m.id)}
                       className="px-3 py-1 text-xs bg-cyan-500/20 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/30"
