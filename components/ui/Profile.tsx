@@ -62,6 +62,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
 
   const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
+  const [notifying, setNotifying] = useState(false);
   
   useEffect(() => {
     const handler = () => {
@@ -203,8 +204,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 }
 
   const handleNotify = async () => {
+    if (nextNotifyAt !== null || notifying) return;
 
-    if (cooldown !== null) return;
+    // Lock UI immediately
+    setNotifying(true);
+    setCooldownText("Notifying...");
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
       method: "POST",
@@ -214,16 +218,21 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
     const result = await res.json();
 
+    // Backend blocked (daily limit)
     if (result.blocked) {
-      // Start a fresh 4h timer
-      setCooldown(4 * 60 * 60 * 1000);
+      const next = Date.now() + 4 * 60 * 60 * 1000;
+      setNextNotifyAt(next);
+      localStorage.setItem("notifyNextTime", String(next));
+      setNotifying(false);
       return;
     }
 
+    // Success → start real cooldown
     const next = Date.now() + 4 * 60 * 60 * 1000;
-
-    localStorage.setItem("notifyNextTime", String(next));
     setNextNotifyAt(next);
+    localStorage.setItem("notifyNextTime", String(next));
+
+    setNotifying(false);
   };
 
   return (
@@ -370,7 +379,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                       }
                     `}
                   >
-                    {nextNotifyAt !== null ? `Wait ${cooldownText}` : "Notify Them"}
+                    {notifying
+                      ? "Notifying..."
+                      : nextNotifyAt !== null
+                        ? `Wait ${cooldownText}`
+                        : "Notify Them"}
                   </button>
                 </div>
 
