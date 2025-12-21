@@ -287,11 +287,6 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                           className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50] object-cover"
                         />
 
-                        <img
-                          src="/santa-hat.png"
-                          alt="Santa Hat"
-                          className="absolute -top-3 -right-2 w-10 rotate-12 pointer-events-none"
-                        />
                       </div>
                   ) : (
                     <div
@@ -306,11 +301,6 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                     >
                       {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
                      
-                      <img
-                        src="/santa-hat.png"
-                        alt="Santa Hat"
-                        className="absolute -top-3 -right-2 w-10 rotate-12 pointer-events-none"
-                      />
                     </div>
                   )}
 
