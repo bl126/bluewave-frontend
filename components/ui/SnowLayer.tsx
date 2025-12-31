@@ -2,7 +2,10 @@
 
 import Snowfall from "react-snowfall";
 
+const ENABLE_SNOW = false;
+
 export default function SnowLayer() {
+  if (!ENABLE_SNOW) return null;
   return (
     <Snowfall
       snowflakeCount={50}
@@ -18,5 +21,6 @@ export default function SnowLayer() {
         zIndex: 4,
       }}
     />
+    
   );
 }
