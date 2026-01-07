@@ -10,6 +10,7 @@ import Profile from "../components/ui/Profile";
 import OnboardingModal from "../components/ui/OnboardingModal"; // ✅ ADD THIS
 import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
+import TopRightMenu from "../components/ui/TopRightMenu";
 
 export default function LandingPage() {
 
@@ -198,6 +199,8 @@ export default function LandingPage() {
       <div className="absolute inset-0 z-0 pointer-events-none">
         <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
       </div>
+      {/* TopRightMenu */}
+      <TopRightMenu/>
 
       {/* 💰 Top-left Balance */}
       <div className="absolute top-4 left-4 z-30 flex items-center gap-2 text-cyan-400 font-semibold text-sm">
