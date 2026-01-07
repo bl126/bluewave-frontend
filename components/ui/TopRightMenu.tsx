@@ -23,23 +23,41 @@ export default function TopRightMenu({
       {/* Hamburger */}
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="relative w-6 h-6 flex items-center justify-center"
       >
         {/* Top line */}
         <motion.span
-          animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+          initial={false}
+          animate={open ? "open" : "closed"}
+          variants={{
+            closed: { rotate: 0, y: -6 },
+            open: { rotate: 45, y: 0 },
+          }}
+          transition={{ duration: 0.18 }}
+          style={{ originX: 0.5, originY: 0.5 }}
           className="absolute h-[2px] w-5 bg-cyan-400 rounded"
         />
 
         {/* Middle line */}
         <motion.span
-          animate={open ? { opacity: 0 } : { opacity: 1 }}
+          initial={false}
+          animate={open ? "open" : "closed"}
+          variants={{ closed: { opacity: 1 }, open: { opacity: 0 } }}
+          transition={{ duration: 0.14 }}
           className="absolute h-[2px] w-5 bg-cyan-400 rounded"
         />
 
         {/* Bottom line */}
         <motion.span
-          animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+          initial={false}
+          animate={open ? "open" : "closed"}
+          variants={{
+            closed: { rotate: 0, y: 6 },
+            open: { rotate: -45, y: 0 },
+          }}
+          transition={{ duration: 0.18 }}
+          style={{ originX: 0.5, originY: 0.5 }}
           className="absolute h-[2px] w-5 bg-cyan-400 rounded"
         />
       </button>
