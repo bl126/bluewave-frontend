@@ -23,35 +23,62 @@ export default function TopRightMenu({
       {/* Hamburger */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex flex-col justify-between w-7 h-5"
+        className="relative w-6 h-6 flex items-center justify-center"
       >
-        <span className="h-[2px] w-full bg-cyan-400 rounded" />
-        <span className="h-[2px] w-full bg-cyan-400 rounded" />
-        <span className="h-[2px] w-full bg-cyan-400 rounded" />
+        {/* Top line */}
+        <motion.span
+          animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+        />
+
+        {/* Middle line */}
+        <motion.span
+          animate={open ? { opacity: 0 } : { opacity: 1 }}
+          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+        />
+
+        {/* Bottom line */}
+        <motion.span
+          animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+        />
       </button>
 
       {/* Dropdown */}
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.96 }}
-            transition={{ duration: 0.18 }}
-            className="
-              absolute right-0 mt-3 w-52
-              bg-black/70 backdrop-blur-md
-              border border-cyan-900
-              rounded-xl
-              shadow-[0_0_25px_#00e6ff30]
-              overflow-hidden
-            "
-          >
+          <>
+            {/* Click outside layer */}
+            <motion.div
+              className="fixed inset-0 z-40"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Dropdown */}
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.96 }}
+              transition={{ duration: 0.18 }}
+              className="
+                absolute right-0 mt-3 w-52 z-50
+                bg-black/70 backdrop-blur-md
+                border border-cyan-900
+                rounded-xl
+                shadow-[0_0_25px_#00e6ff30]
+                overflow-hidden
+              "
+            >
+                
             <MenuItem label="About BlueWave" onClick={() => { setOpen(false); onOpenAbout?.(); }} />
             <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
             <MenuItem label="FAQ" onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
             <MenuItem label="Stats" onClick={() => { setOpen(false); onOpenStats?.(); }} />
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
