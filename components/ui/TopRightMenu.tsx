@@ -23,7 +23,7 @@ export default function TopRightMenu({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 right-4 z-[70]">
       {/* Hamburger */}
       <button
         onClick={() => setOpen(!open)}

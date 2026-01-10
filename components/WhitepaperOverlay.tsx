@@ -306,10 +306,25 @@ These risks are inherent to innovative web3 projects, but Bluewave's phased, use
     },
     // Placeholder for future sections
     {
-        id: "more-coming",
-        title: "More Sections Loading...",
-        content: "Solution, Technical Architecture, Tokenomics, Roadmap, Team & Governance, Risk & Mitigations, Conclusion coming soon...",
-        isPlaceholder: true,
+        id: "conclusion",
+        title: "Conclusion",
+        content: `Bluewave is more than a protocol — it is a movement toward a fairer digital future. In a world where centralized platforms capture value from user participation while offering little in return, Bluewave empowers individuals to own their presence, prove their consistency, and monetize it ethically.
+
+Through a simple Telegram mini app, users are already building verifiable presence scores via daily missions and streaks — with over 250+ active participants across 16 countries and 5 continents, achieved entirely through organic growth. The upcoming on-chain Presence Ledger and marketplace will transform this everyday consistency into a portable, monetizable asset — starting with reputation for Forex traders and expanding to broader digital skills.
+
+Bluewave stands apart by rewarding long-term human presence over short-term attention or social hype. It is privacy-first, community-driven, and built on TON for global accessibility. The tokenomics ensure alignment between users, builders, and the ecosystem, while the phased roadmap guarantees steady, sustainable progress.
+
+The future of presence monetization begins with those who show up consistently. We invite you to join the wave — /start the mini app, complete your first mission, build your presence score, or contribute as a Builder. As Bluewave grows, we welcome strategic collaborations and partnerships that accelerate adoption and unlock new opportunities for users and the broader ecosystem.
+
+Together, we can create a web3 where value flows back to the people who generate it.
+
+Thank you for reading this whitepaper v1.0
+We are just getting started.
+
+Reuben Ezema
+Founder & Builder, Bluewave
+bluewavefx7@gmail.com
+January 2026`,
     }
 ];
 
@@ -355,30 +370,33 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                         className="relative w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-2xl md:border md:border-cyan-900/30 overflow-hidden bg-gradient-to-b from-[#0B0F14] to-[#05070a] shadow-[0_0_50px_-10px_rgba(0,230,255,0.1)]"
                         onClick={(e) => e.stopPropagation()} // Prevent close on content click
                     >
+                        {/* Floating Download Button (Top Right, below Hamburger) */}
+                        <div className="absolute top-16 right-4 z-50">
+                            <a
+                                href="/bluewavewhitepaper.pdf"
+                                download
+                                className="group flex flex-col items-center gap-1 text-cyan-400 hover:text-cyan-200 transition-colors"
+                                title="Download Whitepaper"
+                            >
+                                <div className="p-3 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                                    <Download size={20} />
+                                </div>
+                                <span className="text-[10px] font-medium tracking-wide uppercase opacity-70 group-hover:opacity-100">PDF</span>
+                            </a>
+                        </div>
+
                         {/* Top Bar (Sticky) */}
-                        <div className="absolute top-0 left-0 right-0 h-16 z-20 flex items-center justify-between px-6 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/90 to-transparent">
+                        <div className="absolute top-0 left-0 right-0 h-16 z-20 flex items-center justify-between px-6 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/90 to-transparent pointer-events-none">
                             {/* Back Button */}
                             <button
                                 onClick={onClose}
-                                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors"
+                                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors pointer-events-auto"
                             >
                                 <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
                                     <ArrowLeft size={20} />
                                 </div>
                                 <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Back</span>
                             </button>
-
-                            {/* Download Button */}
-                            <a
-                                href="/bluewavewhitepaper.pdf"
-                                download
-                                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors"
-                            >
-                                <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Download PDF</span>
-                                <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
-                                    <Download size={20} />
-                                </div>
-                            </a>
                         </div>
 
                         {/* Scrollable Content Area */}
@@ -406,7 +424,7 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                                     }
 
                                     return (
-                                        <section key={section.id} className={`space-y-4 ${section.isPlaceholder ? 'opacity-50 blur-[1px]' : ''}`}>
+                                        <section key={section.id} className="space-y-4">
                                             <h2 className="text-xl md:text-2xl font-bold text-cyan-100 flex items-center gap-3">
                                                 <span className="w-1 h-6 bg-cyan-500 rounded-full shadow-[0_0_10px_#06b6d4]"></span>
                                                 {section.title}
