@@ -8,6 +8,8 @@ interface TopRightMenuProps {
   onOpenLedger?: () => void;
   onOpenFAQ?: () => void;
   onOpenStats?: () => void;
+  onOpenWhitepaper?: () => void;
+  isWhitepaperActive?: boolean;
 }
 
 export default function TopRightMenu({
@@ -15,6 +17,8 @@ export default function TopRightMenu({
   onOpenLedger,
   onOpenFAQ,
   onOpenStats,
+  onOpenWhitepaper,
+  isWhitepaperActive,
 }: TopRightMenuProps) {
   const [open, setOpen] = useState(false);
 
@@ -90,12 +94,17 @@ export default function TopRightMenu({
                 overflow-hidden
               "
             >
-                
-            <MenuItem label="About BlueWave" onClick={() => { setOpen(false); onOpenAbout?.(); }} />
-            <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
-            <MenuItem label="FAQ" onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
-            <MenuItem label="Stats" onClick={() => { setOpen(false); onOpenStats?.(); }} />
-          </motion.div>
+
+              <MenuItem label="About BlueWave" onClick={() => { setOpen(false); onOpenAbout?.(); }} />
+              <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
+              <MenuItem
+                label="Whitepaper v1.0"
+                onClick={() => { setOpen(false); onOpenWhitepaper?.(); }}
+                isActive={isWhitepaperActive}
+              />
+              <MenuItem label="FAQ" onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
+              <MenuItem label="Stats" onClick={() => { setOpen(false); onOpenStats?.(); }} />
+            </motion.div>
           </>
         )}
       </AnimatePresence>
@@ -106,19 +115,22 @@ export default function TopRightMenu({
 function MenuItem({
   label,
   onClick,
+  isActive,
 }: {
   label: string;
   onClick?: () => void;
+  isActive?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="
-        w-full text-left px-4 py-3 text-sm
-        text-cyan-200
-        hover:bg-cyan-500/10
-        transition-colors
-      "
+      className={`
+        w-full text-left px-4 py-3 text-sm transition-all duration-300
+        ${isActive
+          ? "text-cyan-50 bg-cyan-900/40 shadow-[inset_3px_0_0_0_#22d3ee]"
+          : "text-cyan-200 hover:bg-cyan-500/10"
+        }
+      `}
     >
       {label}
     </button>

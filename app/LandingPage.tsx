@@ -11,6 +11,7 @@ import OnboardingModal from "../components/ui/OnboardingModal"; // ✅ ADD THIS
 import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "../components/ui/TopRightMenu";
+import WhitepaperOverlay from "../components/WhitepaperOverlay";
 
 export default function LandingPage() {
 
@@ -45,7 +46,8 @@ export default function LandingPage() {
   const [isMarketOpen, setMarketOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [onboardingOpen, setOnboardingOpen] = useState(false); // ✅ ADD
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [isWhitepaperOpen, setWhitepaperOpen] = useState(false); // ✅ ADD
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -200,7 +202,10 @@ export default function LandingPage() {
         <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
       </div>
       {/* TopRightMenu */}
-      <TopRightMenu/>
+      <TopRightMenu
+        onOpenWhitepaper={() => setWhitepaperOpen(true)}
+        isWhitepaperActive={isWhitepaperOpen}
+      />
 
       {/* 💰 Top-left Balance */}
       <div className="absolute top-4 left-4 z-30 flex items-center gap-2 text-cyan-400 font-semibold text-sm">
@@ -209,8 +214,8 @@ export default function LandingPage() {
           {balance !== null
             ? `${balance.toLocaleString()} $BWAVE`
             : telegramUser
-            ? "Loading..."
-            : (
+              ? "Loading..."
+              : (
                 <span className="text-cyan-400 animate-pulse">
                   Connecting…
                 </span>
@@ -246,7 +251,7 @@ export default function LandingPage() {
 
       {/* 🎯 Overlays */}
       <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
-      <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser}/>
+      <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser} />
       <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
       <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
 
@@ -259,9 +264,15 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
+      {/* 📄 Whitepaper Overlay */}
+      <WhitepaperOverlay
+        isOpen={isWhitepaperOpen}
+        onClose={() => setWhitepaperOpen(false)}
+      />
+
       {/* 🔐 Onboarding LOCK SCREEN */}
-      <OnboardingModal 
-        isOpen={onboardingOpen} 
+      <OnboardingModal
+        isOpen={onboardingOpen}
         onComplete={handleOnboardingComplete}
         autoUsername={telegramUser?.username}
       />
