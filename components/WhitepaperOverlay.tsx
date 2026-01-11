@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Plus, Minus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface WhitepaperOverlayProps {
@@ -328,6 +328,47 @@ January 2026`,
     }
 ];
 
+// ... (rest of imports)
+
+const WhitepaperSection = ({ section }: { section: typeof WHITEPAPER_CONTENT[0] }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="border-b border-cyan-900/30 last:border-0 pb-4">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between py-4 text-left group transition-all"
+            >
+                <h2 className="text-xl md:text-2xl font-bold text-cyan-100 flex items-center gap-3">
+                    <span className={`w-1 h-6 bg-cyan-500 rounded-full shadow-[0_0_10px_#06b6d4] transition-all duration-300 ${isOpen ? 'h-8 bg-cyan-400' : ''}`}></span>
+                    <span className="group-hover:text-cyan-200 transition-colors">{section.title}</span>
+                </h2>
+                <div className={`p-2 rounded-full border border-cyan-900/30 bg-cyan-950/20 text-cyan-400 transition-all duration-300 ${isOpen ? 'bg-cyan-900/40 border-cyan-500/50 rotate-180' : 'group-hover:border-cyan-700/50'}`}>
+                    {isOpen ? <Minus size={20} /> : <Plus size={20} />}
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pb-6 text-gray-300 leading-relaxed space-y-4 text-base md:text-lg font-light tracking-wide pl-4 border-l-2 border-cyan-900/20 ml-1.5">
+                            {section.content!.split('\n').map((paragraph, idx) => (
+                                paragraph.trim() && <p key={idx}>{paragraph}</p>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlayProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -423,19 +464,7 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                                         );
                                     }
 
-                                    return (
-                                        <section key={section.id} className="space-y-4">
-                                            <h2 className="text-xl md:text-2xl font-bold text-cyan-100 flex items-center gap-3">
-                                                <span className="w-1 h-6 bg-cyan-500 rounded-full shadow-[0_0_10px_#06b6d4]"></span>
-                                                {section.title}
-                                            </h2>
-                                            <div className="text-gray-300 leading-relaxed space-y-4 text-base md:text-lg font-light tracking-wide">
-                                                {section.content!.split('\n').map((paragraph, idx) => (
-                                                    paragraph.trim() && <p key={idx}>{paragraph}</p>
-                                                ))}
-                                            </div>
-                                        </section>
-                                    );
+                                    return <WhitepaperSection key={section.id} section={section} />;
                                 })}
 
                                 {/* Footer Divider */}
