@@ -1,3 +1,4 @@
+// [CODE: FRONTEND_PROFILE_COMPONENT]
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -5,12 +6,14 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
+// [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
 }
 
+// [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
 export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +24,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [claiming, setClaiming] = useState(false);
   const [badgeUnlocked, setBadgeUnlocked] = useState(false);
 
+  // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   // ⭐ Telegram ID extracted from Mini App
   const [telegramId, setTelegramId] = useState<number | null>(null);
 
@@ -105,12 +109,10 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [level, setLevel] = useState("Loading...");
 
   useEffect(() => {
-    if (!telegramId) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user_level/${telegramId}`)
-      .then(r => r.json())
-      .then(d => setLevel(d.level));
-  }, [telegramId]);
+    if (swrUser?.level) {
+      setLevel(swrUser.level);
+    }
+  }, [swrUser?.level]);
 
 
   useEffect(() => {

@@ -1,10 +1,45 @@
+// [CODE: FRONTEND_SWR_FETCHER]
 // lib/swrFetcher.ts
+import { cacheManager, CACHE_TTL } from "./cacheManager";
+
 export const fetcher = async (url: string) => {
-  const res = await fetch(url, { cache: "no-cache" });
+  // ⭐ Try to get from localStorage cache first (for stable data)
+  const cacheKey = new URL(url).pathname + new URL(url).search;
+  
+  if (url.includes("/countries")) {
+    const cached = cacheManager.get(cacheKey);
+    if (cached) {
+      console.log("📦 Cache hit:", cacheKey);
+      return cached;
+    }
+  }
+
+  // Fetch from network (use standard HTTP caching, not no-cache)
+  const res = await fetch(url);
+  
   if (!res.ok) {
     const err: any = new Error("API error");
     err.status = res.status;
     throw err;
   }
-  return res.json();
+
+  const data = await res.json();
+
+  // ⭐ Cache stable data in localStorage
+  if (url.includes("/countries")) {
+    cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
+  }
+
+  return data;
 };
+
+// ⭐ SWR configuration for optimal performance
+export const swrConfig = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: true,
+  dedupingInterval: 2000, // Don't fetch same URL within 2 seconds
+  focusThrottleInterval: 300000, // 5 minutes between window focus revalidates
+  errorRetryCount: 2,
+  errorRetryInterval: 3000,
+} as const;
+

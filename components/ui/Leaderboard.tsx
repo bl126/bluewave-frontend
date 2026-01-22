@@ -22,22 +22,18 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
   useEffect(() => {
     if (!isOpen || leaders.length > 0) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`)
+    // ⭐ OPTIMIZED: Single endpoint returns top 10 + user's rank
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard?tg_id=${tg}`)
       .then(r => r.json())
-      .then(d => setLeaders(d))
+      .then(d => {
+        setLeaders(d.leaders || []);
+        if (d.myRank) {
+          setProgressData(d);
+        }
+      })
       .catch(() => setError("Could not load leaderboard"))
       .finally(() => setLoading(false));
   }, [isOpen]);
-
-  // Fetch user progress
-  useEffect(() => {
-    if (!tg) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/level_progress/${tg}`)
-      .then((r) => r.json())
-      .then((d) => setProgressData(d))
-      .catch(() => {});
-  }, [tg]);
 
   return (
     <AnimatePresence>

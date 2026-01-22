@@ -1,10 +1,11 @@
+// [CODE: FRONTEND_USE_API_HOOK]
 // lib/useApi.ts
 "use client";
 
 import useSWR from "swr";
-import { fetcher } from "./swrFetcher";
+import { fetcher, swrConfig } from "./swrFetcher";
 
-
+// [CODE: FRONTEND_POST_API_HELPER]
 // ⭐ Safer POST helper (handles rate-limits + JSON errors)
 export async function postApi(path: string, body: any = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -31,7 +32,7 @@ export async function postApi(path: string, body: any = {}) {
   }
 }
 
-
+// [CODE: FRONTEND_GET_API_HELPER]
 // ⭐ Safer GET helper (for manual fetches)
 export async function getApi(path: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -91,7 +92,8 @@ export function useApi(path: string | null) {
 
   const { data, error, isLoading, mutate } = useSWR(
     path && apiUrl ? `${apiUrl}/api${path}` : null,  // SWR: null = don't fetch
-    fetcher
+    fetcher,
+    swrConfig  // ⭐ Use optimized SWR config
   );
 
   return {

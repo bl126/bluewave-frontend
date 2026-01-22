@@ -1,9 +1,11 @@
+// [CODE: FRONTEND_MISSION_CENTER_COMPONENT]
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+// [CODE: FRONTEND_MISSION_CENTER_TYPES]
 interface MissionCenterProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +20,8 @@ interface Mission {
   status: string;
 }
 
-export default function MissionCenter({ isOpen, onClose, telegramUser }: MissionCenterProps) {  
+// [CODE: FRONTEND_MISSION_CENTER_MAIN_COMPONENT]
+export default function MissionCenter({ isOpen, onClose, telegramUser }: MissionCenterProps) {
   const telegram_id = telegramUser?.id;   // ← ADD THIS EXACTLY HERE
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,36 +31,39 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   // Popup message modal
   const [popup, setPopup] = useState<string | null>(null);
 
+  // [CODE: FRONTEND_MISSION_LOADING_LOGIC]
   useEffect(() => {
     if (!isOpen) return;
 
     async function loadMissions() {
       try {
-        // 1️⃣ Normal missions from DB
+        // ⭐ OPTIMIZED: Single endpoint returns all mission types
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/${telegram_id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/all/${telegram_id}`
         );
         const data = await res.json();
-        let finalList: Mission[] = data || [];
-
-        // 2️⃣ Daily "Invite 2 people" mission
-        const dailyRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/daily/${telegram_id}`
-        );
-        const dailyData = await dailyRes.json();
-
-        if (Array.isArray(dailyData) && dailyData.length > 0) {
-          finalList = [...finalList, ...dailyData];
+        
+        // Combine all mission types into a single flat list
+        let finalList: Mission[] = [];
+        
+        // Add normal missions
+        if (data.normal && Array.isArray(data.normal)) {
+          finalList = [...finalList, ...data.normal];
         }
-
-        // 3️⃣ Onboarding mission
-        const onboardingRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/missions/onboarding/${telegram_id}`
-        );
-        const onboardingData = await onboardingRes.json();
-
-        if (Array.isArray(onboardingData) && onboardingData.length > 0) {
-          finalList = [...finalList, ...onboardingData];
+        
+        // Add daily mission
+        if (data.daily && Array.isArray(data.daily)) {
+          finalList = [...finalList, ...data.daily];
+        }
+        
+        // Add onboarding mission
+        if (data.onboarding && Array.isArray(data.onboarding)) {
+          finalList = [...finalList, ...data.onboarding];
+        }
+        
+        // Add story mission if active
+        if (data.story && Object.keys(data.story).length > 0) {
+          finalList.push(data.story);
         }
 
         // Ensure onboarding appears first
@@ -68,14 +74,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         });
 
         setMissions(finalList);
-        // Force Invite Daily to always start as CLAIM
-        setMissions(prev =>
-          prev.map(m =>
-            m.id === "invite_daily"
-              ? { ...m, status: "claim" }
-              : m
-          )
-        );
         setLoading(false);
       } catch (e) {
         console.error(e);
@@ -294,10 +292,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           setPopup("Invite 2 people today to unlock this reward.");
           setTimeout(() => setPopup(null), 2500);
 
-          // Reset button to open 
+          // Reset button to open (can't claim yet)
           setMissions(prev =>
             prev.map(m =>
-              m.id === id ? { ...m, status: "claim" } : m
+              m.id === id ? { ...m, status: "open" } : m
             )
           );
 

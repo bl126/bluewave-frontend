@@ -1,3 +1,4 @@
+// [CODE: FRONTEND_LANDING_PAGE_COMPONENT]
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,8 +14,10 @@ import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "../components/ui/TopRightMenu";
 import WhitepaperOverlay from "../components/WhitepaperOverlay";
 
+// [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
 
+  // [CODE: FRONTEND_TELEGRAM_WEBAPP_INIT]
   // ⭐ ENSURE Telegram WebApp is initialized
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
@@ -29,6 +32,7 @@ export default function LandingPage() {
     }
   }, []);
 
+  // [CODE: FRONTEND_BROWSER_BLOCK]
   // ❗ Block users opening in browser – Bluewave is Telegram-only
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
@@ -38,6 +42,7 @@ export default function LandingPage() {
     }
   }, []);
 
+  // [CODE: FRONTEND_STATE_MANAGEMENT]
   // 👤 Store Telegram user info (manual onboarding, not Telegram init)
   const [telegramUser, setTelegramUser] = useState<any>(null);
   const [balance, setBalance] = useState<number | null>(null);
@@ -202,10 +207,12 @@ export default function LandingPage() {
         <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
       </div>
       {/* TopRightMenu */}
-      <TopRightMenu
-        onOpenWhitepaper={() => setWhitepaperOpen(true)}
-        isWhitepaperActive={isWhitepaperOpen}
-      />
+      {!onboardingOpen && (
+        <TopRightMenu
+          onOpenWhitepaper={() => setWhitepaperOpen(true)}
+          isWhitepaperActive={isWhitepaperOpen}
+        />
+      )}
 
       {/* 💰 Top-left Balance */}
       <div className="absolute top-4 left-4 z-30 flex items-center gap-2 text-cyan-400 font-semibold text-sm">
@@ -224,36 +231,46 @@ export default function LandingPage() {
       </div>
 
       {/* 🧭 Navigation Bar */}
-      <motion.div
-        initial={{ y: 60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="absolute left-1/2 -translate-x-1/2 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30
-                   flex items-center justify-around w-[92%] max-w-sm bg-black/50 backdrop-blur-md
-                   rounded-2xl p-2 shadow-[0_0_20px_#00e6ff30] border border-cyan-900"
-      >
-        <button onClick={() => setMissionOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-          <Rocket size={18} /> Missions
-        </button>
+      {!onboardingOpen && (
+        <motion.div
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="absolute left-1/2 -translate-x-1/2 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30
+                     flex items-center justify-around w-[92%] max-w-sm bg-black/50 backdrop-blur-md
+                     rounded-2xl p-2 shadow-[0_0_20px_#00e6ff30] border border-cyan-900"
+        >
+          <button onClick={() => setMissionOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
+            <Rocket size={18} /> Missions
+          </button>
 
-        <button onClick={() => setLeaderboardOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-          <Trophy size={18} /> Leaderboard
-        </button>
+          <button onClick={() => setLeaderboardOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
+            <Trophy size={18} /> Leaderboard
+          </button>
 
-        <button onClick={() => setMarketOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-          <Store size={18} /> Market
-        </button>
+          <button onClick={() => setMarketOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
+            <Store size={18} /> Market
+          </button>
 
-        <button onClick={() => setProfileOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-          <User size={18} /> Profile
-        </button>
-      </motion.div>
+          <button onClick={() => setProfileOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
+            <User size={18} /> Profile
+          </button>
+        </motion.div>
+      )}
 
-      {/* 🎯 Overlays */}
-      <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
-      <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser} />
-      <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
-      <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
+      {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
+      {isMissionOpen && (
+        <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
+      )}
+      {isLeaderboardOpen && (
+        <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser} />
+      )}
+      {isMarketOpen && (
+        <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
+      )}
+      {isProfileOpen && (
+        <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
+      )}
 
       {/* 🌀 Loading Screen */}
       <AnimatePresence>

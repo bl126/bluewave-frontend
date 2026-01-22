@@ -1,10 +1,11 @@
+// [CODE: FRONTEND_ONBOARDING_MODAL_COMPONENT]
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 
-
+// [CODE: FRONTEND_ONBOARDING_TYPES]
 interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: (user: any) => void;
@@ -19,219 +20,7 @@ interface VerifyResponse {
   points_balance?: number;
 }
 
-
-
-// FULL COUNTRY LIST (Alphabetical)
-const ALL_COUNTRIES = [
-  { code: "AF", name: "Afghanistan" },
-  { code: "AL", name: "Albania" },
-  { code: "DZ", name: "Algeria" },
-  { code: "AD", name: "Andorra" },
-  { code: "AO", name: "Angola" },
-  { code: "AR", name: "Argentina" },
-  { code: "AM", name: "Armenia" },
-  { code: "AU", name: "Australia" },
-  { code: "AT", name: "Austria" },
-  { code: "AZ", name: "Azerbaijan" },
-  { code: "BH", name: "Bahrain" },
-  { code: "BD", name: "Bangladesh" },
-  { code: "BY", name: "Belarus" },
-  { code: "BE", name: "Belgium" },
-  { code: "BZ", name: "Belize" },
-  { code: "BJ", name: "Benin" },
-  { code: "BO", name: "Bolivia" },
-  { code: "BR", name: "Brazil" },
-  { code: "BG", name: "Bulgaria" },
-  { code: "KH", name: "Cambodia" },
-  { code: "CM", name: "Cameroon" },
-  { code: "CA", name: "Canada" },
-  { code: "CL", name: "Chile" },
-  { code: "CN", name: "China" },
-  { code: "CO", name: "Colombia" },
-  { code: "CR", name: "Costa Rica" },
-  { code: "HR", name: "Croatia" },
-  { code: "CY", name: "Cyprus" },
-  { code: "CZ", name: "Czech Republic" },
-  { code: "DK", name: "Denmark" },
-  { code: "EG", name: "Egypt" },
-  { code: "EE", name: "Estonia" },
-  { code: "FI", name: "Finland" },
-  { code: "FR", name: "France" },
-  { code: "GA", name: "Gabon" },
-  { code: "DE", name: "Germany" },
-  { code: "GH", name: "Ghana" },
-  { code: "GR", name: "Greece" },
-  { code: "HK", name: "Hong Kong" },
-  { code: "HU", name: "Hungary" },
-  { code: "IS", name: "Iceland" },
-  { code: "IN", name: "India" },
-  { code: "ID", name: "Indonesia" },
-  { code: "IR", name: "Iran" },
-  { code: "IQ", name: "Iraq" },
-  { code: "IE", name: "Ireland" },
-  { code: "IL", name: "Israel" },
-  { code: "IT", name: "Italy" },
-  { code: "JM", name: "Jamaica" },
-  { code: "JP", name: "Japan" },
-  { code: "JO", name: "Jordan" },
-  { code: "KZ", name: "Kazakhstan" },
-  { code: "KE", name: "Kenya" },
-  { code: "KR", name: "Korea" },
-  { code: "KW", name: "Kuwait" },
-  { code: "LB", name: "Lebanon" },
-  { code: "LY", name: "Libya" },
-  { code: "LT", name: "Lithuania" },
-  { code: "LU", name: "Luxembourg" },
-  { code: "MG", name: "Madagascar" },
-  { code: "MW", name: "Malawi" },
-  { code: "MY", name: "Malaysia" },
-  { code: "ML", name: "Mali" },
-  { code: "MX", name: "Mexico" },
-  { code: "MA", name: "Morocco" },
-  { code: "MZ", name: "Mozambique" },
-  { code: "NP", name: "Nepal" },
-  { code: "NL", name: "Netherlands" },
-  { code: "NZ", name: "New Zealand" },
-  { code: "NG", name: "Nigeria" },
-  { code: "NO", name: "Norway" },
-  { code: "OM", name: "Oman" },
-  { code: "PK", name: "Pakistan" },
-  { code: "PH", name: "Philippines" },
-  { code: "PL", name: "Poland" },
-  { code: "PT", name: "Portugal" },
-  { code: "QA", name: "Qatar" },
-  { code: "RO", name: "Romania" },
-  { code: "RU", name: "Russia" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "SN", name: "Senegal" },
-  { code: "SG", name: "Singapore" },
-  { code: "ZA", name: "South Africa" },
-  { code: "ES", name: "Spain" },
-  { code: "SE", name: "Sweden" },
-  { code: "CH", name: "Switzerland" },
-  { code: "TZ", name: "Tanzania" },
-  { code: "TH", name: "Thailand" },
-  { code: "TN", name: "Tunisia" },
-  { code: "TR", name: "Türkiye" },
-  { code: "UG", name: "Uganda" },
-  { code: "UA", name: "Ukraine" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "US", name: "United States" },
-  { code: "VN", name: "Vietnam" },
-  { code: "ZM", name: "Zambia" },
-  { code: "ZW", name: "Zimbabwe" },
-  { code: "BF", name: "Burkina Faso" },
-  { code: "BI", name: "Burundi" },
-  { code: "CV", name: "Cabo Verde" },
-  { code: "CF", name: "Central African Republic" },
-  { code: "TD", name: "Chad" },
-  { code: "KM", name: "Comoros" },
-  { code: "CG", name: "Congo" },
-  { code: "CD", name: "Democratic Republic of the Congo" },
-  { code: "DJ", name: "Djibouti" },
-  { code: "GQ", name: "Equatorial Guinea" },
-  { code: "ER", name: "Eritrea" },
-  { code: "ET", name: "Ethiopia" },
-  { code: "GM", name: "Gambia" },
-  { code: "GN", name: "Guinea" },
-  { code: "GW", name: "Guinea-Bissau" },
-  { code: "CI", name: "Côte d'Ivoire" },
-  { code: "LS", name: "Lesotho" },
-  { code: "LR", name: "Liberia" },
-  { code: "MR", name: "Mauritania" },
-  { code: "MU", name: "Mauritius" },
-  { code: "YT", name: "Mayotte" },
-  { code: "NA", name: "Namibia" },          // ⭐ THIS was missing
-  { code: "NE", name: "Niger" },
-  { code: "RW", name: "Rwanda" },
-  { code: "ST", name: "São Tomé and Príncipe" },
-  { code: "SC", name: "Seychelles" },
-  { code: "SL", name: "Sierra Leone" },
-  { code: "SO", name: "Somalia" },
-  { code: "SS", name: "South Sudan" },
-  { code: "SD", name: "Sudan" },
-  { code: "SZ", name: "Eswatini" },
-  { code: "TG", name: "Togo" },
-  { code: "EH", name: "Western Sahara" },
-  { code: "AG", name: "Antigua and Barbuda" },
-  { code: "BS", name: "Bahamas" },
-  { code: "BB", name: "Barbados" },
-  { code: "BM", name: "Bermuda" },
-  { code: "VG", name: "British Virgin Islands" },
-  { code: "KY", name: "Cayman Islands" },
-  { code: "CU", name: "Cuba" },
-  { code: "DM", name: "Dominica" },
-  { code: "DO", name: "Dominican Republic" },
-  { code: "EC", name: "Ecuador" },
-  { code: "SV", name: "El Salvador" },
-  { code: "FK", name: "Falkland Islands" },
-  { code: "GD", name: "Grenada" },
-  { code: "GT", name: "Guatemala" },
-  { code: "GY", name: "Guyana" },
-  { code: "HT", name: "Haiti" },
-  { code: "HN", name: "Honduras" },
-  { code: "NI", name: "Nicaragua" },
-  { code: "PA", name: "Panama" },
-  { code: "PY", name: "Paraguay" },
-  { code: "PE", name: "Peru" },
-  { code: "LC", name: "Saint Lucia" },
-  { code: "VC", name: "Saint Vincent and the Grenadines" },
-  { code: "SR", name: "Suriname" },
-  { code: "TT", name: "Trinidad and Tobago" },
-  { code: "UY", name: "Uruguay" },
-  { code: "BT", name: "Bhutan" },
-  { code: "BN", name: "Brunei" },
-  { code: "GE", name: "Georgia" },
-  { code: "KP", name: "North Korea" },
-  { code: "KG", name: "Kyrgyzstan" },
-  { code: "LA", name: "Laos" },
-  { code: "MO", name: "Macau" },
-  { code: "MM", name: "Myanmar" },
-  { code: "MV", name: "Maldives" },
-  { code: "MN", name: "Mongolia" },
-  { code: "LK", name: "Sri Lanka" },
-  { code: "SY", name: "Syria" },
-  { code: "TJ", name: "Tajikistan" },
-  { code: "TM", name: "Turkmenistan" },
-  { code: "UZ", name: "Uzbekistan" },
-  { code: "YE", name: "Yemen" },
-  { code: "BA", name: "Bosnia and Herzegovina" },
-  { code: "FO", name: "Faroe Islands" },
-  { code: "GI", name: "Gibraltar" },
-  { code: "IM", name: "Isle of Man" },
-  { code: "LI", name: "Liechtenstein" },
-  { code: "MK", name: "North Macedonia" },
-  { code: "MT", name: "Malta" },
-  { code: "MD", name: "Moldova" },
-  { code: "ME", name: "Montenegro" },
-  { code: "MC", name: "Monaco" },
-  { code: "SM", name: "San Marino" },
-  { code: "RS", name: "Serbia" },
-  { code: "SK", name: "Slovakia" },
-  { code: "SI", name: "Slovenia" },
-  { code: "VA", name: "Vatican City" },
-  { code: "AS", name: "American Samoa" },
-  { code: "CK", name: "Cook Islands" },
-  { code: "FJ", name: "Fiji" },
-  { code: "PF", name: "French Polynesia" },
-  { code: "GU", name: "Guam" },
-  { code: "KI", name: "Kiribati" },
-  { code: "MH", name: "Marshall Islands" },
-  { code: "FM", name: "Micronesia" },
-  { code: "NR", name: "Nauru" },
-  { code: "NC", name: "New Caledonia" },
-  { code: "NU", name: "Niue" },
-  { code: "MP", name: "Northern Mariana Islands" },
-  { code: "PW", name: "Palau" },
-  { code: "PG", name: "Papua New Guinea" },
-  { code: "WS", name: "Samoa" },
-  { code: "SB", name: "Solomon Islands" },
-  { code: "TK", name: "Tokelau" },
-  { code: "TO", name: "Tonga" },
-  { code: "TV", name: "Tuvalu" },
-  { code: "VU", name: "Vanuatu" },
-];
+import { ALL_COUNTRIES } from "@/lib/constants";
 
 export default function OnboardingModal({ isOpen, onComplete, autoUsername }: OnboardingModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -245,53 +34,53 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
-// Prefill username via Telegram InitData → fallback to backend tg_id lookup
-useEffect(() => {
-  // 1️⃣ If LandingPage pre-filled autoUsername, use it
-  if (autoUsername) {
-    setUsername(autoUsername.toLowerCase());
-    return;
-  }
-
-  // 2️⃣ Try Telegram InitData
-  try {
-    const tg = (window as any).Telegram?.WebApp;
-    const tgUser = tg?.initDataUnsafe?.user;
-
-    if (tgUser) {
-      const uname =
-        tgUser.username?.toLowerCase() || `bw_user_${tgUser.id}`;
-      setUsername(uname);
+  // Prefill username via Telegram InitData → fallback to backend tg_id lookup
+  useEffect(() => {
+    // 1️⃣ If LandingPage pre-filled autoUsername, use it
+    if (autoUsername) {
+      setUsername(autoUsername.toLowerCase());
       return;
     }
-  } catch (e) {
-    console.log("Telegram initData error:", e);
-  }
 
-  // 3️⃣ Fallback → extract tg_id from URL & fetch username from backend
-  try {
-    const url = new URL(window.location.href);
-    const tg_id = url.searchParams.get("tg_id");
-    if (!tg_id) return;
+    // 2️⃣ Try Telegram InitData
+    try {
+      const tg = (window as any).Telegram?.WebApp;
+      const tgUser = tg?.initDataUnsafe?.user;
 
-    const fetchUsername = async () => {
-      try {
-        const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.username) {
-          setUsername(data.username.toLowerCase());
-        }
-      } catch (e) {
-        console.log("Backend username prefill error:", e);
+      if (tgUser) {
+        const uname =
+          tgUser.username?.toLowerCase() || `bw_user_${tgUser.id}`;
+        setUsername(uname);
+        return;
       }
-    };
+    } catch (e) {
+      console.log("Telegram initData error:", e);
+    }
 
-    fetchUsername();
-  } catch (e) {
-    console.log("URL parse error:", e);
-  }
-}, [autoUsername]);
+    // 3️⃣ Fallback → extract tg_id from URL & fetch username from backend
+    try {
+      const url = new URL(window.location.href);
+      const tg_id = url.searchParams.get("tg_id");
+      if (!tg_id) return;
+
+      const fetchUsername = async () => {
+        try {
+          const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.username) {
+            setUsername(data.username.toLowerCase());
+          }
+        } catch (e) {
+          console.log("Backend username prefill error:", e);
+        }
+      };
+
+      fetchUsername();
+    } catch (e) {
+      console.log("URL parse error:", e);
+    }
+  }, [autoUsername]);
 
 
   const handleRequestCode = async () => {
@@ -435,8 +224,8 @@ useEffect(() => {
               </div>
               <button
                 className="text-cyan-400/70 hover:text-cyan-100 transition"
-                onClick={() => {}}
-                // We intentionally do NOT allow closing/onSkip.
+                onClick={() => { }}
+              // We intentionally do NOT allow closing/onSkip.
               >
                 <X size={16} />
               </button>

@@ -5,6 +5,7 @@ import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { useEffect, useRef, useState, useMemo } from "react";
 import GlobeDot from "./GlobeDot";
+import { cacheManager, CACHE_TTL } from "@/lib/cacheManager";
 
 function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
   const [borders, setBorders] = useState<THREE.Group | null>(null);
@@ -13,13 +14,25 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
 
   const [countryDots, setCountryDots] = useState<{ lat: number; lon: number }[]>([]);
 
-// Fetch all unique countries from backend
+// ⭐ Fetch countries with caching
 useEffect(() => {
   const loadCountries = async () => {
     try {
+      // Try cache first
+      const cacheKey = "/api/countries";
+      const cached = cacheManager.get<{ lat: number; lon: number }[]>(cacheKey);
+      if (cached) {
+        console.log("📦 Countries cache hit");
+        setCountryDots(cached);
+        return;
+      }
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/countries`);
       const data = await res.json();
       setCountryDots(data);
+      
+      // Cache for 24 hours
+      cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
     } catch (e) {
       console.error("Failed to load country dots", e);
     }
