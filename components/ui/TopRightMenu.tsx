@@ -10,6 +10,7 @@ interface TopRightMenuProps {
   onOpenStats?: () => void;
   onOpenWhitepaper?: () => void;
   isWhitepaperActive?: boolean;
+  isStatsActive?: boolean;
 }
 
 export default function TopRightMenu({
@@ -19,6 +20,7 @@ export default function TopRightMenu({
   onOpenStats,
   onOpenWhitepaper,
   isWhitepaperActive,
+  isStatsActive,
 }: TopRightMenuProps) {
   const [open, setOpen] = useState(false);
 
@@ -103,7 +105,11 @@ export default function TopRightMenu({
                 isActive={isWhitepaperActive}
               />
               <MenuItem label="FAQ" onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
-              <MenuItem label="Stats" onClick={() => { setOpen(false); onOpenStats?.(); }} />
+              <MenuItem
+                label="Stats"
+                onClick={() => { setOpen(false); onOpenStats?.(); }}
+                isActive={isStatsActive}
+              />
             </motion.div>
           </>
         )}

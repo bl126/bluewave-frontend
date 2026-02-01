@@ -13,6 +13,7 @@ import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "../components/ui/TopRightMenu";
 import WhitepaperOverlay from "../components/WhitepaperOverlay";
+import StatsOverlay from "../components/ui/StatsOverlay";
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
@@ -52,7 +53,8 @@ export default function LandingPage() {
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [isWhitepaperOpen, setWhitepaperOpen] = useState(false); // ✅ ADD
+  const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
+  const [isStatsOpen, setStatsOpen] = useState(false);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -211,6 +213,8 @@ export default function LandingPage() {
         <TopRightMenu
           onOpenWhitepaper={() => setWhitepaperOpen(true)}
           isWhitepaperActive={isWhitepaperOpen}
+          onOpenStats={() => setStatsOpen(true)}
+          isStatsActive={isStatsOpen}
         />
       )}
 
@@ -285,6 +289,12 @@ export default function LandingPage() {
       <WhitepaperOverlay
         isOpen={isWhitepaperOpen}
         onClose={() => setWhitepaperOpen(false)}
+      />
+
+      {/* 📊 Stats Overlay */}
+      <StatsOverlay
+        isOpen={isStatsOpen}
+        onClose={() => setStatsOpen(false)}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}
