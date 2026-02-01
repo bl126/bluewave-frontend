@@ -10,10 +10,7 @@ interface StatsData {
     verified_humans: { date: string; value: number }[];
     missions_completed: { date: string; value: number }[];
     points_distributed: { date: string; value: number }[];
-    active_countries: {
-        top: { country: string; count: number }[];
-        others: number;
-    };
+    active_countries: { country: string; joined_at: string }[];
 }
 
 export default function StatsOverlay({
@@ -142,7 +139,7 @@ export default function StatsOverlay({
                                         </h3>
                                         <p className="text-[10px] text-cyan-100/30 uppercase tracking-widest font-medium">Verified humans by territory</p>
                                     </div>
-                                    <BarChart data={data.active_countries} />
+                                    <CountryList countries={data.active_countries} />
                                 </section>
                             </>
                         ) : (
@@ -318,91 +315,38 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
     );
 }
 
-function BarChart({ data }: { data: StatsData["active_countries"] }) {
-    const top3 = data.top.slice(0, 3);
-
-    const height = 220;
-    const width = 400;
-    const paddingLeft = 40;
-    const paddingBottom = 40;
-    const paddingTop = 20;
-    const paddingRight = 40;
-
-    const chartWidth = width - paddingLeft - paddingRight;
-    const chartHeight = height - paddingTop - paddingBottom;
-
-    // Bar dimensions
-    const barWidth = 40;
-    const barSpacing = (chartWidth - barWidth * top3.length) / (top3.length + 1);
-
-    const getX = (idx: number) => paddingLeft + barSpacing + idx * (barWidth + barSpacing);
-    const getY = (val: number) => paddingTop + chartHeight - (Math.min(val, 250) / 250) * chartHeight;
+function CountryList({ countries }: { countries: StatsData["active_countries"] }) {
+    if (!countries || countries.length === 0) return null;
 
     return (
-        <div className="relative mt-4">
-            <svg
-                viewBox={`0 0 ${width} ${height}`}
-                className="w-full overflow-visible"
-            >
-                {/* Vertical Axis (Y) */}
-                <line
-                    x1={paddingLeft} y1={paddingTop}
-                    x2={paddingLeft} y2={height - paddingBottom}
-                    className="stroke-white/10" strokeWidth="1"
-                />
-                {/* Horizontal Axis (X) */}
-                <line
-                    x1={paddingLeft} y1={height - paddingBottom}
-                    x2={width - paddingRight} y2={height - paddingBottom}
-                    className="stroke-white/10" strokeWidth="1"
-                />
-
-                {/* Bars & Country Names */}
-                {top3.map((item, idx) => {
-                    const x = getX(idx);
-                    const barY = getY(item.count);
-                    const barHeight = height - paddingBottom - barY;
-
-                    return (
-                        <g key={item.country}>
-                            {/* Bar Overlay */}
-                            <motion.rect
-                                x={x}
-                                y={barY}
-                                width={barWidth}
-                                height={barHeight}
-                                rx={4}
-                                initial={{ height: 0, y: height - paddingBottom }}
-                                animate={{ height: barHeight, y: barY }}
-                                transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
-                                className="fill-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-                            />
-
-                            {/* Country Name (Below bar) */}
-                            <text
-                                x={x + barWidth / 2}
-                                y={height - paddingBottom + 20}
-                                textAnchor="middle"
-                                className="fill-white text-[10px] font-bold uppercase tracking-wider"
-                            >
-                                {item.country}
-                            </text>
-
-                            {/* Value Label (Above bar) */}
-                            <text
-                                x={x + barWidth / 2}
-                                y={barY - 8}
-                                textAnchor="middle"
-                                className="fill-cyan-400 text-[11px] font-bold"
-                            >
-                                {item.count}
-                            </text>
-                        </g>
-                    );
-                })}
-            </svg>
+        <div className="flex flex-wrap justify-center gap-3 px-2">
+            {countries.map((item, idx) => (
+                <motion.div
+                    key={item.country}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md"
+                >
+                    <span className="text-lg leading-none" title={countryCodeToName(item.country)}>
+                        {getFlagEmoji(item.country)}
+                    </span>
+                    <span className="text-[10px] font-bold text-cyan-100/70 uppercase tracking-widest">
+                        {countryCodeToName(item.country)}
+                    </span>
+                </motion.div>
+            ))}
         </div>
     );
+}
+
+function getFlagEmoji(countryCode: string) {
+    if (!countryCode || countryCode.length !== 2) return "🌍";
+    const codePoints = countryCode
+        .toUpperCase()
+        .split("")
+        .map((char) => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
 }
 
 function countryCodeToName(code: string) {
