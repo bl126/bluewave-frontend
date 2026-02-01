@@ -235,8 +235,13 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
         <div className="relative mt-4">
             <div className="mb-4">
                 <span className="text-4xl font-bold text-white tracking-tighter">
-                    {lastVal.toLocaleString()} {isPoints ? "$BWAVE" : ""}
+                    {lastVal.toLocaleString()}
                 </span>
+                {isPoints && (
+                    <span className="text-sm font-medium text-cyan-400 ml-2 uppercase tracking-tight">
+                        $BWAVE
+                    </span>
+                )}
             </div>
 
             <svg
@@ -255,20 +260,7 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
                     className="stroke-white/10" strokeWidth="1"
                 />
 
-                {/* Y-Axis Labels & Grid */}
-                {gridValues.map((g, i) => (
-                    <g key={i}>
-                        <text
-                            x={paddingLeft - 10}
-                            y={g.y}
-                            textAnchor="end"
-                            alignmentBaseline="middle"
-                            className="fill-white/30 text-[10px] font-medium"
-                        >
-                            {g.label}
-                        </text>
-                    </g>
-                ))}
+                {/* Y-Axis Labels & Grid removed as per request */}
 
                 {/* Current Value Highlight on Y-axis */}
                 <g>
@@ -313,9 +305,7 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
                     transition={{ duration: 1, delay: 0.5 }}
                 />
 
-                {/* X-Axis Labels */}
-                <text x={paddingLeft} y={height - 10} className="fill-white font-bold text-[10px]">2025</text>
-                <text x={width - paddingRight} y={height - 10} textAnchor="end" className="fill-white font-bold text-[10px]">2026</text>
+                {/* X-Axis Labels removed as per request */}
 
                 <defs>
                     <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
@@ -331,19 +321,22 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
 function BarChart({ data }: { data: StatsData["active_countries"] }) {
     const top3 = data.top.slice(0, 3);
 
-    const height = 180;
+    const height = 220;
     const width = 400;
-    const paddingLeft = 100; // More space for country names
+    const paddingLeft = 40;
     const paddingBottom = 40;
     const paddingTop = 20;
     const paddingRight = 40;
 
     const chartWidth = width - paddingLeft - paddingRight;
-    const barHeight = 24;
-    const barSpacing = 40;
+    const chartHeight = height - paddingTop - paddingBottom;
 
-    const xLabels = [0, 50, 100, 150, 200, 250];
-    const getX = (val: number) => (val / 250) * chartWidth;
+    // Bar dimensions
+    const barWidth = 40;
+    const barSpacing = (chartWidth - barWidth * top3.length) / (top3.length + 1);
+
+    const getX = (idx: number) => paddingLeft + barSpacing + idx * (barWidth + barSpacing);
+    const getY = (val: number) => paddingTop + chartHeight - (Math.min(val, 250) / 250) * chartHeight;
 
     return (
         <div className="relative mt-4">
@@ -364,61 +357,43 @@ function BarChart({ data }: { data: StatsData["active_countries"] }) {
                     className="stroke-white/10" strokeWidth="1"
                 />
 
-                {/* X-Axis Labels */}
-                {xLabels.map((val, i) => (
-                    <g key={i}>
-                        <text
-                            x={paddingLeft + getX(val)}
-                            y={height - 20}
-                            textAnchor="middle"
-                            className="fill-white/30 text-[10px] font-medium"
-                        >
-                            {val}
-                        </text>
-                        {/* Vertical grid line */}
-                        <line
-                            x1={paddingLeft + getX(val)} y1={paddingTop}
-                            x2={paddingLeft + getX(val)} y2={height - paddingBottom}
-                            className="stroke-white/5" strokeWidth="1"
-                            strokeDasharray="4 4"
-                        />
-                    </g>
-                ))}
-
                 {/* Bars & Country Names */}
                 {top3.map((item, idx) => {
-                    const y = paddingTop + idx * barSpacing + 10;
+                    const x = getX(idx);
+                    const barY = getY(item.count);
+                    const barHeight = height - paddingBottom - barY;
+
                     return (
                         <g key={item.country}>
-                            {/* Country Name/Flag Placeholder */}
+                            {/* Bar Overlay */}
+                            <motion.rect
+                                x={x}
+                                y={barY}
+                                width={barWidth}
+                                height={barHeight}
+                                rx={4}
+                                initial={{ height: 0, y: height - paddingBottom }}
+                                animate={{ height: barHeight, y: barY }}
+                                transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
+                                className="fill-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                            />
+
+                            {/* Country Name (Below bar) */}
                             <text
-                                x={paddingLeft - 10}
-                                y={y + barHeight / 2}
-                                textAnchor="end"
-                                alignmentBaseline="middle"
+                                x={x + barWidth / 2}
+                                y={height - paddingBottom + 20}
+                                textAnchor="middle"
                                 className="fill-white text-[10px] font-bold uppercase tracking-wider"
                             >
                                 {item.country}
                             </text>
 
-                            {/* Bar Overlay */}
-                            <motion.rect
-                                x={paddingLeft}
-                                y={y}
-                                height={barHeight}
-                                rx={4}
-                                initial={{ width: 0 }}
-                                animate={{ width: getX(item.count) }}
-                                transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
-                                className="fill-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-                            />
-
-                            {/* Value Label */}
+                            {/* Value Label (Above bar) */}
                             <text
-                                x={paddingLeft + getX(item.count) + 5}
-                                y={y + barHeight / 2}
-                                alignmentBaseline="middle"
-                                className="fill-white/60 text-[9px] font-medium"
+                                x={x + barWidth / 2}
+                                y={barY - 8}
+                                textAnchor="middle"
+                                className="fill-cyan-400 text-[11px] font-bold"
                             >
                                 {item.count}
                             </text>
