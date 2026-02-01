@@ -209,7 +209,7 @@ export default function LandingPage() {
         <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && (
+      {!onboardingOpen && !isLoading && (
         <TopRightMenu
           onOpenWhitepaper={() => setWhitepaperOpen(true)}
           isWhitepaperActive={isWhitepaperOpen}

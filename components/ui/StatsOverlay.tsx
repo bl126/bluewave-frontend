@@ -35,8 +35,12 @@ export default function StatsOverlay({
         if (isOpen) {
             setLoading(true);
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stats`)
-                .then((res) => res.json())
+                .then((res) => {
+                    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+                    return res.json();
+                })
                 .then((json) => {
+                    if (!json || typeof json !== 'object') throw new Error("Invalid data format");
                     setData(json);
                     setLoading(false);
                 })
