@@ -295,6 +295,13 @@ export default function LandingPage() {
       <StatsOverlay
         isOpen={isStatsOpen}
         onClose={() => setStatsOpen(false)}
+        onOpenWhitepaper={() => {
+          setStatsOpen(false);
+          setWhitepaperOpen(true);
+        }}
+        onOpenAbout={() => {/* implementation for about */ }}
+        onOpenLedger={() => {/* implementation for ledger */ }}
+        onOpenFAQ={() => {/* implementation for faq */ }}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}

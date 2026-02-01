@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Globe, Users, Rocket, Coins, ArrowLeft, Menu, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import TopRightMenu from "./TopRightMenu";
+
 interface StatsData {
     verified_humans: { date: string; value: number }[];
     missions_completed: { date: string; value: number }[];
@@ -17,9 +19,17 @@ interface StatsData {
 export default function StatsOverlay({
     isOpen,
     onClose,
+    onOpenAbout,
+    onOpenLedger,
+    onOpenFAQ,
+    onOpenWhitepaper,
 }: {
     isOpen: boolean;
     onClose: () => void;
+    onOpenAbout?: () => void;
+    onOpenLedger?: () => void;
+    onOpenFAQ?: () => void;
+    onOpenWhitepaper?: () => void;
 }) {
     const [data, setData] = useState<StatsData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -48,7 +58,7 @@ export default function StatsOverlay({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.02 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center overflow-hidden"
+                    className="fixed inset-0 z-[100] bg-zinc-950/90 backdrop-blur-2xl flex flex-col items-center overflow-hidden"
                 >
                     {/* Floating Navigation */}
                     <div className="absolute top-0 left-0 right-0 h-20 z-[110] flex items-center justify-between px-6 pointer-events-none">
@@ -63,10 +73,14 @@ export default function StatsOverlay({
                             <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Exit</span>
                         </button>
 
-                        {/* Hamburger Menu (Placeholder/Style match) */}
-                        <button className="p-2.5 rounded-full bg-cyan-950/30 border border-cyan-900/50 backdrop-blur-md text-cyan-400 pointer-events-auto cursor-default">
-                            <Menu size={20} />
-                        </button>
+                        <TopRightMenu
+                            onOpenAbout={onOpenAbout}
+                            onOpenLedger={onOpenLedger}
+                            onOpenFAQ={onOpenFAQ}
+                            onOpenStats={() => { }} // Already on stats
+                            onOpenWhitepaper={onOpenWhitepaper}
+                            isStatsActive={true}
+                        />
                     </div>
 
                     {/* Content */}
@@ -92,10 +106,9 @@ export default function StatsOverlay({
                                     <div className="flex justify-between items-start mb-6">
                                         <StatHeader
                                             title="Total Verified Humans"
-                                            description="28/01/2026"
+                                            description="2025-2026"
                                             icon={<Users size={14} />}
                                         />
-                                        <TimeFrameDropdown />
                                     </div>
                                     <LineChart data={data.verified_humans} label="Daily Volume" />
                                 </section>
@@ -104,10 +117,9 @@ export default function StatsOverlay({
                                     <div className="flex justify-between items-start mb-6">
                                         <StatHeader
                                             title="Total Missions Completed"
-                                            description="28/01/2026"
+                                            description="2025-2026"
                                             icon={<Rocket size={14} />}
                                         />
-                                        <TimeFrameDropdown />
                                     </div>
                                     <LineChart data={data.missions_completed} />
                                 </section>
@@ -116,12 +128,11 @@ export default function StatsOverlay({
                                     <div className="flex justify-between items-start mb-6">
                                         <StatHeader
                                             title="Presence Points Distributed"
-                                            description="28/01/2026"
+                                            description="2025-2026"
                                             icon={<Coins size={14} />}
                                         />
-                                        <TimeFrameDropdown />
                                     </div>
-                                    <LineChart data={data.points_distributed} />
+                                    <LineChart data={data.points_distributed} isPoints={true} />
                                 </section>
 
                                 <section className="relative p-8 rounded-3xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
@@ -177,7 +188,7 @@ function TimeFrameDropdown() {
     )
 }
 
-function LineChart({ data, label }: { data: { date: string; value: number }[], label?: string }) {
+function LineChart({ data, label, isPoints }: { data: { date: string; value: number }[], label?: string, isPoints?: boolean }) {
     if (!data || data.length === 0) return <div className="h-48 bg-white/5 rounded-2xl border border-white/5" />;
 
     const height = 180;
@@ -212,19 +223,19 @@ function LineChart({ data, label }: { data: { date: string; value: number }[], l
 
     // Grid labels
     const gridValues = [
-        { label: "7.5M", val: maxVal * 0.8 },
-        { label: "5M", val: maxVal * 0.5 },
-        { label: "2.5M", val: maxVal * 0.25 },
+        { label: "250", val: 250 },
+        { label: "150", val: 150 },
+        { label: "50", val: 50 },
         { label: "0", val: 0 }
     ].map(g => ({ ...g, y: getY(g.val) }));
 
-    const formattedLastVal = lastVal >= 1000 ? `${(lastVal / 1000).toFixed(3)}K` : lastVal.toLocaleString();
+    const formattedLastVal = lastVal.toLocaleString();
 
     return (
         <div className="relative mt-4">
             <div className="mb-4">
                 <span className="text-4xl font-bold text-white tracking-tighter">
-                    ${lastVal.toLocaleString()}
+                    {lastVal.toLocaleString()} {isPoints ? "$BWAVE" : ""}
                 </span>
             </div>
 
@@ -267,7 +278,7 @@ function LineChart({ data, label }: { data: { date: string; value: number }[], l
                         width="55"
                         height="20"
                         rx="4"
-                        className="fill-emerald-500"
+                        className="fill-cyan-500"
                     />
                     <text
                         x={paddingLeft - 32.5}
@@ -284,7 +295,7 @@ function LineChart({ data, label }: { data: { date: string; value: number }[], l
                 <motion.path
                     d={pathData}
                     fill="none"
-                    stroke="#10b981" // emerald-500
+                    stroke="#06b6d4" // cyan-500
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -296,21 +307,20 @@ function LineChart({ data, label }: { data: { date: string; value: number }[], l
                 {/* Area Fill */}
                 <motion.path
                     d={`${pathData} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`}
-                    fill="url(#emeraldGradient)"
+                    fill="url(#cyanGradient)"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.1 }}
                     transition={{ duration: 1, delay: 0.5 }}
                 />
 
                 {/* X-Axis Labels */}
-                <text x={paddingLeft} y={height - 10} className="fill-white/30 text-[10px] font-medium">Mar</text>
-                <text x={width / 2} y={height - 10} textAnchor="middle" className="fill-white/30 text-[10px] font-medium">Jul</text>
+                <text x={paddingLeft} y={height - 10} className="fill-white font-bold text-[10px]">2025</text>
                 <text x={width - paddingRight} y={height - 10} textAnchor="end" className="fill-white font-bold text-[10px]">2026</text>
 
                 <defs>
-                    <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                    <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
                     </linearGradient>
                 </defs>
             </svg>
@@ -320,37 +330,102 @@ function LineChart({ data, label }: { data: { date: string; value: number }[], l
 
 function BarChart({ data }: { data: StatsData["active_countries"] }) {
     const top3 = data.top.slice(0, 3);
-    const maxCount = Math.max(...top3.map((d) => d.count)) || 1;
+
+    const height = 180;
+    const width = 400;
+    const paddingLeft = 100; // More space for country names
+    const paddingBottom = 40;
+    const paddingTop = 20;
+    const paddingRight = 40;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const barHeight = 24;
+    const barSpacing = 40;
+
+    const xLabels = [0, 50, 100, 150, 200, 250];
+    const getX = (val: number) => (val / 250) * chartWidth;
 
     return (
-        <div className="space-y-6">
-            {top3.map((item, idx) => (
-                <div key={item.country} className="space-y-2">
-                    <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                            {countryCodeToName(item.country)}
-                        </span>
-                        <span className="text-xs font-medium text-white">{item.count.toLocaleString()}</span>
-                    </div>
-                    <div className="h-[4px] w-full bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(item.count / maxCount) * 100}%` }}
-                            transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
-                            className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+        <div className="relative mt-4">
+            <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="w-full overflow-visible"
+            >
+                {/* Vertical Axis (Y) */}
+                <line
+                    x1={paddingLeft} y1={paddingTop}
+                    x2={paddingLeft} y2={height - paddingBottom}
+                    className="stroke-white/10" strokeWidth="1"
+                />
+                {/* Horizontal Axis (X) */}
+                <line
+                    x1={paddingLeft} y1={height - paddingBottom}
+                    x2={width - paddingRight} y2={height - paddingBottom}
+                    className="stroke-white/10" strokeWidth="1"
+                />
+
+                {/* X-Axis Labels */}
+                {xLabels.map((val, i) => (
+                    <g key={i}>
+                        <text
+                            x={paddingLeft + getX(val)}
+                            y={height - 20}
+                            textAnchor="middle"
+                            className="fill-white/30 text-[10px] font-medium"
+                        >
+                            {val}
+                        </text>
+                        {/* Vertical grid line */}
+                        <line
+                            x1={paddingLeft + getX(val)} y1={paddingTop}
+                            x2={paddingLeft + getX(val)} y2={height - paddingBottom}
+                            className="stroke-white/5" strokeWidth="1"
+                            strokeDasharray="4 4"
                         />
-                    </div>
-                </div>
-            ))}
-            {(data.others > 0 || data.top.length > 3) && (
-                <div className="pt-6 flex flex-col items-center gap-2">
-                    <div className="w-12 h-[1px] bg-white/10" />
-                    <p className="text-[9px] text-white/20 font-bold uppercase tracking-[0.2em]">
-                        + {data.others + data.top.slice(3).reduce((acc, curr) => acc + curr.count, 0)} Network Nodes
-                    </p>
-                </div>
-            )}
+                    </g>
+                ))}
+
+                {/* Bars & Country Names */}
+                {top3.map((item, idx) => {
+                    const y = paddingTop + idx * barSpacing + 10;
+                    return (
+                        <g key={item.country}>
+                            {/* Country Name/Flag Placeholder */}
+                            <text
+                                x={paddingLeft - 10}
+                                y={y + barHeight / 2}
+                                textAnchor="end"
+                                alignmentBaseline="middle"
+                                className="fill-white text-[10px] font-bold uppercase tracking-wider"
+                            >
+                                {item.country}
+                            </text>
+
+                            {/* Bar Overlay */}
+                            <motion.rect
+                                x={paddingLeft}
+                                y={y}
+                                height={barHeight}
+                                rx={4}
+                                initial={{ width: 0 }}
+                                animate={{ width: getX(item.count) }}
+                                transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
+                                className="fill-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                            />
+
+                            {/* Value Label */}
+                            <text
+                                x={paddingLeft + getX(item.count) + 5}
+                                y={y + barHeight / 2}
+                                alignmentBaseline="middle"
+                                className="fill-white/60 text-[9px] font-medium"
+                            >
+                                {item.count}
+                            </text>
+                        </g>
+                    );
+                })}
+            </svg>
         </div>
     );
 }
