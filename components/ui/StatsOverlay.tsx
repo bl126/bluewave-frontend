@@ -111,7 +111,7 @@ export default function StatsOverlay({
                                             icon={<Users size={14} />}
                                         />
                                     </div>
-                                    <LineChart data={data.verified_humans} label="Daily Volume" />
+                                    <LineChart chartId="humans" data={data.verified_humans} label="Daily Volume" />
                                 </section>
 
                                 <section className="relative p-6 rounded-3xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
@@ -122,7 +122,7 @@ export default function StatsOverlay({
                                             icon={<Rocket size={14} />}
                                         />
                                     </div>
-                                    <LineChart data={data.missions_completed} />
+                                    <LineChart chartId="missions" data={data.missions_completed} />
                                 </section>
 
                                 <section className="relative p-6 rounded-3xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
@@ -133,7 +133,7 @@ export default function StatsOverlay({
                                             icon={<Coins size={14} />}
                                         />
                                     </div>
-                                    <LineChart data={data.points_distributed} isPoints={true} />
+                                    <LineChart chartId="points" data={data.points_distributed} isPoints={true} />
                                 </section>
 
                                 <section className="relative p-8 rounded-3xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
@@ -189,7 +189,7 @@ function TimeFrameDropdown() {
     )
 }
 
-function LineChart({ data, label, isPoints }: { data: { date: string; value: number }[], label?: string, isPoints?: boolean }) {
+function LineChart({ chartId, data, label, isPoints }: { chartId: string, data: { date: string; value: number }[], label?: string, isPoints?: boolean }) {
     if (!data || data.length === 0) return <div className="h-48 bg-white/5 rounded-2xl border border-white/5" />;
 
     const height = 180;
@@ -199,7 +199,7 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
     const paddingTop = 20;
     const paddingRight = 20;
 
-    const values = data.map((d) => d.value);
+    const values = data.map((d) => d.value || 0);
     const maxVal = Math.max(...values, 10) * 1.2;
     const minVal = 0;
 
@@ -207,9 +207,15 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
     const chartHeight = height - paddingTop - paddingBottom;
 
     const getX = (i: number) => paddingLeft + (i / Math.max(1, data.length - 1)) * chartWidth;
-    const getY = (v: number) => paddingTop + chartHeight - ((v - minVal) / (maxVal - minVal)) * chartHeight;
+    const getY = (v: number) => {
+        const val = isNaN(v) ? 0 : v;
+        const pos = paddingTop + chartHeight - ((val - minVal) / (maxVal - minVal)) * chartHeight;
+        return isNaN(pos) ? paddingTop + chartHeight : pos;
+    };
 
     const points = data.map((d, i) => ({ x: getX(i), y: getY(d.value) }));
+    if (points.length === 0) return null;
+
     let pathData = `M ${points[0].x} ${points[0].y}`;
 
     for (let i = 0; i < points.length - 1; i++) {
@@ -219,24 +225,17 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
         pathData += ` C ${cpX} ${curr.y}, ${cpX} ${next.y}, ${next.x} ${next.y}`;
     }
 
-    const lastVal = data[data.length - 1].value;
+    const lastVal = data[data.length - 1]?.value || 0;
     const lastY = getY(lastVal);
 
-    // Grid labels
-    const gridValues = [
-        { label: "250", val: 250 },
-        { label: "150", val: 150 },
-        { label: "50", val: 50 },
-        { label: "0", val: 0 }
-    ].map(g => ({ ...g, y: getY(g.val) }));
-
     const formattedLastVal = lastVal.toLocaleString();
+    const gradientId = `cyanGradient-${chartId}`;
 
     return (
         <div className="relative mt-4">
             <div className="mb-4">
                 <span className="text-4xl font-bold text-white tracking-tighter">
-                    {lastVal.toLocaleString()}
+                    {formattedLastVal}
                 </span>
                 {isPoints && (
                     <span className="text-sm font-medium text-cyan-400 ml-2 uppercase tracking-tight">
@@ -260,8 +259,6 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
                     x2={width - paddingRight} y2={height - paddingBottom}
                     className="stroke-white/10" strokeWidth="1"
                 />
-
-                {/* Y-Axis Labels & Grid removed as per request */}
 
                 {/* Current Value Highlight on Y-axis */}
                 <g>
@@ -300,16 +297,14 @@ function LineChart({ data, label, isPoints }: { data: { date: string; value: num
                 {/* Area Fill */}
                 <motion.path
                     d={`${pathData} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`}
-                    fill="url(#cyanGradient)"
+                    fill={`url(#${gradientId})`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.1 }}
                     transition={{ duration: 1, delay: 0.5 }}
                 />
 
-                {/* X-Axis Labels removed as per request */}
-
                 <defs>
-                    <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#06b6d4" stopOpacity="1" />
                         <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
                     </linearGradient>
