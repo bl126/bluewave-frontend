@@ -9,7 +9,7 @@ interface StatsData {
     verified_humans: { date: string; value: number }[];
     missions_completed: { date: string; value: number }[];
     points_distributed: { date: string; value: number }[];
-    active_countries: { country: string; joined_at: string }[];
+    active_countries: { code: string; count: number }[];
     total_stats?: {
         users: number;
         missions: number;
@@ -94,92 +94,80 @@ export default function StatsOverlay({
                         <div className="max-w-4xl mx-auto px-6 pt-12 space-y-16">
 
                             {/* Hero Title */}
-                            <div className="text-center space-y-4">
+                            <div className="text-center space-y-2">
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-center justify-center gap-2 text-cyan-500"
+                                    className="flex items-center justify-center gap-2 text-cyan-500/60"
                                 >
-                                    <Activity size={14} className="animate-pulse" />
-                                    <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Network Proof of Activity</span>
+                                    <Activity size={12} />
+                                    <span className="text-[10px] uppercase tracking-[0.4em] font-medium">Network Protocol Metrics</span>
                                 </motion.div>
-                                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
-                                    Protocol Statistics
+                                <h1 className="text-4xl font-bold tracking-tight text-white/90">
+                                    Network Stats
                                 </h1>
-                                <p className="text-sm text-cyan-400/40 uppercase tracking-widest font-mono">
-                                    Cycle 2025 — 2026
-                                </p>
                             </div>
 
                             {loading ? (
                                 <div className="py-24 flex flex-col items-center justify-center gap-6">
-                                    <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                                    <p className="text-[10px] text-cyan-500/40 uppercase tracking-[0.2em] animate-pulse">Synchronizing Ledger...</p>
+                                    <div className="w-6 h-6 border-2 border-cyan-500/10 border-t-cyan-500/60 rounded-full animate-spin" />
+                                    <p className="text-[10px] text-cyan-500/30 uppercase tracking-[0.2em]">Syncing Snapshot...</p>
                                 </div>
                             ) : error ? (
                                 <div className="py-24 text-center space-y-6">
-                                    <p className="text-sm text-red-400/60 font-mono uppercase tracking-widest">{error}</p>
+                                    <p className="text-xs text-red-400/50 font-mono uppercase tracking-[0.2em]">{error}</p>
                                     <button
                                         onClick={fetchStats}
-                                        className="px-6 py-2 rounded-full border border-cyan-500/30 text-cyan-400 text-[10px] uppercase tracking-widest hover:bg-cyan-500/10 transition-colors"
+                                        className="px-6 py-2 rounded-xl border border-white/5 text-white/40 text-[10px] uppercase tracking-widest hover:bg-white/5 transition-colors"
                                     >
-                                        Retry Connection
+                                        Reconnect
                                     </button>
                                 </div>
                             ) : data ? (
-                                <div className="space-y-16">
+                                <div className="space-y-12">
 
-                                    {/* Total Stats Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <StatHeroCard
-                                            title="Verified Humans"
-                                            value={data?.total_stats?.users ?? 0}
-                                            icon={Users}
+                                    {/* Charts Section */}
+                                    <div className="grid grid-cols-1 gap-12">
+                                        <ChartSection
+                                            title="Verified Human Presence"
+                                            value={data.total_stats?.users ?? 0}
+                                            description="Cumulative network growth"
+                                            chartData={data.verified_humans}
+                                            id="humans"
                                         />
-                                        <StatHeroCard
-                                            title="Missions Completed"
-                                            value={data?.total_stats?.missions ?? 0}
-                                            icon={Rocket}
+                                        <ChartSection
+                                            title="Presence Mission Completion"
+                                            value={data.total_stats?.missions ?? 0}
+                                            description="Total protocol tasks finalized"
+                                            chartData={data.missions_completed}
+                                            id="missions"
+                                            isArea
                                         />
-                                        <StatHeroCard
-                                            title="$BWAVE Distributed"
-                                            value={data?.total_stats?.points ?? 0}
-                                            icon={Zap}
+                                        <ChartSection
+                                            title="Presence Points Distributed"
+                                            value={data.total_stats?.points ?? 0}
+                                            description="Cumulative $BWAVE ecosystem rewards"
+                                            chartData={data.points_distributed}
+                                            id="points"
                                             isPoints
                                         />
                                     </div>
 
-                                    {/* Charts Section */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <ChartSection
-                                            title="Network Adoption"
-                                            description="Cumulative Human Verification"
-                                            chartData={data?.verified_humans ?? []}
-                                            id="adoption"
-                                        />
-                                        <ChartSection
-                                            title="Mission Velocity"
-                                            description="Cumulative Task Settlement"
-                                            chartData={data?.missions_completed ?? []}
-                                            id="velocity"
-                                        />
-                                    </div>
-
                                     {/* Country List */}
-                                    <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
-                                        <div className="text-center mb-8">
-                                            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-500">Global Presence</h3>
-                                            <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">Verified Nodes by Territory</p>
+                                    <div className="p-10 rounded-[32px] bg-white/[0.01] border border-white/5 backdrop-blur-3xl">
+                                        <div className="mb-8 text-center md:text-left">
+                                            <h3 className="text-sm font-bold tracking-tight text-white/80">Active Countries</h3>
+                                            <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">Global Presence Verified</p>
                                         </div>
-                                        <div className="flex flex-wrap justify-center gap-3">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                             {(data?.active_countries ?? []).map((item, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors"
+                                                    className="flex items-center gap-3 py-2 px-1 opacity-60 hover:opacity-100 transition-opacity"
                                                 >
-                                                    <span className="text-lg">{getFlagEmoji(item?.country)}</span>
-                                                    <span className="text-[10px] font-bold text-cyan-100/60 uppercase tracking-widest truncate max-w-[80px]">
-                                                        {item?.country ?? "???"}
+                                                    <span className="text-2xl drop-shadow-sm">{getFlagEmoji(item?.code)}</span>
+                                                    <span className="text-[11px] font-medium text-white/70 tracking-tight truncate">
+                                                        {getCountryName(item?.code)}
                                                     </span>
                                                 </div>
                                             ))}
@@ -187,13 +175,12 @@ export default function StatsOverlay({
                                     </div>
 
                                     {/* Metadata Footer */}
-                                    <div className="text-center pt-8 border-t border-white/5 opacity-30">
-                                        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-mono">
-                                            <Landmark size={12} />
-                                            <span>Bluewave Mainnet Ledger</span>
+                                    <div className="text-center pt-8 border-t border-white/5 opacity-20">
+                                        <div className="flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.3em] font-medium">
+                                            <span>Protocol Snapshot v1.0.2</span>
                                         </div>
-                                        <p className="text-[8px] uppercase tracking-widest mt-2">
-                                            Last Updated: {data?.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A'}
+                                        <p className="text-[8px] uppercase tracking-widest mt-1 opacity-50">
+                                            Updated: {data?.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'N/A'}
                                         </p>
                                     </div>
 
@@ -207,57 +194,65 @@ export default function StatsOverlay({
     );
 }
 
-function StatHeroCard({ title, value, icon: Icon, isPoints }: { title: string, value: number, icon: any, isPoints?: boolean }) {
-    return (
-        <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl hover:bg-white/[0.05] transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform translate-x-4 -translate-y-4">
-                <Icon size={40} />
-            </div>
-            <div className="space-y-4 relative z-10">
-                <div className="flex items-center gap-2 text-cyan-400">
-                    <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                        <Icon size={20} />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 font-mono">{title}</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-mono font-bold tracking-tighter">
-                        {value.toLocaleString()}
-                    </span>
-                    {isPoints && <span className="text-xs font-bold text-cyan-500 italic">$BWAVE</span>}
-                </div>
-            </div>
-        </div>
-    );
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+
+function getCountryName(code: string) {
+    try {
+        return regionNames.of(code.toUpperCase()) || code;
+    } catch {
+        return code;
+    }
 }
 
-function ChartSection({ title, description, chartData, id }: { title: string, description: string, chartData: any[], id: string }) {
+function ChartSection({
+    title,
+    value,
+    description,
+    chartData,
+    id,
+    isPoints,
+    isArea
+}: {
+    title: string,
+    value: number,
+    description: string,
+    chartData: any[],
+    id: string,
+    isPoints?: boolean,
+    isArea?: boolean
+}) {
     return (
-        <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-xl space-y-6">
-            <div className="flex justify-between items-start">
+        <div className="p-8 rounded-[32px] bg-white/[0.01] border border-white/5 backdrop-blur-3xl space-y-8 relative overflow-hidden group">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 relative z-10">
                 <div className="space-y-1">
-                    <h3 className="text-lg font-bold tracking-tight text-white/90">{title}</h3>
-                    <p className="text-[10px] text-cyan-500/50 uppercase tracking-widest font-mono">{description}</p>
+                    <h3 className="text-sm font-medium text-white/40 tracking-tight uppercase tracking-[0.1em]">{title}</h3>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold tracking-tighter text-white">
+                            {value.toLocaleString()}
+                        </span>
+                        {isPoints && <span className="text-sm font-bold text-cyan-500/60 uppercase tracking-widest">$BWAVE</span>}
+                    </div>
+                    <p className="text-[10px] text-white/20 font-medium tracking-wide uppercase tracking-[0.05em]">{description}</p>
                 </div>
-                <div className="text-[10px] text-white/20 font-mono">2025-2026</div>
+                <div className="text-[10px] text-white/10 font-medium tracking-widest uppercase">2025-2026 Snapshot</div>
             </div>
-            <div className="h-40 relative">
-                <Sparkline chartData={chartData} color="#06b6d4" id={id} />
+            <div className="h-48 relative z-10">
+                <Sparkline chartData={chartData} color="#22d3ee" id={id} isArea={isArea} />
             </div>
         </div>
     );
 }
 
-function Sparkline({ chartData, color, id }: { chartData: any[], color: string, id: string }) {
-    if (!chartData || chartData.length < 2) return <div className="w-full h-full bg-white/5 rounded-2xl flex items-center justify-center text-[10px] text-white/10 uppercase tracking-widest font-mono">Initializing Nodes...</div>;
+function Sparkline({ chartData, color, id, isArea }: { chartData: any[], color: string, id: string, isArea?: boolean }) {
+    if (!chartData || chartData.length < 2) return <div className="w-full h-full flex items-center justify-center text-[10px] text-white/10 uppercase tracking-widest">Initializing Protocol Snapshot...</div>;
 
-    const width = 400;
-    const height = 150;
+    const width = 800;
+    const height = 200;
 
     const { pathD, areaD, lastPoint } = useMemo(() => {
         const vals = chartData.map(d => d.value);
-        const max = Math.max(...vals, 10);
-        const min = Math.min(...vals, 0);
+        const max = Math.max(...vals) * 1.1; // Add 10% padding
+        const min = Math.min(...vals) * 0.9;
         const range = max - min || 1;
 
         const pts = chartData.map((d, i) => ({
@@ -265,7 +260,14 @@ function Sparkline({ chartData, color, id }: { chartData: any[], color: string, 
             y: height - ((d.value - min) / range) * height
         }));
 
-        const d = `M ${pts[0].x} ${pts[0].y} ` + pts.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+        // Catmull-Rom or Cubic curve would be nice but simple smooth curves:
+        const d = pts.length > 1 ? pts.reduce((acc, point, i, a) => {
+            if (i === 0) return `M ${point.x} ${point.y}`;
+            const p0 = a[i - 1];
+            const cp1x = p0.x + (point.x - p0.x) / 2;
+            return `${acc} C ${cp1x} ${p0.y}, ${cp1x} ${point.y}, ${point.x} ${point.y}`;
+        }, "") : "";
+
         const area = `${d} L ${width} ${height} L 0 ${height} Z`;
         return { pathD: d, areaD: area, lastPoint: pts[pts.length - 1] };
     }, [chartData, width, height]);
@@ -273,31 +275,34 @@ function Sparkline({ chartData, color, id }: { chartData: any[], color: string, 
     const gradientId = `chartGradient-${id}`;
 
     return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">
+        <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full overflow-visible">
             <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+                    <stop offset="0%" stopColor={color} stopOpacity="0.1" />
                     <stop offset="100%" stopColor={color} stopOpacity="0" />
                 </linearGradient>
             </defs>
-            <path d={areaD} fill={`url(#${gradientId})`} />
+            {isArea && <path d={areaD} fill={`url(#${gradientId})`} />}
             <motion.path
                 d={pathD}
                 fill="none"
                 stroke={color}
-                strokeWidth="2.5"
+                strokeWidth="2"
+                strokeOpacity="0.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 2, ease: "easeOut" }}
             />
-            <circle
+            <motion.circle
                 cx={lastPoint.x}
                 cy={lastPoint.y}
                 r="3"
                 fill={color}
-                className="animate-pulse"
+                initial={{ scale: 0 }}
+                animate={{ scale: [1, 1.5, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
             />
         </svg>
     );
