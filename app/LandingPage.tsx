@@ -211,9 +211,15 @@ export default function LandingPage() {
       {/* TopRightMenu */}
       {!onboardingOpen && !isLoading && (
         <TopRightMenu
-          onOpenWhitepaper={() => setWhitepaperOpen(true)}
+          onOpenWhitepaper={() => {
+            setStatsOpen(false);
+            setWhitepaperOpen(true);
+          }}
           isWhitepaperActive={isWhitepaperOpen}
-          onOpenStats={() => setStatsOpen(true)}
+          onOpenStats={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(true);
+          }}
           isStatsActive={isStatsOpen}
         />
       )}

@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Activity } from "lucide-react";
 import React from "react";
-import TopRightMenu from "./TopRightMenu";
 
 export default function StatsOverlay({
     isOpen,
@@ -27,26 +26,19 @@ export default function StatsOverlay({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[100] bg-zinc-950/95 backdrop-blur-3xl flex flex-col overflow-hidden text-white"
+                    className="fixed inset-0 z-[80] bg-[#0B0F14]/95 backdrop-blur-xl flex flex-col overflow-hidden text-white"
                 >
                     {/* Header Bar */}
-                    <div className="flex items-center justify-between px-6 h-20 shrink-0 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-[110]">
+                    <div className="absolute top-0 left-0 right-0 h-16 z-[110] flex items-center justify-between px-6 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/90 to-transparent pointer-events-none">
                         <button
                             onClick={onClose}
-                            className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all font-medium uppercase tracking-widest text-xs"
+                            className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors pointer-events-auto"
                         >
-                            <ArrowLeft size={18} />
-                            <span>Back</span>
+                            <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
+                                <ArrowLeft size={20} />
+                            </div>
+                            <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Back</span>
                         </button>
-
-                        <TopRightMenu
-                            onOpenAbout={onOpenAbout}
-                            onOpenLedger={onOpenLedger}
-                            onOpenFAQ={onOpenFAQ}
-                            onOpenStats={() => { }}
-                            onOpenWhitepaper={onOpenWhitepaper}
-                            isStatsActive={true}
-                        />
                     </div>
 
                     {/* Content Section */}
@@ -82,7 +74,7 @@ export default function StatsOverlay({
                                     </div>
                                     <h2 className="text-2xl font-semibold text-white/80">Coming Soon</h2>
                                     <p className="text-sm text-white/30 max-w-xs mx-auto leading-relaxed">
-                                        We are recalibrating the protocol metrics for enhanced precision. Real-time ecosystem data will be available shortly.
+                                        We are recalibrating the protocol metrics for enhanced precision. Real-time ecosystem data will be available soon.
                                     </p>
                                 </div>
                             </motion.div>
