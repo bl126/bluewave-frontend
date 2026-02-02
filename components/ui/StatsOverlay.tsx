@@ -133,17 +133,17 @@ export default function StatsOverlay({
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <StatHeroCard
                                             title="Verified Humans"
-                                            value={data.total_stats?.users || 0}
+                                            value={data?.total_stats?.users ?? 0}
                                             icon={Users}
                                         />
                                         <StatHeroCard
                                             title="Missions Completed"
-                                            value={data.total_stats?.missions || 0}
+                                            value={data?.total_stats?.missions ?? 0}
                                             icon={Rocket}
                                         />
                                         <StatHeroCard
                                             title="$BWAVE Distributed"
-                                            value={data.total_stats?.points || 0}
+                                            value={data?.total_stats?.points ?? 0}
                                             icon={Zap}
                                             isPoints
                                         />
@@ -154,13 +154,13 @@ export default function StatsOverlay({
                                         <ChartSection
                                             title="Network Adoption"
                                             description="Cumulative Human Verification"
-                                            chartData={data.verified_humans}
+                                            chartData={data?.verified_humans ?? []}
                                             id="adoption"
                                         />
                                         <ChartSection
                                             title="Mission Velocity"
                                             description="Cumulative Task Settlement"
-                                            chartData={data.missions_completed}
+                                            chartData={data?.missions_completed ?? []}
                                             id="velocity"
                                         />
                                     </div>
@@ -172,14 +172,14 @@ export default function StatsOverlay({
                                             <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">Verified Nodes by Territory</p>
                                         </div>
                                         <div className="flex flex-wrap justify-center gap-3">
-                                            {data.active_countries.map((item, idx) => (
+                                            {(data?.active_countries ?? []).map((item, idx) => (
                                                 <div
                                                     key={idx}
                                                     className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors"
                                                 >
-                                                    <span className="text-lg">{getFlagEmoji(item.country)}</span>
+                                                    <span className="text-lg">{getFlagEmoji(item?.country)}</span>
                                                     <span className="text-[10px] font-bold text-cyan-100/60 uppercase tracking-widest truncate max-w-[80px]">
-                                                        {item.country}
+                                                        {item?.country ?? "???"}
                                                     </span>
                                                 </div>
                                             ))}
@@ -193,7 +193,7 @@ export default function StatsOverlay({
                                             <span>Bluewave Mainnet Ledger</span>
                                         </div>
                                         <p className="text-[8px] uppercase tracking-widest mt-2">
-                                            Last Updated: {data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A'}
+                                            Last Updated: {data?.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A'}
                                         </p>
                                     </div>
 
