@@ -244,12 +244,14 @@ function ChartSection({
 }
 
 function Sparkline({ chartData, color, id, isArea }: { chartData: any[], color: string, id: string, isArea?: boolean }) {
-    if (!chartData || chartData.length < 2) return <div className="w-full h-full flex items-center justify-center text-[10px] text-white/10 uppercase tracking-widest">Initializing Protocol Snapshot...</div>;
-
     const width = 800;
     const height = 200;
 
     const { pathD, areaD, lastPoint } = useMemo(() => {
+        if (!chartData || chartData.length < 2) {
+            return { pathD: "", areaD: "", lastPoint: { x: 0, y: 0 } };
+        }
+
         const vals = chartData.map(d => d.value);
         const max = Math.max(...vals) * 1.1; // Add 10% padding
         const min = Math.min(...vals) * 0.9;
@@ -271,6 +273,8 @@ function Sparkline({ chartData, color, id, isArea }: { chartData: any[], color: 
         const area = `${d} L ${width} ${height} L 0 ${height} Z`;
         return { pathD: d, areaD: area, lastPoint: pts[pts.length - 1] };
     }, [chartData, width, height]);
+
+    if (!chartData || chartData.length < 2) return <div className="w-full h-full flex items-center justify-center text-[10px] text-white/10 uppercase tracking-widest">Initializing Protocol Snapshot...</div>;
 
     const gradientId = `chartGradient-${id}`;
 
