@@ -7,14 +7,14 @@ import React from "react";
 export default function StatsOverlay({
     isOpen,
     onClose,
-    onOpenAbout,
+    onOpenPresenceScore,
     onOpenLedger,
     onOpenFAQ,
     onOpenWhitepaper,
 }: {
     isOpen: boolean;
     onClose: () => void;
-    onOpenAbout?: () => void;
+    onOpenPresenceScore?: () => void;
     onOpenLedger?: () => void;
     onOpenFAQ?: () => void;
     onOpenWhitepaper?: () => void;

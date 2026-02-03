@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TopRightMenuProps {
-  onOpenAbout?: () => void;
+  onOpenPresenceScore?: () => void;
   onOpenLedger?: () => void;
   onOpenFAQ?: () => void;
   onOpenStats?: () => void;
@@ -14,7 +14,7 @@ interface TopRightMenuProps {
 }
 
 export default function TopRightMenu({
-  onOpenAbout,
+  onOpenPresenceScore,
   onOpenLedger,
   onOpenFAQ,
   onOpenStats,
@@ -97,7 +97,7 @@ export default function TopRightMenu({
               "
             >
 
-              <MenuItem label="About BlueWave" onClick={() => { setOpen(false); onOpenAbout?.(); }} />
+              <MenuItem label="Presence Score" onClick={() => { setOpen(false); onOpenPresenceScore?.(); }} />
               <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
               <MenuItem
                 label="Whitepaper v1.0"

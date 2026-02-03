@@ -14,6 +14,7 @@ import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "../components/ui/TopRightMenu";
 import WhitepaperOverlay from "../components/WhitepaperOverlay";
 import StatsOverlay from "../components/ui/StatsOverlay";
+import PresenceScoreOverlay from "../components/ui/PresenceScoreOverlay";
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
@@ -55,6 +56,7 @@ export default function LandingPage() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
   const [isStatsOpen, setStatsOpen] = useState(false);
+  const [isPresenceScoreOpen, setPresenceScoreOpen] = useState(false);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -213,14 +215,21 @@ export default function LandingPage() {
         <TopRightMenu
           onOpenWhitepaper={() => {
             setStatsOpen(false);
+            setPresenceScoreOpen(false);
             setWhitepaperOpen(true);
           }}
           isWhitepaperActive={isWhitepaperOpen}
           onOpenStats={() => {
             setWhitepaperOpen(false);
+            setPresenceScoreOpen(false);
             setStatsOpen(true);
           }}
           isStatsActive={isStatsOpen}
+          onOpenPresenceScore={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(false);
+            setPresenceScoreOpen(true);
+          }}
         />
       )}
 
@@ -303,11 +312,22 @@ export default function LandingPage() {
         onClose={() => setStatsOpen(false)}
         onOpenWhitepaper={() => {
           setStatsOpen(false);
+          setPresenceScoreOpen(false);
           setWhitepaperOpen(true);
         }}
-        onOpenAbout={() => {/* implementation for about */ }}
+        onOpenPresenceScore={() => {
+          setStatsOpen(false);
+          setWhitepaperOpen(false);
+          setPresenceScoreOpen(true);
+        }}
         onOpenLedger={() => {/* implementation for ledger */ }}
         onOpenFAQ={() => {/* implementation for faq */ }}
+      />
+
+      {/* 🎯 Presence Score Overlay */}
+      <PresenceScoreOverlay
+        isOpen={isPresenceScoreOpen}
+        onClose={() => setPresenceScoreOpen(false)}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}
