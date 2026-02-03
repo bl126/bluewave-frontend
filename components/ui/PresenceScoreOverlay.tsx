@@ -30,7 +30,7 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="fixed inset-0 z-[80] bg-black flex flex-col items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-[80] bg-[#0B0F14]/95 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
                 >
                     {/* Header Bar */}
                     <div className="absolute top-0 left-0 right-0 h-16 z-[110] flex items-center justify-between px-6 bg-gradient-to-b from-black via-black/90 to-transparent pointer-events-none">
@@ -68,7 +68,7 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                                     height: `${(i + 1) * 20}%`,
                                     borderStyle: i % 2 === 0 ? "solid" : "dashed",
                                     borderWidth: "1px",
-                                    opacity: 0.1 + (i * 0.1),
+                                    opacity: 0.2 + (i * 0.15),
                                 }}
                             />
                         ))}
@@ -112,7 +112,7 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                                 animate={{
                                     x: 0,
                                     y: 0,
-                                    opacity: [0, 0.5, 0]
+                                    opacity: [0, 0.8, 0]
                                 }}
                                 transition={{
                                     duration: 3 + Math.random() * 4,
@@ -146,14 +146,14 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                                 repeat: Infinity,
                                 repeatDelay: 2
                             }}
-                            className="text-[10px] md:text-xs tracking-[0.3em] text-cyan-400/60 uppercase font-medium"
+                            className="text-[10px] md:text-xs tracking-[0.3em] text-cyan-400 uppercase font-medium"
                         >
                             Your Presence Score unlocks in Phase III Pre TGE
                         </motion.div>
                     </div>
 
                     {/* Infrastructure Footer Decorations */}
-                    <div className="absolute bottom-12 flex flex-col items-center gap-4 opacity-20">
+                    <div className="absolute bottom-12 flex flex-col items-center gap-4 opacity-40">
                         <div className="w-16 h-[1px] bg-cyan-500/50" />
                         <div className="text-[9px] uppercase tracking-[0.5em] text-cyan-500 font-mono">
                             Protocol Presence Recording Active

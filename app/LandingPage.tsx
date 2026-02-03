@@ -230,6 +230,7 @@ export default function LandingPage() {
             setStatsOpen(false);
             setPresenceScoreOpen(true);
           }}
+          isPresenceScoreActive={isPresenceScoreOpen}
         />
       )}
 

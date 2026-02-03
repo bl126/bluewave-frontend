@@ -11,6 +11,7 @@ interface TopRightMenuProps {
   onOpenWhitepaper?: () => void;
   isWhitepaperActive?: boolean;
   isStatsActive?: boolean;
+  isPresenceScoreActive?: boolean;
 }
 
 export default function TopRightMenu({
@@ -21,6 +22,7 @@ export default function TopRightMenu({
   onOpenWhitepaper,
   isWhitepaperActive,
   isStatsActive,
+  isPresenceScoreActive,
 }: TopRightMenuProps) {
   const [open, setOpen] = useState(false);
 
@@ -97,7 +99,11 @@ export default function TopRightMenu({
               "
             >
 
-              <MenuItem label="Presence Score" onClick={() => { setOpen(false); onOpenPresenceScore?.(); }} />
+              <MenuItem
+                label="Presence Score"
+                onClick={() => { setOpen(false); onOpenPresenceScore?.(); }}
+                isActive={isPresenceScoreActive}
+              />
               <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
               <MenuItem
                 label="Whitepaper v1.0"
