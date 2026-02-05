@@ -93,6 +93,7 @@ export default function LandingPage() {
     // No saved ID → force onboarding
     if (!savedTgId) {
       setOnboardingOpen(true);
+      setIsLoading(false);
       return;
     }
 
@@ -110,6 +111,7 @@ export default function LandingPage() {
             return;
           }
           setOnboardingOpen(true);
+          setIsLoading(false);
           return;
         }
 
@@ -118,6 +120,7 @@ export default function LandingPage() {
         // If onboarding not completed → force onboarding
         if (!user.first_login_completed) {
           setOnboardingOpen(true);
+          setIsLoading(false);
           return;
         }
 
@@ -138,10 +141,15 @@ export default function LandingPage() {
           joined_at: user.joined_at,
         });
 
+        // Update balance
         setBalance(user.points_balance ?? null);
+
+        // ⭐ OPTIMIZATION: Show UI immediately once user is loaded
+        setIsLoading(false);
       } catch (err) {
         console.error("Error:", err);
         setOnboardingOpen(true);
+        setIsLoading(false);
       }
     })();
   }, [apiBase]);
@@ -157,11 +165,9 @@ export default function LandingPage() {
     }
   };
 
-  // Update balance after login
+  // Update balance after login (Only needed for subsequent updates, not initial load)
   useEffect(() => {
-    if (telegramUser?.id) {
-      fetchBalance(telegramUser.id);
-    }
+    // skip initial - already got it from user fetch
   }, [telegramUser]);
 
   // 🔁 Listen for global balance updates (unchanged)
@@ -208,7 +214,7 @@ export default function LandingPage() {
     <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: "black" }}>
       {/* 🌍 Background Globe */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <BluewaveGlobe onLoaded={() => setIsLoading(false)} />
+        <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
       {!onboardingOpen && !isLoading && (

@@ -42,25 +42,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           `${process.env.NEXT_PUBLIC_API_URL}/api/missions/all/${telegram_id}`
         );
         const data = await res.json();
-        
+
         // Combine all mission types into a single flat list
         let finalList: Mission[] = [];
-        
+
         // Add normal missions
         if (data.normal && Array.isArray(data.normal)) {
           finalList = [...finalList, ...data.normal];
         }
-        
+
         // Add daily mission
         if (data.daily && Array.isArray(data.daily)) {
           finalList = [...finalList, ...data.daily];
         }
-        
+
         // Add onboarding mission
         if (data.onboarding && Array.isArray(data.onboarding)) {
           finalList = [...finalList, ...data.onboarding];
         }
-        
+
         // Add story mission if active
         if (data.story && Object.keys(data.story).length > 0) {
           finalList.push(data.story);
@@ -68,8 +68,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
         // Ensure onboarding appears first
         finalList.sort((a, b) => {
-          if (a.id === "join_channel") return -1;
-          if (b.id === "join_channel") return 1;
+          const onboardingIds = ["join_channel", "join_news"];
+          const isAOnboarding = onboardingIds.includes(a.id);
+          const isBOnboarding = onboardingIds.includes(b.id);
+
+          if (isAOnboarding && !isBOnboarding) return -1;
+          if (!isAOnboarding && isBOnboarding) return 1;
           return 0;
         });
 
@@ -90,11 +94,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     const isSpecial =
       id === "invite_daily" ||
       id === "join_channel" ||
+      id === "join_news" ||
       id === "story_post";
-    
+
     // ⭐ SPECIAL MISSIONS — use old logic (no Ai PvP)
     if (isSpecial) {
-    
+
       // STORY POST LOGIC
       if (id === "story_post") {
         try {
@@ -139,8 +144,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       }
 
-      // ⭐ JOIN CHANNEL — open the Telegram channel link
-      if (id === "join_channel") {
+      // ⭐ JOIN CHANNEL / NEWS — open the Telegram link
+      if (id === "join_channel" || id === "join_news") {
         const mission = missions.find(m => m.id === id);
         if (mission?.url) {
           window.open(mission.url, "_blank");
@@ -230,10 +235,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       let endpoint = "";
       let payload: any = {};
 
-      if (id === "join_channel") {
-        // Onboarding mission
+      if (id === "join_channel" || id === "join_news") {
+        // Onboarding missions
         endpoint = "/api/claim/onboarding";
-        payload = { telegram_id };
+        payload = { telegram_id, mission_id: id };
       } else if (id === "invite_daily") {
         // Daily invite mission
         endpoint = "/api/claim/daily";
@@ -277,8 +282,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       } else {
         // ❌ FAILED CONDITIONS
 
-        if (id === "join_channel" && result.reason === "NOT_IN_CHANNEL") {
-          setPopup("Join the official Bluewave channel to claim.");
+        if (
+          (id === "join_channel" || id === "join_news") &&
+          result.reason === "NOT_IN_CHANNEL"
+        ) {
+          setPopup("Join the required group/channel to claim.");
           setTimeout(() => setPopup(null), 2500);
 
           // Reset to OPEN state
@@ -300,14 +308,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           );
 
         } else if (result.reason === "OPEN_REQUIRED") {
-            setPopup("Tap OPEN first before claiming this mission.");
-            setTimeout(() => setPopup(null), 2500);
+          setPopup("Tap OPEN first before claiming this mission.");
+          setTimeout(() => setPopup(null), 2500);
 
-            setMissions(prev =>
-              prev.map(m =>
-                m.id === id ? { ...m, status: "open" } : m
-              )
-            );
+          setMissions(prev =>
+            prev.map(m =>
+              m.id === id ? { ...m, status: "open" } : m
+            )
+          );
 
         } else if (
           result.reason === "MISSION_NOT_COMPLETED" ||
@@ -388,11 +396,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 <div
                   key={m.id}
                   className={`flex justify-between items-center px-3 py-2 rounded-xl border
-                  ${
-                    m.status === "done"
+                  ${m.status === "done"
                       ? "border-gray-700 opacity-50"
                       : "border-cyan-900"
-                  } bg-black/30`}
+                    } bg-black/30`}
                 >
                   <div>
                     <p className="text-sm font-semibold capitalize">{m.name}</p>

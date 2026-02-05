@@ -14,32 +14,32 @@ function GlobeScene({ onLoaded }: { onLoaded?: () => void }) {
 
   const [countryDots, setCountryDots] = useState<{ lat: number; lon: number }[]>([]);
 
-// ⭐ Fetch countries with caching
-useEffect(() => {
-  const loadCountries = async () => {
-    try {
-      // Try cache first
-      const cacheKey = "/api/countries";
-      const cached = cacheManager.get<{ lat: number; lon: number }[]>(cacheKey);
-      if (cached) {
-        console.log("📦 Countries cache hit");
-        setCountryDots(cached);
-        return;
+  // ⭐ Fetch countries with caching
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        // Try cache first
+        const cacheKey = "/api/countries";
+        const cached = cacheManager.get<{ lat: number; lon: number }[]>(cacheKey);
+        if (cached) {
+          console.log("📦 Countries cache hit");
+          setCountryDots(cached);
+          return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/countries`);
+        const data = await res.json();
+        setCountryDots(data);
+
+        // Cache for 24 hours
+        cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
+      } catch (e) {
+        console.error("Failed to load country dots", e);
       }
+    };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/countries`);
-      const data = await res.json();
-      setCountryDots(data);
-      
-      // Cache for 24 hours
-      cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
-    } catch (e) {
-      console.error("Failed to load country dots", e);
-    }
-  };
-
-  loadCountries();
-}, []);
+    loadCountries();
+  }, []);
 
 
   const latLonToVec3 = (lat: number, lon: number, radius = 1.21) => {
@@ -66,7 +66,6 @@ useEffect(() => {
         color: new THREE.Color("#00e6ff"),
         transparent: true,
         opacity: 2.0,
-        linewidth: 2,
       });
 
       const glowMaterial = new THREE.LineBasicMaterial({
@@ -98,23 +97,38 @@ useEffect(() => {
         group.add(line);
       };
 
-      for (const f of geoData.features as any[]) {
-        const g = f.geometry;
-        if (!g) continue;
-        if (g.type === "Polygon") {
-          for (const ring of g.coordinates as [number, number][][]) addRing(ring);
-        } else if (g.type === "MultiPolygon") {
-          for (const poly of g.coordinates as [number, number][][][]) {
-            for (const ring of poly) addRing(ring);
+      // ⭐ CHUNKED PROCESSING: Process 10 features at a time to keep main thread free
+      const features = geoData.features as any[];
+      let index = 0;
+      const CHUNK_SIZE = 12;
+
+      const processChunks = () => {
+        if (!isMounted) return;
+
+        const end = Math.min(index + CHUNK_SIZE, features.length);
+        for (; index < end; index++) {
+          const f = features[index];
+          const g = f.geometry;
+          if (!g) continue;
+          if (g.type === "Polygon") {
+            for (const ring of g.coordinates as [number, number][][]) addRing(ring);
+          } else if (g.type === "MultiPolygon") {
+            for (const poly of g.coordinates as [number, number][][][]) {
+              for (const ring of poly) addRing(ring);
+            }
           }
         }
-      }
 
-      if (isMounted) setBorders(group);
-      if (isMounted) {
-        setBorders(group);
-        onLoaded?.(); // ✅ tell landing page we’re done loading
-      }
+        if (index < features.length) {
+          requestAnimationFrame(processChunks);
+        } else {
+          // Finished processing all countries
+          setBorders(group);
+          onLoaded?.();
+        }
+      };
+
+      processChunks();
     };
 
     loadBorders();
