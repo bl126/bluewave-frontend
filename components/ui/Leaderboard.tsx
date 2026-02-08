@@ -71,7 +71,23 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               </button>
             </div>
 
-            {loading && <p className="text-center text-cyan-400">{t("leaderboard.loading")}</p>}
+            {loading && (
+              <div className="space-y-2 animate-pulse">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900/30 bg-black/20">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-4 bg-cyan-900/50 rounded"></div>
+                      <div className="w-6 h-6 rounded-full bg-cyan-900/30"></div>
+                      <div className="w-24 h-4 bg-cyan-900/30 rounded"></div>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <div className="w-16 h-3 bg-cyan-900/50 rounded ml-auto"></div>
+                      <div className="w-12 h-2 bg-cyan-900/30 rounded ml-auto"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {!loading && !error && (
@@ -85,10 +101,10 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                     <div
                       key={index}
                       className={`flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900 bg-black/30 ${index === 0
-                          ? "shadow-[0_0_15px_#00e6ff70]"
-                          : index === 1
-                            ? "shadow-[0_0_10px_#00e6ff40]"
-                            : ""
+                        ? "shadow-[0_0_15px_#00e6ff70]"
+                        : index === 1
+                          ? "shadow-[0_0_10px_#00e6ff40]"
+                          : ""
                         }`}
                     >
                       <div className="flex items-center space-x-2">

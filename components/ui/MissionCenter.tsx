@@ -389,7 +389,19 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               </button>
             </div>
 
-            {loading && <p className="text-center text-cyan-300">{t("missions.loading")}</p>}
+            {loading && (
+              <div className="space-y-3 animate-pulse">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900/30 bg-black/20">
+                    <div className="space-y-2">
+                      <div className="w-24 h-4 bg-cyan-900/50 rounded"></div>
+                      <div className="w-16 h-3 bg-cyan-900/30 rounded"></div>
+                    </div>
+                    <div className="w-16 h-7 bg-cyan-900/30 rounded-md border border-cyan-900/50"></div>
+                  </div>
+                ))}
+              </div>
+            )}
             {error && <p className="text-center text-red-400">{error}</p>}
 
             <div className="space-y-3">

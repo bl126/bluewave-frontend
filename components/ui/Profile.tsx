@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
-import ChangeName from "./ChangeName";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
@@ -33,7 +32,6 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   // Settings overlay states
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [changeNameOpen, setChangeNameOpen] = useState(false);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   // ⭐ Telegram ID extracted from Mini App
@@ -61,10 +59,14 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       setLoading(false);
       setError("");               // clear any old error
     }
-    // only show error if we truly have no user data AND loading is done
+    // only show error if we truly have no user data AND loading is done AND SWR has finished its attempt
     if (swrError && !swrUser && !swrLoading) {
-      setError("Could not load profile");
+      // Small delay before showing error to avoid flicker if it's just a transient state
+      const timeout = setTimeout(() => {
+        if (!swrUser) setError("Could not load profile");
+      }, 500);
       setLoading(false);
+      return () => clearTimeout(timeout);
     }
   }, [swrUser, swrError, swrLoading]);
 
@@ -252,24 +254,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   };
 
   const handleSaveName = async (newName: string) => {
-    if (!telegramId) return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update_name`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegram_id: telegramId, name: newName }),
-      });
-
-      const result = await res.json();
-
-      if (result.success) {
-        setUser((prev: any) => ({ ...prev, name: result.name, raw_name: result.name }));
-        mutate();
-      }
-    } catch (error) {
-      console.error("Failed to update name:", error);
-    }
+    // Name editing removed as per request
   };
 
   return (
@@ -435,7 +420,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                 <div className="flex flex-col items-start gap-1.5 mb-3">
                   <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
                     <span className="text-cyan-300 font-semibold text-sm">
-                      {user.raw_name || user.first_name || user.name}
+                      {user.first_name || user.name || user.username}
                     </span>
                   </div>
                   <div className="text-cyan-500 text-xs font-medium ml-1">
@@ -552,19 +537,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
             isOpen={settingsOpen}
             onClose={() => setSettingsOpen(false)}
             onOpenLanguage={() => setLanguageOpen(true)}
-            onOpenChangeName={() => setChangeNameOpen(true)}
           />
 
           <LanguageSelector
             isOpen={languageOpen}
             onClose={() => setLanguageOpen(false)}
-          />
-
-          <ChangeName
-            isOpen={changeNameOpen}
-            onClose={() => setChangeNameOpen(false)}
-            currentName={user?.name || ""}
-            onSave={handleSaveName}
           />
         </motion.div>
       )}

@@ -226,7 +226,7 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && !isAnyOverlayOpen && (
+      {!onboardingOpen && !isLoading && (
         <TopRightMenu
           onOpenWhitepaper={() => {
             setStatsOpen(false);

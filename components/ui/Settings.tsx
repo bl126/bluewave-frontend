@@ -9,10 +9,9 @@ interface SettingsProps {
     isOpen: boolean;
     onClose: () => void;
     onOpenLanguage: () => void;
-    onOpenChangeName: () => void;
 }
 
-export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenChangeName }: SettingsProps) {
+export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsProps) {
     const { t } = useLanguage();
     return (
         <AnimatePresence>
@@ -50,27 +49,6 @@ export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenChange
 
                         {/* Settings Options */}
                         <div className="space-y-3">
-                            {/* Change Name */}
-                            <button
-                                onClick={() => {
-                                    onClose();
-                                    onOpenChangeName();
-                                }}
-                                className="w-full bg-black/40 backdrop-blur-md border border-cyan-900/50 
-                           rounded-xl p-4 text-left hover:bg-cyan-500/10 transition-all
-                           shadow-[0_0_15px_#00e6ff15] group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover:bg-cyan-500/30 transition-all">
-                                        <User className="w-5 h-5 text-cyan-400" />
-                                    </div>
-                                    <div>
-                                        <div className="text-cyan-300 font-semibold text-sm">{t("settings.change_name")}</div>
-                                        <div className="text-cyan-500 text-xs">{t("settings.change_name_desc")}</div>
-                                    </div>
-                                </div>
-                            </button>
-
                             {/* Language */}
                             <button
                                 onClick={() => {
