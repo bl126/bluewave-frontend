@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 interface LeaderboardProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface LeaderboardProps {
 }
 
 export default function Leaderboard({ isOpen, onClose, telegramUser }: LeaderboardProps) {
+  const { t } = useLanguage();
   const [leaders, setLeaders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,7 +34,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
           setProgressData(d);
         }
       })
-      .catch(() => setError("Could not load leaderboard"))
+      .catch(() => setError(t("leaderboard.error_load")))
       .finally(() => setLoading(false));
   }, [isOpen]);
 
@@ -58,7 +61,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
           >
             <div className="flex justify-center relative mb-4">
               <h2 className="text-cyan-400 text-lg font-semibold tracking-wide">
-                LEADERBOARD
+                {t("leaderboard.title")}
               </h2>
               <button
                 onClick={onClose}
@@ -68,7 +71,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               </button>
             </div>
 
-            {loading && <p className="text-center text-cyan-400">Loading...</p>}
+            {loading && <p className="text-center text-cyan-400">{t("leaderboard.loading")}</p>}
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {!loading && !error && (
@@ -81,13 +84,12 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                   {leaders.map((u, index) => (
                     <div
                       key={index}
-                      className={`flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900 bg-black/30 ${
-                        index === 0
+                      className={`flex justify-between items-center px-3 py-2 rounded-xl border border-cyan-900 bg-black/30 ${index === 0
                           ? "shadow-[0_0_15px_#00e6ff70]"
                           : index === 1
-                          ? "shadow-[0_0_10px_#00e6ff40]"
-                          : ""
-                      }`}
+                            ? "shadow-[0_0_10px_#00e6ff40]"
+                            : ""
+                        }`}
                     >
                       <div className="flex items-center space-x-2">
                         <span className="text-cyan-400 font-bold text-sm">#{u.rank}</span>
@@ -96,7 +98,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                           {u.name}
                           {String(u.telegram_id) === String(tg) && (
                             <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
-                              YOU
+                              {t("leaderboard.you")}
                             </span>
                           )}
                         </span>
@@ -104,7 +106,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
                       <div className="text-right">
                         <p className="text-xs text-cyan-300">{u.balance} $BWAVE</p>
-                        <p className="text-[10px] text-cyan-500">{u.referrals} Referrals</p>
+                        <p className="text-[10px] text-cyan-500">{u.referrals} {t("leaderboard.referrals")}</p>
                       </div>
                     </div>
                   ))}
@@ -125,7 +127,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                             {progressData.myRank.name}
                             <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-md 
                                             bg-cyan-400/20 text-cyan-300 border border-cyan-500/40">
-                              YOU
+                              {t("leaderboard.you")}
                             </span>
                           </span>
                         </div>
@@ -135,11 +137,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                             {progressData.myRank.balance} $BWAVE
                           </p>
                           <p className="text-[10px] text-cyan-500">
-                            {progressData.myRank.referrals} Referrals
+                            {progressData.myRank.referrals} {t("leaderboard.referrals")}
                           </p>
                         </div>
                       </div>
-                  )}
+                    )}
 
                 </div>
                 {/* END SCROLL DIV */}
@@ -150,7 +152,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                   <div className="mt-4 bg-black/40 border border-cyan-800 rounded-xl p-4 shadow-[0_0_20px_#00e6ff20]">
 
                     <p className="text-cyan-400 text-sm mb-2">
-                      Your Level: {progressData.current_level}
+                      {t("leaderboard.your_level")} {progressData.current_level}
                     </p>
 
                     {progressData.next_level ? (
@@ -167,12 +169,12 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         </div>
 
                         <p className="text-[11px] text-cyan-300 mt-1">
-                          {progressData.progress}% — {progressData.remaining} points to reach{" "}
+                          {progressData.progress}% — {progressData.remaining} {t("leaderboard.points_to_reach")}{" "}
                           {progressData.next_level}
                         </p>
                       </>
                     ) : (
-                      <p className="text-[12px] text-cyan-300 mt-1">🔥 Max Level Achieved</p>
+                      <p className="text-[12px] text-cyan-300 mt-1">{t("leaderboard.max_level")}</p>
                     )}
                   </div>
                 )}

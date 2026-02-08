@@ -4,6 +4,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 // [CODE: FRONTEND_ONBOARDING_TYPES]
 interface OnboardingModalProps {
@@ -23,7 +25,9 @@ interface VerifyResponse {
 import { ALL_COUNTRIES } from "@/lib/constants";
 
 export default function OnboardingModal({ isOpen, onComplete, autoUsername }: OnboardingModalProps) {
+  const { t } = useLanguage();
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [country, setCountry] = useState("");
@@ -87,7 +91,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     setError(null);
     const cleanUsername = username.trim();
     if (!cleanUsername) {
-      setError("Enter your Telegram username.");
+      setError(t("onboarding.error_username"));
       return;
     }
     setLoading(true);
@@ -101,16 +105,16 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         if (data.detail === "NOT_REGISTERED") {
-          setError("You are not registered. Go to the Bluewave bot, type /start, then open the mini app again.");
+          setError(t("onboarding.error_not_registered"));
         } else {
-          setError("Could not request code. Try again.");
+          setError(t("onboarding.error_request_code"));
         }
         return;
       }
 
       setStep(2);
     } catch (e) {
-      setError("Network error. Check your connection.");
+      setError(t("onboarding.error_network"));
     } finally {
       setLoading(false);
     }
@@ -119,7 +123,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
   const handleVerifyCode = async () => {
     setError(null);
     if (!code.trim()) {
-      setError("Enter the 6-digit code sent to your Telegram.");
+      setError(t("onboarding.error_verify_failed"));
       return;
     }
     setLoading(true);
@@ -132,11 +136,11 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
       const data = await res.json();
       if (!res.ok) {
-        if (data.detail === "CODE_INVALID") setError("Invalid code. Please try again.");
-        else if (data.detail === "CODE_EXPIRED") setError("Code expired. Request a new one.");
+        if (data.detail === "CODE_INVALID") setError(t("onboarding.error_invalid_code"));
+        else if (data.detail === "CODE_EXPIRED") setError(t("onboarding.error_expired_code"));
         else if (data.detail === "NOT_REGISTERED") {
-          setError("You are not registered. Go to the Bluewave bot, type /start, then open the mini app again.");
-        } else setError("Verification failed. Try again.");
+          setError(t("onboarding.error_not_registered"));
+        } else setError(t("onboarding.error_verify_failed"));
         return;
       }
 
@@ -151,7 +155,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
       setStep(3);
     } catch (e) {
-      setError("Network error. Try again.");
+      setError(t("onboarding.error_network"));
     } finally {
       setLoading(false);
     }
@@ -164,7 +168,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
       return;
     }
     if (!country) {
-      setError("Select your country to activate your presence.");
+      setError(t("onboarding.error_select_country"));
       return;
     }
     setLoading(true);
@@ -180,7 +184,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setError("Could not save profile. Try again.");
+        setError(t("onboarding.error_save_profile"));
         return;
       }
 
@@ -190,7 +194,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
         first_login_completed: true,
       });
     } catch (e) {
-      setError("Network error. Try again.");
+      setError(t("onboarding.error_network"));
     } finally {
       setLoading(false);
     }
@@ -220,7 +224,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
           >
             <div className="flex justify-between items-center mb-3">
               <div className="text-xs uppercase tracking-[0.2em] text-cyan-500">
-                Bluewave Onboarding
+                {t("onboarding.title")}
               </div>
               <button
                 className="text-cyan-400/70 hover:text-cyan-100 transition"
@@ -232,20 +236,20 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
             </div>
 
             <h2 className="text-lg font-semibold text-cyan-200 mb-1">
-              Activate Your Presence
+              {t("onboarding.hero_title")}
             </h2>
             <p className="text-xs text-cyan-400 mb-4">
-              This one-time setup links your Telegram account to the Bluewave ecosystem.
+              {t("onboarding.hero_desc")}
             </p>
 
             {step === 1 && (
               <div className="space-y-3">
                 <label className="text-xs text-cyan-300">
-                  Telegram username
+                  {t("onboarding.username_label")}
                   <input
                     value={username}
                     readOnly
-                    placeholder="Loading..."
+                    placeholder={t("onboarding.loading")}
                     className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
                                opacity-70 cursor-not-allowed"
                   />
@@ -258,11 +262,11 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
                              bg-cyan-500/20 border border-cyan-400 text-cyan-100
                              hover:bg-cyan-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Requesting..." : "Request Code"}
+                  {loading ? t("onboarding.btn_requesting") : t("onboarding.btn_request")}
                 </button>
 
                 <p className="text-[11px] text-cyan-500/80">
-                  Make sure you already typed <span className="text-cyan-300">/start</span> in the Bluewave bot before this step.
+                  {t("onboarding.bot_hint")}
                 </p>
               </div>
             )}
@@ -270,14 +274,14 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
             {step === 2 && (
               <div className="space-y-3">
                 <p className="text-xs text-cyan-300">
-                  A 6-digit code was sent to your Telegram account{" "}
+                  {t("onboarding.code_sent")}{" "}
                   <span className="text-cyan-100 font-medium">
                     {username.trim()}
                   </span>.
                 </p>
 
                 <label className="text-xs text-cyan-300">
-                  Verification code
+                  {t("onboarding.code_label")}
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
@@ -296,7 +300,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
                              bg-cyan-500/20 border border-cyan-400 text-cyan-100
                              hover:bg-cyan-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Verifying..." : "Verify Code"}
+                  {loading ? t("onboarding.btn_verifying") : t("onboarding.btn_verify")}
                 </button>
               </div>
             )}
@@ -304,17 +308,17 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
             {step === 3 && (
               <div className="space-y-3">
                 <p className="text-xs text-cyan-300 mb-1">
-                  Last step — choose where your presence is mapped from.
+                  {t("onboarding.step3_title")}
                 </p>
 
                 <label className="text-xs text-cyan-300">
-                  Country
+                  {t("onboarding.country_label")}
 
                   {/* SEARCH BOX */}
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search country..."
+                    placeholder={t("onboarding.search_placeholder")}
                     className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
                                focus:outline-none focus:border-cyan-400 mb-2"
                   />
@@ -322,7 +326,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
 
                   {/* ALL COUNTRIES - FILTERED */}
-                  <div className="text-[10px] text-cyan-500 mb-1">All Countries</div>
+                  <div className="text-[10px] text-cyan-500 mb-1">{t("onboarding.all_countries")}</div>
                   <div className="max-h-32 overflow-y-auto border border-cyan-900 rounded-md bg-black/30 p-2">
                     {ALL_COUNTRIES.filter(c =>
                       c.name.toLowerCase().includes(search.toLowerCase())
@@ -346,7 +350,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
                              bg-cyan-500 border border-cyan-300 text-black
                              hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Activating..." : "Activate Presence"}
+                  {loading ? t("onboarding.btn_activating") : t("onboarding.btn_activate")}
                 </button>
               </div>
             )}
@@ -358,7 +362,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
             )}
 
             <div className="mt-3 text-[10px] text-cyan-500/70">
-              Your presence = your access. We never ask for passwords — only your Telegram identity.
+              {t("onboarding.footer_note")}
             </div>
           </motion.div>
         </>

@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Activity } from "lucide-react";
 import React from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 export default function StatsOverlay({
     isOpen,
@@ -19,7 +21,9 @@ export default function StatsOverlay({
     onOpenFAQ?: () => void;
     onOpenWhitepaper?: () => void;
 }) {
+    const { t } = useLanguage();
     return (
+
         <AnimatePresence>
             {isOpen && (
                 <motion.div
@@ -37,7 +41,7 @@ export default function StatsOverlay({
                             <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
                                 <ArrowLeft size={20} />
                             </div>
-                            <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Back</span>
+                            <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">{t("stats.back")}</span>
                         </button>
                     </div>
 
@@ -52,10 +56,10 @@ export default function StatsOverlay({
                                     className="flex items-center justify-center gap-2 text-cyan-500/60"
                                 >
                                     <Activity size={12} />
-                                    <span className="text-[10px] uppercase tracking-[0.4em] font-medium">Network Protocol Metrics</span>
+                                    <span className="text-[10px] uppercase tracking-[0.4em] font-medium">{t("stats.metrics_label")}</span>
                                 </motion.div>
                                 <h1 className="text-5xl font-bold tracking-tight text-white/90">
-                                    Network Stats
+                                    {t("stats.title")}
                                 </h1>
                             </div>
 
@@ -70,11 +74,11 @@ export default function StatsOverlay({
 
                                 <div className="relative z-10 space-y-4">
                                     <div className="inline-flex items-center px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 text-[10px] uppercase tracking-widest font-bold">
-                                        Protocol Upgrade in Progress
+                                        {t("stats.upgrade_status")}
                                     </div>
-                                    <h2 className="text-2xl font-semibold text-white/80">Coming Soon</h2>
+                                    <h2 className="text-2xl font-semibold text-white/80">{t("stats.coming_soon")}</h2>
                                     <p className="text-sm text-white/30 max-w-xs mx-auto leading-relaxed">
-                                        We are recalibrating the protocol metrics for enhanced precision. Real-time ecosystem data will be available soon.
+                                        {t("stats.recalibrating")}
                                     </p>
                                 </div>
                             </motion.div>
@@ -82,7 +86,7 @@ export default function StatsOverlay({
                             {/* Decorative Footer */}
                             <div className="pt-8 opacity-20">
                                 <div className="flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.3em] font-medium">
-                                    <span>Protocol Snapshot v1.1.0</span>
+                                    <span>{t("stats.snapshot")}</span>
                                 </div>
                             </div>
                         </div>

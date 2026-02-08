@@ -4,6 +4,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
 interface MissionCenterProps {
@@ -22,7 +24,9 @@ interface Mission {
 
 // [CODE: FRONTEND_MISSION_CENTER_MAIN_COMPONENT]
 export default function MissionCenter({ isOpen, onClose, telegramUser }: MissionCenterProps) {
+  const { t } = useLanguage();
   const telegram_id = telegramUser?.id;   // ← ADD THIS EXACTLY HERE
+
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
   const [claimCooldown, setClaimCooldown] = useState(false);
@@ -81,7 +85,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setLoading(false);
       } catch (e) {
         console.error(e);
-        setError("Could not load missions.");
+        setError(t("missions.error_load"));
       }
     }
 
@@ -126,13 +130,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
             if (tg?.shareToStory) {
               tg.shareToStory(mediaUrl, {
-                text: `This isn't a meme coin
-  This is a Presence Economy.
-  #BWAVE #TON #Bluewave
-  ${refLink}`,
+                text: `${t("missions.share_text")}\n${refLink}`,
                 widget_link: {
                   url: refLink,
-                  name: "Join Bluewave"
+                  name: t("missions.share_button")
                 }
               });
             } else {
@@ -286,7 +287,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           (id === "join_channel" || id === "join_news") &&
           result.reason === "NOT_IN_CHANNEL"
         ) {
-          setPopup("Join the required group/channel to claim.");
+          setPopup(t("missions.popup_join"));
           setTimeout(() => setPopup(null), 2500);
 
           // Reset to OPEN state
@@ -297,7 +298,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           );
 
         } else if (id === "invite_daily" && result.reason === "NOT_ENOUGH_INVITES") {
-          setPopup("Invite 2 people today to unlock this reward.");
+          setPopup(t("missions.popup_invite"));
           setTimeout(() => setPopup(null), 2500);
 
           // Reset button to open (can't claim yet)
@@ -308,7 +309,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           );
 
         } else if (result.reason === "OPEN_REQUIRED") {
-          setPopup("Tap OPEN first before claiming this mission.");
+          setPopup(t("missions.popup_open_first"));
           setTimeout(() => setPopup(null), 2500);
 
           setMissions(prev =>
@@ -322,7 +323,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           result.reason === "TOO_FAST"
         ) {
           // Ai PvP: user didn't complete mission within allowed timeline
-          setPopup("Please complete the mission properly before claiming.");
+          setPopup(t("missions.popup_complete"));
           setTimeout(() => setPopup(null), 2500);
 
           // Reset mission back to OPEN so they must start again
@@ -378,7 +379,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           >
             <div className="flex justify-center relative mb-4">
               <h2 className="text-cyan-400 text-lg font-semibold tracking-wide">
-                MISSION CENTER
+                {t("missions.title")}
               </h2>
               <button
                 onClick={onClose}
@@ -388,7 +389,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               </button>
             </div>
 
-            {loading && <p className="text-center text-cyan-300">Loading...</p>}
+            {loading && <p className="text-center text-cyan-300">{t("missions.loading")}</p>}
             {error && <p className="text-center text-red-400">{error}</p>}
 
             <div className="space-y-3">
@@ -411,7 +412,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       onClick={() => handleOpen(m.id)}
                       className="px-3 py-1 text-xs bg-cyan-500/20 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/30"
                     >
-                      Open
+                      {t("missions.open")}
                     </button>
                   )}
                   {m.status === "waiting" && (
@@ -419,7 +420,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       disabled
                       className="px-3 py-1 text-xs bg-yellow-600/20 border border-yellow-400 text-yellow-200 rounded-md"
                     >
-                      Waiting...
+                      {t("missions.waiting")}
                     </button>
                   )}
                   {m.status === "claim" && (
@@ -427,7 +428,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       onClick={() => handleClaim(m.id)}
                       className="px-3 py-1 text-xs bg-cyan-600/30 border border-cyan-400 text-cyan-200 rounded-md animate-pulse shadow-[0_0_10px_#00e6ff80]"
                     >
-                      Claim
+                      {t("missions.claim")}
                     </button>
                   )}
                   {m.status === "claiming" && (
@@ -435,7 +436,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       disabled
                       className="px-3 py-1 text-xs bg-cyan-700/20 border border-cyan-500 text-cyan-400 rounded-md opacity-70"
                     >
-                      Claiming...
+                      {t("missions.claiming")}
                     </button>
                   )}
                   {m.status === "done" && (
@@ -443,7 +444,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       disabled
                       className="px-3 py-1 text-xs bg-gray-700 text-gray-400 rounded-md"
                     >
-                      Done
+                      {t("missions.done")}
                     </button>
                   )}
                 </div>

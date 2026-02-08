@@ -15,9 +15,12 @@ import TopRightMenu from "../components/ui/TopRightMenu";
 import WhitepaperOverlay from "../components/WhitepaperOverlay";
 import StatsOverlay from "../components/ui/StatsOverlay";
 import PresenceScoreOverlay from "../components/ui/PresenceScoreOverlay";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
+  const { t } = useLanguage();
 
   // [CODE: FRONTEND_TELEGRAM_WEBAPP_INIT]
   // ⭐ ENSURE Telegram WebApp is initialized
@@ -247,10 +250,10 @@ export default function LandingPage() {
           {balance !== null
             ? `${balance.toLocaleString()} $BWAVE`
             : telegramUser
-              ? "Loading..."
+              ? t("balance.loading")
               : (
                 <span className="text-cyan-400 animate-pulse">
-                  Connecting…
+                  {t("balance.connecting")}
                 </span>
               )}
         </span>
@@ -267,19 +270,19 @@ export default function LandingPage() {
                      rounded-2xl p-2 shadow-[0_0_20px_#00e6ff30] border border-cyan-900"
         >
           <button onClick={() => setMissionOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Rocket size={18} /> Missions
+            <Rocket size={18} /> {t("nav.missions")}
           </button>
 
           <button onClick={() => setLeaderboardOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Trophy size={18} /> Leaderboard
+            <Trophy size={18} /> {t("nav.leaderboard")}
           </button>
 
           <button onClick={() => setMarketOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Store size={18} /> Market
+            <Store size={18} /> {t("nav.market")}
           </button>
 
           <button onClick={() => setProfileOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <User size={18} /> Profile
+            <User size={18} /> {t("nav.profile")}
           </button>
         </motion.div>
       )}

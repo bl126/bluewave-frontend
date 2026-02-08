@@ -1,0 +1,128 @@
+{
+  "profile": {
+    "title": "Profile",
+    "streak": "Day Streak",
+    "level": "Level",
+    "total_networks": "Total Networks",
+    "network_earnings": "Network Earnings",
+    "claim": "Claim",
+    "claiming": "Claiming...",
+    "done": "Done",
+    "notify_inactive": "Notify Inactive Networks",
+    "wait": "Wait",
+    "roles": "Roles",
+    "no_roles": "No roles assigned yet",
+    "connect_wallet": "Connect Wallet",
+    "badge_unlocked": "🔥 3-Day Streak Badge Unlocked!",
+    "referral_link": "Referral Link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "joined": "Joined"
+  },
+  "settings": {
+    "title": "Settings",
+    "change_name": "Change Name",
+    "change_name_desc": "Update your display name",
+    "language": "Language",
+    "language_desc": "Choose your preferred language"
+  },
+  "language": {
+    "title": "Choose Language"
+  },
+  "change_name": {
+    "title": "Change Name",
+    "label": "Display Name",
+    "placeholder": "Enter your name",
+    "characters": "characters",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "nav": {
+    "missions": "Missions",
+    "leaderboard": "Leaderboard",
+    "market": "Market",
+    "profile": "Profile"
+  },
+  "balance": {
+    "loading": "Loading...",
+    "connecting": "Connecting..."
+  },
+  "missions": {
+    "title": "MISSION CENTER",
+    "open": "Open",
+    "waiting": "Waiting...",
+    "claim": "Claim",
+    "claiming": "Claiming...",
+    "done": "Done",
+    "loading": "Loading...",
+    "error_load": "Could not load missions.",
+    "popup_join": "Join the required group/channel to claim.",
+    "popup_invite": "Invite 2 people today to unlock this reward.",
+    "popup_open_first": "Tap OPEN first before claiming this mission.",
+    "popup_complete": "Please complete the mission properly before claiming.",
+    "share_text": "This isn't a meme coin\nThis is a Presence Economy.\n#BWAVE #TON #Bluewave",
+    "share_button": "Join Bluewave"
+  },
+  "leaderboard": {
+    "title": "LEADERBOARD",
+    "loading": "Loading...",
+    "error_load": "Could not load leaderboard",
+    "you": "YOU",
+    "referrals": "Referrals",
+    "your_level": "Your Level:",
+    "points_to_reach": "points to reach",
+    "max_level": "Max Level Achieved"
+  },
+  "menu": {
+    "presence_score": "Presence Score",
+    "presence_ledger": "Presence Ledger",
+    "whitepaper": "Whitepaper v1.0",
+    "faq": "FAQ",
+    "stats": "Stats"
+  },
+  "stats": {
+    "back": "Back",
+    "metrics_label": "Network Protocol Metrics",
+    "title": "Network Stats",
+    "upgrade_status": "Protocol Upgrade in Progress",
+    "coming_soon": "Coming Soon",
+    "recalibrating": "We are recalibrating the protocol metrics for enhanced precision. Real-time ecosystem data will be available soon.",
+    "snapshot": "Protocol Snapshot v1.1.0"
+  },
+  "presence": {
+    "accumulating": "Accumulating\nPresence Signals",
+    "unlock_info": "Your Presence Score unlocks in Phase III Pre TGE",
+    "active_recording": "Protocol Presence Recording Active"
+  },
+  "onboarding": {
+    "title": "Bluewave Onboarding",
+    "hero_title": "Activate Your Presence",
+    "hero_desc": "This one-time setup links your Telegram account to the Bluewave ecosystem.",
+    "username_label": "Telegram username",
+    "loading": "Loading...",
+    "btn_requesting": "Requesting...",
+    "btn_request": "Request Code",
+    "bot_hint": "Make sure you already typed /start in the Bluewave bot before this step.",
+    "code_sent": "A 6-digit code was sent to your Telegram account",
+    "code_label": "Verification code",
+    "btn_verifying": "Verifying...",
+    "btn_verify": "Verify Code",
+    "step3_title": "Last step — choose where your presence is mapped from.",
+    "country_label": "Country",
+    "search_placeholder": "Search country...",
+    "all_countries": "All Countries",
+    "btn_activating": "Activating...",
+    "btn_activate": "Activate Presence",
+    "footer_note": "Your presence = your access. We never ask for passwords — only your Telegram identity.",
+    "error_username": "Enter your Telegram username.",
+    "error_not_registered": "You are not registered. Go to the Bluewave bot, type /start, then open the mini app again.",
+    "error_request_code": "Could not request code. Try again.",
+    "error_network": "Network error. Try again.",
+    "error_invalid_code": "Invalid code. Please try again.",
+    "error_expired_code": "Code expired. Request a new one.",
+    "error_verify_failed": "Verification failed. Try again.",
+    "error_select_country": "Select your country to activate your presence.",
+    "error_save_profile": "Could not save profile. Try again."
+  }
+}

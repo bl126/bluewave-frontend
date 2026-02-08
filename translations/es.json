@@ -1,0 +1,98 @@
+{
+    "profile": {
+        "title": "Perfil",
+        "streak": "Racha de días",
+        "level": "Nivel",
+        "total_networks": "Redes totales",
+        "network_earnings": "Ganancias de red",
+        "claim": "Reclamar",
+        "claiming": "Reclamando...",
+        "done": "Hecho",
+        "notify_inactive": "Notificar redes inactivas",
+        "wait": "Espera",
+        "roles": "Roles",
+        "no_roles": "Aún no hay roles asignados",
+        "connect_wallet": "Conectar Billetera",
+        "badge_unlocked": "🔥 ¡Insignia de racha de 3 días desbloqueada!",
+        "referral_link": "Enlace de referido",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "joined": "Se unió el"
+    },
+    "settings": {
+        "title": "Configuración",
+        "change_name": "Cambiar nombre",
+        "change_name_desc": "Actualice su nombre de usuario",
+        "language": "Idioma",
+        "language_desc": "Elija su idioma preferido"
+    },
+    "language": {
+        "title": "Elegir idioma"
+    },
+    "change_name": {
+        "title": "Cambiar nombre",
+        "label": "Nombre de usuario",
+        "placeholder": "Ingrese su nombre",
+        "characters": "caracteres",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando..."
+    },
+    "nav": {
+        "missions": "Misiones",
+        "leaderboard": "Clasificación",
+        "market": "Mercado",
+        "profile": "Perfil"
+    },
+    "balance": {
+        "loading": "Cargando...",
+        "connecting": "Conectando..."
+    },
+    "missions": {
+        "title": "CENTRO DE MISIONES",
+        "open": "Abrir",
+        "waiting": "Esperando...",
+        "claim": "Reclamar",
+        "claiming": "Reclamando...",
+        "done": "Hecho",
+        "loading": "Cargando...",
+        "error_load": "No se pudieron cargar las misiones.",
+        "popup_join": "Únete al grupo/channel requerido para reclamar.",
+        "popup_invite": "Invita a 2 personas hoy para desbloquear esta recompensa.",
+        "popup_open_first": "Toca ABRIR primero antes de reclamar esta misión.",
+        "popup_complete": "Por favor, completa la misión correctamente antes de reclamar.",
+        "share_text": "Esto no es una meme coin. Esto es una Economía de Presencia.\n#BWAVE #TON #Bluewave",
+        "share_button": "Unirse a Bluewave"
+    },
+    "leaderboard": {
+        "title": "TABLA DE CLASIFICACIÓN",
+        "loading": "Cargando...",
+        "error_load": "No se pudo cargar la tabla de clasificación",
+        "you": "TÚ",
+        "referrals": "Referidos",
+        "your_level": "Tu Nivel:",
+        "points_to_reach": "puntos para alcanzar",
+        "max_level": "Nivel Máximo Alcanzado"
+    },
+    "menu": {
+        "presence_score": "Presence Score",
+        "presence_ledger": "Presence Ledger",
+        "whitepaper": "Whitepaper v1.0",
+        "faq": "FAQ",
+        "stats": "Stats"
+    },
+    "stats": {
+        "back": "Atrás",
+        "metrics_label": "Métricas del Protocolo de Red",
+        "title": "Estadísticas de Red",
+        "upgrade_status": "Actualización del Protocolo en Progreso",
+        "coming_soon": "Próximamente",
+        "recalibrating": "Estamos recalibrando las métricas del protocolo para una mayor precisión. Los datos del ecosistema en tiempo real estarán disponibles pronto.",
+        "snapshot": "Snapshot del Protocolo v1.1.0"
+    },
+    "presence": {
+        "accumulating": "Acumulando\nSeñales de Presencia",
+        "unlock_info": "Tu puntaje de presencia se desbloquea en la Fase III Pre TGE",
+        "active_recording": "Grabación de presencia de protocolo activa"
+    }
+}

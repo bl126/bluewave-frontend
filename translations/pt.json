@@ -1,0 +1,98 @@
+{
+    "profile": {
+        "title": "Perfil",
+        "streak": "Sequência de Dias",
+        "level": "Nível",
+        "total_networks": "Total de Redes",
+        "network_earnings": "Ganhos da Rede",
+        "claim": "Reivindicar",
+        "claiming": "Reivindicando...",
+        "done": "Concluído",
+        "notify_inactive": "Notificar Redes Inativas",
+        "wait": "Aguarde",
+        "roles": "Papéis",
+        "no_roles": "Nenhum papel atribuído ainda",
+        "connect_wallet": "Conectar Carteira",
+        "badge_unlocked": "🔥 Emblema de Sequência de 3 Dias Desbloqueado!",
+        "referral_link": "Link de Indicação",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "joined": "Entrou em"
+    },
+    "settings": {
+        "title": "Configurações",
+        "change_name": "Alterar Nome",
+        "change_name_desc": "Atualize seu nome de exibição",
+        "language": "Idioma",
+        "language_desc": "Escolha seu idioma preferido"
+    },
+    "language": {
+        "title": "Escolher Idioma"
+    },
+    "change_name": {
+        "title": "Alterar Nome",
+        "label": "Nome de Exibição",
+        "placeholder": "Digite seu nome",
+        "characters": "caracteres",
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "saving": "Salvando..."
+    },
+    "nav": {
+        "missions": "Missões",
+        "leaderboard": "Placar",
+        "market": "Mercado",
+        "profile": "Perfil"
+    },
+    "balance": {
+        "loading": "Carregando...",
+        "connecting": "Conectando..."
+    },
+    "missions": {
+        "title": "CENTRO DE MISSÕES",
+        "open": "Abrir",
+        "waiting": "Esperando...",
+        "claim": "Resgatar",
+        "claiming": "Resgatando...",
+        "done": "Concluído",
+        "loading": "Carregando...",
+        "error_load": "Não foi possível carregar as missões.",
+        "popup_join": "Entre no grupo/canal necessário para resgatar.",
+        "popup_invite": "Convide 2 pessoas hoje para desbloquear esta recompensa.",
+        "popup_open_first": "Toque em ABRIR primeiro antes de resgatar esta missão.",
+        "popup_complete": "Por favor, complete a missão corretamente antes de resgatar.",
+        "share_text": "Isso não é uma meme coin. Isso é uma Economia de Presença.\n#BWAVE #TON #Bluewave",
+        "share_button": "Entrar na Bluewave"
+    },
+    "leaderboard": {
+        "title": "PLACAR",
+        "loading": "Carregando...",
+        "error_load": "Não foi possível carregar o placar",
+        "you": "VOCÊ",
+        "referrals": "Indicações",
+        "your_level": "Seu Nível:",
+        "points_to_reach": "pontos para atingir",
+        "max_level": "Nível Máximo Atingido"
+    },
+    "menu": {
+        "presence_score": "Presence Score",
+        "presence_ledger": "Presence Ledger",
+        "whitepaper": "Whitepaper v1.0",
+        "faq": "FAQ",
+        "stats": "Stats"
+    },
+    "stats": {
+        "back": "Voltar",
+        "metrics_label": "Métricas do Protocolo de Rede",
+        "title": "Estatísticas da Rede",
+        "upgrade_status": "Atualização do Protocolo em Andamento",
+        "coming_soon": "Em Breve",
+        "recalibrating": "Estamos recalibrando as métricas do protocolo para maior precisão. Dados do ecossistema em tempo real estarão disponíveis em breve.",
+        "snapshot": "Snapshot do Protocolo v1.1.0"
+    },
+    "presence": {
+        "accumulating": "Acumulando\nSinais de Presença",
+        "unlock_info": "Sua Pontuação de Presença desbloqueia na Fase III Pré TGE",
+        "active_recording": "Gravação de Presença no Protocolo Ativa"
+    }
+}

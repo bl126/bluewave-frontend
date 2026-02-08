@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TopRightMenuProps {
   onOpenPresenceScore?: () => void;
@@ -24,7 +25,9 @@ export default function TopRightMenu({
   isStatsActive,
   isPresenceScoreActive,
 }: TopRightMenuProps) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+
 
   return (
     <div className="fixed top-4 right-4 z-[150]">
@@ -100,19 +103,19 @@ export default function TopRightMenu({
             >
 
               <MenuItem
-                label="Presence Score"
+                label={t("menu.presence_score")}
                 onClick={() => { setOpen(false); onOpenPresenceScore?.(); }}
                 isActive={isPresenceScoreActive}
               />
-              <MenuItem label="Presence Ledger" onClick={() => { setOpen(false); onOpenLedger?.(); }} />
+              <MenuItem label={t("menu.presence_ledger")} onClick={() => { setOpen(false); onOpenLedger?.(); }} />
               <MenuItem
-                label="Whitepaper v1.0"
+                label={t("menu.whitepaper")}
                 onClick={() => { setOpen(false); onOpenWhitepaper?.(); }}
                 isActive={isWhitepaperActive}
               />
-              <MenuItem label="FAQ" onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
+              <MenuItem label={t("menu.faq")} onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
               <MenuItem
-                label="Stats"
+                label={t("menu.stats")}
                 onClick={() => { setOpen(false); onOpenStats?.(); }}
                 isActive={isStatsActive}
               />

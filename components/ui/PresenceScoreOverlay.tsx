@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 interface PresenceScoreOverlayProps {
     isOpen: boolean;
@@ -10,7 +12,9 @@ interface PresenceScoreOverlayProps {
 }
 
 export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreOverlayProps) {
+    const { t } = useLanguage();
     // Lock body scroll when open
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -41,7 +45,7 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                             <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
                                 <ArrowLeft size={20} />
                             </div>
-                            <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Back</span>
+                            <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">{t("stats.back")}</span>
                         </button>
                     </div>
 
@@ -132,8 +136,8 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                             transition={{ delay: 0.5, duration: 1 }}
                             className="space-y-2"
                         >
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-[0.2em] text-cyan-50 uppercase">
-                                Accumulating<br />Presence Signals
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-[0.2em] text-cyan-50 uppercase whitespace-pre-line">
+                                {t("presence.accumulating")}
                             </h1>
                         </motion.div>
 
@@ -148,15 +152,15 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                             }}
                             className="text-[10px] md:text-xs tracking-[0.3em] text-cyan-400 uppercase font-medium"
                         >
-                            Your Presence Score unlocks in Phase III Pre TGE
+                            {t("presence.unlock_info")}
                         </motion.div>
                     </div>
 
                     {/* Infrastructure Footer Decorations */}
                     <div className="absolute bottom-12 flex flex-col items-center gap-4 opacity-40">
                         <div className="w-16 h-[1px] bg-cyan-500/50" />
-                        <div className="text-[9px] uppercase tracking-[0.5em] text-cyan-500 font-mono">
-                            Protocol Presence Recording Active
+                        <div className="text-[9px] uppercase tracking-[0.5em] text-cyan-500 font-mono text-center">
+                            {t("presence.active_recording")}
                         </div>
                     </div>
                 </motion.div>

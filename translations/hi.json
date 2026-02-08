@@ -1,0 +1,98 @@
+{
+    "profile": {
+        "title": "प्रोफ़ाइल",
+        "streak": "दिनों का सिलसिला",
+        "level": "स्तर",
+        "total_networks": "कुल नेटवर्क",
+        "network_earnings": "नेटवर्क कमाई",
+        "claim": "दावा करें",
+        "claiming": "दावा किया जा रहा है...",
+        "done": "हो गया",
+        "notify_inactive": "निष्क्रिय नेटवर्क को सूचित करें",
+        "wait": "प्रतीक्षा करें",
+        "roles": "भूमिकाएं",
+        "no_roles": "अभी तक कोई भूमिका नहीं दी गई",
+        "connect_wallet": "वॉलेट कनेक्ट करें",
+        "badge_unlocked": "🔥 3-दिवसीय सिलसिला बैज अनलॉक हुआ!",
+        "referral_link": "रेफरल लिंक",
+        "copy": "कॉपी करें",
+        "copied": "कॉपी किया गया",
+        "joined": "शामिल हुए"
+    },
+    "settings": {
+        "title": "सेटिंग्स",
+        "change_name": "नाम बदलें",
+        "change_name_desc": "अपना प्रदर्शन नाम अपडेट करें",
+        "language": "भाषा",
+        "language_desc": "अपनी पसंदीदा भाषा चुनें"
+    },
+    "language": {
+        "title": "भाषा चुनें"
+    },
+    "change_name": {
+        "title": "नाम बदलें",
+        "label": "प्रदर्शन नाम",
+        "placeholder": "अपना नाम दर्ज करें",
+        "characters": "वर्ण",
+        "cancel": "रद्द करें",
+        "save": "सहेजें",
+        "saving": "सहेजा जा रहा है..."
+    },
+    "nav": {
+        "missions": "मिशन",
+        "leaderboard": "लीडरबोर्ड",
+        "market": "मार्केट",
+        "profile": "प्रोफ़ाइल"
+    },
+    "balance": {
+        "loading": "लोड हो रहा है...",
+        "connecting": "कनेक्ट हो रहा है..."
+    },
+    "missions": {
+        "title": "मिशन सेंटर",
+        "open": "खोलें",
+        "waiting": "प्रतीक्षा कर रहे हैं...",
+        "claim": "दावा करें",
+        "claiming": "दावा किया जा रहा है...",
+        "done": "हो गया",
+        "loading": "लोड हो रहा है...",
+        "error_load": "मिशन लोड नहीं किए जा सके।",
+        "popup_join": "दावा करने के लिए आवश्यक समूह/चैनल में शामिल हों।",
+        "popup_invite": "इस इनाम को अनलॉक करने के लिए आज 2 लोगों को आमंत्रित करें।",
+        "popup_open_first": "इस मिशन का दावा करने से पहले पहले खोलें पर टैप करें।",
+        "popup_complete": "कृपया दावा करने से पहले मिशन को ठीक से पूरा करें।",
+        "share_text": "यह कोई मीम कॉइन नहीं है। यह प्रेजेंस इकोनॉमी है।\n#BWAVE #TON #Bluewave",
+        "share_button": "Bluewave में शामिल हों"
+    },
+    "leaderboard": {
+        "title": "लीडरबोर्ड",
+        "loading": "लोड हो रहा है...",
+        "error_load": "लीडरबोर्ड लोड नहीं किया जा सका",
+        "you": "आप",
+        "referrals": "रेफरल",
+        "your_level": "आपका स्तर:",
+        "points_to_reach": "अंक प्राप्त करने के लिए",
+        "max_level": "अधिकतम स्तर प्राप्त किया"
+    },
+    "menu": {
+        "presence_score": "Presence Score",
+        "presence_ledger": "Presence Ledger",
+        "whitepaper": "Whitepaper v1.0",
+        "faq": "FAQ",
+        "stats": "Stats"
+    },
+    "stats": {
+        "back": "पीछे",
+        "metrics_label": "नेटवर्क प्रोटोकॉल मेट्रिक्स",
+        "title": "नेटवर्क आंकड़े",
+        "upgrade_status": "प्रोटोकॉल अपग्रेड प्रगति पर है",
+        "coming_soon": "जल्द ही",
+        "recalibrating": "हम बेहतर सटीकता के लिए प्रोटोकॉल मेट्रिक्स को फिर से कैलिब्रेट कर रहे हैं। रीयल-टाइम इकोसिस्टम डेटा जल्द ही उपलब्ध होगा।",
+        "snapshot": "प्रोटोकॉल स्नैपशॉट v1.1.0"
+    },
+    "presence": {
+        "accumulating": "प्रेजेंस संकेतों को\nसंचित करना",
+        "unlock_info": "आपका प्रेजेंस स्कोर चरण III प्री TGE में अनलॉक होगा",
+        "active_recording": "प्रोटोकॉल प्रेजेंस रिकॉर्डिंग सक्रिय"
+    }
+}

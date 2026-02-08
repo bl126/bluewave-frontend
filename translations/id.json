@@ -1,0 +1,98 @@
+{
+    "profile": {
+        "title": "Profil",
+        "streak": "Rentetan Hari",
+        "level": "Level",
+        "total_networks": "Total Jaringan",
+        "network_earnings": "Penghasilan Jaringan",
+        "claim": "Klaim",
+        "claiming": "Mengklaim...",
+        "done": "Selesai",
+        "notify_inactive": "Beritahu Jaringan Tidak Aktif",
+        "wait": "Tunggu",
+        "roles": "Peran",
+        "no_roles": "Belum ada peran yang ditetapkan",
+        "connect_wallet": "Hubungkan Dompet",
+        "badge_unlocked": "🔥 Lencana Rentetan 3 Hari Dibuka!",
+        "referral_link": "Link Referral",
+        "copy": "Salin",
+        "copied": "Disalin",
+        "joined": "Bergabung pada"
+    },
+    "settings": {
+        "title": "Pengaturan",
+        "change_name": "Ubah Nama",
+        "change_name_desc": "Perbarui nama tampilan Anda",
+        "language": "Bahasa",
+        "language_desc": "Pilih bahasa pilihan Anda"
+    },
+    "language": {
+        "title": "Pilih Bahasa"
+    },
+    "change_name": {
+        "title": "Ubah Nama",
+        "label": "Nama Tampilan",
+        "placeholder": "Masukkan nama Anda",
+        "characters": "karakter",
+        "cancel": "Batal",
+        "save": "Simpan",
+        "saving": "Menyimpan..."
+    },
+    "nav": {
+        "missions": "Misi",
+        "leaderboard": "Papan Peringkat",
+        "market": "Pasar",
+        "profile": "Profil"
+    },
+    "balance": {
+        "loading": "Memuat...",
+        "connecting": "Menghubungkan..."
+    },
+    "missions": {
+        "title": "PUSAT MISI",
+        "open": "Buka",
+        "waiting": "Menunggu...",
+        "claim": "Klaim",
+        "claiming": "Mengklaim...",
+        "done": "Selesai",
+        "loading": "Memuat...",
+        "error_load": "Tidak dapat memuat misi.",
+        "popup_join": "Bergabunglah dengan grup/saluran yang diperlukan untuk mengklaim.",
+        "popup_invite": "Undang 2 orang hari ini untuk membuka hadiah ini.",
+        "popup_open_first": "Ketuk BUKA terlebih dahulu sebelum mengklaim misi ini.",
+        "popup_complete": "Harap selesaikan misi dengan benar sebelum mengklaim.",
+        "share_text": "Ini bukan koin meme. Ini adalah Ekonomi Kehadiran.\n#BWAVE #TON #Bluewave",
+        "share_button": "Gabung Bluewave"
+    },
+    "leaderboard": {
+        "title": "PAPAN PERINGKAT",
+        "loading": "Memuat...",
+        "error_load": "Tidak dapat memuat papan peringkat",
+        "you": "ANDA",
+        "referrals": "Referral",
+        "your_level": "Level Anda:",
+        "points_to_reach": "poin untuk mencapai",
+        "max_level": "Level Maksimum Tercapai"
+    },
+    "menu": {
+        "presence_score": "Presence Score",
+        "presence_ledger": "Presence Ledger",
+        "whitepaper": "Whitepaper v1.0",
+        "faq": "FAQ",
+        "stats": "Stats"
+    },
+    "stats": {
+        "back": "Kembali",
+        "metrics_label": "Metrik Protokol Jaringan",
+        "title": "Statistik Jaringan",
+        "upgrade_status": "Peningkatan Protokol Sedang Berlangsung",
+        "coming_soon": "Segera Hadir",
+        "recalibrating": "Kami sedang mengkalibrasi ulang metrik protokol untuk presisi yang ditingkatkan. Data ekosistem real-time akan segera tersedia.",
+        "snapshot": "Snapshot Protokol v1.1.0"
+    },
+    "presence": {
+        "accumulating": "Mengumpulkan\nSinyal Kehadiran",
+        "unlock_info": "Skor Kehadiran Anda terbuka di Fase III Pra TGE",
+        "active_recording": "Perekaman Kehadiran Protokol Aktif"
+    }
+}
