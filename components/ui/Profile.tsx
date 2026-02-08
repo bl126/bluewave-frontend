@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, MoreVertical, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 
@@ -38,7 +38,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   // ⭐ SWR fetch using Telegram ID (safe null)
   const { data: swrUser, error: swrError, loading: swrLoading, mutate } =
     useApi(telegramId ? `/user/${telegramId}` : null);
-  
+
   useEffect(() => {
     if (telegramId) mutate();  // force SWR refresh when ID loads
   }, [telegramId]);
@@ -67,7 +67,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
   const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
   const [notifying, setNotifying] = useState(false);
-  
+
   useEffect(() => {
     const handler = () => {
       setBadgeUnlocked(true);
@@ -99,7 +99,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
 
-      setCooldownText(`${h}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`);
+      setCooldownText(`${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -184,26 +184,26 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
 
   async function loadCooldown() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegramId}`);
-  const data = await res.json();
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegramId}`);
+    const data = await res.json();
 
-  if (!data.last_sent) {
-    setCooldown(null);
-    return;
+    if (!data.last_sent) {
+      setCooldown(null);
+      return;
+    }
+
+    const lastSent = new Date(data.last_sent).getTime();
+    const now = Date.now();
+    const cooldownMs = 4 * 60 * 60 * 1000; // 4 hours
+
+    const remaining = lastSent + cooldownMs - now;
+
+    if (remaining > 0) {
+      setCooldown(remaining);
+    } else {
+      setCooldown(null);
+    }
   }
-
-  const lastSent = new Date(data.last_sent).getTime();
-  const now = Date.now();
-  const cooldownMs = 4 * 60 * 60 * 1000; // 4 hours
-
-  const remaining = lastSent + cooldownMs - now;
-
-  if (remaining > 0) {
-    setCooldown(remaining);
-  } else {
-    setCooldown(null);
-  }
-}
 
   const handleNotify = async () => {
     if (nextNotifyAt !== null || notifying) return;
@@ -242,7 +242,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -250,23 +250,33 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
           />
 
           <motion.div
-            className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                       w-[90%] max-w-sm bg-black/60 backdrop-blur-md border border-cyan-900 
-                       rounded-2xl p-5 text-cyan-200 shadow-[0_0_25px_#00e6ff30]"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100) {
+                onClose();
+              }
+            }}
+            className="fixed z-50 left-1/2 bottom-0 -translate-x-1/2
+                       w-full max-w-md bg-black/70 backdrop-blur-xl border-t border-cyan-900/50
+                       rounded-t-3xl p-6 text-cyan-200 shadow-[0_-4px_40px_#00e6ff20]
+                       max-h-[85vh] overflow-y-auto"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
           >
-            <div className="flex justify-center relative mb-4">
-              <h2 className="text-cyan-400 text-lg font-semibold tracking-wide">
+            {/* Drag Handle */}
+            <div className="w-12 h-1 bg-cyan-700/50 rounded-full mx-auto mb-4"></div>
+
+            {/* Header with 3-dot menu */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-cyan-400 text-xl font-semibold tracking-wide">
                 PROFILE
               </h2>
-              <button
-                onClick={onClose}
-                className="absolute right-0 text-cyan-300 hover:text-cyan-100"
-              >
-                <X size={20} />
+              <button className="text-cyan-300 hover:text-cyan-100">
+                <MoreVertical size={20} />
               </button>
             </div>
 
@@ -274,11 +284,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {user && (
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4">
 
-                {/* Avatar container */}
-                <div className="flex flex-col items-center mb-2">
-                  <div className="relative">
+                {/* Identity Section */}
+                <div className="flex flex-col items-center mb-4">
+                  <div className="relative mb-3">
                     <div className="absolute inset-0 rounded-full blur-xl bg-cyan-500/20"></div>
 
                     {user.photo_url ? (
@@ -286,25 +296,24 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                         <img
                           src={`${user.photo_url}?r=${Date.now()}`}
                           alt="avatar"
-                          className="relative w-20 h-20 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50] object-cover"
+                          className="relative w-24 h-24 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50] object-cover"
                         />
-
                       </div>
-                  ) : (
-                    <div
-                      className="
-                        relative w-20 h-20 rounded-full
+                    ) : (
+                      <div
+                        className="
+                        relative w-24 h-24 rounded-full
                         bg-[#001f2e]
                         flex items-center justify-center
                         text-[#00eaff] text-3xl font-bold
                         shadow-[0_0_40px_#00eaff80]
                         border border-cyan-400/40
                       "
-                    >
-                      {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
-                     
-                    </div>
-                  )}
+                      >
+                        {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
+
+                      </div>
+                    )}
 
                     {/* 🌊 Streak Badge (3+ days) — glowing check circle */}
                     {user.streak_days >= 3 && (
@@ -321,84 +330,100 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                     )}
                   </div>
 
-                  {/* 🔥 Streak days */}
-                  {user.streak_days > 0 && (
-                    <div className="text-cyan-400 text-xs mt-2">
-                      🌊 {user.streak_days} Day Streak
-                    </div>
-                  )}
+                  {/* BW ID (primary) */}
+                  <div className="text-cyan-300 text-lg font-semibold mb-1">
+                    BW ID: {user.bw_id}
+                  </div>
 
+                  {/* Name */}
+                  <div className="text-cyan-400 text-base mb-0.5">
+                    {user.name}
+                  </div>
 
+                  {/* @username */}
+                  <div className="text-cyan-500 text-sm">
+                    @{user.username}
+                  </div>
                 </div>
 
-                <div className="text-center text-cyan-400 text-xs mb-3">
-                  Level — {level}
+                {/* Status Cards Row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Day Streak */}
+                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-3 text-center shadow-[0_0_15px_#00e6ff15]">
+                    <div className="text-cyan-400 text-xs mb-1">Streak Days</div>
+                    <div className="text-cyan-200 text-lg font-bold">{user.streak_days}</div>
+                  </div>
+
+                  {/* Level */}
+                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-3 text-center shadow-[0_0_15px_#00e6ff15]">
+                    <div className="text-cyan-400 text-xs mb-1">Level</div>
+                    <div className="text-cyan-200 text-sm font-bold">{level}</div>
+                  </div>
+
+                  {/* Total Networks */}
+                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-3 text-center shadow-[0_0_15px_#00e6ff15]">
+                    <div className="text-cyan-400 text-xs mb-1">Total Networks</div>
+                    <div className="text-cyan-200 text-lg font-bold">{user.total_referrals}</div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <p>
-                    BW ID: <span className="text-cyan-300">{user.bw_id}</span>
-                  </p>
-                  <p>
-                    Name: <span className="text-cyan-300">{user.name}</span>
-                  </p>
-                  <p>
-                    Total Referrals:{" "}
-                    <span className="text-cyan-300">{user.total_referrals}</span>
-                  </p>
-                  <p>
-                    Inactive Referrals:{" "}
-                    <span className="text-cyan-300">
-                      {user.inactive_referrals_cache}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="mt-3 border-t border-cyan-900/50 pt-2">
-                  <p>
-                    Referral Earnings:{" "}
-                    <span className="text-cyan-300">
-                      {user.referral_earnings_pending} $BWAVE
-                    </span>
-                  </p>
-                  <button
-                    onClick={handleClaim}
-                    disabled={user.referral_earnings_pending === 0}
-                    className={`px-3 py-1 mt-1 text-xs rounded-md border ${
-                      user.referral_earnings_pending === 0
+                {/* Network Earnings Block */}
+                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-4 shadow-[0_0_15px_#00e6ff15]">
+                  <div className="text-cyan-400 text-sm font-semibold mb-2">Network Earnings</div>
+                  <div className="text-cyan-200 text-xl font-bold mb-3">
+                    {user.referral_earnings_pending} $BWAVE
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleClaim}
+                      disabled={user.referral_earnings_pending === 0}
+                      className={`flex-1 px-3 py-2 text-xs rounded-lg border transition-all ${user.referral_earnings_pending === 0
                         ? "bg-gray-700 text-gray-400 border-gray-600"
-                        : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30"
-                    }`}
-                  >
-                    {claiming ? "Claiming..." :
-                    user.referral_earnings_pending === 0 ? "Done" : "Claim"}
-                  </button>
+                        : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_10px_#00e6ff30]"
+                        }`}
+                    >
+                      {claiming ? "Claiming..." :
+                        user.referral_earnings_pending === 0 ? "Done" : "Claim"}
+                    </button>
+                    <button
+                      onClick={handleNotify}
+                      disabled={nextNotifyAt !== null}
+                      className={`flex-1 px-3 py-2 text-xs rounded-lg border transition-all
+                        ${nextNotifyAt !== null
+                          ? "border-gray-700 text-gray-500 bg-gray-800 opacity-60"
+                          : "border-cyan-400 text-cyan-300 hover:bg-cyan-500/20 shadow-[0_0_10px_#00e6ff30]"
+                        }
+                      `}
+                    >
+                      {notifying
+                        ? "Notifying..."
+                        : nextNotifyAt !== null
+                          ? `Wait ${cooldownText}`
+                          : "Notify Inactive Networks"}
+                    </button>
+                  </div>
                 </div>
 
-                <div>
-                  <button
-                    onClick={handleNotify}
-                    disabled={nextNotifyAt !== null}
-                    className={`w-full mt-2 text-xs px-3 py-1 border rounded-md
-                      ${nextNotifyAt !== null
-                        ? "border-gray-700 text-gray-500 bg-gray-800 opacity-60"
-                        : "border-cyan-400 text-cyan-300 hover:bg-cyan-500/20"
-                      }
-                    `}
-                  >
-                    {notifying
-                      ? "Notifying..."
-                      : nextNotifyAt !== null
-                        ? `Wait ${cooldownText}`
-                        : "Notify Them"}
-                  </button>
+                {/* Wallet Section (Static) */}
+                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-4 shadow-[0_0_15px_#00e6ff15] flex items-center gap-3">
+                  <img src="/ton-transparent.png" alt="TON" className="w-8 h-8" />
+                  <div className="flex-1">
+                    <div className="text-cyan-400 text-sm font-semibold">Connect Wallet</div>
+                    <div className="text-cyan-500 text-xs">TON Wallet Integration</div>
+                  </div>
                 </div>
 
-                {/* Referral Link & Copy */}
-                <div className="mt-3 border-t border-cyan-900/50 pt-2 text-center">
-                  <p className="text-xs text-cyan-400 mb-1">Referral Link:</p>
-                  <div className="flex justify-center items-center space-x-2">
-                    <span className="text-[11px] text-cyan-300 truncate max-w-[180px]">
+                {/* Roles Section (Empty for now) */}
+                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-4 shadow-[0_0_15px_#00e6ff15]">
+                  <div className="text-cyan-400 text-sm font-semibold mb-2">Roles</div>
+                  <div className="text-cyan-500 text-xs italic">No roles assigned yet</div>
+                </div>
+
+                {/* Footer Section */}
+                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-xl p-4 shadow-[0_0_15px_#00e6ff15]">
+                  <div className="text-cyan-400 text-xs mb-2">Referral Link:</div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[11px] text-cyan-300 truncate flex-1">
                       {user.referral_link}
                     </span>
                     <button
@@ -407,15 +432,14 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                         setCopied(true);
                         setTimeout(() => setCopied(false), 1500);
                       }}
-                      className="text-[11px] px-2 py-0.5 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/20"
+                      className="text-[11px] px-3 py-1 border border-cyan-400 text-cyan-300 rounded-md hover:bg-cyan-500/20"
                     >
                       {copied ? "Copied" : "Copy"}
                     </button>
                   </div>
-                </div>
-
-                <div className="text-xs text-center text-cyan-500 mt-3">
-                  Joined: {new Date(user.joined_at).toLocaleDateString()}
+                  <div className="text-xs text-cyan-500">
+                    Joined: {new Date(user.joined_at).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
             )}
