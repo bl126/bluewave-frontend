@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
@@ -61,12 +61,12 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       setLoading(false);
       setError("");               // clear any old error
     }
-    // only show error if we truly have no user data
-    if (swrError && !swrUser) {
+    // only show error if we truly have no user data AND loading is done
+    if (swrError && !swrUser && !swrLoading) {
       setError("Could not load profile");
       setLoading(false);
     }
-  }, [swrUser, swrError]);
+  }, [swrUser, swrError, swrLoading]);
 
   // ⭐ Load cooldown when opening modal + telegram id available
   useEffect(() => {
@@ -284,31 +284,30 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
           />
 
           <motion.div
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(e, info) => {
-              if (info.offset.y > 100) {
-                onClose();
-              }
-            }}
-            className="fixed z-50 left-1/2 bottom-0 -translate-x-1/2
-                       w-full max-w-md bg-black/70 backdrop-blur-xl border-t border-cyan-900/50
-                       rounded-t-3xl p-6 pb-24 text-cyan-200 shadow-[0_-4px_40px_#00e6ff20]
+            className="fixed z-[70] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                       w-[92%] max-w-md bg-black/70 backdrop-blur-xl border border-cyan-900/50
+                       rounded-3xl p-6 pb-24 text-cyan-200 shadow-[0_0_50px_#00e6ff20]
                        max-h-[85vh] overflow-y-auto"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ scale: 0.9, opacity: 0, y: "-45%", x: "-50%" }}
+            animate={{ scale: 1, opacity: 1, y: "-50%", x: "-50%" }}
+            exit={{ scale: 0.9, opacity: 0, y: "-45%", x: "-50%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
           >
-            {/* Drag Handle */}
-            <div className="w-12 h-1 bg-cyan-700/50 rounded-full mx-auto mb-4"></div>
+            {/* Header / Top Bar */}
+            <div className="flex justify-between items-center mb-6">
+              {/* Floating Back Button (Exit Arrow) */}
+              <button
+                onClick={onClose}
+                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                  <ArrowLeft size={20} />
+                </div>
+              </button>
 
-            {/* Header with 3-dot menu */}
-            <div className="flex justify-end items-center mb-6">
               <button
                 onClick={() => setSettingsOpen(true)}
-                className="text-cyan-300 hover:text-cyan-100 transition-colors"
+                className="text-cyan-300 hover:text-cyan-100 transition-colors p-2"
               >
                 <MoreVertical size={20} />
               </button>
@@ -531,7 +530,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                       {copied ? t("profile.copied") : t("profile.copy")}
                     </button>
                   </div>
-                  <div className="text-cyan-300 text-[10px] font-medium mb-2 truncate">
+                  <div className="text-cyan-300 text-[10px] font-medium mb-2 break-all">
                     {user.referral_link}
                   </div>
                   <div className="text-cyan-500 text-[10px]">
