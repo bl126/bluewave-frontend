@@ -265,6 +265,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
       if (result.success) {
         setUser((prev: any) => ({ ...prev, name: result.name, raw_name: result.name }));
+        mutate();
       }
     } catch (error) {
       console.error("Failed to update name:", error);
@@ -485,7 +486,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                         : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_10px_#00e6ff30]"
                         } disabled:opacity-50`}
                     >
-                      {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} (${user.referral_earnings_pending})`}
+                      {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} ${user.referral_earnings_pending} $BWAVE`}
                     </button>
                     <button
                       onClick={handleNotifyInactive}

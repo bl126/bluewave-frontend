@@ -30,7 +30,7 @@ export default function StatsOverlay({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[80] bg-[#0B0F14]/95 backdrop-blur-xl flex flex-col overflow-hidden text-white"
+                    className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-xl flex flex-col overflow-hidden text-white"
                 >
                     {/* Header Bar */}
                     <div className="absolute top-0 left-0 right-0 h-16 z-[110] flex items-center justify-between px-6 bg-gradient-to-b from-[#0B0F14] via-[#0B0F14]/90 to-transparent pointer-events-none">

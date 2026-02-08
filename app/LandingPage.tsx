@@ -3,18 +3,20 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import BluewaveGlobe from "../components/ui/BluewaveGlobe";
-import MissionCenter from "../components/ui/MissionCenter";
-import Leaderboard from "../components/ui/Leaderboard";
-import Marketplace from "../components/ui/Marketplace";
-import Profile from "../components/ui/Profile";
-import OnboardingModal from "../components/ui/OnboardingModal"; // ✅ ADD THIS
+import BluewaveGlobe from "@/components/ui/BluewaveGlobe";
+import MissionCenter from "@/components/ui/MissionCenter";
+import Leaderboard from "@/components/ui/Leaderboard";
+import Marketplace from "@/components/ui/Marketplace";
+import Profile from "@/components/ui/Profile";
+import OnboardingModal from "@/components/ui/OnboardingModal";
 import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
-import TopRightMenu from "../components/ui/TopRightMenu";
-import WhitepaperOverlay from "../components/WhitepaperOverlay";
-import StatsOverlay from "../components/ui/StatsOverlay";
-import PresenceScoreOverlay from "../components/ui/PresenceScoreOverlay";
+import TopRightMenu from "@/components/ui/TopRightMenu";
+import WhitepaperOverlay from "@/components/WhitepaperOverlay";
+import StatsOverlay from "@/components/ui/StatsOverlay";
+import PresenceScoreOverlay from "@/components/ui/PresenceScoreOverlay";
+import AboutBluewaveOverlay from "@/components/ui/AboutBluewaveOverlay";
+import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -60,6 +62,10 @@ export default function LandingPage() {
   const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
   const [isStatsOpen, setStatsOpen] = useState(false);
   const [isPresenceScoreOpen, setPresenceScoreOpen] = useState(false);
+  const [isAboutOpen, setAboutOpen] = useState(false);
+  const [isRoadmapOpen, setRoadmapOpen] = useState(false);
+
+  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -220,7 +226,7 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && !isProfileOpen && (
+      {!onboardingOpen && !isLoading && !isAnyOverlayOpen && (
         <TopRightMenu
           onOpenWhitepaper={() => {
             setStatsOpen(false);
@@ -240,6 +246,22 @@ export default function LandingPage() {
             setPresenceScoreOpen(true);
           }}
           isPresenceScoreActive={isPresenceScoreOpen}
+          onOpenAbout={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(false);
+            setPresenceScoreOpen(false);
+            setRoadmapOpen(false);
+            setAboutOpen(true);
+          }}
+          isAboutActive={isAboutOpen}
+          onOpenRoadmap={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(false);
+            setPresenceScoreOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(true);
+          }}
+          isRoadmapActive={isRoadmapOpen}
         />
       )}
 
@@ -338,6 +360,18 @@ export default function LandingPage() {
       <PresenceScoreOverlay
         isOpen={isPresenceScoreOpen}
         onClose={() => setPresenceScoreOpen(false)}
+      />
+
+      {/* ℹ️ About Bluewave Overlay */}
+      <AboutBluewaveOverlay
+        isOpen={isAboutOpen}
+        onClose={() => setAboutOpen(false)}
+      />
+
+      {/* 🗺️ Roadmap Overlay */}
+      <RoadmapOverlay
+        isOpen={isRoadmapOpen}
+        onClose={() => setRoadmapOpen(false)}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}

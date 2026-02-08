@@ -34,10 +34,10 @@ export default function PresenceScoreOverlay({ isOpen, onClose }: PresenceScoreO
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="fixed inset-0 z-[80] bg-[#0B0F14]/95 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-xl flex flex-col items-center justify-center overflow-hidden"
                 >
                     {/* Header Bar */}
-                    <div className="absolute top-0 left-0 right-0 h-16 z-[110] flex items-center justify-between px-6 bg-gradient-to-b from-black via-black/90 to-transparent pointer-events-none">
+                    <div className="absolute top-0 left-0 right-0 h-16 z-[110] flex items-center justify-between px-6 bg-transparent pointer-events-none">
                         <button
                             onClick={onClose}
                             className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors pointer-events-auto"

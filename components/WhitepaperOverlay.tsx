@@ -399,7 +399,7 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0B0F14]/95 backdrop-blur-xl supports-[backdrop-filter]:bg-[#0B0F14]/80"
+                    className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-xl"
                     onClick={onClose}
                 >
                     {/* Main Container */}

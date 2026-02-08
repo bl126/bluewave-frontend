@@ -10,9 +10,13 @@ interface TopRightMenuProps {
   onOpenFAQ?: () => void;
   onOpenStats?: () => void;
   onOpenWhitepaper?: () => void;
+  onOpenAbout?: () => void;
+  onOpenRoadmap?: () => void;
   isWhitepaperActive?: boolean;
   isStatsActive?: boolean;
   isPresenceScoreActive?: boolean;
+  isAboutActive?: boolean;
+  isRoadmapActive?: boolean;
 }
 
 export default function TopRightMenu({
@@ -21,9 +25,13 @@ export default function TopRightMenu({
   onOpenFAQ,
   onOpenStats,
   onOpenWhitepaper,
+  onOpenAbout,
+  onOpenRoadmap,
   isWhitepaperActive,
   isStatsActive,
   isPresenceScoreActive,
+  isAboutActive,
+  isRoadmapActive,
 }: TopRightMenuProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -94,14 +102,19 @@ export default function TopRightMenu({
               transition={{ duration: 0.18 }}
               className="
                 absolute right-0 mt-3 w-52 z-50
-                bg-black/70 backdrop-blur-md
-                border border-cyan-900
+                bg-black/70 backdrop-blur-xl
+                border border-cyan-900/50
                 rounded-xl
                 shadow-[0_0_25px_#00e6ff30]
                 overflow-hidden
               "
             >
 
+              <MenuItem
+                label={t("menu.about")}
+                onClick={() => { setOpen(false); onOpenAbout?.(); }}
+                isActive={isAboutActive}
+              />
               <MenuItem
                 label={t("menu.presence_score")}
                 onClick={() => { setOpen(false); onOpenPresenceScore?.(); }}
@@ -112,6 +125,11 @@ export default function TopRightMenu({
                 label={t("menu.whitepaper")}
                 onClick={() => { setOpen(false); onOpenWhitepaper?.(); }}
                 isActive={isWhitepaperActive}
+              />
+              <MenuItem
+                label={t("menu.roadmap")}
+                onClick={() => { setOpen(false); onOpenRoadmap?.(); }}
+                isActive={isRoadmapActive}
               />
               <MenuItem label={t("menu.faq")} onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
               <MenuItem
