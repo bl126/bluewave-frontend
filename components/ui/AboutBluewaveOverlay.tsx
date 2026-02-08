@@ -52,9 +52,6 @@ export default function AboutBluewaveOverlay({ isOpen, onClose }: AboutBluewaveO
                             animate={{ scale: 1, opacity: 1 }}
                             className="flex flex-col items-center gap-4"
                         >
-                            <div className="p-4 rounded-full bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_30px_#00e6ff20]">
-                                <Info size={48} className="text-cyan-400" />
-                            </div>
                             <h1 className="text-3xl font-bold tracking-tight text-white uppercase italic">
                                 {t("menu.about")}
                             </h1>

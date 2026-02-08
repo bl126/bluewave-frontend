@@ -226,23 +226,29 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && (
+      {!onboardingOpen && !isLoading && !isProfileOpen && (
         <TopRightMenu
           onOpenWhitepaper={() => {
             setStatsOpen(false);
             setPresenceScoreOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(false);
             setWhitepaperOpen(true);
           }}
           isWhitepaperActive={isWhitepaperOpen}
           onOpenStats={() => {
             setWhitepaperOpen(false);
             setPresenceScoreOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(false);
             setStatsOpen(true);
           }}
           isStatsActive={isStatsOpen}
           onOpenPresenceScore={() => {
             setWhitepaperOpen(false);
             setStatsOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(false);
             setPresenceScoreOpen(true);
           }}
           isPresenceScoreActive={isPresenceScoreOpen}

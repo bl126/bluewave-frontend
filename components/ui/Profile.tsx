@@ -17,10 +17,12 @@ interface ProfileProps {
 }
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
-export default function Profile({ isOpen, onClose }: ProfileProps) {
+export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps) {
   const { t } = useLanguage();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+  // Use passed telegramUser for immediate UI if available
+  const [user, setUser] = useState<any>(telegramUser || null);
+  const [loading, setLoading] = useState(!telegramUser);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [cooldown, setCooldown] = useState<number | null>(null);
@@ -34,23 +36,25 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [languageOpen, setLanguageOpen] = useState(false);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
-  // ⭐ Telegram ID extracted from Mini App
-  const [telegramId, setTelegramId] = useState<number | null>(null);
+  // ⭐ Telegram ID extracted from Mini App or Props
+  const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("bw_tg_id");
-    if (stored) {
-      setTelegramId(Number(stored));
+    if (!telegramId) {
+      const stored = localStorage.getItem("bw_tg_id");
+      if (stored) {
+        setTelegramId(Number(stored));
+      }
     }
-  }, []);
+  }, [telegramId]);
 
   // ⭐ SWR fetch using Telegram ID (safe null)
   const { data: swrUser, error: swrError, loading: swrLoading, mutate } =
     useApi(telegramId ? `/user/${telegramId}` : null);
 
   useEffect(() => {
-    if (telegramId) mutate();  // force SWR refresh when ID loads
-  }, [telegramId]);
+    if (telegramId && isOpen) mutate();  // force SWR refresh when ID loads or modal opens
+  }, [telegramId, isOpen]);
 
   // ⭐ Sync SWR result
   useEffect(() => {
@@ -59,16 +63,17 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       setLoading(false);
       setError("");               // clear any old error
     }
+
     // only show error if we truly have no user data AND loading is done AND SWR has finished its attempt
-    if (swrError && !swrUser && !swrLoading) {
+    if (swrError && !swrUser && !swrLoading && !user) {
       // Small delay before showing error to avoid flicker if it's just a transient state
       const timeout = setTimeout(() => {
-        if (!swrUser) setError("Could not load profile");
-      }, 500);
+        if (!swrUser && !user) setError("Could not load profile");
+      }, 800);
       setLoading(false);
       return () => clearTimeout(timeout);
     }
-  }, [swrUser, swrError, swrLoading]);
+  }, [swrUser, swrError, swrLoading, user]);
 
   // ⭐ Load cooldown when opening modal + telegram id available
   useEffect(() => {

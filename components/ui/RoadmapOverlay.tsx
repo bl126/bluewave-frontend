@@ -33,7 +33,8 @@ export default function RoadmapOverlay({ isOpen, onClose }: RoadmapOverlayProps)
                 "Organic Growth to 250+ active users",
                 "Community Builders Team Launch",
                 "AI PvP 1 & 1.1 Anti-Bot protocol active",
-                "Milestone: Expansion to 20+ countries"
+                "Milestone: 10k users +",
+                "Expansion to 20+ countries"
             ],
             status: "Currently",
             active: true
@@ -43,10 +44,10 @@ export default function RoadmapOverlay({ isOpen, onClose }: RoadmapOverlayProps)
             subtitle: "On-Chain Expansion & Utility",
             items: [
                 "TON Presence Ledger deployment",
-                "BTP (Bluewave Trading Passport) Launch",
+                "MVP implementation to the BTP",
                 "Ethical Marketplace Beta",
-                "Milestone: 100k+ Active Users",
-                "Next: 5M+ Total Missions Completed"
+                "Milestone: 100k - 500k users",
+                "Next: 5M + mission completion"
             ],
             status: "Soon",
             active: false
