@@ -274,44 +274,35 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+        <motion.div
+          className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xl flex flex-col overflow-y-auto text-cyan-200"
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.02 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Header Bar - Truly Floating */}
+          <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
+            <button
+              onClick={onClose}
+              className="group pointer-events-auto"
+            >
+              <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
+              </div>
+            </button>
 
-          <motion.div
-            className="fixed z-[70] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                       w-[92%] max-w-md bg-black/70 backdrop-blur-xl border border-cyan-900/50
-                       rounded-3xl p-6 pb-24 text-cyan-200 shadow-[0_0_50px_#00e6ff20]
-                       max-h-[85vh] overflow-y-auto"
-            initial={{ scale: 0.9, opacity: 0, y: "-45%", x: "-50%" }}
-            animate={{ scale: 1, opacity: 1, y: "-50%", x: "-50%" }}
-            exit={{ scale: 0.9, opacity: 0, y: "-45%", x: "-50%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          >
-            {/* Header / Top Bar */}
-            <div className="flex justify-between items-center mb-6">
-              {/* Floating Back Button (Exit Arrow) */}
-              <button
-                onClick={onClose}
-                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors"
-              >
-                <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
-                  <ArrowLeft size={20} />
-                </div>
-              </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="group pointer-events-auto"
+            >
+              <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                <MoreVertical size={20} className="text-cyan-400 group-hover:text-cyan-200" />
+              </div>
+            </button>
+          </div>
 
-              <button
-                onClick={() => setSettingsOpen(true)}
-                className="text-cyan-300 hover:text-cyan-100 transition-colors p-2"
-              >
-                <MoreVertical size={20} />
-              </button>
-            </div>
+          <div className="max-w-md mx-auto w-full p-6 pb-24">
 
             {loading && (
               <div className="space-y-3 animate-pulse">
@@ -553,32 +544,29 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        </>
-      )
-      }
+          </div>
 
-      {/* Settings Overlay */}
-      <Settings
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        onOpenLanguage={() => setLanguageOpen(true)}
-        onOpenChangeName={() => setChangeNameOpen(true)}
-      />
+          {/* Sub-overlays nested within the main container */}
+          <Settings
+            isOpen={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+            onOpenLanguage={() => setLanguageOpen(true)}
+            onOpenChangeName={() => setChangeNameOpen(true)}
+          />
 
-      {/* Language Selector Overlay */}
-      <LanguageSelector
-        isOpen={languageOpen}
-        onClose={() => setLanguageOpen(false)}
-      />
+          <LanguageSelector
+            isOpen={languageOpen}
+            onClose={() => setLanguageOpen(false)}
+          />
 
-      {/* Change Name Overlay */}
-      <ChangeName
-        isOpen={changeNameOpen}
-        onClose={() => setChangeNameOpen(false)}
-        currentName={user?.name || ""}
-        onSave={handleSaveName}
-      />
+          <ChangeName
+            isOpen={changeNameOpen}
+            onClose={() => setChangeNameOpen(false)}
+            currentName={user?.name || ""}
+            onSave={handleSaveName}
+          />
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }
