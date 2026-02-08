@@ -220,7 +220,7 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && (
+      {!onboardingOpen && !isLoading && !isProfileOpen && (
         <TopRightMenu
           onOpenWhitepaper={() => {
             setStatsOpen(false);
@@ -244,7 +244,7 @@ export default function LandingPage() {
       )}
 
       {/* 💰 Top-left Balance */}
-      <div className="absolute top-4 left-4 z-30 flex items-center gap-2 text-cyan-400 font-semibold text-sm">
+      <div className="absolute top-4 left-4 z-[60] flex items-center gap-2 text-cyan-400 font-semibold text-sm">
         <Wallet size={16} />
         <span>
           {balance !== null

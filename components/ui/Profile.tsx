@@ -294,7 +294,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
             }}
             className="fixed z-50 left-1/2 bottom-0 -translate-x-1/2
                        w-full max-w-md bg-black/70 backdrop-blur-xl border-t border-cyan-900/50
-                       rounded-t-3xl p-6 text-cyan-200 shadow-[0_-4px_40px_#00e6ff20]
+                       rounded-t-3xl p-6 pb-24 text-cyan-200 shadow-[0_-4px_40px_#00e6ff20]
                        max-h-[85vh] overflow-y-auto"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -434,7 +434,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
                   {/* Right: BW ID Pill */}
                   <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <span className="text-cyan-300 font-semibold text-xs">BW ID</span>
+                    <span className="text-cyan-300 font-semibold text-xs">
+                      BW ID: {telegramId ? String(telegramId).slice(-3) : "..."}
+                    </span>
                   </div>
                 </div>
 
@@ -465,7 +467,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
                   {/* Total Networks */}
                   <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="text-cyan-100 text-[11px] font-bold">{user.total_networks || 0}</div>
+                    <div className="text-cyan-100 text-[11px] font-bold">{user.total_referrals || 0}</div>
                     <div className="text-cyan-500 text-[10px] font-medium uppercase tracking-tight">{t("profile.total_networks")}</div>
                   </div>
                 </div>
@@ -475,7 +477,8 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                   <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-full p-3 shadow-[0_0_15px_#00e6ff15]">
                     <Wallet className="w-5 h-5 text-cyan-400" />
                   </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15] hover:bg-cyan-500/10 transition-all cursor-pointer">
+                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15] hover:bg-cyan-500/10 transition-all cursor-pointer flex items-center gap-2">
+                    <img src="/ton-transparent.png" alt="TON" className="w-4 h-4" />
                     <span className="text-cyan-300 font-semibold text-xs">{t("profile.connect_wallet")}</span>
                   </div>
                 </div>
@@ -492,7 +495,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                         : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_10px_#00e6ff30]"
                         } disabled:opacity-50`}
                     >
-                      {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : t("profile.claim")}
+                      {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} (${user.referral_earnings_pending})`}
                     </button>
                     <button
                       onClick={handleNotifyInactive}
