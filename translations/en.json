@@ -93,6 +93,11 @@
     "snapshot": "Protocol Snapshot v1.1.0"
   },
   "presence": {
+    "title": "Presence Mission",
+    "commit": "Presence Commit",
+    "activate": "Activate",
+    "waiting": "Waiting...",
+    "claim_reward": "Claim {{amount}} $BWAVE",
     "accumulating": "Accumulating\nPresence Signals",
     "unlock_info": "Your Presence Score unlocks in Phase III Pre TGE",
     "active_recording": "Protocol Presence Recording Active"

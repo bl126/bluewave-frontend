@@ -87,19 +87,12 @@ function PresenceCard({
         />
       )}
 
-      <div className="relative p-4 flex items-center justify-between z-10">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-cyan-100 font-bold text-sm tracking-wide">
-              {t("presence.commit")} — {mission.type}
-            </h3>
-            {isCompleted && <Check size={14} className="text-cyan-400" />}
-          </div>
-          <p className="text-cyan-500/80 text-xs font-mono">
-            {isCompleted ? t("presence.ready_to_claim") :
-              isActive ? t("presence.active_status") :
-                `${mission.reward} $BWAVE`}
-          </p>
+      <div className="relative p-6 flex items-center justify-between z-10 w-full">
+        <div className="flex-1">
+          {/* Title Removed as requested - Progress bar is the main visual */}
+          {/* If we need to show the TYPE (1h/4h/24h) we could put it in the button or a small tag, 
+               but user requested "no titles". We will rely on order or button text if needed, 
+               but for now just keeping it clean as requested. */}
         </div>
 
         <button
@@ -109,7 +102,7 @@ function PresenceCard({
           }}
           disabled={isActive || loading}
           className={`
-            px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all
+            w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all
             ${isCompleted
               ? "bg-cyan-400 text-black hover:bg-cyan-300 shadow-[0_0_15px_#00e6ff]"
               : isActive
@@ -119,7 +112,7 @@ function PresenceCard({
           `}
         >
           {loading ? "..." :
-            isCompleted ? t("presence.claim") :
+            isCompleted ? t("presence.claim_reward").replace("{{amount}}", mission.reward.toString()) :
               isActive ? t("presence.waiting") :
                 t("presence.activate")}
         </button>
@@ -366,7 +359,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               <div className="flex items-center gap-2 mb-2 px-1">
                 <Clock size={16} className="text-cyan-400" />
                 <h3 className="text-cyan-100 text-xs font-black uppercase tracking-[0.2em]">
-                  {t("presence.title") || "PRESENCE COMMIT"}
+                  {t("presence.title") || "PRESENCE MISSION"}
                 </h3>
               </div>
 
