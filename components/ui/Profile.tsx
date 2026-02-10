@@ -83,7 +83,6 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   }, [isOpen, telegramId]);
 
 
-  const [nextNotifyAt, setNextNotifyAt] = useState<number | null>(null);
   const [notifying, setNotifying] = useState(false);
 
   useEffect(() => {
@@ -96,32 +95,6 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     return () => window.removeEventListener("badgeUnlocked", handler);
   }, []);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("notifyNextTime");
-    if (saved) setNextNotifyAt(Number(saved));
-  }, []);
-
-  useEffect(() => {
-    if (!nextNotifyAt) return;
-
-    const interval = setInterval(() => {
-      const diff = nextNotifyAt - Date.now();
-
-      if (diff <= 0) {
-        setNextNotifyAt(null);
-        localStorage.removeItem("notifyNextTime");
-        return;
-      }
-
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-
-      setCooldownText(`${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [nextNotifyAt]);
 
   // ⭐ ADD THIS NEW LEVEL LOGIC HERE
   const [level, setLevel] = useState("Loading...");
@@ -234,35 +207,36 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   }
 
   const handleNotifyInactive = async () => {
-    if (nextNotifyAt !== null || notifying) return;
+    if (cooldown !== null || notifying) return;
 
     // Lock UI immediately
     setNotifying(true);
     setCooldownText("Notifying...");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: telegramId }),
-    });
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_id: telegramId }),
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-    // Backend blocked (daily limit)
-    if (result.blocked) {
-      const next = Date.now() + 4 * 60 * 60 * 1000;
-      setNextNotifyAt(next);
-      localStorage.setItem("notifyNextTime", String(next));
+      // Start real cooldown (4 hours) regardless of if it was blocked by backend or success
+      // since backend might return 'blocked' if the user somehow bypassed frontend check
+      const cooldownMs = 4 * 60 * 60 * 1000;
+      setCooldown(cooldownMs);
+
+      const h = String(Math.floor(cooldownMs / 3600000)).padStart(2, "0");
+      const m = String(Math.floor((cooldownMs % 3600000) / 60000)).padStart(2, "0");
+      const s = String(Math.floor((cooldownMs % 60000) / 1000)).padStart(2, "0");
+      setCooldownText(`${h}:${m}:${s}`);
+
+    } catch (e) {
+      console.error("Notify error:", e);
+    } finally {
       setNotifying(false);
-      return;
     }
-
-    // Success → start real cooldown
-    const next = Date.now() + 4 * 60 * 60 * 1000;
-    setNextNotifyAt(next);
-    localStorage.setItem("notifyNextTime", String(next));
-
-    setNotifying(false);
   };
 
   const handleSaveName = async (newName: string) => {
