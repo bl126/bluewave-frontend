@@ -82,7 +82,7 @@ function PresenceCard({
       {/* Background Progress Bar (Fill) */}
       {(isActive || isCompleted) && (
         <div
-          className="absolute inset-0 bg-cyan-500/10 transition-all duration-1000 ease-linear"
+          className="absolute inset-0 bg-cyan-500/20 transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       )}
@@ -120,7 +120,7 @@ function PresenceCard({
 
       {/* Active Glow Line */}
       {isActive && (
-        <div className="absolute bottom-0 left-0 h-[2px] bg-cyan-400 shadow-[0_0_10px_#00e6ff]"
+        <div className="absolute bottom-0 left-0 h-1 bg-cyan-400 shadow-[0_0_15px_#00e6ff]"
           style={{ width: `${progress}%`, transition: "width 1s linear" }}
         />
       )}
