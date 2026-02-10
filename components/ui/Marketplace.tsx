@@ -27,7 +27,8 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
                        w-[90%] max-w-sm bg-black/60 backdrop-blur-md border border-cyan-900 
                        rounded-2xl p-6 text-cyan-200 shadow-[0_0_25px_#00e6ff30]
-                       flex flex-col items-center justify-center text-center"
+                       flex flex-col items-center justify-center text-center
+                       max-h-[90vh] overflow-hidden"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}

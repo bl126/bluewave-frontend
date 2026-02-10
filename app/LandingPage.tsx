@@ -27,6 +27,7 @@ export default function LandingPage() {
   // [CODE: FRONTEND_TELEGRAM_WEBAPP_INIT]
   // ⭐ ENSURE Telegram WebApp is initialized
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
       try {
@@ -34,7 +35,7 @@ export default function LandingPage() {
         tg.expand();
         console.log("Telegram WebApp initialized:", tg.initDataUnsafe);
       } catch (e) {
-        console.log("WebApp init error:", e);
+        console.error("WebApp init error:", e);
       }
     }
   }, []);
@@ -42,9 +43,11 @@ export default function LandingPage() {
   // [CODE: FRONTEND_BROWSER_BLOCK]
   // ❗ Block users opening in browser – Bluewave is Telegram-only
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const tg = (window as any).Telegram?.WebApp;
+    // ❗ If not in Telegram, we show the onboarding but don't use blocking alert()
     if (!tg) {
-      alert("Bluewave can only be opened inside Telegram.");
+      console.warn("Bluewave should be opened inside Telegram.");
       setOnboardingOpen(true);
     }
   }, []);

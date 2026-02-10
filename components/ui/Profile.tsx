@@ -193,6 +193,13 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
         new CustomEvent("updateBalance", { detail: result.new_balance })
       );
 
+      mutate();
+
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred("success");
+      }
+
       setClaimDone(true);
       setTimeout(() => {
         setClaimDone(false);
@@ -266,7 +273,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xl flex flex-col overflow-y-auto text-cyan-200"
+          className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xl flex flex-col overflow-y-auto text-cyan-200 
+                     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.02 }}
@@ -367,156 +375,192 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
             {error && <p className="text-center text-red-400">{error}</p>}
 
             {user && (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-6">
 
-                {/* Profile Picture + BW ID Section */}
-                <div className="relative flex items-start justify-between mb-3">
-                  {/* Left: Profile Picture */}
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full blur-xl bg-cyan-500/20"></div>
+                {/* Professional Header Card */}
+                <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-5 shadow-[0_0_30px_#00e6ff05] flex items-center gap-5 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-50"></div>
+
+                  {/* Avatar Section */}
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 rounded-full blur-2xl bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors"></div>
 
                     {user.photo_url ? (
                       <div className="relative">
                         <img
                           src={`${user.photo_url}?r=${Date.now()}`}
                           alt="avatar"
-                          className="relative w-24 h-24 rounded-full border border-cyan-400/40 shadow-[0_0_20px_#00e6ff50] object-cover"
+                          className="relative w-24 h-24 rounded-full border-2 border-cyan-400/30 shadow-[0_0_20px_#00e6ff40] object-cover"
                         />
                       </div>
                     ) : (
                       <div
                         className="
                         relative w-24 h-24 rounded-full
-                        bg-[#001f2e]
+                        bg-cyan-950/40
                         flex items-center justify-center
-                        text-[#00eaff] text-3xl font-bold
-                        shadow-[0_0_40px_#00eaff80]
-                        border border-cyan-400/40
+                        text-cyan-400 text-3xl font-bold
+                        shadow-[0_0_20px_#00e6ff30]
+                        border-2 border-cyan-400/30
                       "
                       >
                         {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
                       </div>
                     )}
 
-                    {/* 🌊 Streak Badge (3+ days) — cyan checkmark circle */}
+                    {/* Streak Badge */}
                     {user.streak_days >= 3 && (
                       <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.4 }}
-                        className="absolute bottom-1 right-1 w-6 h-6 rounded-full 
-                                   bg-cyan-400/30 border border-cyan-300 
-                                   shadow-[0_0_12px_#00e6ff] flex items-center justify-center"
+                        className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full 
+                                   bg-[#001f2e] border-2 border-cyan-400
+                                   shadow-[0_0_15px_#00e6ff] flex items-center justify-center"
                       >
-                        <span className="text-[10px] text-cyan-100 font-bold">✓</span>
+                        <span className="text-[12px] text-cyan-400 font-black">✓</span>
                       </motion.div>
                     )}
                   </div>
 
-                  {/* Right: BW ID Pill */}
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <span className="text-cyan-300 font-semibold text-xs">
-                      BW ID: {telegramId ? String(telegramId).slice(-3) : "..."}
-                    </span>
+                  {/* Info Section */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center relative z-10">
+                    <div className="flex flex-col mb-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <h2 className="text-cyan-50 font-bold text-lg sm:text-2xl tracking-tight truncate">
+                          {user.first_name || user.name || user.username}
+                        </h2>
+                        <div className="bg-cyan-500/5 border border-cyan-400/20 px-2.5 py-1 rounded-lg shrink-0">
+                          <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-[0.15em] uppercase">
+                            ID: {telegramId ? String(telegramId).slice(-3) : "..."}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-cyan-500/50 text-[11px] sm:text-[13px] font-semibold tracking-wide mt-0.5">
+                        @{user.username}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-400/20 rounded-full flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                        <span className="text-cyan-300 text-[11px] font-black uppercase tracking-widest">{t("profile.level")} {level}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Name Pill + @username */}
-                <div className="flex flex-col items-start gap-1.5 mb-3">
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <span className="text-cyan-300 font-semibold text-sm">
-                      {user.first_name || user.name || user.username}
-                    </span>
+                {/* Status Cards Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 group hover:border-cyan-500/30 transition-colors shadow-lg">
+                    <div className="text-cyan-50 text-2xl font-black leading-none">{user.streak_days}</div>
+                    <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.streak")}</div>
                   </div>
-                  <div className="text-cyan-500 text-xs font-medium ml-1">
-                    @{user.username}
+
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 group hover:border-cyan-500/30 transition-colors shadow-lg">
+                    <div className="text-cyan-50 text-2xl font-black leading-none">{user.total_referrals || 0}</div>
+                    <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.total_networks")}</div>
                   </div>
                 </div>
 
-                {/* Status Cards Row */}
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Day Streak */}
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="text-cyan-100 text-[11px] font-bold">{user.streak_days}</div>
-                    <div className="text-cyan-500 text-[10px] font-medium uppercase tracking-tight">{t("profile.streak")}</div>
+                {/* Wallet Action Card */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group cursor-pointer hover:border-cyan-500/30 transition-all shadow-lg active:scale-[0.98]">
+                  <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0 group-hover:bg-cyan-500/10 transition-colors">
+                    <Wallet className="w-6 h-6 text-cyan-400" />
                   </div>
-
-                  {/* Level */}
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="text-cyan-400 text-[11px] font-semibold">{t("profile.level")} {level}</div>
-                  </div>
-
-                  {/* Total Networks */}
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="text-cyan-100 text-[11px] font-bold">{user.total_referrals || 0}</div>
-                    <div className="text-cyan-500 text-[10px] font-medium uppercase tracking-tight">{t("profile.total_networks")}</div>
+                  <div className="flex-1 px-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img src="/ton-transparent.png" alt="TON" className="w-6 h-6" />
+                      <span className="text-cyan-100 font-black text-sm uppercase tracking-wider">{t("profile.connect_wallet")}</span>
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-gray-600 group-hover:bg-cyan-500 transition-colors"></div>
                   </div>
                 </div>
 
-                {/* Wallet Section */}
-                <div className="flex items-center gap-2">
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-full p-3 shadow-[0_0_15px_#00e6ff15]">
-                    <Wallet className="w-5 h-5 text-cyan-400" />
+                {/* Earnings Module */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
+                  <div className="flex items-center justify-between border-b border-cyan-500/5 pb-3">
+                    <h3 className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.network_earnings")}</h3>
+                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest bg-gray-900/50 px-2 py-0.5 rounded italic">Unsettled</span>
                   </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15] hover:bg-cyan-500/10 transition-all cursor-pointer flex items-center gap-2">
-                    <img src="/ton-transparent.png" alt="TON" className="w-4 h-4" />
-                    <span className="text-cyan-300 font-semibold text-xs">{t("profile.connect_wallet")}</span>
+
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-cyan-50 text-3xl font-black">{user.referral_earnings_pending}</span>
+                      <span className="text-cyan-500/80 text-xs font-black tracking-widest">$BWAVE</span>
+                    </div>
+
+                    <div className="flex gap-3 mt-1">
+                      <button
+                        onClick={handleClaim}
+                        disabled={user.referral_earnings_pending === 0 || claiming}
+                        className={`flex-[2] py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${user.referral_earnings_pending === 0
+                          ? "bg-gray-900/40 text-gray-600 border-gray-800"
+                          : "bg-cyan-500/10 text-cyan-300 border-cyan-400 group hover:shadow-[0_0_20px_#00e6ff20] active:scale-[0.97]"
+                          } disabled:opacity-50`}
+                      >
+                        {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} ${user.referral_earnings_pending} $BWAVE`}
+                      </button>
+                      <button
+                        onClick={handleNotifyInactive}
+                        disabled={notifying || cooldown !== null}
+                        className={`flex-1 py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${cooldown !== null
+                          ? "border-gray-800 text-gray-700 bg-gray-900/20"
+                          : "border-cyan-400/20 text-cyan-500/80 hover:bg-cyan-500/5 hover:border-cyan-400/40 active:scale-[0.97]"
+                          } disabled:opacity-50`}
+                      >
+                        {notifying ? t("profile.wait") : cooldown !== null ? `${cooldownText}` : t("profile.notify")}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Network Earnings Block */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-3 shadow-[0_0_15px_#00e6ff15]">
-                  <h3 className="text-cyan-400 text-xs font-semibold mb-2">{t("profile.network_earnings")}</h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleClaim}
-                      disabled={user.referral_earnings_pending === 0 || claiming}
-                      className={`flex-1 px-3 py-1.5 text-xs rounded-lg border transition-all ${user.referral_earnings_pending === 0
-                        ? "bg-gray-700 text-gray-400 border-gray-600"
-                        : "bg-cyan-500/20 text-cyan-300 border-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_10px_#00e6ff30]"
-                        } disabled:opacity-50`}
-                    >
-                      {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} ${user.referral_earnings_pending} $BWAVE`}
-                    </button>
-                    <button
-                      onClick={handleNotifyInactive}
-                      disabled={notifying || cooldown !== null}
-                      className={`flex-1 px-3 py-1.5 text-xs rounded-lg border transition-all ${cooldown !== null
-                        ? "border-gray-700 text-gray-500 bg-gray-800 opacity-60"
-                        : "border-cyan-400 text-cyan-300 hover:bg-cyan-500/20 shadow-[0_0_10px_#00e6ff30]"
-                        } disabled:opacity-50`}
-                    >
-                      {notifying ? t("profile.wait") : cooldown !== null ? `Wait ${cooldownText}` : t("profile.notify_inactive")}
-                    </button>
+                {/* Roles & Status */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
+                  <div className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.roles")}</div>
+                  <div className="h-24 flex items-center justify-center border-2 border-dashed border-cyan-500/5 rounded-2xl bg-cyan-950/5">
+                    <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest opacity-60 italic">{t("profile.no_roles")}</p>
                   </div>
                 </div>
 
-                {/* Roles Section */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-4 shadow-[0_0_15px_#00e6ff15] min-h-[80px]">
-                  <div className="text-cyan-400 text-xs font-semibold mb-1.5">{t("profile.roles")}</div>
-                  <div className="text-cyan-500 text-[10px] italic">{t("profile.no_roles")}</div>
-                </div>
-
-                {/* Footer Section */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-3 shadow-[0_0_15px_#00e6ff15]">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-cyan-400 text-[10px] font-semibold">{t("profile.referral_link")}</div>
+                {/* Referral Assets */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.referral_link")}</div>
+                      <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-none">Global Network Builder</div>
+                    </div>
                     <button
                       onClick={async () => {
                         await navigator.clipboard.writeText(user.referral_link);
                         setCopied(true);
+
+                        const tg = (window as any).Telegram?.WebApp;
+                        if (tg?.HapticFeedback) {
+                          tg.HapticFeedback.impactOccurred("medium");
+                        }
+
                         setTimeout(() => setCopied(false), 1500);
                       }}
-                      className="px-3 py-1 border border-cyan-400 text-cyan-300 rounded-lg text-[10px] font-semibold hover:bg-cyan-500/20 transition-all"
+                      className="px-5 py-2.5 bg-cyan-500/10 border border-cyan-400/40 text-cyan-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_#00e6ff20] active:scale-[0.95]"
                     >
                       {copied ? t("profile.copied") : t("profile.copy")}
                     </button>
                   </div>
-                  <div className="text-cyan-300 text-[10px] font-medium mb-2 break-all">
-                    {user.referral_link}
+
+                  <div className="bg-black/40 border border-cyan-500/10 rounded-2xl p-4 group cursor-copy active:bg-cyan-500/5 transition-all">
+                    <div className="text-cyan-400 text-xs font-mono break-all opacity-60 group-hover:opacity-100 transition-opacity">
+                      {user.referral_link}
+                    </div>
                   </div>
-                  <div className="text-cyan-500 text-[10px]">
-                    {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString()}
+
+                  <div className="flex items-center justify-center gap-4 pt-4 border-t border-cyan-500/5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-900"></div>
+                      <div className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                        {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString()}
+                      </div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-900"></div>
+                    </div>
                   </div>
                 </div>
               </div>

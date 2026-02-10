@@ -75,10 +75,11 @@ export default function RoadmapOverlay({ isOpen, onClose }: RoadmapOverlayProps)
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xl flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden text-cyan-200"
+                    className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xl flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden text-cyan-200
+                               pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
                 >
                     {/* Header Bar */}
-                    <div className="sticky top-0 left-0 right-0 h-16 min-h-[64px] z-[130] flex items-center justify-between px-6 bg-transparent pointer-events-none">
+                    <div className="sticky top-0 left-0 right-0 w-full h-16 min-h-[64px] z-[130] flex items-center justify-between px-6 bg-transparent pointer-events-none">
                         <button
                             onClick={onClose}
                             className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors pointer-events-auto"
@@ -89,7 +90,7 @@ export default function RoadmapOverlay({ isOpen, onClose }: RoadmapOverlayProps)
                         </button>
                     </div>
 
-                    <div className="max-w-md w-full px-6 py-12 space-y-10">
+                    <div className="max-w-md w-full px-6 py-6 space-y-10">
                         <div className="text-center space-y-4">
                             <motion.div
                                 initial={{ scale: 0.9, opacity: 0 }}

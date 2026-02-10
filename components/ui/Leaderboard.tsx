@@ -53,7 +53,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
           <motion.div
             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
                        w-[90%] max-w-sm bg-black/60 backdrop-blur-md border border-cyan-900 
-                       rounded-2xl p-5 text-cyan-200 shadow-[0_0_25px_#00e6ff30]"
+                       rounded-2xl p-5 text-cyan-200 shadow-[0_0_25px_#00e6ff30]
+                       max-h-[90vh] flex flex-col overflow-hidden"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
@@ -94,7 +95,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               <>
 
                 {/* SCROLLABLE AREA — Top 10 + Your Rank */}
-                <div className="space-y-2 max-h-[47vh] overflow-y-auto pr-1">
+                <div className="space-y-2 flex-1 overflow-y-auto pr-1">
 
                   {/* Top 10 */}
                   {leaders.map((u, index) => (
