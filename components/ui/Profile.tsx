@@ -431,7 +431,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                         </h2>
                         <div className="bg-cyan-500/5 border border-cyan-400/20 px-2.5 py-1 rounded-lg shrink-0">
                           <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-[0.15em] uppercase">
-                            ID: {telegramId ? String(telegramId).slice(-3) : "..."}
+                            BW ID: {telegramId ? String(telegramId).slice(-3) : "..."}
                           </span>
                         </div>
                       </div>
@@ -480,7 +480,6 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
                   <div className="flex items-center justify-between border-b border-cyan-500/5 pb-3">
                     <h3 className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.network_earnings")}</h3>
-                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest bg-gray-900/50 px-2 py-0.5 rounded italic">Unsettled</span>
                   </div>
 
                   <div className="flex flex-col gap-3">
@@ -493,12 +492,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                       <button
                         onClick={handleClaim}
                         disabled={user.referral_earnings_pending === 0 || claiming}
-                        className={`flex-[2] py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${user.referral_earnings_pending === 0
+                        className={`flex-1 py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${user.referral_earnings_pending === 0
                           ? "bg-gray-900/40 text-gray-600 border-gray-800"
                           : "bg-cyan-500/10 text-cyan-300 border-cyan-400 group hover:shadow-[0_0_20px_#00e6ff20] active:scale-[0.97]"
                           } disabled:opacity-50`}
                       >
-                        {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : `${t("profile.claim")} ${user.referral_earnings_pending} $BWAVE`}
+                        {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : t("profile.claim")}
                       </button>
                       <button
                         onClick={handleNotifyInactive}
@@ -508,7 +507,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                           : "border-cyan-400/20 text-cyan-500/80 hover:bg-cyan-500/5 hover:border-cyan-400/40 active:scale-[0.97]"
                           } disabled:opacity-50`}
                       >
-                        {notifying ? t("profile.wait") : cooldown !== null ? `${cooldownText}` : t("profile.notify")}
+                        {notifying ? t("profile.wait") : cooldown !== null ? `${cooldownText}` : t("profile.notify_inactive")}
                       </button>
                     </div>
                   </div>
