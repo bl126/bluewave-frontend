@@ -35,12 +35,12 @@ function PresenceCard({
   mission,
   onActivate,
   onClaim,
-  loading
+  loadingId
 }: {
   mission: PresenceMission;
   onActivate: (type: string) => void;
   onClaim: (type: string) => void;
-  loading: boolean;
+  loadingId: string | null;
 }) {
   const { t } = useLanguage();
 
@@ -71,6 +71,7 @@ function PresenceCard({
   // Visuals based on state
   const isActive = mission.status === "active";
   const isCompleted = mission.status === "completed";
+  const isLoading = loadingId === mission.type;
 
   return (
     <div className={`
@@ -100,7 +101,7 @@ function PresenceCard({
             if (isCompleted) onClaim(mission.type);
             else if (mission.status === "inactive") onActivate(mission.type);
           }}
-          disabled={isActive || loading}
+          disabled={isActive || isLoading}
           className={`
             w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all
             ${isCompleted
@@ -111,9 +112,9 @@ function PresenceCard({
             }
           `}
         >
-          {loading ? "..." :
+          {isLoading ? t("profile.wait") : // reusing 'Please wait...' or similar
             isCompleted ? t("presence.claim_reward").replace("{{amount}}", mission.reward.toString()) :
-              isActive ? t("presence.waiting") :
+              isActive ? "SYNCING..." :
                 t("presence.activate")}
         </button>
       </div>
@@ -138,7 +139,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [presenceMissions, setPresenceMissions] = useState<PresenceMission[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [presenceLoading, setPresenceLoading] = useState(false); // separate loading for actions
+
+  // Independent loading states
+  const [presenceLoadingId, setPresenceLoadingId] = useState<string | null>(null);
+  const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
 
   const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
@@ -188,8 +192,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   // [CODE: PRESENCE_HANDLERS]
   const handleActivatePresence = async (type: string) => {
-    if (presenceLoading) return;
-    setPresenceLoading(true);
+    if (presenceLoadingId) return; // Prevent multiple clicks
+    // Lock only this presence card's loading state
+    setPresenceLoadingId(type);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/presence/activate`, {
@@ -209,13 +214,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     } catch (e) {
       console.error(e);
     } finally {
-      setPresenceLoading(false);
+      setPresenceLoadingId(null);
     }
   };
 
   const handleClaimPresence = async (type: string) => {
-    if (presenceLoading) return;
-    setPresenceLoading(true);
+    if (presenceLoadingId) return;
+    setPresenceLoadingId(type);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/presence/claim`, {
@@ -240,7 +245,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     } catch (e) {
       console.error(e);
     } finally {
-      setPresenceLoading(false);
+      setPresenceLoadingId(null);
     }
   };
 
@@ -268,7 +273,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         if (m?.url) window.open(m.url, "_blank");
       }
 
-      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m)); // Simple fallback
+      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+
+      // Simulate waiting time for "Syncing..." effect
+      setTimeout(() => {
+        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+      }, 5000);
       return;
     }
 
@@ -291,9 +301,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   };
 
   const handleClaim = async (id: string) => {
-    if (claimCooldown) return;
+    if (claimCooldown || claimingMissionId) return;
+    setClaimingMissionId(id);
     setClaimCooldown(true);
-    setTimeout(() => setClaimCooldown(false), 3000);
 
     try {
       let endpoint = "/api/claim_mission";
@@ -319,7 +329,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setPopup(t("missions.popup_complete") || "Not completed");
         setTimeout(() => setPopup(null), 2500);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setClaimingMissionId(null);
+      setTimeout(() => setClaimCooldown(false), 1000);
+    }
   };
 
 
@@ -370,7 +385,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                     mission={pm}
                     onActivate={handleActivatePresence}
                     onClaim={handleClaimPresence}
-                    loading={presenceLoading}
+                    loadingId={presenceLoadingId}
                   />
                 ))}
                 {presenceMissions.length === 0 && loading && (
@@ -389,7 +404,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               <div className="flex items-center gap-2 mb-2 px-1 border-t border-cyan-900/30 pt-6">
                 <Lock size={16} className="text-cyan-400" />
                 <h3 className="text-cyan-100 text-xs font-black uppercase tracking-[0.2em]">
-                  {t("missions.available") || "AVAILABLE MISSIONS"}
+                  SOCIAL PRESENCE MISSION
                 </h3>
               </div>
 
@@ -417,16 +432,22 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       </button>
                     )}
                     {m.status === "waiting" && (
-                      <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider">
-                        {t("missions.waiting")}
+                      <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider animate-pulse">
+                        SYNCING...
                       </button>
                     )}
                     {m.status === "claim" && (
                       <button
                         onClick={() => handleClaim(m.id)}
-                        className="px-3 py-1.5 text-xs font-bold bg-cyan-500 text-black border border-cyan-400 rounded-lg shadow-[0_0_15px_#00e6ff80] animate-pulse uppercase tracking-wider"
+                        disabled={claimingMissionId === m.id}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition-all
+                            ${claimingMissionId === m.id
+                            ? "bg-cyan-700 text-cyan-200 border border-cyan-600 cursor-wait"
+                            : "bg-cyan-500 text-black border border-cyan-400 shadow-[0_0_15px_#00e6ff80] animate-pulse"
+                          }
+                          `}
                       >
-                        {t("missions.claim")}
+                        {claimingMissionId === m.id ? "CLAIMING..." : t("missions.claim")}
                       </button>
                     )}
                     {m.status === "done" && (
