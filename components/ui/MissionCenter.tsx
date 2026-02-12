@@ -209,6 +209,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await res.json();
 
       if (data.success) {
+        // If it was a 1h mission and a bonus was awarded, update balance
+        if (data.streak_info?.bonus_awarded) {
+          const uRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/balance/${telegram_id}`);
+          const uData = await uRes.json();
+          window.dispatchEvent(
+            new CustomEvent("updateBalance", { detail: uData.balance })
+          );
+        }
         // Refresh list to get new state
         await loadData();
       } else {
@@ -283,7 +291,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
             });
           } else if (dlData.deeplink) {
             // Fallback to sharing deeplink
-            window.open(dlData.deeplink, "_blank");
+            if (tg?.openTelegramLink) {
+              tg.openTelegramLink(dlData.deeplink);
+            } else {
+              window.open(dlData.deeplink, "_blank");
+            }
           } else {
             // Fallback to raw URL if everything else fails
             const m = missions.find(m => m.id === id);
@@ -304,7 +316,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
       if (id === "join_channel" || id === "join_news") {
         const m = missions.find(m => m.id === id);
-        if (m?.url) window.open(m.url, "_blank");
+        const tg = (window as any).Telegram?.WebApp;
+        if (m?.url) {
+          if (tg?.openTelegramLink && m.url.includes("t.me/")) {
+            tg.openTelegramLink(m.url);
+          } else {
+            window.open(m.url, "_blank");
+          }
+        }
       }
 
       setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));

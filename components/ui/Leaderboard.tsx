@@ -93,7 +93,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               </div>
             </button>
 
-            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1.5 rounded-full bg-black/20 border border-cyan-900/30">
+            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-90 px-4 py-1.5 shadow-[0_0_15px_rgba(0,230,255,0.4)]">
               {t("leaderboard.title")}
             </h2>
 
@@ -144,8 +144,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         transition={{ delay: idx * 0.1, duration: 0.6, ease: "easeOut" }}
                         className="flex flex-col items-center"
                       >
-                        {/* User Photo */}
-                        <div className="relative mb-4">
+                        {/* User Photo - Shifted UP slightly to make room */}
+                        <div className="relative mb-2">
                           <div className={`relative p-1 rounded-full ${isFirst ? 'bg-cyan-500/20' : ''}`}>
                             <AvatarItem user={u} size={isFirst ? "lg" : "md"} isMe={isMe} />
                             {/* Floating Country Flag */}
@@ -174,7 +174,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                           />
 
                           <div className="absolute inset-0 flex flex-col items-center justify-start pt-6 px-2 text-center">
-                            <h4 className={`${isFirst ? 'text-[10px]' : 'text-[9px]'} font-black uppercase tracking-widest text-white mb-2 truncate max-w-full`}>
+                            <h4 className={`${isFirst ? 'text-[10px]' : 'text-[9px]'} font-black uppercase tracking-widest text-white mb-2 truncate max-w-full mt-5`}>
                               {u.name}
                             </h4>
 
