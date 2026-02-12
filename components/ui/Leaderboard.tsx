@@ -36,29 +36,31 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
   const restOfList = leaders.slice(3);
 
-  // Fallback for avatar - Updated to simple first letter
-  const renderAvatar = (user: any, size: "sm" | "md" | "lg" = "md", isMe: boolean = false) => {
+  // Component for avatar - Handles simple first letter with broken image handling
+  const AvatarItem = ({ user, size = "md", isMe = false }: { user: any, size?: "sm" | "md" | "lg", isMe?: boolean }) => {
+    const [imgError, setImgError] = useState(false);
+
     const sizeClasses = {
       sm: "w-8 h-8 text-xs",
       md: "w-10 h-10 text-sm",
       lg: "w-16 h-16 text-xl",
     };
 
-    const glowColor = isMe ? "rgba(0,230,255,0.6)" : "rgba(0,230,255,0.2)";
     const borderColor = isMe ? "border-cyan-300 shadow-[0_0_15px_rgba(0,230,255,0.5)]" : "border-cyan-500/30 shadow-[0_0_10px_rgba(0,230,255,0.2)]";
 
-    if (user.photo_url) {
+    if (user.photo_url && !imgError) {
       return (
         <img
           src={user.photo_url}
           alt={user.name}
+          onError={() => setImgError(true)}
           className={`${sizeClasses[size]} rounded-full border ${borderColor} object-cover`}
         />
       );
     }
     return (
       <div className={`${sizeClasses[size]} rounded-full bg-cyan-950/40 border ${borderColor} flex items-center justify-center text-cyan-400 font-black`}>
-        {(user.name?.charAt(0) || "U").toUpperCase()}
+        {((user.first_name || user.name || "U").charAt(0)).toUpperCase()}
       </div>
     );
   };
@@ -145,7 +147,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         {/* User Photo */}
                         <div className="relative mb-4">
                           <div className={`relative p-1 rounded-full ${isFirst ? 'bg-cyan-500/20' : ''}`}>
-                            {renderAvatar(u, isFirst ? "lg" : "md", isMe)}
+                            <AvatarItem user={u} size={isFirst ? "lg" : "md"} isMe={isMe} />
                             {/* Floating Country Flag */}
                             <div className="absolute -bottom-1 -right-1 bg-black/60 backdrop-blur-md rounded-full w-6 h-6 flex items-center justify-center border border-cyan-500/30 text-xs shadow-lg">
                               {u.country_flag}
@@ -155,8 +157,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
                         {/* The "Cone" / Column */}
                         <div className={`${width} ${height} relative rounded-t-[2rem] border-t-2 ${borderTopColor} border-x ${borderColor} ${glowIntensity} overflow-hidden group mt-2`}>
-                          {/* Label: 1st, 2nd, 3rd */}
-                          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
+                          {/* Label: 1st, 2nd, 3rd - Moved up slightly */}
+                          <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
                             <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-cyan-400 text-black shadow-[0_0_10px_#00e6ff]`}>
                               {getOrdinalLabel(u.rank)}
                             </span>
@@ -171,8 +173,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                           />
 
-                          <div className="absolute inset-0 flex flex-col items-center justify-start pt-7 px-2 text-center">
-                            <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-2 truncate max-w-full">
+                          <div className="absolute inset-0 flex flex-col items-center justify-start pt-11 px-2 text-center">
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-3 truncate max-w-full">
                               {u.name}
                             </h4>
 
@@ -197,6 +199,22 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                   })}
                 </div>
 
+                {/* ACTIVE COUNTRIES PILL - Fixed placement below top 3 */}
+                <div className="flex justify-center -mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setCountriesOpen(true)}
+                    className="flex items-center gap-2 px-6 py-2 rounded-full bg-cyan-950/40 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.1)] hover:border-cyan-400/60 transition-all group"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:text-cyan-200">
+                      Active Countries
+                    </span>
+                    <Trophy size={12} className="text-cyan-600 group-hover:text-cyan-400" />
+                  </motion.button>
+                </div>
+
                 {/* YOUR RANK SECTION (If not in top 100) */}
                 {myRank && !isUserInTop100 && (
                   <div className="space-y-4">
@@ -213,7 +231,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                     <div className="bg-cyan-400/10 border border-cyan-400/40 rounded-3xl p-5 flex items-center gap-5 shadow-[0_0_30px_#00e6ff20] relative overflow-hidden group">
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-transparent"></div>
                       <div className="relative font-black text-2xl text-cyan-400 min-w-[3rem]">#{myRank.rank}</div>
-                      <div className="relative shrink-0">{renderAvatar(myRank, "md")}</div>
+                      <div className="relative shrink-0"><AvatarItem user={myRank} size="md" /></div>
                       <div className="relative flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-black text-cyan-50 truncate text-lg leading-none">{myRank.name}</p>
@@ -260,7 +278,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         </div>
 
                         <div className="shrink-0">
-                          {renderAvatar(u, "sm", isMe)}
+                          <AvatarItem user={u} size="sm" isMe={isMe} />
                         </div>
 
                         <div className="flex-1 min-w-0">

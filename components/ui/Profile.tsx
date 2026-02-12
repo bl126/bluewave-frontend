@@ -24,6 +24,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [user, setUser] = useState<any>(telegramUser || null);
   const [loading, setLoading] = useState(!telegramUser);
   const [error, setError] = useState("");
+  const [imgError, setImgError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cooldown, setCooldown] = useState<number | null>(null);
   const [cooldownText, setCooldownText] = useState("00:00:00");
@@ -359,11 +360,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                   <div className="relative shrink-0">
                     <div className="absolute inset-0 rounded-full blur-2xl bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors"></div>
 
-                    {user.photo_url ? (
+                    {user.photo_url && !imgError ? (
                       <div className="relative">
                         <img
                           src={`${user.photo_url}?r=${Date.now()}`}
                           alt="avatar"
+                          onError={() => setImgError(true)}
                           className="relative w-24 h-24 rounded-full border-2 border-cyan-400/30 shadow-[0_0_20px_#00e6ff40] object-cover"
                         />
                       </div>
