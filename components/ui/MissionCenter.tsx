@@ -269,14 +269,22 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           // 2. Generate/Update Poster
           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`);
 
-          // 3. Get Share Deeplink
+          // 3. Get Share Data
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
           const dlData = await dlRes.json();
 
-          if (dlData.deeplink) {
+          const tg = (window as any).Telegram?.WebApp;
+
+          if (tg && typeof tg.shareToStory === 'function' && dlData.poster_url) {
+            // ⭐ Use official shareToStory API for direct posting
+            tg.shareToStory(dlData.poster_url, {
+              text: dlData.caption
+            });
+          } else if (dlData.deeplink) {
+            // Fallback to sharing deeplink
             window.open(dlData.deeplink, "_blank");
           } else {
-            // Fallback to raw URL if deeplink fails
+            // Fallback to raw URL if everything else fails
             const m = missions.find(m => m.id === id);
             if (m?.url) window.open(m.url, "_blank");
           }
