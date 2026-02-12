@@ -361,10 +361,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "done" } : m));
       } else {
         setPopup(t("missions.popup_complete") || "Not completed");
+        // Reset to "open" so user can try again
+        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
         setTimeout(() => setPopup(null), 2500);
       }
     } catch (e) {
       console.error(e);
+      // Fallback reset on error
+      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
     } finally {
       setClaimingMissionId(null);
       setTimeout(() => setClaimCooldown(false), 1000);
