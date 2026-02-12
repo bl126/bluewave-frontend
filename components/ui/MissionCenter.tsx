@@ -168,7 +168,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       if (data.normal) finalList.push(...data.normal);
       if (data.daily) finalList.push(...data.daily);
       if (data.onboarding) finalList.push(...data.onboarding);
-      if (data.story && Object.keys(data.story).length > 0) finalList.push(data.story);
+      if (data.story && Object.keys(data.story).length > 0) {
+        finalList.push(data.story);
+        // 🚀 Pre-generate story poster in background for "instant" feel when clicked
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`).catch(() => { });
+      }
 
       // Sort onboarding first
       finalList.sort((a, b) => {
@@ -266,10 +270,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
-          // 2. Generate/Update Poster
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`);
-
-          // 3. Get Share Data
+          // 🚀 Backend now handles generation if missing in ONE call
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
           const dlData = await dlRes.json();
 
