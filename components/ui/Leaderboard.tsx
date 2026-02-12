@@ -93,7 +93,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               </div>
             </button>
 
-            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-6 py-1.5 rounded-full">
+            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1.5 rounded-full bg-black/20 border border-cyan-900/30">
               {t("leaderboard.title")}
             </h2>
 
@@ -173,23 +173,23 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                           />
 
-                          <div className="absolute inset-0 flex flex-col items-center justify-start pt-10 px-2 text-center">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-3 truncate max-w-full">
+                          <div className="absolute inset-0 flex flex-col items-center justify-start pt-6 px-2 text-center">
+                            <h4 className={`${isFirst ? 'text-[10px]' : 'text-[9px]'} font-black uppercase tracking-widest text-white mb-2 truncate max-w-full`}>
                               {u.name}
                             </h4>
 
-                            <div className="flex flex-col items-center gap-0.5 mb-4">
-                              <p className={`text-sm font-black tracking-tight ${textColor}`}>
+                            <div className="flex flex-col items-center gap-0.5 mb-2">
+                              <p className={`${isFirst ? 'text-sm' : 'text-xs'} font-black tracking-tight ${textColor}`}>
                                 {u.balance.toLocaleString()}
                               </p>
-                              <p className="text-[8px] font-black text-cyan-600 uppercase tracking-[0.2em] leading-none">
+                              <p className="text-[7px] font-black text-cyan-600 uppercase tracking-[0.2em] leading-none">
                                 $BWAVE
                               </p>
                             </div>
 
                             {/* Referral Chip */}
-                            <div className={`mt-auto mb-4 px-3 py-1.5 rounded-xl border border-cyan-500/10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
-                              ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-75 opacity-80' : 'scale-90 opacity-80'}`}>
+                            <div className={`mt-auto mb-3 px-3 py-1 rounded-xl border border-cyan-500/10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
+                              ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
                               <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">{t("leaderboard.referrals_label")}</span>
                               <span className="text-xs font-black text-cyan-100">{u.referrals}</span>
                             </div>
