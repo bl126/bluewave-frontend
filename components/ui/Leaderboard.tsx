@@ -122,7 +122,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                   {podiumOrder.map((u: any, idx: number) => {
                     const isFirst = (podiumOrder.length >= 3 && idx === 1) || (podiumOrder.length < 3 && u.rank === 1);
                     const rank = u.rank;
-                    const height = isFirst ? "h-52" : rank === 2 ? "h-40" : "h-36";
+                    const height = isFirst ? "h-52" : "h-40";
                     const width = isFirst ? "w-32" : "w-28";
                     const isMe = String(u.telegram_id) === String(tg_id);
 
