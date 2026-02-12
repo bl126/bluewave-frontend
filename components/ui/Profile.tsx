@@ -378,7 +378,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                         border-2 border-cyan-400/30
                       "
                       >
-                        {(user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
+                        {(user.first_name?.charAt(0) || user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
                       </div>
                     )}
 

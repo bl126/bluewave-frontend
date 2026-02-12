@@ -16,6 +16,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
   const { t } = useLanguage();
   const tg_id = telegramUser?.id;
 
+  const [countriesOpen, setCountriesOpen] = useState(false);
+
   // Use useApi for caching and automatic revalidation
   const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null);
 
@@ -34,28 +36,37 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
   const restOfList = leaders.slice(3);
 
-  // Fallback for avatar
-  const renderAvatar = (user: any, size: "sm" | "md" | "lg" = "md") => {
+  // Fallback for avatar - Updated to simple first letter
+  const renderAvatar = (user: any, size: "sm" | "md" | "lg" = "md", isMe: boolean = false) => {
     const sizeClasses = {
       sm: "w-8 h-8 text-xs",
       md: "w-10 h-10 text-sm",
       lg: "w-16 h-16 text-xl",
     };
 
+    const glowColor = isMe ? "rgba(0,230,255,0.6)" : "rgba(0,230,255,0.2)";
+    const borderColor = isMe ? "border-cyan-300 shadow-[0_0_15px_rgba(0,230,255,0.5)]" : "border-cyan-500/30 shadow-[0_0_10px_rgba(0,230,255,0.2)]";
+
     if (user.photo_url) {
       return (
         <img
           src={user.photo_url}
           alt={user.name}
-          className={`${sizeClasses[size]} rounded-full border border-cyan-500/30 object-cover shadow-[0_0_10px_rgba(0,230,255,0.2)]`}
+          className={`${sizeClasses[size]} rounded-full border ${borderColor} object-cover`}
         />
       );
     }
     return (
-      <div className={`${sizeClasses[size]} rounded-full bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,230,255,0.2)]`}>
+      <div className={`${sizeClasses[size]} rounded-full bg-cyan-950/40 border ${borderColor} flex items-center justify-center text-cyan-400 font-black`}>
         {(user.name?.charAt(0) || "U").toUpperCase()}
       </div>
     );
+  };
+
+  const getOrdinalLabel = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
 
   return (
@@ -69,17 +80,22 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
           exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          {/* Header Bar */}
-          <div className="flex items-center p-6 sticky top-0 z-50">
+          {/* Floating Header - Consistent with Mission Center */}
+          <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
             <button
               onClick={onClose}
-              className="group p-2 rounded-full bg-cyan-950/30 hover:bg-cyan-900/50 transition-all border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]"
+              className="group pointer-events-auto"
             >
-              <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
+              <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
+              </div>
             </button>
-            <h2 className="ml-4 text-cyan-400 text-lg font-black tracking-widest uppercase">
+
+            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-6 py-1.5 rounded-full bg-black/20 border border-cyan-900/30">
               {t("leaderboard.title")}
             </h2>
+
+            <div className="w-10"></div> {/* Spacer for center alignment */}
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
@@ -106,11 +122,16 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                     const rank = u.rank;
                     const height = isFirst ? "h-52" : rank === 2 ? "h-40" : "h-32";
                     const width = isFirst ? "w-32" : "w-28";
+                    const isMe = String(u.telegram_id) === String(tg_id);
 
                     // Strictly Cyan Theme
-                    const glowIntensity = isFirst ? "shadow-[0_0_40px_rgba(0,230,255,0.4)]" : "shadow-[0_0_20px_rgba(0,230,255,0.15)]";
-                    const borderColor = isFirst ? "border-cyan-400/60" : "border-cyan-500/30";
-                    const borderTopColor = isFirst ? "border-t-cyan-300" : "border-t-cyan-500/50";
+                    const glowIntensity = isMe
+                      ? "shadow-[0_0_50px_rgba(0,230,255,0.6)]"
+                      : isFirst
+                        ? "shadow-[0_0_40px_rgba(0,230,255,0.4)]"
+                        : "shadow-[0_0_20px_rgba(0,230,255,0.15)]";
+                    const borderColor = isMe ? "border-cyan-300" : isFirst ? "border-cyan-400/60" : "border-cyan-500/30";
+                    const borderTopColor = isMe ? "border-t-cyan-200" : isFirst ? "border-t-cyan-300" : "border-t-cyan-500/50";
                     const textColor = isFirst ? "text-cyan-50" : "text-cyan-200";
 
                     return (
@@ -124,22 +145,22 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                         {/* User Photo */}
                         <div className="relative mb-4">
                           <div className={`relative p-1 rounded-full ${isFirst ? 'bg-cyan-500/20' : ''}`}>
-                            {renderAvatar(u, isFirst ? "lg" : "md")}
+                            {renderAvatar(u, isFirst ? "lg" : "md", isMe)}
                             {/* Floating Country Flag */}
                             <div className="absolute -bottom-1 -right-1 bg-black/60 backdrop-blur-md rounded-full w-6 h-6 flex items-center justify-center border border-cyan-500/30 text-xs shadow-lg">
                               {u.country_flag}
                             </div>
                           </div>
-
-                          {String(u.telegram_id) === String(tg_id) && (
-                            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md bg-cyan-400 text-black text-[8px] font-black uppercase tracking-tighter shadow-[0_0_10px_#00e6ff]">
-                              {t("leaderboard.you")}
-                            </div>
-                          )}
                         </div>
 
                         {/* The "Cone" / Column */}
                         <div className={`${width} ${height} relative rounded-t-[2rem] border-t-2 ${borderTopColor} border-x ${borderColor} ${glowIntensity} overflow-hidden group mt-2`}>
+                          {/* Label: 1st, 2nd, 3rd */}
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
+                            <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-cyan-400 text-black shadow-[0_0_10px_#00e6ff]`}>
+                              {getOrdinalLabel(u.rank)}
+                            </span>
+                          </div>
                           {/* Gradient Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-cyan-500/5 to-transparent"></div>
 
@@ -234,12 +255,12 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                           }
                         `}
                       >
-                        <div className={`font-black text-sm w-10 text-center ${isMe ? 'text-cyan-400' : 'text-cyan-700'}`}>
-                          #{u.rank}
+                        <div className={`font-black text-sm w-10 text-center ${isMe ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                          {getOrdinalLabel(u.rank)}
                         </div>
 
                         <div className="shrink-0">
-                          {renderAvatar(u, "sm")}
+                          {renderAvatar(u, "sm", isMe)}
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -270,7 +291,88 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
               </div>
             )}
           </div>
+          <ActiveCountriesSheet
+            isOpen={countriesOpen}
+            onClose={() => setCountriesOpen(false)}
+          />
         </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// [CODE: ACTIVE_COUNTRIES_SHEET]
+function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { t } = useLanguage();
+  const { data: countries, loading } = useApi(isOpen ? "/countries" : null);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+          />
+
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100) onClose();
+            }}
+            className="fixed bottom-0 left-0 right-0 z-[201] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
+          >
+            {/* Drag Handle */}
+            <div className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing">
+              <div className="w-12 h-1.5 bg-cyan-900/50 rounded-full" />
+            </div>
+
+            <div className="px-8 pb-4">
+              <h3 className="text-cyan-400 text-sm font-black uppercase tracking-[0.2em] mb-1">
+                Active Countries
+              </h3>
+              <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest">
+                Global Network Reach
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
+              {loading ? (
+                <div className="grid grid-cols-2 gap-3 pb-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-14 bg-cyan-900/10 rounded-2xl border border-cyan-900/20 animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 pb-6">
+                  {countries?.map((c: any) => (
+                    <div
+                      key={c.code}
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-cyan-950/20 border border-cyan-900/30 hover:border-cyan-500/30 transition-colors group"
+                    >
+                      <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{c.flag}</span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{c.name}</p>
+                        <p className="text-[9px] font-bold text-cyan-600 uppercase tracking-widest">{c.code}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
