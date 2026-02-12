@@ -262,10 +262,35 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       // Copied logic for brevity in this thought, will implement fully in file
 
       if (id === "story_post") {
-        // ... story logic
-        // Simplified for rewrite: just open URL if exists
-        const m = missions.find(m => m.id === id);
-        if (m?.url) window.open(m.url, "_blank");
+        // 1. Mark as syncing immediately to show loading
+        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+
+        try {
+          // 2. Generate/Update Poster
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`);
+
+          // 3. Get Share Deeplink
+          const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
+          const dlData = await dlRes.json();
+
+          if (dlData.deeplink) {
+            window.open(dlData.deeplink, "_blank");
+          } else {
+            // Fallback to raw URL if deeplink fails
+            const m = missions.find(m => m.id === id);
+            if (m?.url) window.open(m.url, "_blank");
+          }
+        } catch (e) {
+          console.error("Story mission error:", e);
+          const m = missions.find(m => m.id === id);
+          if (m?.url) window.open(m.url, "_blank");
+        }
+
+        // 4. Continue with visual sync timer
+        setTimeout(() => {
+          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+        }, 8000); // 8s to give user time to share
+        return;
       }
 
       if (id === "join_channel" || id === "join_news") {
