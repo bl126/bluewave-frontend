@@ -72,7 +72,8 @@
         "referrals": "रेफरल",
         "your_level": "आपका स्तर:",
         "points_to_reach": "अंक प्राप्त करने के लिए",
-        "max_level": "अधिकतम स्तर प्राप्त किया"
+        "max_level": "अधिकतम स्तर प्राप्त किया",
+        "your_rank": "आपकी रैंक"
     },
     "menu": {
         "presence_score": "Presence Score",

@@ -72,7 +72,13 @@
         "referrals": "Referidos",
         "your_level": "Tu Nivel:",
         "points_to_reach": "puntos para alcanzar",
-        "max_level": "Nivel Máximo Alcanzado"
+        "max_level": "Nivel Máximo Alcanzado",
+        "your_rank": "TU RANGO",
+        "elite": "ÉLITE",
+        "rank_2": "RANGO 2",
+        "rank_3": "RANGO 3",
+        "referrals_label": "REDES",
+        "global_list": "Lista Global de Red"
     },
     "menu": {
         "presence_score": "Presence Score",

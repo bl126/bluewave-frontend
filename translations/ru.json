@@ -72,7 +72,8 @@
         "referrals": "Рефералы",
         "your_level": "Ваш уровень:",
         "points_to_reach": "очков до достижения",
-        "max_level": "Максимальный уровень достигнут"
+        "max_level": "Максимальный уровень достигнут",
+        "your_rank": "ВАШ РАНГ"
     },
     "menu": {
         "presence_score": "Presence Score",

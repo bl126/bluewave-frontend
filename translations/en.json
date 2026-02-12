@@ -69,10 +69,16 @@
     "loading": "Loading...",
     "error_load": "Could not load leaderboard",
     "you": "YOU",
-    "referrals": "Referrals",
+    "referrals": "Networks",
     "your_level": "Your Level:",
     "points_to_reach": "points to reach",
-    "max_level": "Max Level Achieved"
+    "max_level": "Max Level Achieved",
+    "your_rank": "YOUR RANK",
+    "elite": "ELITE",
+    "rank_2": "RANK 2",
+    "rank_3": "RANK 3",
+    "referrals_label": "NETWORKS",
+    "global_list": "Global Network List"
   },
   "menu": {
     "about": "About Bluewave",
