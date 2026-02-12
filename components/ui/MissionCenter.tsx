@@ -274,43 +274,39 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       // Copied logic for brevity in this thought, will implement fully in file
 
       if (id === "story_post") {
-        // 1. Mark as syncing immediately to show loading
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
-          // 🚀 Backend now handles generation if missing in ONE call
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
           const dlData = await dlRes.json();
 
           const tg = (window as any).Telegram?.WebApp;
 
+          // 1. Try Native Story Editor
           if (tg && typeof tg.shareToStory === 'function' && dlData.poster_url) {
-            // ⭐ Use official shareToStory API for direct posting
             tg.shareToStory(dlData.poster_url, {
-              text: dlData.caption
+              text: dlData.caption,
+              widget_link: {
+                url: dlData.ref_link,
+                name: "Bluewave"
+              }
             });
-          } else if (dlData.deeplink) {
-            // Fallback to sharing deeplink
-            if (tg?.openTelegramLink) {
-              tg.openTelegramLink(dlData.deeplink);
-            } else {
-              window.open(dlData.deeplink, "_blank");
-            }
-          } else {
-            // Fallback to raw URL if everything else fails
-            const m = missions.find(m => m.id === id);
-            if (m?.url) window.open(m.url, "_blank");
+          }
+          // 2. Fallback: Open pure URL if it's a link (manual post)
+          else if (dlData.poster_url) {
+            // If we can't open story editor, at least open the image so they can save it? 
+            // Or maybe just open the bot? 
+            // For now, let's try to open the deeplink which goes to the bot
+            if (tg?.openTelegramLink) tg.openTelegramLink(dlData.deeplink);
+            else window.open(dlData.deeplink, "_blank");
           }
         } catch (e) {
           console.error("Story mission error:", e);
-          const m = missions.find(m => m.id === id);
-          if (m?.url) window.open(m.url, "_blank");
         }
 
-        // 4. Continue with visual sync timer
         setTimeout(() => {
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-        }, 8000); // 8s to give user time to share
+        }, 8000);
         return;
       }
 
@@ -344,7 +340,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       });
 
       const mission = missions.find(m => m.id === id);
-      if (mission?.url) window.open(mission.url, "_blank");
+
+      // 🚀 FORCE OPEN LINK LOGIC (Fixes "Open Again" not working)
+      if (mission?.url) {
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg?.openLink) {
+          tg.openLink(mission.url);
+        } else {
+          window.open(mission.url, "_blank");
+        }
+      }
 
       setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
       setTimeout(() => {
