@@ -231,7 +231,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
                     <div className="bg-cyan-400/10 border border-cyan-400/40 rounded-3xl p-5 flex items-center gap-5 shadow-[0_0_30px_#00e6ff20] relative overflow-hidden group">
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-transparent"></div>
-                      <div className="relative font-black text-2xl text-cyan-400 min-w-[3rem]">#{myRank.rank}</div>
+                      <div className="relative font-black text-2xl text-cyan-400 min-w-[3rem] text-center">{getOrdinalLabel(myRank.rank)}</div>
                       <div className="relative shrink-0"><AvatarItem user={myRank} size="md" /></div>
                       <div className="relative flex-1 min-w-0">
                         <div className="flex items-center gap-2">
