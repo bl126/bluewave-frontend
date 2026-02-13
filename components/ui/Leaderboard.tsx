@@ -238,13 +238,13 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
                           <p className="font-black text-cyan-50 truncate text-lg leading-none">{myRank.name}</p>
                           <span className="text-base leading-none">{myRank.country_flag}</span>
                         </div>
+                        <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
+                          {myRank.referrals} Networks
+                        </p>
                       </div>
                       <div className="relative text-right flex flex-col items-end">
                         <p className="text-lg font-black text-cyan-400 leading-none">{myRank.balance.toLocaleString()}</p>
                         <p className="text-[9px] text-cyan-600 font-black uppercase tracking-widest mt-1">$BWAVE</p>
-                        <div className="mt-2 text-[10px] text-cyan-300/60 font-black border-t border-cyan-500/10 pt-1">
-                          {myRank.referrals} {t("leaderboard.referrals").slice(0, 3).toUpperCase()}
-                        </div>
                       </div>
                     </div>
                   </div>
