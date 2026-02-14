@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet, ArrowLeft } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
@@ -35,6 +35,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   // Settings overlay states
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [showId, setShowId] = useState(false);
+  const [idCopied, setIdCopied] = useState(false);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   // ⭐ Telegram ID extracted from Mini App or Props
@@ -405,10 +407,37 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                         <h2 className="text-cyan-50 font-bold text-lg sm:text-2xl tracking-tight truncate">
                           {user.first_name || user.name || user.username}
                         </h2>
-                        <div className="bg-cyan-500/5 border border-cyan-400/20 px-2.5 py-1 rounded-lg shrink-0">
-                          <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-[0.15em] uppercase">
-                            BW ID: {telegramId ? String(telegramId).slice(-3) : "..."}
+                        <div className="flex items-center gap-1.5 bg-cyan-500/5 border border-cyan-400/20 px-2 py-1 rounded-lg shrink-0 relative transition-all active:scale-[0.98]">
+                          <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-tight uppercase font-mono">
+                            ID: {user?.bw_id ? (showId ? user.bw_id : `${user.bw_id.slice(0, 5)}***`) : "..."}
                           </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowId(!showId);
+                              const tg = (window as any).Telegram?.WebApp;
+                              if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+                            }}
+                            className="p-0.5 hover:bg-cyan-500/10 rounded transition-colors text-cyan-500/60"
+                          >
+                            {showId ? <EyeOff size={11} /> : <Eye size={11} />}
+                          </button>
+                          {showId && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!user?.bw_id) return;
+                                await navigator.clipboard.writeText(user.bw_id);
+                                setIdCopied(true);
+                                const tg = (window as any).Telegram?.WebApp;
+                                if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+                                setTimeout(() => setIdCopied(false), 2000);
+                              }}
+                              className="p-0.5 hover:bg-cyan-500/10 rounded transition-colors text-cyan-500/60"
+                            >
+                              {idCopied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <span className="text-cyan-500/50 text-[11px] sm:text-[13px] font-semibold tracking-wide mt-0.5">

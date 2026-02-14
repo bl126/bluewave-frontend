@@ -278,12 +278,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
         try {
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
+          if (!dlRes.ok) throw new Error("Failed to fetch story data");
           const dlData = await dlRes.json();
 
           const tg = (window as any).Telegram?.WebApp;
 
-          // 1. Try Native Story Editor
+          console.log("STORY_MISSION: Opening story with data", dlData);
+
+          // 1. Try Native Story Editor (Best UX)
           if (tg && typeof tg.shareToStory === 'function' && dlData.poster_url) {
+            console.log("STORY_MISSION: Using tg.shareToStory");
             tg.shareToStory(dlData.poster_url, {
               text: dlData.caption,
               widget_link: {
@@ -292,21 +296,24 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               }
             });
           }
-          // 2. Fallback: Open pure URL if it's a link (manual post)
-          else if (dlData.poster_url) {
-            // If we can't open story editor, at least open the image so they can save it? 
-            // Or maybe just open the bot? 
-            // For now, let's try to open the deeplink which goes to the bot
+          // 2. Fallback: Try to open via share link (Common fallback)
+          else if (dlData.deeplink) {
+            console.log("STORY_MISSION: Falling back to deeplink");
             if (tg?.openTelegramLink) tg.openTelegramLink(dlData.deeplink);
             else window.open(dlData.deeplink, "_blank");
           }
         } catch (e) {
           console.error("Story mission error:", e);
+          setPopup("Failed to open story mission. Try again.");
+          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
+          setTimeout(() => setPopup(null), 3000);
+          return;
         }
 
+        // Set to claim after a delay
         setTimeout(() => {
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-        }, 8000);
+        }, 12000); // 12s delay to give user time to post
         return;
       }
 
