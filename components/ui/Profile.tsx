@@ -409,7 +409,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                         </h2>
                         <div className="flex items-center gap-1.5 bg-cyan-500/5 border border-cyan-400/20 px-2 py-1 rounded-lg shrink-0 relative transition-all active:scale-[0.98]">
                           <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-tight uppercase font-mono">
-                            ID: {user?.bw_id ? (showId ? user.bw_id : `${user.bw_id.slice(0, 5)}***`) : "..."}
+                            BW ID: {user?.bw_id ? (showId ? user.bw_id : `${user.bw_id.slice(0, 5)}***`) : "..."}
                           </span>
                           <button
                             onClick={(e) => {
