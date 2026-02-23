@@ -294,18 +294,19 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         console.log("STORY_MISSION: Click! cached=", !!cached, "version=", tgVersion, "shareToStory=", typeof tg?.shareToStory);
 
         // PRIMARY PATH: Call shareToStory SYNCHRONOUSLY (no await before this!)
-        if (cached?.poster_url && tg && typeof tg.shareToStory === 'function' && tgVersion >= 7.8) {
-          console.log("STORY_MISSION: Calling shareToStory NOW (sync) with:", cached.poster_url);
+        // 🚀 SIMPLIFIED: Removed text/widget_link as they are Premium-only and might block the call for regular users
+        if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
+          console.log("STORY_MISSION: Calling shareToStory NOW (sync) with URL:", cached.poster_url);
           try {
-            tg.shareToStory(cached.poster_url, {
-              text: cached.caption || "",
-              widget_link: {
-                url: cached.ref_link || "https://t.me/Bluewave_Ecosystem_bot",
-                name: "Join Bluewave"
-              }
-            });
+            // Bare minimum call for maximum compatibility
+            tg.shareToStory(cached.poster_url);
+            console.log("STORY_MISSION: shareToStory call sent to Telegram");
           } catch (e) {
-            console.error("STORY_MISSION: shareToStory threw:", e);
+            console.error("STORY_MISSION: shareToStory crash:", e);
+            // Emergency postEvent fallback
+            try {
+              if (tg.postEvent) tg.postEvent('web_app_share_to_story', { media_url: cached.poster_url });
+            } catch (e2) { console.error("STORY_MISSION: postEvent failed too", e2); }
           }
 
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
