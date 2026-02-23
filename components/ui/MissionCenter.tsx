@@ -302,9 +302,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
         // 1. SYNC PATH: Use cached data if available (Best for gesture context)
         if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
-          console.log("STORY_MISSION: Running SYNC path (shareToStory)");
+          console.log("STORY_MISSION: Running SYNC path (shareToStory) with caption:", cached.caption);
           try {
-            tg.shareToStory(cached.poster_url);
+            tg.shareToStory(cached.poster_url, { text: cached.caption });
             console.log("STORY_MISSION: SYNC path success");
             setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
             setTimeout(() => {
@@ -331,9 +331,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           if (dlData.poster_url) {
             // Try shareToStory even in async path (often works if delay is small)
             if (tg && typeof tg.shareToStory === 'function') {
-              console.log("STORY_MISSION: Attempting shareToStory in ASYNC path");
+              console.log("STORY_MISSION: Attempting shareToStory in ASYNC path with caption:", dlData.caption);
               try {
-                tg.shareToStory(dlData.poster_url);
+                tg.shareToStory(dlData.poster_url, { text: dlData.caption });
                 console.log("STORY_MISSION: ASYNC shareToStory success");
                 setTimeout(() => {
                   setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
