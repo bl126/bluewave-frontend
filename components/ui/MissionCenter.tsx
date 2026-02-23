@@ -174,15 +174,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       if (data.onboarding) finalList.push(...data.onboarding);
       if (data.story && Object.keys(data.story).length > 0) {
         finalList.push(data.story);
-        // 🚀 PRE-FETCH story deeplink data so shareToStory can be called SYNCHRONOUSLY on click
-        // shareToStory REQUIRES direct user-gesture context — no await allowed before it!
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`)
-          .then(r => r.json())
-          .then(dlData => {
-            console.log("STORY_PREFETCH: Cached deeplink data", dlData);
-            storyDataRef.current = dlData;
-          })
-          .catch(e => console.error("STORY_PREFETCH: Failed", e));
+        // 🚀 PRE-FETCH story deeplink only if NOT DONE
+        if (data.story.status !== "done") {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`)
+            .then(r => r.json())
+            .then(dlData => {
+              console.log("STORY_PREFETCH: Cached deeplink data", dlData);
+              storyDataRef.current = dlData;
+            })
+            .catch(e => console.error("STORY_PREFETCH: Failed", e));
+        }
       }
 
       // Sort onboarding first
@@ -278,7 +279,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     if (!telegram_id) return;
 
     // ... [Logic for opening missions - same as before] ...
-    const isSpecial = id === "invite_daily" || id === "join_channel" || id === "join_news" || id === "story_post";
+    const isSpecial = id === "invite_daily" || id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan" || id === "story_post";
 
     if (isSpecial) {
       // Logic for special missions implementation
@@ -368,14 +369,15 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         return;
       }
 
-      if (id === "join_channel" || id === "join_news") {
+      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") {
         const m = missions.find(m => m.id === id);
         const tg = (window as any).Telegram?.WebApp;
         if (m?.url) {
           if (tg?.openTelegramLink && m.url.includes("t.me/")) {
             tg.openTelegramLink(m.url);
           } else {
-            window.open(m.url, "_blank");
+            if (tg?.openLink) tg.openLink(m.url);
+            else window.open(m.url, "_blank");
           }
         }
       }
@@ -425,7 +427,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       let endpoint = "/api/claim_mission";
       let payload: any = { telegram_id, mission_id: id };
 
-      if (id === "join_channel" || id === "join_news") endpoint = "/api/claim/onboarding";
+      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") endpoint = "/api/claim/onboarding";
       else if (id === "invite_daily") { endpoint = "/api/claim/daily"; payload = { telegram_id }; }
       else if (id === "story_post") { endpoint = "/api/claim/story_post"; payload = { telegram_id }; }
 
