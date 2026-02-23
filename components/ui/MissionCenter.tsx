@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
@@ -148,6 +149,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [error, setError] = useState("");
   const [popup, setPopup] = useState<string | null>(null);
 
+  // 🚀 PRE-CACHED story deeplink data (fetched at load, used instantly on click)
+  const storyDataRef = useRef<{ poster_url: string; caption: string; ref_link: string } | null>(null);
+
   // [CODE: FETCH_DATA]
   const loadData = async () => {
     if (!telegram_id) return;
@@ -170,8 +174,15 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       if (data.onboarding) finalList.push(...data.onboarding);
       if (data.story && Object.keys(data.story).length > 0) {
         finalList.push(data.story);
-        // 🚀 Pre-generate story poster in background for "instant" feel when clicked
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/poster/${telegram_id}`).catch(() => { });
+        // 🚀 PRE-FETCH story deeplink data so shareToStory can be called SYNCHRONOUSLY on click
+        // shareToStory REQUIRES direct user-gesture context — no await allowed before it!
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`)
+          .then(r => r.json())
+          .then(dlData => {
+            console.log("STORY_PREFETCH: Cached deeplink data", dlData);
+            storyDataRef.current = dlData;
+          })
+          .catch(e => console.error("STORY_PREFETCH: Failed", e));
       }
 
       // Sort onboarding first
@@ -274,78 +285,68 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       // Copied logic for brevity in this thought, will implement fully in file
 
       if (id === "story_post") {
+        // 🚀 INSTANT SHARE — uses pre-cached data, NO async before shareToStory!
+        // shareToStory MUST be called synchronously from user tap gesture.
+        const tg = (window as any).Telegram?.WebApp;
+        const cached = storyDataRef.current;
+        const tgVersion = parseFloat(tg?.version || "0");
+
+        console.log("STORY_MISSION: Click! cached=", !!cached, "version=", tgVersion, "shareToStory=", typeof tg?.shareToStory);
+
+        // PRIMARY PATH: Call shareToStory SYNCHRONOUSLY (no await before this!)
+        if (cached?.poster_url && tg && typeof tg.shareToStory === 'function' && tgVersion >= 7.8) {
+          console.log("STORY_MISSION: Calling shareToStory NOW (sync) with:", cached.poster_url);
+          try {
+            tg.shareToStory(cached.poster_url, {
+              text: cached.caption || "",
+              widget_link: {
+                url: cached.ref_link || "https://t.me/Bluewave_Ecosystem_bot",
+                name: "Join Bluewave"
+              }
+            });
+          } catch (e) {
+            console.error("STORY_MISSION: shareToStory threw:", e);
+          }
+
+          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+          setTimeout(() => {
+            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+          }, 15000);
+          return;
+        }
+
+        // FALLBACK: Data not cached yet or shareToStory unavailable
+        console.log("STORY_MISSION: Fallback — fetching data async + opening poster link");
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
-          console.log("STORY_MISSION: Fetching story data...");
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
-
-          if (!dlRes.ok) {
-            const errText = await dlRes.text();
-            console.error("STORY_MISSION: Backend error:", dlRes.status, errText);
-            throw new Error(`Backend error: ${dlRes.status}`);
-          }
-
+          if (!dlRes.ok) throw new Error(`Backend: ${dlRes.status}`);
           const dlData = await dlRes.json();
-          console.log("STORY_MISSION: Got data:", JSON.stringify(dlData));
+          storyDataRef.current = dlData; // Cache for next click
 
-          const tg = (window as any).Telegram?.WebApp;
-          const tgVersion = parseFloat(tg?.version || "0");
-          console.log("STORY_MISSION: TG WebApp version:", tgVersion, "shareToStory exists:", typeof tg?.shareToStory);
-
-          // 1. Try Native Story Editor (requires Mini App 7.8+)
-          if (tg && typeof tg.shareToStory === 'function' && tgVersion >= 7.8 && dlData.poster_url) {
-            console.log("STORY_MISSION: Calling tg.shareToStory with URL:", dlData.poster_url);
-            try {
-              tg.shareToStory(dlData.poster_url, {
-                text: dlData.caption || "",
-                widget_link: {
-                  url: dlData.ref_link || "https://t.me/Bluewave_Ecosystem_bot",
-                  name: "Join Bluewave"
-                }
-              });
-              console.log("STORY_MISSION: shareToStory called successfully");
-            } catch (storyErr) {
-              console.error("STORY_MISSION: shareToStory threw:", storyErr);
-              // Fall through to fallback
-              if (dlData.poster_url && tg?.openLink) {
-                tg.openLink(dlData.poster_url);
-                setPopup("Save the image, then post it to your story!");
-                setTimeout(() => setPopup(null), 4000);
-              }
-            }
-          }
-          // 2. Fallback: Open the poster image directly so user can save & post manually
-          else if (dlData.poster_url) {
-            console.log("STORY_MISSION: shareToStory not available. Opening poster URL for manual save.");
-            if (tg?.openLink) {
-              tg.openLink(dlData.poster_url);
-            } else {
-              window.open(dlData.poster_url, "_blank");
-            }
+          if (dlData.poster_url) {
+            if (tg?.openLink) tg.openLink(dlData.poster_url);
+            else window.open(dlData.poster_url, "_blank");
             setPopup("Save the image, then post it to your Telegram story!");
             setTimeout(() => setPopup(null), 5000);
-          }
-          // 3. Last resort: show error
-          else {
-            console.error("STORY_MISSION: No poster URL and no shareToStory. Cannot proceed.");
-            setPopup("Could not load story poster. Try again later.");
+          } else {
+            setPopup("Could not load story poster. Try again.");
             setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
             setTimeout(() => setPopup(null), 3000);
             return;
           }
         } catch (e) {
-          console.error("STORY_MISSION: Error:", e);
+          console.error("STORY_MISSION fallback error:", e);
           setPopup("Failed to open story mission. Try again.");
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
           setTimeout(() => setPopup(null), 3000);
           return;
         }
 
-        // Set to claim after a delay
         setTimeout(() => {
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-        }, 15000); // 15s delay to give user time to post
+        }, 15000);
         return;
       }
 
