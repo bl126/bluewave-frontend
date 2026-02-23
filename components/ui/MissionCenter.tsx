@@ -285,61 +285,78 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       // Copied logic for brevity in this thought, will implement fully in file
 
       if (id === "story_post") {
-        // 🚀 INSTANT SHARE — uses pre-cached data, NO async before shareToStory!
-        // shareToStory MUST be called synchronously from user tap gesture.
         const tg = (window as any).Telegram?.WebApp;
         const cached = storyDataRef.current;
         const tgVersion = parseFloat(tg?.version || "0");
 
-        console.log("STORY_MISSION: Click! cached=", !!cached, "version=", tgVersion, "shareToStory=", typeof tg?.shareToStory);
+        console.log("STORY_MISSION: Click detected. State:", {
+          hasCached: !!cached,
+          posterUrl: cached?.poster_url,
+          hasShareToStory: typeof tg?.shareToStory === 'function',
+          tgVersion,
+          platform: tg?.platform
+        });
 
-        // PRIMARY PATH: Call shareToStory SYNCHRONOUSLY (no await before this!)
-        // 🚀 SIMPLIFIED: Removed text/widget_link as they are Premium-only and might block the call for regular users
+        // Haptic feedback for interaction
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+
+        // 1. SYNC PATH: Use cached data if available (Best for gesture context)
         if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
-          console.log("STORY_MISSION: Calling shareToStory NOW (sync) with URL:", cached.poster_url);
+          console.log("STORY_MISSION: Running SYNC path (shareToStory)");
           try {
-            // Bare minimum call for maximum compatibility
             tg.shareToStory(cached.poster_url);
-            console.log("STORY_MISSION: shareToStory call sent to Telegram");
+            console.log("STORY_MISSION: SYNC path success");
+            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+            setTimeout(() => {
+              setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+            }, 18000);
+            return;
           } catch (e) {
-            console.error("STORY_MISSION: shareToStory crash:", e);
-            // Emergency postEvent fallback
-            try {
-              if (tg.postEvent) tg.postEvent('web_app_share_to_story', { media_url: cached.poster_url });
-            } catch (e2) { console.error("STORY_MISSION: postEvent failed too", e2); }
+            console.error("STORY_MISSION: SYNC path failed:", e);
           }
-
-          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
-          setTimeout(() => {
-            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-          }, 15000);
-          return;
         }
 
-        // FALLBACK: Data not cached yet or shareToStory unavailable
-        console.log("STORY_MISSION: Fallback — fetching data async + opening poster link");
+        // 2. ASYNC PATH / FALLBACK: Fetch fresh data and try shareToStory again
+        console.log("STORY_MISSION: Running ASYNC path");
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
           if (!dlRes.ok) throw new Error(`Backend: ${dlRes.status}`);
           const dlData = await dlRes.json();
-          storyDataRef.current = dlData; // Cache for next click
+          console.log("STORY_MISSION: ASYNC data fetched:", dlData.poster_url);
+
+          storyDataRef.current = dlData;
 
           if (dlData.poster_url) {
+            // Try shareToStory even in async path (often works if delay is small)
+            if (tg && typeof tg.shareToStory === 'function') {
+              console.log("STORY_MISSION: Attempting shareToStory in ASYNC path");
+              try {
+                tg.shareToStory(dlData.poster_url);
+                console.log("STORY_MISSION: ASYNC shareToStory success");
+                setTimeout(() => {
+                  setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+                }, 18000);
+                return;
+              } catch (e) {
+                console.error("STORY_MISSION: ASYNC shareToStory failed:", e);
+              }
+            }
+
+            // Absolute Fallback: Open the link
+            console.log("STORY_MISSION: All shareToStory attempts failed. Opening raw link.");
             if (tg?.openLink) tg.openLink(dlData.poster_url);
             else window.open(dlData.poster_url, "_blank");
-            setPopup("Save the image, then post it to your Telegram story!");
+
+            setPopup("Telegram rejected native sharing. Please save the image and post manually!");
             setTimeout(() => setPopup(null), 5000);
           } else {
-            setPopup("Could not load story poster. Try again.");
-            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
-            setTimeout(() => setPopup(null), 3000);
-            return;
+            throw new Error("No poster URL in response");
           }
         } catch (e) {
-          console.error("STORY_MISSION fallback error:", e);
-          setPopup("Failed to open story mission. Try again.");
+          console.error("STORY_MISSION: Total failure:", e);
+          setPopup("Failed to load story mission. Please try again.");
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
           setTimeout(() => setPopup(null), 3000);
           return;
@@ -347,7 +364,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
         setTimeout(() => {
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-        }, 15000);
+        }, 18000);
         return;
       }
 
