@@ -187,7 +187,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
       // Sort onboarding first
       finalList.sort((a, b) => {
-        const onboardingIds = ["join_channel", "join_news"];
+        const onboardingIds = ["join_channel", "join_news", "join_community", "join_bwavescan"];
         return (onboardingIds.includes(a.id) ? -1 : 1) - (onboardingIds.includes(b.id) ? -1 : 1);
       });
 
