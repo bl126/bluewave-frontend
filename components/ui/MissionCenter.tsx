@@ -277,33 +277,65 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
+          console.log("STORY_MISSION: Fetching story data...");
           const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
-          if (!dlRes.ok) throw new Error("Failed to fetch story data");
+
+          if (!dlRes.ok) {
+            const errText = await dlRes.text();
+            console.error("STORY_MISSION: Backend error:", dlRes.status, errText);
+            throw new Error(`Backend error: ${dlRes.status}`);
+          }
+
           const dlData = await dlRes.json();
+          console.log("STORY_MISSION: Got data:", JSON.stringify(dlData));
 
           const tg = (window as any).Telegram?.WebApp;
+          const tgVersion = parseFloat(tg?.version || "0");
+          console.log("STORY_MISSION: TG WebApp version:", tgVersion, "shareToStory exists:", typeof tg?.shareToStory);
 
-          console.log("STORY_MISSION: Opening story with data", dlData);
-
-          // 1. Try Native Story Editor (Best UX)
-          if (tg && typeof tg.shareToStory === 'function' && dlData.poster_url) {
-            console.log("STORY_MISSION: Using tg.shareToStory");
-            tg.shareToStory(dlData.poster_url, {
-              text: dlData.caption,
-              widget_link: {
-                url: dlData.ref_link,
-                name: "Bluewave"
+          // 1. Try Native Story Editor (requires Mini App 7.8+)
+          if (tg && typeof tg.shareToStory === 'function' && tgVersion >= 7.8 && dlData.poster_url) {
+            console.log("STORY_MISSION: Calling tg.shareToStory with URL:", dlData.poster_url);
+            try {
+              tg.shareToStory(dlData.poster_url, {
+                text: dlData.caption || "",
+                widget_link: {
+                  url: dlData.ref_link || "https://t.me/Bluewave_Ecosystem_bot",
+                  name: "Join Bluewave"
+                }
+              });
+              console.log("STORY_MISSION: shareToStory called successfully");
+            } catch (storyErr) {
+              console.error("STORY_MISSION: shareToStory threw:", storyErr);
+              // Fall through to fallback
+              if (dlData.poster_url && tg?.openLink) {
+                tg.openLink(dlData.poster_url);
+                setPopup("Save the image, then post it to your story!");
+                setTimeout(() => setPopup(null), 4000);
               }
-            });
+            }
           }
-          // 2. Fallback: Try to open via share link (Common fallback)
-          else if (dlData.deeplink) {
-            console.log("STORY_MISSION: Falling back to deeplink");
-            if (tg?.openTelegramLink) tg.openTelegramLink(dlData.deeplink);
-            else window.open(dlData.deeplink, "_blank");
+          // 2. Fallback: Open the poster image directly so user can save & post manually
+          else if (dlData.poster_url) {
+            console.log("STORY_MISSION: shareToStory not available. Opening poster URL for manual save.");
+            if (tg?.openLink) {
+              tg.openLink(dlData.poster_url);
+            } else {
+              window.open(dlData.poster_url, "_blank");
+            }
+            setPopup("Save the image, then post it to your Telegram story!");
+            setTimeout(() => setPopup(null), 5000);
+          }
+          // 3. Last resort: show error
+          else {
+            console.error("STORY_MISSION: No poster URL and no shareToStory. Cannot proceed.");
+            setPopup("Could not load story poster. Try again later.");
+            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
+            setTimeout(() => setPopup(null), 3000);
+            return;
           }
         } catch (e) {
-          console.error("Story mission error:", e);
+          console.error("STORY_MISSION: Error:", e);
           setPopup("Failed to open story mission. Try again.");
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
           setTimeout(() => setPopup(null), 3000);
@@ -313,7 +345,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         // Set to claim after a delay
         setTimeout(() => {
           setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
-        }, 12000); // 12s delay to give user time to post
+        }, 15000); // 15s delay to give user time to post
         return;
       }
 
