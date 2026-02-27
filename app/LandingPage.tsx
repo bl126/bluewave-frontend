@@ -139,12 +139,23 @@ export default function LandingPage() {
         // Otherwise login success
         const tgIdNum = Number(savedTgId);
 
+        // ⭐ SYNC fresh Telegram photo to backend DB if available
+        const tg = (window as any).Telegram?.WebApp;
+        const livePhoto = tg?.initDataUnsafe?.user?.photo_url;
+        if (livePhoto) {
+          fetch(`${apiBase}/api/user/update_profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tg_id: tgIdNum, photo_url: livePhoto })
+          }).catch(err => console.error("Photo sync error:", err));
+        }
+
         setTelegramUser({
           id: tgIdNum,
           tg_id: tgIdNum,
           username: user.username,
           first_name: user.name,
-          photo_url: user.photo_url || null,
+          photo_url: livePhoto || user.photo_url || null, // prefer live, then DB, then null
           points_balance: user.points_balance ?? 0,
           referral_earnings_pending: user.referral_earnings_pending ?? 0,
           total_referrals: user.total_referrals ?? 0,
@@ -275,20 +286,22 @@ export default function LandingPage() {
       )}
 
       {/* 💰 Top-left Balance */}
-      <div className="absolute top-4 left-4 z-[60] flex items-center gap-2 text-cyan-400 font-semibold text-sm">
-        <Wallet size={16} />
-        <span>
-          {balance !== null
-            ? `${balance.toLocaleString()} $BWAVE`
-            : telegramUser
-              ? t("balance.loading")
-              : (
-                <span className="text-cyan-400 animate-pulse">
-                  {t("balance.connecting")}
-                </span>
-              )}
-        </span>
-      </div>
+      {!onboardingOpen && (
+        <div className="absolute top-4 left-4 z-[60] flex items-center gap-2 text-cyan-400 font-semibold text-sm">
+          <Wallet size={16} />
+          <span>
+            {balance !== null
+              ? `${balance.toLocaleString()} $BWAVE`
+              : telegramUser
+                ? t("balance.loading")
+                : (
+                  <span className="text-cyan-400 animate-pulse">
+                    {t("balance.connecting")}
+                  </span>
+                )}
+          </span>
+        </div>
+      )}
 
       {/* 🧭 Navigation Bar */}
       {!onboardingOpen && (

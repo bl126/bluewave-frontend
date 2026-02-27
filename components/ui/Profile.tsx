@@ -62,7 +62,14 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   // ⭐ Sync SWR result
   useEffect(() => {
     if (swrUser) {
-      setUser(swrUser);
+      // ❗ CRITICAL: Preserve the LIVE photo_url from telegramUser (prop) 
+      // instead of over-writing it with the STALE/EXPIRED one from DB
+      const mergedUser = {
+        ...swrUser,
+        photo_url: telegramUser?.photo_url || swrUser.photo_url
+      };
+
+      setUser(mergedUser);
       setLoading(false);
       setError("");               // clear any old error
     }
