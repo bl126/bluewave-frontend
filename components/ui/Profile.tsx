@@ -498,13 +498,20 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 {/* Wallet Action Card */}
                 <div
                   onClick={() => {
-                    if (walletAddress) {
-                      tonConnectUI.disconnect();
-                    } else {
-                      tonConnectUI.openModal();
+                    if (!walletAddress) {
+                      // 🚧 TEMPORARILY DISABLED
+                      // Uncomment the line below to re-enable wallet connections
+                      // tonConnectUI.openModal();
+                      
+                      const tg = (window as any).Telegram?.WebApp;
+                      if (tg?.showAlert) {
+                        tg.showAlert("Wallet connection is currently disabled. Stay tuned for the official announcement!");
+                      } else {
+                        alert("Wallet connection is currently disabled. Stay tuned for the official announcement!");
+                      }
                     }
                   }}
-                  className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group cursor-pointer hover:border-cyan-500/30 transition-all shadow-lg active:scale-[0.98]"
+                  className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group shadow-lg transition-all ${!walletAddress ? "cursor-pointer hover:border-cyan-500/30 active:scale-[0.98]" : "cursor-default opacity-90"}`}
                 >
                   <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0 group-hover:bg-cyan-500/10 transition-colors">
                     <Wallet className={`w-6 h-6 ${walletAddress ? "text-green-400 animate-pulse" : "text-cyan-400"}`} />
