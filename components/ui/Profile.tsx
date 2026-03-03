@@ -501,7 +501,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                     if (walletAddress) {
                       tonConnectUI.disconnect();
                     } else {
-                      tonConnectUI.connectWallet();
+                      tonConnectUI.openModal();
                     }
                   }}
                   className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group cursor-pointer hover:border-cyan-500/30 transition-all shadow-lg active:scale-[0.98]"
