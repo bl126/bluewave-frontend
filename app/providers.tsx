@@ -5,22 +5,24 @@ import { fetcher } from "@/lib/swrFetcher";
 
 
 import { LanguageProvider } from "@/contexts/LanguageContext";
-
+import { TonConnectUIProvider } from "@tonconnect/ui-react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
-      <SWRConfig
-        value={{
-          fetcher,
-          dedupingInterval: 3000,
-          revalidateOnFocus: false,
-          shouldRetryOnError: true,
-          errorRetryInterval: 5000,
-        }}
-      >
-        {children}
-      </SWRConfig>
+      <TonConnectUIProvider manifestUrl="https://bluewave-app.vercel.app/tonconnect-manifest.json">
+        <SWRConfig
+          value={{
+            fetcher,
+            dedupingInterval: 3000,
+            revalidateOnFocus: false,
+            shouldRetryOnError: true,
+            errorRetryInterval: 5000,
+          }}
+        >
+          {children}
+        </SWRConfig>
+      </TonConnectUIProvider>
     </LanguageProvider>
   );
 }

@@ -8,6 +8,7 @@ import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -41,6 +42,26 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   // ⭐ Telegram ID extracted from Mini App or Props
   const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
+
+  const walletAddress = useTonAddress();
+  const [tonConnectUI] = useTonConnectUI();
+
+  // ⭐ SYNC WALLET TO DB
+  useEffect(() => {
+    if (walletAddress && telegramId) {
+      console.log("Syncing wallet to DB:", walletAddress);
+
+      const apiBase = process.env.NEXT_PUBLIC_API_URL;
+      fetch(`${apiBase}/api/user/update_profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tg_id: telegramId,
+          wallet_address: walletAddress
+        })
+      }).catch(err => console.error("Wallet sync error:", err));
+    }
+  }, [walletAddress, telegramId]);
 
   useEffect(() => {
     if (!telegramId) {
@@ -475,16 +496,34 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 </div>
 
                 {/* Wallet Action Card */}
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group cursor-pointer hover:border-cyan-500/30 transition-all shadow-lg active:scale-[0.98]">
+                <div
+                  onClick={() => {
+                    if (walletAddress) {
+                      tonConnectUI.disconnect();
+                    } else {
+                      tonConnectUI.connectWallet();
+                    }
+                  }}
+                  className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group cursor-pointer hover:border-cyan-500/30 transition-all shadow-lg active:scale-[0.98]"
+                >
                   <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0 group-hover:bg-cyan-500/10 transition-colors">
-                    <Wallet className="w-6 h-6 text-cyan-400" />
+                    <Wallet className={`w-6 h-6 ${walletAddress ? "text-green-400 animate-pulse" : "text-cyan-400"}`} />
                   </div>
                   <div className="flex-1 px-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img src="/ton-transparent.png" alt="TON" className="w-6 h-6" />
-                      <span className="text-cyan-100 font-black text-sm uppercase tracking-wider">{t("profile.connect_wallet")}</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-3">
+                        <img src="/ton-transparent.png" alt="TON" className="w-5 h-5" />
+                        <span className="text-cyan-100 font-black text-xs uppercase tracking-wider">
+                          {walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}
+                        </span>
+                      </div>
+                      {walletAddress && (
+                        <span className="text-cyan-500/50 font-mono text-[9px] mt-0.5 tracking-tight truncate max-w-[140px]">
+                          {walletAddress.slice(0, 6)}...{walletAddress.slice(-6)}
+                        </span>
+                      )}
                     </div>
-                    <div className="w-2 h-2 rounded-full bg-gray-600 group-hover:bg-cyan-500 transition-colors"></div>
+                    <div className={`w-2 h-2 rounded-full transition-colors ${walletAddress ? "bg-green-500 shadow-[0_0_10px_#4ade80]" : "bg-gray-600 group-hover:bg-cyan-500"}`}></div>
                   </div>
                 </div>
 
