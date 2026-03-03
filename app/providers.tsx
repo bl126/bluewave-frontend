@@ -10,7 +10,7 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
-      <TonConnectUIProvider manifestUrl="https://bluewave-app.vercel.app/tonconnect-manifest.json">
+      <TonConnectUIProvider manifestUrl="/tonconnect-manifest.json">
         <SWRConfig
           value={{
             fetcher,
