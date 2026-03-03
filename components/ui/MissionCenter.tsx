@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
 interface MissionCenterProps {
@@ -145,6 +146,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [presenceLoadingId, setPresenceLoadingId] = useState<string | null>(null);
   const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
 
+  // Claim Boost Popup states
+  const [isClaimBoostOpen, setIsClaimBoostOpen] = useState(false);
+  const [claimBoostData, setClaimBoostData] = useState<ClaimBoostData | null>(null);
+  const [pendingBalanceUpdate, setPendingBalanceUpdate] = useState<number | null>(null);
+
   const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
   const [popup, setPopup] = useState<string | null>(null);
@@ -255,14 +261,24 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await res.json();
 
       if (data.success) {
-        // Balance update event
-        window.dispatchEvent(
-          new CustomEvent("updateBalance", { detail: data.new_balance })
-        );
-
-        // Haptic
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        // Prepare Boost Popup if there was a base_reward (meaning it applied the math)
+        if (data.base_reward !== undefined) {
+          setClaimBoostData({
+            base_claimed: data.base_reward,
+            multiplier: data.multiplier || 1.0,
+            total_claimed: data.total_reward,
+            applied_roles: data.applied_roles || []
+          });
+          setIsClaimBoostOpen(true);
+          setPendingBalanceUpdate(data.new_balance); // Store balance to update after animation
+        } else {
+          // Fallback if backend hasn't deployed multiplier logic yet
+          window.dispatchEvent(
+            new CustomEvent("updateBalance", { detail: data.new_balance })
+          );
+          const tg = (window as any).Telegram?.WebApp;
+          if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        }
 
         await loadData(); // Refresh UI
       }
@@ -604,6 +620,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Claim Boost Popup Overlay */}
+            <ClaimBoostPopup
+              isOpen={isClaimBoostOpen}
+              data={claimBoostData}
+              onClose={() => {
+                setIsClaimBoostOpen(false);
+                if (pendingBalanceUpdate !== null) {
+                  window.dispatchEvent(
+                    new CustomEvent("updateBalance", { detail: pendingBalanceUpdate })
+                  );
+                  setPendingBalanceUpdate(null);
+                }
+              }}
+            />
 
           </div>
         </motion.div>

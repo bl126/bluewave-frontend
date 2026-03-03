@@ -17,6 +17,7 @@ import StatsOverlay from "@/components/ui/StatsOverlay";
 import PresenceScoreOverlay from "@/components/ui/PresenceScoreOverlay";
 import AboutBluewaveOverlay from "@/components/ui/AboutBluewaveOverlay";
 import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
+import RolesOverlay from "@/components/ui/RolesOverlay";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -67,8 +68,9 @@ export default function LandingPage() {
   const [isPresenceScoreOpen, setPresenceScoreOpen] = useState(false);
   const [isAboutOpen, setAboutOpen] = useState(false);
   const [isRoadmapOpen, setRoadmapOpen] = useState(false);
+  const [isRolesOpen, setRolesOpen] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen;
+  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen || isRolesOpen;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -247,6 +249,7 @@ export default function LandingPage() {
             setPresenceScoreOpen(false);
             setAboutOpen(false);
             setRoadmapOpen(false);
+            setRolesOpen(false);
             setWhitepaperOpen(true);
           }}
           isWhitepaperActive={isWhitepaperOpen}
@@ -255,6 +258,7 @@ export default function LandingPage() {
             setPresenceScoreOpen(false);
             setAboutOpen(false);
             setRoadmapOpen(false);
+            setRolesOpen(false);
             setStatsOpen(true);
           }}
           isStatsActive={isStatsOpen}
@@ -263,6 +267,7 @@ export default function LandingPage() {
             setStatsOpen(false);
             setAboutOpen(false);
             setRoadmapOpen(false);
+            setRolesOpen(false);
             setPresenceScoreOpen(true);
           }}
           isPresenceScoreActive={isPresenceScoreOpen}
@@ -271,6 +276,7 @@ export default function LandingPage() {
             setStatsOpen(false);
             setPresenceScoreOpen(false);
             setRoadmapOpen(false);
+            setRolesOpen(false);
             setAboutOpen(true);
           }}
           isAboutActive={isAboutOpen}
@@ -279,9 +285,19 @@ export default function LandingPage() {
             setStatsOpen(false);
             setPresenceScoreOpen(false);
             setAboutOpen(false);
+            setRolesOpen(false);
             setRoadmapOpen(true);
           }}
           isRoadmapActive={isRoadmapOpen}
+          onOpenRoles={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(false);
+            setPresenceScoreOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(false);
+            setRolesOpen(true);
+          }}
+          isRolesActive={isRolesOpen}
         />
       )}
 
@@ -394,6 +410,12 @@ export default function LandingPage() {
       <RoadmapOverlay
         isOpen={isRoadmapOpen}
         onClose={() => setRoadmapOpen(false)}
+      />
+
+      {/* 🏆 Roles Overlay */}
+      <RolesOverlay
+        isOpen={isRolesOpen}
+        onClose={() => setRolesOpen(false)}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}

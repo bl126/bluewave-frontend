@@ -2,13 +2,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
+import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -32,6 +33,8 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [claiming, setClaiming] = useState(false);
   const [badgeUnlocked, setBadgeUnlocked] = useState(false);
   const [claimDone, setClaimDone] = useState(false);
+  const [isClaimBoostOpen, setIsClaimBoostOpen] = useState(false);
+  const [claimBoostData, setClaimBoostData] = useState<ClaimBoostData | null>(null);
 
   // Settings overlay states
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -187,22 +190,23 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     const result = await res.json();
 
     if (result.claimed) {
+      // Open the Claim Boost Popup with the detailed data
+      setClaimBoostData({
+        base_claimed: result.base_claimed,
+        multiplier: result.multiplier,
+        total_claimed: result.total_claimed,
+        applied_roles: result.applied_roles || []
+      });
+      setIsClaimBoostOpen(true);
+      
+      // Update local state instantly but wait for popup close to dispatch event
       setUser((prev: any) => ({
         ...prev,
         referral_earnings_pending: 0,
         points_balance: result.new_balance,
       }));
 
-      window.dispatchEvent(
-        new CustomEvent("updateBalance", { detail: result.new_balance })
-      );
-
       mutate();
-
-      const tg = (window as any).Telegram?.WebApp;
-      if (tg?.HapticFeedback) {
-        tg.HapticFeedback.notificationOccurred("success");
-      }
 
       setClaimDone(true);
       setTimeout(() => {
@@ -574,9 +578,48 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
                 {/* Roles & Status */}
                 <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
                   <div className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.roles")}</div>
-                  <div className="h-24 flex items-center justify-center border-2 border-dashed border-cyan-500/5 rounded-2xl bg-cyan-950/5">
-                    <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest opacity-60 italic">{t("profile.no_roles")}</p>
-                  </div>
+                  
+                  {user.roles && user.roles.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {user.roles.map((role: string, idx: number) => {
+                        // Quick style map matching RolesOverlay
+                        const styleMap: Record<string, { bg: string, border: string, text: string }> = {
+                          "Bluewave Core": { bg: "bg-red-500/10", border: "border-red-500/30", text: "text-red-400" },
+                          "Community Moderator": { bg: "bg-green-500/10", border: "border-green-500/30", text: "text-green-400" },
+                          "Verified Partner": { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400" },
+                          "Verified Human": { bg: "bg-blue-400/10", border: "border-blue-400/30", text: "text-blue-300" },
+                          "Presence Holder": { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400" },
+                          "Genesis Member": { bg: "bg-amber-700/20", border: "border-amber-700/50", text: "text-amber-600" },
+                          "Beta Explorer": { bg: "bg-gray-500/10", border: "border-gray-500/30", text: "text-gray-400" },
+                          "New Wave": { bg: "bg-teal-500/10", border: "border-teal-500/30", text: "text-teal-400" },
+                          "Active Human": { bg: "bg-cyan-500/10", border: "border-cyan-500/30", text: "text-cyan-400" },
+                          "Contributor": { bg: "bg-gray-300/10", border: "border-gray-300/30", text: "text-gray-300" },
+                          "OG": { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400" },
+                          "Super OG": { bg: "bg-fuchsia-500/10", border: "border-fuchsia-500/30", text: "text-fuchsia-400" },
+                          "Content Creator": { bg: "bg-orange-500/10", border: "border-orange-500/30", text: "text-orange-400" },
+                          "Best Commentator": { bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-400" },
+                          "Meme Architect": { bg: "bg-sky-300/10", border: "border-sky-300/30", text: "text-sky-300" },
+                          "X Supporter": { bg: "bg-stone-600/10", border: "border-stone-600/30", text: "text-stone-400" },
+                          "X Raider": { bg: "bg-rose-600/10", border: "border-rose-600/30", text: "text-rose-500" },
+                          "X Ambassador": { bg: "bg-cyan-400/10", border: "border-cyan-400/30", text: "text-cyan-300" },
+                          "Signal Guardian": { bg: "bg-zinc-100/10", border: "border-zinc-300/30", text: "text-zinc-300" },
+                          "Human Legend": { bg: "bg-slate-400/10", border: "border-slate-400/30", text: "text-slate-300" },
+                        };
+                        const style = styleMap[role] || { bg: "bg-cyan-500/10", border: "border-cyan-500/30", text: "text-cyan-400" };
+                        
+                        return (
+                          <div key={idx} className={`${style.bg} border ${style.border} px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm`}>
+                            <Award size={12} className={style.text} />
+                            <span className={`${style.text} text-[10px] font-black uppercase tracking-widest`}>{role}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="h-24 flex items-center justify-center border-2 border-dashed border-cyan-500/5 rounded-2xl bg-cyan-950/5">
+                      <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest opacity-60 italic">{t("profile.no_roles")}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Referral Assets */}
@@ -648,6 +691,21 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
           <LanguageSelector
             isOpen={languageOpen}
             onClose={() => setLanguageOpen(false)}
+          />
+
+          {/* Claim Boost Popup Overlay */}
+          <ClaimBoostPopup
+            isOpen={isClaimBoostOpen}
+            data={claimBoostData}
+            onClose={() => {
+              setIsClaimBoostOpen(false);
+              // Dispatch event to update global header AFTER popup closes
+              if (claimBoostData && user) {
+                window.dispatchEvent(
+                  new CustomEvent("updateBalance", { detail: user.points_balance })
+                );
+              }
+            }}
           />
         </motion.div>
       )}

@@ -17,6 +17,8 @@ interface TopRightMenuProps {
   isPresenceScoreActive?: boolean;
   isAboutActive?: boolean;
   isRoadmapActive?: boolean;
+  onOpenRoles?: () => void;
+  isRolesActive?: boolean;
 }
 
 export default function TopRightMenu({
@@ -32,6 +34,8 @@ export default function TopRightMenu({
   isPresenceScoreActive,
   isAboutActive,
   isRoadmapActive,
+  onOpenRoles,
+  isRolesActive,
 }: TopRightMenuProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -136,6 +140,11 @@ export default function TopRightMenu({
                 label={t("menu.stats")}
                 onClick={() => { setOpen(false); onOpenStats?.(); }}
                 isActive={isStatsActive}
+              />
+              <MenuItem
+                label={t("menu.ecosystem_roles")}
+                onClick={() => { setOpen(false); onOpenRoles?.(); }}
+                isActive={isRolesActive}
               />
             </motion.div>
           </>
