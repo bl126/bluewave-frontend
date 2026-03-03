@@ -106,6 +106,12 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
         const data = await res.json().catch(() => ({}));
         if (data.detail === "NOT_REGISTERED") {
           setError(t("onboarding.error_not_registered"));
+        } else if (data.detail === "RATE_LIMITED") {
+          setError(t("onboarding.error_rate_limit"));
+        } else if (data.detail === "TELEGRAM_DELIVERY_FAILED") {
+          setError(t("onboarding.error_delivery_failed"));
+        } else if (data.detail) {
+           setError(`${t("onboarding.error_request_code")} (${data.detail})`);
         } else {
           setError(t("onboarding.error_request_code"));
         }
