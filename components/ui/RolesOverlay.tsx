@@ -202,7 +202,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                   onDragEnd={(_, info) => {
                     if (info.offset.y > 100) setSelectedRole(null);
                   }}
-                  className="fixed bottom-0 left-0 right-0 z-[220] bg-zinc-900 rounded-t-[2.5rem] border-t border-white/10 p-8 pb-12 flex flex-col items-center gap-6 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]"
+                  className="fixed bottom-0 left-0 right-0 z-[220] bg-zinc-900 rounded-t-[2.5rem] border-t border-white/10 p-8 pb-12 flex flex-col items-center gap-6 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] max-h-[70vh] overflow-y-auto"
                 >
                   <div className="w-12 h-1.5 bg-white/20 rounded-full mb-2" />
 
