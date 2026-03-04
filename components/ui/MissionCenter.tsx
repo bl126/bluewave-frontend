@@ -621,24 +621,24 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
               )}
             </AnimatePresence>
 
-            {/* Claim Boost Popup Overlay */}
-            <ClaimBoostPopup
-              isOpen={isClaimBoostOpen}
-              data={claimBoostData}
-              onClose={() => {
-                setIsClaimBoostOpen(false);
-                if (pendingBalanceUpdate !== null) {
-                  window.dispatchEvent(
-                    new CustomEvent("updateBalance", { detail: pendingBalanceUpdate })
-                  );
-                  setPendingBalanceUpdate(null);
-                }
-              }}
-            />
-
           </div>
         </motion.div>
       )}
+
+      {/* Claim Boost Popup Overlay - Rendered OUTSIDE the scrolling area so it stays perfectly centered */}
+      <ClaimBoostPopup
+        isOpen={isClaimBoostOpen}
+        data={claimBoostData}
+        onClose={() => {
+          setIsClaimBoostOpen(false);
+          if (pendingBalanceUpdate !== null) {
+            window.dispatchEvent(
+              new CustomEvent("updateBalance", { detail: pendingBalanceUpdate })
+            );
+            setPendingBalanceUpdate(null);
+          }
+        }}
+      />
     </AnimatePresence>
   );
 }

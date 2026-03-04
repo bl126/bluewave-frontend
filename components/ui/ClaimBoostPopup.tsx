@@ -36,7 +36,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     // Step 2: Show Boost Multiplier
     const t1 = setTimeout(() => {
       setStep(2);
-      
+
       const tg = (window as any).Telegram?.WebApp;
       if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
@@ -45,7 +45,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     // Step 3: Spin to Final Amount
     const t2 = setTimeout(() => {
       setStep(3);
-      
+
       // Animate the number counting up
       const duration = 1000;
       const startTime = Date.now();
@@ -55,10 +55,10 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
       const animateNumber = () => {
         const now = Date.now();
         const progress = Math.min((now - startTime) / duration, 1);
-        
+
         // Easing out sine
         const easeProgress = Math.sin((progress * Math.PI) / 2);
-        
+
         const currentValue = Math.floor(startValue + (endValue - startValue) * easeProgress);
         setDisplayValue(currentValue);
 
@@ -87,12 +87,12 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <motion.div 
+          <motion.div
             className="w-full max-w-sm rounded-[2rem] border border-cyan-500/20 bg-gradient-to-b from-black/80 to-cyan-950/40 p-6 flex flex-col items-center shadow-[0_0_50px_#00e6ff10] overflow-hidden relative"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
@@ -100,7 +100,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
           >
             {/* Background Effects */}
             {step >= 2 && (
-              <motion.div 
+              <motion.div
                 className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -109,34 +109,32 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
             )}
 
             <div className="flex flex-col items-center w-full z-10 relative">
-              
+
               {/* Top Icon */}
-              <motion.div 
-                className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg border-2 ${
-                  step >= 4 ? "bg-green-500/20 border-green-500/50 text-green-400" :
-                  step >= 2 ? "bg-orange-500/20 border-orange-500/50 text-orange-400" :
-                  "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
-                }`}
-                animate={{ 
+              <motion.div
+                className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg border-2 ${step >= 4 ? "bg-green-500/20 border-green-500/50 text-green-400" :
+                    step >= 2 ? "bg-orange-500/20 border-orange-500/50 text-orange-400" :
+                      "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
+                  }`}
+                animate={{
                   scale: step === 2 || step === 4 ? [1, 1.2, 1] : 1,
                   rotate: step === 2 ? [0, -10, 10, -10, 0] : 0
                 }}
                 transition={{ duration: 0.5 }}
               >
-                {step >= 4 ? <CheckCircle2 size={32} /> : 
-                 step >= 2 ? <Flame size={32} /> : 
-                 <Zap size={32} />}
+                {step >= 4 ? <CheckCircle2 size={32} /> :
+                  step >= 2 ? <Flame size={32} /> :
+                    <Zap size={32} />}
               </motion.div>
 
-              <h2 className="text-cyan-50/60 uppercase tracking-widest text-[11px] font-bold mb-2">Claiming Network Rewards</h2>
-              
+              <h2 className="text-cyan-50/60 uppercase tracking-widest text-[11px] font-bold mb-2">Claiming Presence Reward</h2>
+
               {/* Dynamic Number Display */}
-              <motion.div 
-                className={`text-6xl font-black mb-1 flex items-baseline gap-2 ${
-                  step >= 4 ? "text-green-400 drop-shadow-[0_0_15px_#4ade80]" :
-                  step >= 2 ? "text-orange-400 drop-shadow-[0_0_15px_#f97316]" :
-                  "text-cyan-50"
-                }`}
+              <motion.div
+                className={`text-6xl font-black mb-1 flex items-baseline gap-2 ${step >= 4 ? "text-green-400 drop-shadow-[0_0_15px_#4ade80]" :
+                    step >= 2 ? "text-orange-400 drop-shadow-[0_0_15px_#f97316]" :
+                      "text-cyan-50"
+                  }`}
                 animate={{ scale: step === 3 ? [1, 1.1, 1] : 1 }}
                 transition={{ duration: 0.2, repeat: step === 3 ? Infinity : 0 }}
               >
@@ -148,7 +146,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
               <div className="h-28 w-full mt-4 flex flex-col items-center justify-center">
                 <AnimatePresence mode="wait">
                   {step === 1 && (
-                    <motion.div 
+                    <motion.div
                       key="step1"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -158,9 +156,9 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       Calculating...
                     </motion.div>
                   )}
-                  
+
                   {step >= 2 && data.multiplier > 1.0 && (
-                    <motion.div 
+                    <motion.div
                       key="step2"
                       initial={{ opacity: 0, scale: 0.8, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -172,10 +170,10 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                           Roles Boost: {data.multiplier.toFixed(2)}x
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap justify-center gap-1.5 w-full">
                         {data.applied_roles.map((role, idx) => (
-                          <motion.div 
+                          <motion.div
                             key={idx}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -190,13 +188,13 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                   )}
 
                   {step >= 2 && data.multiplier === 1.0 && (
-                    <motion.div 
+                    <motion.div
                       key="step-no-boost"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="text-cyan-500/50 uppercase tracking-widest text-[10px] font-bold text-center"
                     >
-                      No active roles boost.<br/>Earn roles to multiply yields!
+                      No active roles boost.<br />Earn roles to multiply yields!
                     </motion.div>
                   )}
                 </AnimatePresence>

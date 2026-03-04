@@ -112,7 +112,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
 
               {/* Header & Intro */}
               <div className="space-y-4 pt-2">
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Ecosystem Roles</h2>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight text-center">Ecosystem Roles</h2>
 
                 <div className="text-sm leading-relaxed space-y-4 bg-cyan-950/20 p-5 rounded-2xl border border-cyan-500/20">
                   <p className="text-white/80">
@@ -206,7 +206,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.88 }}
                 transition={{ type: "spring", damping: 24, stiffness: 280 }}
-                className="relative w-full max-w-sm bg-[#0e0e10] rounded-[2rem] border border-white/10 p-7 flex flex-col items-center gap-5 shadow-[0_30px_80px_rgba(0,0,0,0.8)] pointer-events-auto"
+                className="relative w-full max-w-sm rounded-[2rem] border border-cyan-500/20 bg-gradient-to-b from-black/80 to-cyan-950/40 p-7 flex flex-col items-center gap-5 shadow-[0_0_50px_#00e6ff10] overflow-hidden pointer-events-auto"
               >
                 {/* X Close */}
                 <button
