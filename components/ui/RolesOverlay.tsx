@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, Verified, Zap, ShieldAlert, Sparkles, Target, Star, Trophy, ArrowRight, UserCheck, Flame } from "lucide-react";
-import { useEffect } from "react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { X, Shield, Verified, Zap, ShieldAlert, Sparkles, Target, Star, Trophy, ArrowRight, UserCheck, Flame, ArrowLeft, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RolesOverlayProps {
@@ -12,6 +12,7 @@ interface RolesOverlayProps {
 
 export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
   const { t } = useLanguage();
+  const [selectedRole, setSelectedRole] = useState<any>(null);
 
   // Prevent background scrolling when open
   useEffect(() => {
@@ -88,23 +89,21 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-xl flex flex-col overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.3 }}
+          className="fixed inset-0 z-[100] bg-black backdrop-blur-3xl flex flex-col overflow-y-auto"
+          initial={{ opacity: 0, x: "100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
         >
-          {/* Header Bar */}
-          <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-black/40 backdrop-blur-md border-b border-cyan-900/30">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-cyan-600 bg-clip-text text-transparent uppercase tracking-widest">
-              🏆 Ecosystem Roles
-            </h1>
+          {/* Navigation Bar */}
+          <div className="flex justify-between items-center p-4 sticky top-0 z-50 bg-black/60 backdrop-blur-xl">
             <button
               onClick={onClose}
-              className="group p-2 rounded-full bg-cyan-950/30 hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]"
+              className="p-2 -ml-2 rounded-full active:bg-white/10 transition-colors"
             >
-              <X size={20} className="text-cyan-400 group-hover:text-cyan-200" />
+              <ArrowLeft size={24} className="text-cyan-400" />
             </button>
+            <div className="w-10"></div> {/* Spacer for TopRightMenu which is fixed at z-150 */}
           </div>
 
           <div className="max-w-2xl mx-auto w-full p-6 pb-24 flex flex-col gap-10">
@@ -139,36 +138,38 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
             </div>
 
             {roleCategories.map((category, idx) => (
-              <div key={idx} className="flex flex-col gap-4 relative">
-                <div className="sticky top-20 z-40 bg-black/60 backdrop-blur-md border-b border-cyan-900/40 py-3 mb-2 rounded-xl px-4 flex flex-col">
-                  <h3 className="text-lg font-black text-white">{category.title}</h3>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-cyan-400/60">{category.description}</p>
+              <div key={idx} className="flex flex-col gap-6">
+                <div className="flex flex-col">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">{category.title}</h3>
+                  <p className="text-xs font-bold uppercase tracking-widest text-cyan-400/60 mt-1">{category.description}</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {category.roles.map((role, ridx) => {
                     const Icon = role.icon;
                     return (
-                      <div key={ridx} className={`bg-gradient-to-br ${role.color} border ${role.border} rounded-2xl p-4 flex gap-4 transition-transform hover:scale-[1.01]`}>
-                        <div className="shrink-0 mt-1">
-                          <Icon className={`w-6 h-6 ${role.text}`} />
+                      <motion.button
+                        key={ridx}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedRole(role)}
+                        className={`aspect-square bg-gradient-to-br ${role.color} border ${role.border} rounded-3xl p-3 flex flex-col items-center justify-center gap-2 transition-all relative overflow-hidden group shadow-[0_0_30px_#00e6ff05]`}
+                      >
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-100 transition-opacity" />
+
+                        <div className="p-2.5 rounded-2xl bg-black/20 backdrop-blur-sm border border-white/5">
+                          <Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${role.text}`} />
                         </div>
-                        <div className="flex flex-col gap-1.5 w-full">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className={`font-black text-sm uppercase tracking-widest ${role.text}`}>{role.name}</span>
-                            <div className="px-2 py-0.5 rounded bg-black/30 border border-white/10 shrink-0">
-                              <span className="text-orange-400 font-black text-[10px] tracking-widest flex items-center gap-1">
-                                <Flame size={10} /> {role.boost}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-xs text-cyan-50/80 font-medium">{role.desc}</p>
-                          <div className="mt-2 text-[11px] font-bold text-cyan-200/60 uppercase tracking-wider flex items-center gap-2">
-                            <ArrowRight size={12} className={role.text} />
-                            Benefit: {role.benefit}
-                          </div>
+
+                        <span className={`font-black text-[10px] sm:text-[11px] uppercase tracking-tighter text-center leading-none px-1 overflow-hidden text-ellipsis w-full ${role.text}`}>
+                          {role.name}
+                        </span>
+
+                        <div className="absolute top-1 right-1 px-1 py-0.5 rounded-lg bg-black/40 border border-white/5 backdrop-blur-md">
+                          <span className="text-orange-400 font-black text-[8px] flex items-center gap-0.5">
+                            <Flame size={8} /> {role.boost.replace("+", "")}
+                          </span>
                         </div>
-                      </div>
+                      </motion.button>
                     )
                   })}
                 </div>
@@ -176,6 +177,79 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
             ))}
 
           </div>
+
+          {/* Bottom Sheet Details */}
+          <AnimatePresence>
+            {selectedRole && (
+              <>
+                {/* Backdrop overlay for focus */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSelectedRole(null)}
+                  className="fixed inset-0 z-[210] bg-black/60 backdrop-blur-sm"
+                />
+
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  drag="y"
+                  dragConstraints={{ top: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 100) setSelectedRole(null);
+                  }}
+                  className="fixed bottom-0 left-0 right-0 z-[220] bg-zinc-900 rounded-t-[2.5rem] border-t border-white/10 p-8 pb-12 flex flex-col items-center gap-6 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]"
+                >
+                  <div className="w-12 h-1.5 bg-white/20 rounded-full mb-2" />
+
+                  <div className={`p-6 rounded-[2rem] bg-gradient-to-br ${selectedRole.color} border-2 ${selectedRole.border} shadow-[0_0_40px_rgba(34,211,238,0.1)]`}>
+                    <selectedRole.icon className={`w-16 h-16 ${selectedRole.text}`} />
+                  </div>
+
+                  <div className="text-center space-y-2">
+                    <h2 className={`text-3xl font-black uppercase tracking-tight ${selectedRole.text}`}>
+                      {selectedRole.name}
+                    </h2>
+                    <div className="flex justify-center">
+                      <div className="px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center gap-2">
+                        <Flame className="text-orange-400" size={18} />
+                        <span className="text-orange-400 font-black text-lg tracking-widest">{selectedRole.boost} BOOST</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="w-full space-y-6 mt-2">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/60 block">Status Signal</span>
+                      <p className="text-lg text-white font-medium leading-relaxed italic">
+                        "{selectedRole.desc}"
+                      </p>
+                    </div>
+
+                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/60 flex items-center gap-2">
+                        <Star size={12} className="text-yellow-400" /> Key Benefit
+                      </span>
+                      <p className="text-cyan-50 font-bold leading-snug">
+                        {selectedRole.benefit}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedRole(null)}
+                      className="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors text-white font-black uppercase tracking-widest text-sm border border-white/10"
+                    >
+                      Close Detail
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
