@@ -42,6 +42,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       roles: [
         { name: "Verified Human", color: "from-blue-400/20 to-blue-500/20", border: "border-blue-400/50", text: "text-blue-300", desc: "Passed Bluewave human verification.", benefit: "Access to gated chats, missions, and drops.", icon: UserCheck, boost: "+10%" },
         { name: "Presence Holder", color: "from-emerald-500/20 to-emerald-600/20", border: "border-emerald-500/50", text: "text-emerald-400", desc: "Maintains consistent on-chain/off-chain presence.", benefit: "Higher reputation score, future rewards weighting.", icon: Zap, boost: "+10%" },
+        { name: "TON Explorer", color: "from-sky-400/20 to-sky-500/20", border: "border-sky-400/50", text: "text-sky-300", desc: "Connected a TON ecosystem wallet.", benefit: "Eligible for on-chain drops and interactions.", icon: Sparkles, image: "/ton-transparent.png", boost: "+5%" },
         { name: "Genesis Member", color: "from-amber-700/20 to-amber-800/20", border: "border-amber-700/50", text: "text-amber-600", desc: "Early Bluewave believers.", benefit: "Priority access to features, snapshots, perks.", icon: Sparkles, boost: "+15%" },
         { name: "Beta Explorer", color: "from-gray-500/20 to-gray-600/20", border: "border-gray-500/50", text: "text-gray-400", desc: "Actively testing Bluewave features.", benefit: "Early tools, feedback influence, recognition.", icon: Target, boost: "+10%" }
       ]
@@ -52,6 +53,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       roles: [
         { name: "New Wave", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "Just arrived. Welcome", benefit: "Goal: Learn, observe, interact meaningfully.", icon: Star, boost: "+1%" },
         { name: "Active Human", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Consistent participation without spam.", benefit: "Higher visibility, eligibility for advanced roles.", icon: Star, boost: "+5%" },
+        { name: "Network Builder", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Invited 10+ active humans to the network.", benefit: "Higher referral yields and network influence.", icon: Target, boost: "+10%" },
         { name: "Contributor", color: "from-gray-300/20 to-gray-400/20", border: "border-gray-300/50", text: "text-gray-300", desc: "Adds value through ideas, feedback, or help.", benefit: "Reputation boost, private contributor chats.", icon: Star, boost: "+8%" },
         { name: "OG", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Long-term, consistent, value-driven member.", benefit: "Priority access, special drops, status.", icon: Trophy, boost: "+15%" },
         { name: "Super OG", color: "from-fuchsia-500/20 to-fuchsia-600/20", border: "border-fuchsia-500/50", text: "text-fuchsia-400", desc: "Elite contributors who shaped the community early.", benefit: "Governance weight, exclusive perks, recognition.", icon: Trophy, boost: "+25%" }
@@ -121,12 +123,6 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                   <p className="text-white/55">
                     Multipliers stack additively at claim time across <strong className="text-cyan-200/80">Presence Missions</strong> and <strong className="text-cyan-200/80">Network Referrals</strong>. There is no ceiling on role stacking — every credential accrued permanently increases your baseline yield rate.
                   </p>
-                  <div className="flex bg-zinc-900/70 border border-white/10 p-4 rounded-xl gap-3 items-start">
-                    <Flame className="text-orange-400 shrink-0 mt-0.5" size={14} />
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      <strong className="text-white/80">Yield Formula —</strong> Final Reward = Base × (1 + Σ Role Boosts). Holding <span className="text-blue-300/90 font-semibold">Verified Human</span> and <span className="text-cyan-300/90 font-semibold">X Ambassador</span> produces a compounded <span className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded">1.30× multiplier</span> applied to every claim.
-                    </p>
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -160,8 +156,12 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                           className={`aspect-square bg-gradient-to-br ${role.color} border ${role.border} rounded-3xl p-3 flex flex-col items-center justify-center gap-2 transition-all relative overflow-hidden group shadow-[0_0_30px_#00e6ff05]`}
                         >
                           <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-100 transition-opacity" />
-                          <div className="p-2.5 rounded-2xl bg-black/20 backdrop-blur-sm border border-white/5">
-                            <Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${role.text}`} />
+                          <div className="p-2.5 rounded-2xl bg-black/20 backdrop-blur-sm border border-white/5 flex items-center justify-center">
+                            {role.image ? (
+                              <img src={role.image} alt={role.name} className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
+                            ) : (
+                              <Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${role.text}`} />
+                            )}
                           </div>
                           <span className={`font-black text-[10px] sm:text-[11px] uppercase tracking-tighter text-center leading-none px-1 overflow-hidden text-ellipsis w-full ${role.text}`}>
                             {role.name}
@@ -217,8 +217,12 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                 </button>
 
                 {/* Role Icon */}
-                <div className={`p-5 rounded-[1.75rem] bg-gradient-to-br ${selectedRole.color} border-2 ${selectedRole.border}`}>
-                  <selectedRole.icon className={`w-14 h-14 ${selectedRole.text}`} />
+                <div className={`p-5 rounded-[1.75rem] bg-gradient-to-br ${selectedRole.color} border-2 ${selectedRole.border} flex items-center justify-center`}>
+                  {selectedRole.image ? (
+                    <img src={selectedRole.image} alt={selectedRole.name} className="w-14 h-14 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                  ) : (
+                    <selectedRole.icon className={`w-14 h-14 ${selectedRole.text}`} />
+                  )}
                 </div>
 
                 {/* Name & Multiplier */}
