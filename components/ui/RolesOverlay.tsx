@@ -27,7 +27,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
 
   const roleCategories = [
     {
-      title: "🛡️ Core Team Roles",
+      title: "Core Team Roles",
       description: "Official team and trusted partners.",
       roles: [
         { name: "Bluewave Core", color: "from-red-500/20 to-red-600/20", border: "border-red-500/50", text: "text-red-400", desc: "Official Bluewave team members.", benefit: "Authority, announcements, ecosystem decisions.", icon: Shield, boost: "+100%" },
@@ -36,7 +36,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       ]
     },
     {
-      title: "🧬 Identity & Presence Roles",
+      title: "Identity & Presence Roles",
       description: "Verifiable reputation signals.",
       roles: [
         { name: "Verified Human", color: "from-blue-400/20 to-blue-500/20", border: "border-blue-400/50", text: "text-blue-300", desc: "Passed Bluewave human verification.", benefit: "Access to gated chats, missions, and drops.", icon: UserCheck, boost: "+10%" },
@@ -46,10 +46,10 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       ]
     },
     {
-      title: "🌱 Community Progression Roles",
+      title: "Community Progression Roles",
       description: "Earnable through consistent organic participation.",
       roles: [
-        { name: "New Wave", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "Just arrived. Welcome 🌊", benefit: "Goal: Learn, observe, interact meaningfully.", icon: Star, boost: "+1%" },
+        { name: "New Wave", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "Just arrived. Welcome", benefit: "Goal: Learn, observe, interact meaningfully.", icon: Star, boost: "+1%" },
         { name: "Active Human", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Consistent participation without spam.", benefit: "Higher visibility, eligibility for advanced roles.", icon: Star, boost: "+5%" },
         { name: "Contributor", color: "from-gray-300/20 to-gray-400/20", border: "border-gray-300/50", text: "text-gray-300", desc: "Adds value through ideas, feedback, or help.", benefit: "Reputation boost, private contributor chats.", icon: Star, boost: "+8%" },
         { name: "OG", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Long-term, consistent, value-driven member.", benefit: "Priority access, special drops, status.", icon: Trophy, boost: "+15%" },
@@ -57,7 +57,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       ]
     },
     {
-      title: "🎨 Creator & Signal Roles",
+      title: "Creator & Signal Roles",
       description: "Amplifiers of the Bluewave culture.",
       roles: [
         { name: "Content Creator", color: "from-orange-500/20 to-orange-600/20", border: "border-orange-500/50", text: "text-orange-400", desc: "Creates quality Bluewave content.", benefit: "Amplification, rewards, featured spotlights.", icon: Sparkles, boost: "+25%" },
@@ -66,7 +66,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       ]
     },
     {
-      title: "🐦 X (Twitter) Roles",
+      title: "X (Twitter) Roles",
       description: "Commanders of the social presence.",
       roles: [
         { name: "X Supporter", color: "from-stone-600/20 to-stone-700/20", border: "border-stone-600/50", text: "text-stone-400", desc: "Engages with posts authentically.", benefit: "Access to X-based missions.", icon: Target, boost: "+5%" },
@@ -75,7 +75,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
       ]
     },
     {
-      title: "🌐 Special Recognition Roles",
+      title: "Special Recognition Roles",
       description: "Exceptional members of the ecosystem.",
       roles: [
         { name: "Signal Guardian", color: "from-zinc-100/20 to-zinc-300/20", border: "border-zinc-300/50", text: "text-zinc-300", desc: "Protects the community from bots and noise.", benefit: "Trust badge + moderator attention.", icon: Shield, boost: "+15%" },
@@ -108,12 +108,12 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
           </div>
 
           <div className="max-w-2xl mx-auto w-full p-6 pb-24 flex flex-col gap-10">
-            
+
             <div className="text-center space-y-4 pt-2">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Ecosystem Architecture</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Ecosystem Roles</h2>
               <div className="text-cyan-100/70 font-medium text-sm leading-relaxed max-w-lg mx-auto text-left space-y-4 bg-cyan-950/20 p-5 rounded-2xl border border-cyan-500/20">
                 <p>
-                  <strong className="text-cyan-300">Roles are not just titles; they are multipliers.</strong> Every role you earn permanently increases your standard yield across the entire Bluewave Ecosystem.
+                  <strong className="text-cyan-300">Roles are not just titles, they are multipliers.</strong> Every role you earn permanently increases your standard yield across the entire Bluewave Ecosystem.
                 </p>
                 <p>
                   When you claim rewards from <strong className="text-cyan-300">Network Referrals</strong> or <strong className="text-cyan-300">Presence Missions</strong>, your base reward is multiplied by the combined boost of your active roles.
@@ -125,7 +125,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex justify-center gap-4 py-4 mt-2">
                 <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex flex-col items-center">
                   <span className="text-[10px] uppercase font-bold text-cyan-500/70 tracking-widest">Core Value 01</span>
@@ -144,7 +144,7 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                   <h3 className="text-lg font-black text-white">{category.title}</h3>
                   <p className="text-[11px] font-bold uppercase tracking-widest text-cyan-400/60">{category.description}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3">
                   {category.roles.map((role, ridx) => {
                     const Icon = role.icon;
@@ -157,9 +157,9 @@ export default function RolesOverlay({ isOpen, onClose }: RolesOverlayProps) {
                           <div className="flex justify-between items-start gap-2">
                             <span className={`font-black text-sm uppercase tracking-widest ${role.text}`}>{role.name}</span>
                             <div className="px-2 py-0.5 rounded bg-black/30 border border-white/10 shrink-0">
-                               <span className="text-orange-400 font-black text-[10px] tracking-widest flex items-center gap-1">
-                                  <Flame size={10}/> {role.boost}
-                               </span>
+                              <span className="text-orange-400 font-black text-[10px] tracking-widest flex items-center gap-1">
+                                <Flame size={10} /> {role.boost}
+                              </span>
                             </div>
                           </div>
                           <p className="text-xs text-cyan-50/80 font-medium">{role.desc}</p>

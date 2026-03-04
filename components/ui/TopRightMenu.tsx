@@ -135,16 +135,16 @@ export default function TopRightMenu({
                 onClick={() => { setOpen(false); onOpenRoadmap?.(); }}
                 isActive={isRoadmapActive}
               />
+              <MenuItem
+                label={t("menu.ecosystem_roles").replace("🏆 ", "")}
+                onClick={() => { setOpen(false); onOpenRoles?.(); }}
+                isActive={isRolesActive}
+              />
               <MenuItem label={t("menu.faq")} onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
               <MenuItem
                 label={t("menu.stats")}
                 onClick={() => { setOpen(false); onOpenStats?.(); }}
                 isActive={isStatsActive}
-              />
-              <MenuItem
-                label={t("menu.ecosystem_roles")}
-                onClick={() => { setOpen(false); onOpenRoles?.(); }}
-                isActive={isRolesActive}
               />
             </motion.div>
           </>
