@@ -19,6 +19,7 @@ import AboutBluewaveOverlay from "@/components/ui/AboutBluewaveOverlay";
 import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
+import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -73,6 +74,10 @@ export default function LandingPage() {
 
   // 🔐 Recovery Password State
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+
+  // 🔥 Streak Celebration State
+  const [isStreakCelebrationOpen, setIsStreakCelebrationOpen] = useState(false);
+  const [streakCelebrationData, setStreakCelebrationData] = useState({ days: 0, reward: 0 });
 
   const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen || isRolesOpen || showRecoveryModal;
 
@@ -170,6 +175,16 @@ export default function LandingPage() {
           joined_at: user.joined_at,
         });
 
+        // 🔥 Initial check for pending streak reward
+        if (user.streak_reward_pending) {
+          setStreakCelebrationData({
+            days: user.streak_days || 0,
+            reward: user.streak_reward_amount || 0
+          });
+          // Small delay to ensure landing state is settled
+          setTimeout(() => setIsStreakCelebrationOpen(true), 1500);
+        }
+
         // Update balance
         setBalance(user.points_balance ?? null);
 
@@ -192,6 +207,35 @@ export default function LandingPage() {
       }
     })();
   }, [apiBase]);
+
+  // 🔥 Streak Celebration Event Listener (for sequential popups)
+  useEffect(() => {
+    const handleStreakEvent = (e: any) => {
+      setStreakCelebrationData({
+        days: e.detail.days,
+        reward: e.detail.reward
+      });
+      setIsStreakCelebrationOpen(true);
+    };
+
+    window.addEventListener("showStreakCelebration", handleStreakEvent as any);
+    return () => window.removeEventListener("showStreakCelebration", handleStreakEvent as any);
+  }, []);
+
+  const handleCloseStreakCelebration = async () => {
+    setIsStreakCelebrationOpen(false);
+    if (telegramUser?.tg_id) {
+      try {
+        await fetch(`${apiBase}/api/user/clear_streak_reward`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_id: telegramUser.tg_id }),
+        });
+      } catch (e) {
+        console.error("Failed to clear streak reward:", e);
+      }
+    }
+  };
 
   // 💰 Fetch balance (unchanged)
   const fetchBalance = async (tgId: number) => {
@@ -442,8 +486,15 @@ export default function LandingPage() {
       {/* 🛡️ Recovery Password LOCK SCREEN */}
       <RecoveryPasswordModal
         isOpen={showRecoveryModal}
-        telegramId={telegramUser?.tg_id || telegramUser?.id}
         onSuccess={() => setShowRecoveryModal(false)}
+        telegramId={telegramUser?.tg_id || 0}
+      />
+
+      <StreakCelebrationModal
+        isOpen={isStreakCelebrationOpen}
+        streakDays={streakCelebrationData.days}
+        rewardAmount={streakCelebrationData.reward}
+        onClose={handleCloseStreakCelebration}
       />
     </div>
   );

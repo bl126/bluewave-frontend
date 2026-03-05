@@ -150,6 +150,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const [isClaimBoostOpen, setIsClaimBoostOpen] = useState(false);
   const [claimBoostData, setClaimBoostData] = useState<ClaimBoostData | null>(null);
   const [pendingBalanceUpdate, setPendingBalanceUpdate] = useState<number | null>(null);
+  const [pendingStreakData, setPendingStreakData] = useState<{ days: number, reward: number } | null>(null);
 
   const [claimCooldown, setClaimCooldown] = useState(false);
   const [error, setError] = useState("");
@@ -278,6 +279,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           );
           const tg = (window as any).Telegram?.WebApp;
           if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        }
+
+        // 🔥 Capture Streak Info for sequential celebration
+        if (data.streak_info?.bonus_awarded) {
+          setPendingStreakData({
+            days: data.streak_days,
+            reward: 200 // Based on routes.py bonus
+          });
         }
 
         await loadData(); // Refresh UI
@@ -459,6 +468,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "done" } : m));
+
+        // 🔥 Trigger Streak Celebration immediately for non-boost missions
+        if (result.streak_info?.bonus_awarded) {
+          window.dispatchEvent(new CustomEvent("showStreakCelebration", {
+            detail: { days: result.streak_days, reward: 200 }
+          }));
+        }
       } else {
         setPopup(t("missions.popup_complete") || "Not completed");
         // Reset to "open" so user can try again
@@ -703,11 +719,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         data={claimBoostData}
         onClose={() => {
           setIsClaimBoostOpen(false);
+
+          // 1. Dispatch balance update first
           if (pendingBalanceUpdate !== null) {
             window.dispatchEvent(
               new CustomEvent("updateBalance", { detail: pendingBalanceUpdate })
             );
             setPendingBalanceUpdate(null);
+          }
+
+          // 2. 🔥 Trigger Streak Celebration after Boost Popup is closed (Sequential)
+          if (pendingStreakData) {
+            window.dispatchEvent(new CustomEvent("showStreakCelebration", {
+              detail: pendingStreakData
+            }));
+            setPendingStreakData(null);
           }
         }}
       />
