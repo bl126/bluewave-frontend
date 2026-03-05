@@ -199,7 +199,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
         body: JSON.stringify({ tg_id: telegramId }),
       });
       const data = await res.json();
-      
+
       if (data.blocked) {
         // Handle daily limit or other blocks
         setCooldownText("Limit Reached");
@@ -255,23 +255,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                 {/* 1. User Info Card (Horizontal) */}
                 <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/10 rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden">
                   <div className="relative">
-                    {isVerifiedHuman ? (
-                      <VerifiedHumanRing size="lg">
-                        <img
-                          src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
-                          alt="avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      </VerifiedHumanRing>
-                    ) : (
-                      <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20]">
-                        <img
-                          src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
-                          alt="avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
+                    {/* Removed VerifiedHumanRing temporarily as requested */}
+                    <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20]">
+                      <img
+                        src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
                     {/* Streak Badge (Bottom-Right Checkmark) */}
                     {user.streak_days >= 3 && (
@@ -296,12 +287,12 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                           <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
                             {showId ? <EyeOff size={10} /> : <Eye size={10} />}
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               navigator.clipboard.writeText(user.bw_id || "");
                               setIdCopied(true);
                               setTimeout(() => setIdCopied(false), 2000);
-                            }} 
+                            }}
                             className="text-cyan-500/30 hover:text-cyan-400"
                           >
                             {idCopied ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
@@ -311,10 +302,10 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     </div>
 
                     <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
-                       <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                       <span className="text-[9px] font-black uppercase text-cyan-100 tracking-[0.15em] leading-none">
-                          LEVEL {level}
-                       </span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      <span className="text-[9px] font-black uppercase text-cyan-100 tracking-[0.15em] leading-none">
+                        LEVEL {level}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -332,7 +323,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                 </div>
 
                 {/* 3. Wallet Card */}
-                <div 
+                <div
                   className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group opacity-60 grayscale hover:grayscale-0 transition-all"
                 >
                   <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
@@ -355,15 +346,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <button 
-                      onClick={handleClaim} 
-                      disabled={claiming || user.referral_earnings_pending === 0} 
+                    <button
+                      onClick={handleClaim}
+                      disabled={claiming || user.referral_earnings_pending === 0}
                       className="flex-1 h-14 bg-cyan-500/5 border-2 border-cyan-500/20 rounded-2xl text-cyan-400 font-bold uppercase text-xs tracking-widest hover:bg-cyan-500/10 disabled:opacity-30 transition-all"
                     >
                       {claiming ? t("profile.claiming") : t("profile.claim")}
                     </button>
-                    <button 
-                      onClick={handleNotifyInactive} 
+                    <button
+                      onClick={handleNotifyInactive}
                       disabled={notifying || cooldown !== null}
                       className="flex-1 h-14 bg-black/40 border border-cyan-950 rounded-2xl text-cyan-500/40 font-bold uppercase text-[10px] leading-tight px-2 hover:text-cyan-400 transition-all"
                     >
@@ -381,8 +372,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     ) : (
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         {user.roles.map((role: string) => (
-                          <button 
-                            key={role} 
+                          <button
+                            key={role}
                             onClick={() => onOpenRoles(role)}
                             className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl hover:bg-cyan-500/10 active:scale-95 transition-all"
                           >
@@ -400,7 +391,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     <div className="flex flex-col gap-1">
                       <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK BUILDER</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         const link = user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
                         navigator.clipboard.writeText(link);
@@ -414,17 +405,17 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                   </div>
 
                   <div className="bg-black/40 border border-cyan-950 rounded-2xl p-4 break-all">
-                     <span className="text-cyan-500/60 font-medium text-xs font-mono">
-                        {user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`}
-                     </span>
+                    <span className="text-cyan-500/60 font-medium text-xs font-mono">
+                      {user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-center gap-3 pt-2">
-                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
-                     <span className="text-cyan-500/40 text-[11px] font-black uppercase tracking-[0.3em]">
-                        {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
-                     </span>
-                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
+                    <span className="text-cyan-500/40 text-[11px] font-black uppercase tracking-[0.3em]">
+                      {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
+                    </span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
                   </div>
                 </div>
               </div>
