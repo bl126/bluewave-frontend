@@ -192,15 +192,22 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
   const handleNotifyInactive = async () => {
     if (cooldown !== null || notifying) return;
     setNotifying(true);
-    setCooldownText("Notifying...");
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegram_id: telegramId }),
+        body: JSON.stringify({ tg_id: telegramId }),
       });
-      const cooldownMs = 4 * 60 * 60 * 1000;
-      setCooldown(cooldownMs);
+      const data = await res.json();
+      
+      if (data.blocked) {
+        // Handle daily limit or other blocks
+        setCooldownText("Limit Reached");
+        setCooldown(5000); // 5 sec visual feedback
+      } else if (data.sent > 0 || data.sent === 0) {
+        const cooldownMs = 4 * 60 * 60 * 1000;
+        setCooldown(cooldownMs);
+      }
     } catch (e) {
       console.error("Notify error:", e);
     } finally {
@@ -265,6 +272,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                         />
                       </div>
                     )}
+
+                    {/* Streak Badge (Bottom-Right Checkmark) */}
+                    {user.streak_days >= 3 && (
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-cyan-950 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_#22d3ee]">
+                        <Check size={16} className="text-cyan-400 stroke-[4px]" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 flex flex-col items-start gap-1">
@@ -272,21 +286,33 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                       <h2 className="text-white text-xl font-bold tracking-tight">
                         {user.name && user.name.length > 12 ? user.name.slice(0, 10) + "..." : (user.name || user.username)}
                       </h2>
-                      <div className="px-3 py-1 bg-cyan-500/5 border border-cyan-400/20 rounded-lg flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/5 border border-cyan-400/20 rounded-xl">
                         <span className="text-cyan-500/80 font-black text-[10px] uppercase font-mono tracking-tight">
                           BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
                         </span>
-                        <button onClick={() => setShowId(!showId)} className="text-cyan-500/40 hover:text-cyan-400">
-                          {showId ? <EyeOff size={11} /> : <Eye size={11} />}
-                        </button>
+                        <div className="flex items-center gap-1 ml-1 border-l border-cyan-500/10 pl-1.5">
+                          <button onClick={() => setShowId(!showId)} className="text-cyan-500/40 hover:text-cyan-400 transition-colors">
+                            {showId ? <EyeOff size={11} /> : <Eye size={11} />}
+                          </button>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.bw_id || "");
+                              setIdCopied(true);
+                              setTimeout(() => setIdCopied(false), 2000);
+                            }} 
+                            className="text-cyan-500/40 hover:text-cyan-400 transition-colors"
+                          >
+                            {idCopied ? <Check size={11} className="text-cyan-400" /> : <Copy size={11} />}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    <span className="text-cyan-500/40 text-sm font-medium">@{user.username}</span>
+                    <span className="text-cyan-500/40 text-[11px] font-bold uppercase tracking-widest">{user.username}</span>
 
                     <div className="mt-2 px-4 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                       <span className="text-[10px] font-black uppercase text-cyan-100 tracking-widest">
+                       <span className="text-[10px] font-black uppercase text-cyan-100 tracking-widest leading-none">
                           LEVEL {level}
                        </span>
                     </div>
@@ -307,16 +333,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
 
                 {/* 3. Wallet Card */}
                 <div 
-                  className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg cursor-pointer active:scale-98 transition-transform"
-                  onClick={() => tonConnectUI.openSingleWalletModal("tonkeeper")}
+                  className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group opacity-60 grayscale hover:grayscale-0 transition-all"
                 >
-                  <div className="p-4 bg-cyan-500/5 rounded-2xl shadow-inner"><Wallet className="w-6 h-6 text-cyan-400" /></div>
-                  <div className="flex-1 px-4 flex flex-col">
-                    <span className="text-white font-extrabold text-xs uppercase tracking-[0.1em]">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
-                    {walletAddress && <span className="text-cyan-500/40 font-mono text-[9px] truncate max-w-[150px]">{walletAddress}</span>}
+                  <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
+                    <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
                   </div>
-                  <div className="px-4">
-                     <div className="w-2 h-2 rounded-full bg-cyan-500/20 border border-cyan-500/40" />
+                  <div className="flex-1 px-4 flex flex-col">
+                    <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
+                    {walletAddress && <span className="text-cyan-500/40 font-mono text-[9px] truncate max-w-[150px]">{walletAddress}</span>}
+                    <span className="text-cyan-500/20 text-[8px] font-bold uppercase tracking-widest mt-0.5">COMING SOON</span>
                   </div>
                 </div>
 
@@ -373,8 +398,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                 <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-1">
-                      <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.referral_link")}</span>
-                      <span className="text-cyan-100 text-[11px] font-black uppercase tracking-tight">GLOBAL {level}</span>
+                      <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK BUILDER</span>
+                      <span className="text-cyan-100 text-[11px] font-black uppercase tracking-tight">{level}</span>
                     </div>
                     <button 
                       onClick={() => {
