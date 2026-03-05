@@ -18,6 +18,7 @@ import PresenceScoreOverlay from "@/components/ui/PresenceScoreOverlay";
 import AboutBluewaveOverlay from "@/components/ui/AboutBluewaveOverlay";
 import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
+import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -70,7 +71,10 @@ export default function LandingPage() {
   const [isRoadmapOpen, setRoadmapOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen || isRolesOpen;
+  // 🔐 Recovery Password State
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+
+  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen || isRolesOpen || showRecoveryModal;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -168,6 +172,16 @@ export default function LandingPage() {
 
         // Update balance
         setBalance(user.points_balance ?? null);
+
+        // 🔐 Check Recovery Password Status
+        fetch(`${apiBase}/api/user/has_recovery_password/${tgIdNum}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.has_password === false) {
+              setShowRecoveryModal(true);
+            }
+          })
+          .catch(err => console.error("Error checking recovery password:", err));
 
         // ⭐ OPTIMIZATION: Show UI immediately once user is loaded
         setIsLoading(false);
@@ -423,6 +437,13 @@ export default function LandingPage() {
         isOpen={onboardingOpen}
         onComplete={handleOnboardingComplete}
         autoUsername={telegramUser?.username}
+      />
+
+      {/* 🛡️ Recovery Password LOCK SCREEN */}
+      <RecoveryPasswordModal
+        isOpen={showRecoveryModal}
+        telegramId={telegramUser?.tg_id || telegramUser?.id}
+        onSuccess={() => setShowRecoveryModal(false)}
       />
     </div>
   );

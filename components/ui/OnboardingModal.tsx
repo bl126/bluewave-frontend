@@ -111,7 +111,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
         } else if (data.detail === "TELEGRAM_DELIVERY_FAILED") {
           setError(t("onboarding.error_delivery_failed"));
         } else if (data.detail) {
-           setError(`${t("onboarding.error_request_code")} (${data.detail})`);
+          setError(`${t("onboarding.error_request_code")} (${data.detail})`);
         } else {
           setError(t("onboarding.error_request_code"));
         }
@@ -274,6 +274,17 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
                 <p className="text-[11px] text-cyan-500/80">
                   {t("onboarding.bot_hint")}
                 </p>
+
+                <div className="pt-4 mt-2 border-t border-cyan-900/40 text-center">
+                  <a
+                    href="https://t.me/Reuben_TON"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-orange-400/80 hover:text-orange-300 transition-colors inline-block"
+                  >
+                    Lost your account? <span className="underline">Contact Support</span>
+                  </a>
+                </div>
               </div>
             )}
 
