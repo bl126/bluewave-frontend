@@ -281,18 +281,20 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     )}
                   </div>
 
-                  <div className="flex-1 flex flex-col items-start gap-1">
-                    <div className="flex items-center justify-between w-full">
-                      <h2 className="text-white text-xl font-bold tracking-tight">
-                        {user.name && user.name.length > 12 ? user.name.slice(0, 10) + "..." : (user.name || user.username)}
+                  <div className="flex-1 flex flex-col items-start gap-1.5">
+                    <div className="flex flex-col">
+                      <h2 className="text-white text-xl font-black uppercase tracking-tight">
+                        {user.name && user.name.length > 15 ? user.name.slice(0, 12) + "..." : (user.name || user.username)}
                       </h2>
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/5 border border-cyan-400/20 rounded-xl">
-                        <span className="text-cyan-500/80 font-black text-[10px] uppercase font-mono tracking-tight">
-                          BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
-                        </span>
-                        <div className="flex items-center gap-1 ml-1 border-l border-cyan-500/10 pl-1.5">
-                          <button onClick={() => setShowId(!showId)} className="text-cyan-500/40 hover:text-cyan-400 transition-colors">
-                            {showId ? <EyeOff size={11} /> : <Eye size={11} />}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-cyan-500/40 text-[10px] font-black uppercase tracking-widest">{user.username}</span>
+                        <div className="w-1 h-1 rounded-full bg-cyan-900" />
+                        <div className="flex items-center gap-1.5 py-0.5">
+                          <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
+                            BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
+                          </span>
+                          <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
+                            {showId ? <EyeOff size={10} /> : <Eye size={10} />}
                           </button>
                           <button 
                             onClick={() => {
@@ -300,19 +302,17 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                               setIdCopied(true);
                               setTimeout(() => setIdCopied(false), 2000);
                             }} 
-                            className="text-cyan-500/40 hover:text-cyan-400 transition-colors"
+                            className="text-cyan-500/30 hover:text-cyan-400"
                           >
-                            {idCopied ? <Check size={11} className="text-cyan-400" /> : <Copy size={11} />}
+                            {idCopied ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    <span className="text-cyan-500/40 text-[11px] font-bold uppercase tracking-widest">{user.username}</span>
-
-                    <div className="mt-2 px-4 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
+                    <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                       <span className="text-[10px] font-black uppercase text-cyan-100 tracking-widest leading-none">
+                       <span className="text-[9px] font-black uppercase text-cyan-100 tracking-[0.15em] leading-none">
                           LEVEL {level}
                        </span>
                     </div>
@@ -399,11 +399,10 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-1">
                       <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK BUILDER</span>
-                      <span className="text-cyan-100 text-[11px] font-black uppercase tracking-tight">{level}</span>
                     </div>
                     <button 
                       onClick={() => {
-                        const link = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${user.tg_id}`;
+                        const link = user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
                         navigator.clipboard.writeText(link);
                         setCopied(true);
                         setTimeout(() => setCopied(false), 2000);
@@ -416,7 +415,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
 
                   <div className="bg-black/40 border border-cyan-950 rounded-2xl p-4 break-all">
                      <span className="text-cyan-500/60 font-medium text-xs font-mono">
-                        https://t.me/Bluewave_Ecosystem_bot?start=ref_{user.tg_id}
+                        {user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`}
                      </span>
                   </div>
 
