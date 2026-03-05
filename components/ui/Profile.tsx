@@ -236,28 +236,30 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
           </div>
 
           <div className="max-w-md mx-auto w-full p-6 pb-24">
-            {loading && !user && <div className="space-y-3 animate-pulse"><div className="w-24 h-24 rounded-full bg-cyan-900/30" /></div>}
+            {loading && !user && (
+              <div className="flex flex-col items-center justify-center pt-20 gap-4">
+                <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+                <span className="text-cyan-500/50 text-xs font-bold uppercase tracking-widest">{t("profile.loading") || "Loading Protocol..."}</span>
+              </div>
+            )}
 
             {user && (
-              <div className="flex flex-col gap-6">
-                {/* Header Card */}
-                <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-5 shadow-[0_0_30px_#00e6ff05] flex flex-col items-center gap-5 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-50"></div>
-
-                  {/* Avatar Section */}
+              <div className="flex flex-col gap-5">
+                {/* 1. User Info Card (Horizontal) */}
+                <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/10 rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden">
                   <div className="relative">
                     {isVerifiedHuman ? (
                       <VerifiedHumanRing size="lg">
                         <img
-                          src={user.photo_url || "https://ui-avatars.com/api/?name=" + (user.name || user.username || "U") + "&background=0f172a&color=22d3ee&bold=true"}
+                          src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
                           alt="avatar"
                           className="w-full h-full object-cover"
                         />
                       </VerifiedHumanRing>
                     ) : (
-                      <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 shadow-[0_0_20px_#00e6ff30] overflow-hidden">
+                      <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20]">
                         <img
-                          src={user.photo_url || "https://ui-avatars.com/api/?name=" + (user.name || user.username || "U") + "&background=0f172a&color=22d3ee&bold=true"}
+                          src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
                           alt="avatar"
                           className="w-full h-full object-cover"
                         />
@@ -265,86 +267,140 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     )}
                   </div>
 
-                  <div className="flex flex-col items-center text-center">
-                    <h2 className="text-cyan-50 font-black text-2xl uppercase tracking-tighter mb-1">
-                      {user.first_name || user.name || user.username}
-                    </h2>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      {isVerifiedHuman && (
-                        <button 
-                          onClick={() => onOpenRoles("Verified Human")}
-                          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 active:scale-95 transition-all"
-                        >
-                          <UserCheck size={12} className="text-cyan-400" />
-                          <span className="text-[9px] font-black uppercase text-cyan-400 tracking-widest">Verified Human</span>
-                        </button>
-                      )}
+                  <div className="flex-1 flex flex-col items-start gap-1">
+                    <div className="flex items-center justify-between w-full">
+                      <h2 className="text-white text-xl font-bold tracking-tight">
+                        {user.name && user.name.length > 12 ? user.name.slice(0, 10) + "..." : (user.name || user.username)}
+                      </h2>
                       <div className="px-3 py-1 bg-cyan-500/5 border border-cyan-400/20 rounded-lg flex items-center gap-2">
                         <span className="text-cyan-500/80 font-black text-[10px] uppercase font-mono tracking-tight">
                           BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
                         </span>
                         <button onClick={() => setShowId(!showId)} className="text-cyan-500/40 hover:text-cyan-400">
-                          {showId ? <EyeOff size={12} /> : <Eye size={12} />}
+                          {showId ? <EyeOff size={11} /> : <Eye size={11} />}
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      {user.roles?.map((role: string) => (
-                        role !== "Verified Human" && (
+                    <span className="text-cyan-500/40 text-sm font-medium">@{user.username}</span>
+
+                    <div className="mt-2 px-4 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                       <span className="text-[10px] font-black uppercase text-cyan-100 tracking-widest">
+                          LEVEL {level}
+                       </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Stats Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-5 flex flex-col items-center gap-2">
+                    <span className="text-white text-2xl font-black">{user.streak_days || 0}</span>
+                    <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.streak")}</span>
+                  </div>
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-5 flex flex-col items-center gap-2">
+                    <span className="text-white text-2xl font-black">{user.total_referrals || 0}</span>
+                    <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.total_networks")}</span>
+                  </div>
+                </div>
+
+                {/* 3. Wallet Card */}
+                <div 
+                  className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg cursor-pointer active:scale-98 transition-transform"
+                  onClick={() => tonConnectUI.openSingleWalletModal("tonkeeper")}
+                >
+                  <div className="p-4 bg-cyan-500/5 rounded-2xl shadow-inner"><Wallet className="w-6 h-6 text-cyan-400" /></div>
+                  <div className="flex-1 px-4 flex flex-col">
+                    <span className="text-white font-extrabold text-xs uppercase tracking-[0.1em]">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
+                    {walletAddress && <span className="text-cyan-500/40 font-mono text-[9px] truncate max-w-[150px]">{walletAddress}</span>}
+                  </div>
+                  <div className="px-4">
+                     <div className="w-2 h-2 rounded-full bg-cyan-500/20 border border-cyan-500/40" />
+                  </div>
+                </div>
+
+                {/* 4. Earnings Card */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-white text-4xl font-black">{user.referral_earnings_pending}</span>
+                      <span className="text-cyan-400/60 text-sm font-bold uppercase tracking-widest">$BWAVE</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={handleClaim} 
+                      disabled={claiming || user.referral_earnings_pending === 0} 
+                      className="flex-1 h-14 bg-cyan-500/5 border-2 border-cyan-500/20 rounded-2xl text-cyan-400 font-bold uppercase text-xs tracking-widest hover:bg-cyan-500/10 disabled:opacity-30 transition-all"
+                    >
+                      {claiming ? t("profile.claiming") : t("profile.claim")}
+                    </button>
+                    <button 
+                      onClick={handleNotifyInactive} 
+                      disabled={notifying || cooldown !== null}
+                      className="flex-1 h-14 bg-black/40 border border-cyan-950 rounded-2xl text-cyan-500/40 font-bold uppercase text-[10px] leading-tight px-2 hover:text-cyan-400 transition-all"
+                    >
+                      {cooldown !== null ? cooldownText : t("profile.notify_inactive")}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5. Roles Section */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-6">
+                  <h3 className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.roles")}</h3>
+                  <div className="min-h-[100px] flex items-center justify-center border border-cyan-950/50 bg-black/20 rounded-2xl p-4">
+                    {!user.roles || user.roles.length === 0 ? (
+                      <span className="text-cyan-500/20 text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles")}</span>
+                    ) : (
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        {user.roles.map((role: string) => (
                           <button 
                             key={role} 
                             onClick={() => onOpenRoles(role)}
-                            className="px-3 py-1 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                            className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl hover:bg-cyan-500/10 active:scale-95 transition-all"
                           >
-                            <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">{role}</span>
+                            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">{role}</span>
                           </button>
-                        )
-                      ))}
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 6. Referral Link Section */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.referral_link")}</span>
+                      <span className="text-cyan-100 text-[11px] font-black uppercase tracking-tight">GLOBAL {level}</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2">
-                    <div className="text-cyan-50 text-2xl font-black leading-none">{user.streak_days}</div>
-                    <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.streak")}</div>
-                  </div>
-                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2">
-                    <div className="text-cyan-50 text-2xl font-black leading-none">{user.total_referrals || 0}</div>
-                    <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.total_networks")}</div>
-                  </div>
-                </div>
-
-                {/* Wallet Card - HIDDEN (Not yet ready) */}
-                {/* 
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg">
-                  <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0"><Wallet className="w-6 h-6 text-cyan-400" /></div>
-                  <div className="flex-1 px-4 flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-cyan-100 font-extrabold text-xs uppercase tracking-wider">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
-                      {walletAddress && <span className="text-cyan-500/50 font-mono text-[9px] truncate max-w-[140px]">{walletAddress}</span>}
-                    </div>
-                  </div>
-                </div>
-                */}
-
-                {/* Earnings Card */}
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 flex flex-col gap-4">
-                  <h3 className="text-cyan-500/70 text-[11px] font-black uppercase tracking-widest">{t("profile.network_earnings")}</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-cyan-50 text-3xl font-black">{user.referral_earnings_pending}</span>
-                    <span className="text-cyan-500/80 text-xs font-black tracking-widest">$BWAVE</span>
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={handleClaim} disabled={claiming || user.referral_earnings_pending === 0} className="flex-1 py-3 text-cyan-400 font-black border border-cyan-500/30 rounded-xl uppercase text-xs">
-                      {claiming ? t("profile.claiming") : t("profile.claim")}
+                    <button 
+                      onClick={() => {
+                        const link = `https://t.me/Bluewave_Ecosystem_bot?start=ref_${user.tg_id}`;
+                        navigator.clipboard.writeText(link);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 active:scale-95 transition-all"
+                    >
+                      {copied ? t("profile.copied") : t("profile.copy")}
                     </button>
-                    <button onClick={handleNotifyInactive} disabled={notifying || cooldown !== null} className="flex-1 py-3 text-cyan-500/50 font-black border border-cyan-500/10 rounded-xl uppercase text-xs">
-                      {cooldown !== null ? cooldownText : t("profile.notify_inactive")}
-                    </button>
+                  </div>
+
+                  <div className="bg-black/40 border border-cyan-950 rounded-2xl p-4 break-all">
+                     <span className="text-cyan-500/60 font-medium text-xs font-mono">
+                        https://t.me/Bluewave_Ecosystem_bot?start=ref_{user.tg_id}
+                     </span>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 pt-2">
+                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
+                     <span className="text-cyan-500/40 text-[11px] font-black uppercase tracking-[0.3em]">
+                        {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
+                     </span>
+                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
                   </div>
                 </div>
               </div>
