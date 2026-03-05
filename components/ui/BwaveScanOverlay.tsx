@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ExternalLink, RefreshCw, ShieldCheck } from "lucide-react";
+import { X, ExternalLink, RefreshCw, Globe, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 interface BwaveScanOverlayProps {
@@ -12,6 +12,7 @@ interface BwaveScanOverlayProps {
 
 export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOverlayProps) {
     const [isLoading, setIsLoading] = useState(true);
+    const [idCopied, setIdCopied] = useState(false);
 
     // Construct the deep-link URL. If bwId is present, we try to focus on it.
     const baseUrl = "https://bwavescan.xyz";
@@ -23,6 +24,19 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
             tg.openLink(finalUrl);
         } else {
             window.open(finalUrl, "_blank");
+        }
+    };
+
+    const handleCopyId = async () => {
+        if (!bwId) return;
+        try {
+            await navigator.clipboard.writeText(bwId);
+            setIdCopied(true);
+            const tg = (window as any).Telegram?.WebApp;
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+            setTimeout(() => setIdCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy ID:", err);
         }
     };
 
@@ -39,14 +53,24 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     {/* Header Bar */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/10 bg-black/80 backdrop-blur-md">
                         <div className="flex items-center gap-3">
-                            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-400/20">
-                                <ShieldCheck size={18} className="text-cyan-400" />
+                            <div className="p-0.5 rounded-lg bg-cyan-500/10 border border-cyan-400/20 w-8 h-8 flex items-center justify-center overflow-hidden">
+                                <img src="/BwaveScan-logo.png" alt="BwaveScan" className="w-full h-full object-contain" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-cyan-50 text-xs font-black uppercase tracking-widest leading-none">BwaveScan</span>
-                                <span className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-tighter mt-1 truncate max-w-[150px]">
-                                    {bwId ? `ID: ${bwId}` : "Ecosystem Ledger"}
-                                </span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px]">
+                                        {bwId ? `BW ID: ${bwId}` : "Ecosystem Ledger"}
+                                    </span>
+                                    {bwId && (
+                                        <button
+                                            onClick={handleCopyId}
+                                            className="text-cyan-500/40 hover:text-cyan-400 transition-colors"
+                                        >
+                                            {idCopied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -94,7 +118,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     {/* Footer Safety Bar */}
                     <div className="p-3 bg-black border-t border-cyan-500/10 text-center pb-[max(12px,env(safe-area-inset-bottom))]">
                         <p className="text-[9px] text-cyan-800 font-bold uppercase tracking-widest">
-                            Official BwaveScan Interface 🌊 Security Guaranteed
+                            OFFICIAL BWAVESCAN IN-APP INTERFACE
                         </p>
                     </div>
                 </motion.div>

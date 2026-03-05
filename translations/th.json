@@ -76,7 +76,7 @@
     },
     "menu": {
         "presence_score": "Presence Score",
-        "presence_ledger": "Presence Ledger",
+        "presence_ledger": "BwaveScan",
         "whitepaper": "Whitepaper v1.0",
         "faq": "FAQ",
         "stats": "Stats"
