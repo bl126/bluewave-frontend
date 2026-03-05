@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import VerifiedHumanRing from "./VerifiedHumanRing";
 import { useApi } from "@/lib/useApi";
 
 interface LeaderboardProps {
@@ -39,6 +40,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
   // Component for avatar - Handles simple first letter with broken image handling
   const AvatarItem = ({ user, size = "md", isMe = false }: { user: any, size?: "sm" | "md" | "lg", isMe?: boolean }) => {
     const [imgError, setImgError] = useState(false);
+    const isVerifiedHuman = user.roles?.includes("Verified Human");
 
     const sizeClasses = {
       sm: "w-8 h-8 text-xs",
@@ -48,19 +50,35 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
 
     const borderColor = isMe ? "border-cyan-300 shadow-[0_0_15px_rgba(0,230,255,0.5)]" : "border-cyan-500/30 shadow-[0_0_10px_rgba(0,230,255,0.2)]";
 
-    if (user.photo_url && !imgError) {
+    const renderContent = () => {
+      if (user.photo_url && !imgError) {
+        return (
+          <img
+            src={user.photo_url}
+            alt={user.name}
+            onError={() => setImgError(true)}
+            className={`w-full h-full rounded-full border ${borderColor} object-cover`}
+          />
+        );
+      }
       return (
-        <img
-          src={user.photo_url}
-          alt={user.name}
-          onError={() => setImgError(true)}
-          className={`${sizeClasses[size]} rounded-full border ${borderColor} object-cover`}
-        />
+        <div className={`w-full h-full rounded-full bg-cyan-950/40 border ${borderColor} flex items-center justify-center text-cyan-400 font-black`}>
+          {((user.first_name || user.name || "U").charAt(0)).toUpperCase()}
+        </div>
+      );
+    };
+
+    if (isVerifiedHuman) {
+      return (
+        <VerifiedHumanRing size={size === "lg" ? "lg" : size === "md" ? "md" : "sm"}>
+          {renderContent()}
+        </VerifiedHumanRing>
       );
     }
+
     return (
-      <div className={`${sizeClasses[size]} rounded-full bg-cyan-950/40 border ${borderColor} flex items-center justify-center text-cyan-400 font-black`}>
-        {((user.first_name || user.name || "U").charAt(0)).toUpperCase()}
+      <div className={`${sizeClasses[size]} relative`}>
+        {renderContent()}
       </div>
     );
   };

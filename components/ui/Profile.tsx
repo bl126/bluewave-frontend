@@ -1,8 +1,7 @@
-// [CODE: FRONTEND_PROFILE_COMPONENT]
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
@@ -10,16 +9,18 @@ import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
+import VerifiedHumanRing from "./VerifiedHumanRing";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
+  onOpenRoles: (roleName: string) => void;
 }
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
-export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps) {
+export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: ProfileProps) {
   const { t } = useLanguage();
 
   // Use passed telegramUser for immediate UI if available
@@ -43,17 +44,13 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
   const [idCopied, setIdCopied] = useState(false);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
-  // ⭐ Telegram ID extracted from Mini App or Props
   const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
 
   const walletAddress = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
 
-  // ⭐ SYNC WALLET TO DB
   useEffect(() => {
     if (walletAddress && telegramId) {
-      console.log("Syncing wallet to DB:", walletAddress);
-
       const apiBase = process.env.NEXT_PUBLIC_API_URL;
       fetch(`${apiBase}/api/user/update_profile`, {
         method: "POST",
@@ -75,32 +72,24 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   }, [telegramId]);
 
-  // ⭐ SWR fetch using Telegram ID (safe null)
   const { data: swrUser, error: swrError, loading: swrLoading, mutate } =
     useApi(telegramId ? `/user/${telegramId}` : null);
 
   useEffect(() => {
-    if (telegramId && isOpen) mutate();  // force SWR refresh when ID loads or modal opens
+    if (telegramId && isOpen) mutate();
   }, [telegramId, isOpen]);
 
-  // ⭐ Sync SWR result
   useEffect(() => {
     if (swrUser) {
-      // ❗ CRITICAL: Preserve the LIVE photo_url from telegramUser (prop) 
-      // instead of over-writing it with the STALE/EXPIRED one from DB
       const mergedUser = {
         ...swrUser,
         photo_url: telegramUser?.photo_url || swrUser.photo_url
       };
-
       setUser(mergedUser);
       setLoading(false);
-      setError("");               // clear any old error
+      setError("");
     }
-
-    // only show error if we truly have no user data AND loading is done AND SWR has finished its attempt
     if (swrError && !swrUser && !swrLoading && !user) {
-      // Small delay before showing error to avoid flicker if it's just a transient state
       const timeout = setTimeout(() => {
         if (!swrUser && !user) setError("Could not load profile");
       }, 800);
@@ -109,13 +98,11 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   }, [swrUser, swrError, swrLoading, user]);
 
-  // ⭐ Load cooldown when opening modal + telegram id available
   useEffect(() => {
     if (isOpen && telegramId) {
       loadCooldown();
     }
   }, [isOpen, telegramId]);
-
 
   const [notifying, setNotifying] = useState(false);
 
@@ -124,25 +111,19 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
       setBadgeUnlocked(true);
       setTimeout(() => setBadgeUnlocked(false), 3000);
     };
-
     window.addEventListener("badgeUnlocked", handler);
     return () => window.removeEventListener("badgeUnlocked", handler);
   }, []);
 
-
-  // ⭐ ADD THIS NEW LEVEL LOGIC HERE
   const [level, setLevel] = useState("Loading...");
-
   useEffect(() => {
     if (swrUser?.level) {
       setLevel(swrUser.level);
     }
   }, [swrUser?.level]);
 
-
   useEffect(() => {
     if (cooldown === null) return;
-
     const interval = setInterval(() => {
       setCooldown(prev => {
         if (!prev || prev <= 1000) {
@@ -150,47 +131,26 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
           return null;
         }
         const next = prev - 1000;
-
         const h = String(Math.floor(next / 3600000)).padStart(2, "0");
         const m = String(Math.floor((next % 3600000) / 60000)).padStart(2, "0");
         const s = String(Math.floor((next % 60000) / 1000)).padStart(2, "0");
-
         setCooldownText(`${h}:${m}:${s}`);
-
         return next;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [cooldown]);
-
-  // Auto-refresh profile picture daily
-  useEffect(() => {
-    if (!telegramId) return;
-    const interval = setInterval(() => {
-      setUser((prev: any) => ({
-        ...prev,
-        photo_url: prev.photo_url ? `${prev.photo_url}?r=${Date.now()}` : null
-      }));
-    }, 24 * 60 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [telegramId]);
 
   const handleClaim = async () => {
     if (claiming) return;
     setClaiming(true);
-
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id: telegramId }),
     });
-
     const result = await res.json();
-
     if (result.claimed) {
-      // Open the Claim Boost Popup with the detailed data
       setClaimBoostData({
         base_claimed: result.base_claimed,
         multiplier: result.multiplier,
@@ -198,16 +158,12 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
         applied_roles: result.applied_roles || []
       });
       setIsClaimBoostOpen(true);
-      
-      // Update local state instantly but wait for popup close to dispatch event
       setUser((prev: any) => ({
         ...prev,
         referral_earnings_pending: 0,
         points_balance: result.new_balance,
       }));
-
       mutate();
-
       setClaimDone(true);
       setTimeout(() => {
         setClaimDone(false);
@@ -218,55 +174,33 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   };
 
-
   async function loadCooldown() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegramId}`);
     const data = await res.json();
-
     if (!data.last_sent) {
       setCooldown(null);
       return;
     }
-
     const lastSent = new Date(data.last_sent).getTime();
     const now = Date.now();
-    const cooldownMs = 4 * 60 * 60 * 1000; // 4 hours
-
+    const cooldownMs = 4 * 60 * 60 * 1000;
     const remaining = lastSent + cooldownMs - now;
-
-    if (remaining > 0) {
-      setCooldown(remaining);
-    } else {
-      setCooldown(null);
-    }
+    if (remaining > 0) setCooldown(remaining);
+    else setCooldown(null);
   }
 
   const handleNotifyInactive = async () => {
     if (cooldown !== null || notifying) return;
-
-    // Lock UI immediately
     setNotifying(true);
     setCooldownText("Notifying...");
-
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ telegram_id: telegramId }),
       });
-
-      const result = await res.json();
-
-      // Start real cooldown (4 hours) regardless of if it was blocked by backend or success
-      // since backend might return 'blocked' if the user somehow bypassed frontend check
       const cooldownMs = 4 * 60 * 60 * 1000;
       setCooldown(cooldownMs);
-
-      const h = String(Math.floor(cooldownMs / 3600000)).padStart(2, "0");
-      const m = String(Math.floor((cooldownMs % 3600000) / 60000)).padStart(2, "0");
-      const s = String(Math.floor((cooldownMs % 60000) / 1000)).padStart(2, "0");
-      setCooldownText(`${h}:${m}:${s}`);
-
     } catch (e) {
       console.error("Notify error:", e);
     } finally {
@@ -274,9 +208,7 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
     }
   };
 
-  const handleSaveName = async (newName: string) => {
-    // Name editing removed as per request
-  };
+  const isVerifiedHuman = user?.roles?.includes("Verified Human");
 
   return (
     <AnimatePresence>
@@ -289,21 +221,14 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header Bar - Truly Floating */}
+          {/* Header Bar */}
           <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
-            <button
-              onClick={onClose}
-              className="group pointer-events-auto"
-            >
+            <button onClick={onClose} className="group pointer-events-auto">
               <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
                 <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
               </div>
             </button>
-
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="group pointer-events-auto"
-            >
+            <button onClick={() => setSettingsOpen(true)} className="group pointer-events-auto">
               <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
                 <MoreVertical size={20} className="text-cyan-400 group-hover:text-cyan-200" />
               </div>
@@ -311,402 +236,132 @@ export default function Profile({ isOpen, onClose, telegramUser }: ProfileProps)
           </div>
 
           <div className="max-w-md mx-auto w-full p-6 pb-24">
-
-            {loading && (
-              <div className="space-y-3 animate-pulse">
-                {/* Profile Picture + BW ID Skeleton */}
-                <div className="relative flex items-start justify-between mb-3">
-                  <div className="w-24 h-24 rounded-full bg-cyan-900/30 border border-cyan-900/50"></div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-12 h-3 bg-cyan-900/50 rounded"></div>
-                  </div>
-                </div>
-
-                {/* Name + Username Skeleton */}
-                <div className="flex flex-col items-start gap-1.5 mb-3">
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-24 h-3 bg-cyan-900/50 rounded"></div>
-                  </div>
-                  <div className="w-20 h-2 bg-cyan-900/30 rounded ml-1"></div>
-                </div>
-
-                {/* Status Cards Skeleton */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-12 h-2 bg-cyan-900/50 rounded mx-auto mb-1"></div>
-                    <div className="w-10 h-2 bg-cyan-900/30 rounded mx-auto"></div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-12 h-2 bg-cyan-900/50 rounded mx-auto"></div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-2 text-center shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-16 h-2 bg-cyan-900/50 rounded mx-auto mb-1"></div>
-                    <div className="w-8 h-2 bg-cyan-900/30 rounded mx-auto"></div>
-                  </div>
-                </div>
-
-                {/* Wallet Skeleton */}
-                <div className="flex items-center gap-2">
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-full p-3 shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-5 h-5 bg-cyan-900/50 rounded"></div>
-                  </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 px-4 py-1.5 rounded-full shadow-[0_0_15px_#00e6ff15]">
-                    <div className="w-24 h-2 bg-cyan-900/50 rounded"></div>
-                  </div>
-                </div>
-
-                {/* Network Earnings Skeleton */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-3 shadow-[0_0_15px_#00e6ff15]">
-                  <div className="w-28 h-2 bg-cyan-900/50 rounded mb-2"></div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 h-7 bg-cyan-900/30 rounded-lg border border-cyan-900/50"></div>
-                    <div className="flex-1 h-7 bg-cyan-900/30 rounded-lg border border-cyan-900/50"></div>
-                  </div>
-                </div>
-
-                {/* Roles Skeleton */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-4 shadow-[0_0_15px_#00e6ff15] min-h-[80px]">
-                  <div className="w-12 h-2 bg-cyan-900/50 rounded mb-1.5"></div>
-                  <div className="w-32 h-2 bg-cyan-900/30 rounded"></div>
-                </div>
-
-                {/* Footer Skeleton */}
-                <div className="bg-black/40 backdrop-blur-md border border-cyan-900/50 rounded-lg p-3 shadow-[0_0_15px_#00e6ff15]">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-20 h-2 bg-cyan-900/50 rounded"></div>
-                    <div className="w-12 h-5 bg-cyan-900/30 rounded-lg border border-cyan-900/50"></div>
-                  </div>
-                  <div className="w-full h-2 bg-cyan-900/30 rounded mb-2"></div>
-                  <div className="w-24 h-2 bg-cyan-900/30 rounded"></div>
-                </div>
-              </div>
-            )}
-            {error && <p className="text-center text-red-400">{error}</p>}
+            {loading && !user && <div className="space-y-3 animate-pulse"><div className="w-24 h-24 rounded-full bg-cyan-900/30" /></div>}
 
             {user && (
               <div className="flex flex-col gap-6">
-
-                {/* Professional Header Card */}
-                <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-5 shadow-[0_0_30px_#00e6ff05] flex items-center gap-5 relative overflow-hidden group">
+                {/* Header Card */}
+                <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-5 shadow-[0_0_30px_#00e6ff05] flex flex-col items-center gap-5 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-50"></div>
 
                   {/* Avatar Section */}
-                  <div className="relative shrink-0">
-                    <div className="absolute inset-0 rounded-full blur-2xl bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors"></div>
-
-                    {user.photo_url && !imgError ? (
-                      <div className="relative">
+                  <div className="relative">
+                    {isVerifiedHuman ? (
+                      <VerifiedHumanRing size="lg">
                         <img
-                          src={`${user.photo_url}?r=${Date.now()}`}
+                          src={user.photo_url || "https://ui-avatars.com/api/?name=" + (user.name || user.username || "U") + "&background=0f172a&color=22d3ee&bold=true"}
                           alt="avatar"
-                          onError={() => setImgError(true)}
-                          className="relative w-24 h-24 rounded-full border-2 border-cyan-400/30 shadow-[0_0_20px_#00e6ff40] object-cover"
+                          className="w-full h-full object-cover"
+                        />
+                      </VerifiedHumanRing>
+                    ) : (
+                      <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 shadow-[0_0_20px_#00e6ff30] overflow-hidden">
+                        <img
+                          src={user.photo_url || "https://ui-avatars.com/api/?name=" + (user.name || user.username || "U") + "&background=0f172a&color=22d3ee&bold=true"}
+                          alt="avatar"
+                          className="w-full h-full object-cover"
                         />
                       </div>
-                    ) : (
-                      <div
-                        className="
-                        relative w-24 h-24 rounded-full
-                        bg-cyan-950/40
-                        flex items-center justify-center
-                        text-cyan-400 text-3xl font-bold
-                        shadow-[0_0_20px_#00e6ff30]
-                        border-2 border-cyan-400/30
-                      "
-                      >
-                        {(user.first_name?.charAt(0) || user.name?.charAt(0) || user.username?.charAt(0) || "U").toUpperCase()}
-                      </div>
-                    )}
-
-                    {/* Streak Badge */}
-                    {user.streak_days >= 3 && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full 
-                                   bg-[#001f2e] border-2 border-cyan-400
-                                   shadow-[0_0_15px_#00e6ff] flex items-center justify-center"
-                      >
-                        <span className="text-[12px] text-cyan-400 font-black">✓</span>
-                      </motion.div>
                     )}
                   </div>
 
-                  {/* Info Section */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-center relative z-10">
-                    <div className="flex flex-col mb-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-cyan-50 font-bold text-lg sm:text-2xl tracking-tight truncate">
-                          {user.first_name || user.name || user.username}
-                        </h2>
-                        <div className="flex items-center gap-1.5 bg-cyan-500/5 border border-cyan-400/20 px-2 py-1 rounded-lg shrink-0 relative transition-all active:scale-[0.98]">
-                          <span className="text-cyan-500/80 font-black text-[9px] sm:text-[10px] tracking-tight uppercase font-mono">
-                            BW ID: {user?.bw_id ? (showId ? user.bw_id : `${user.bw_id.slice(0, 5)}***`) : "..."}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowId(!showId);
-                              const tg = (window as any).Telegram?.WebApp;
-                              if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
-                            }}
-                            className="p-0.5 hover:bg-cyan-500/10 rounded transition-colors text-cyan-500/60"
-                          >
-                            {showId ? <EyeOff size={11} /> : <Eye size={11} />}
-                          </button>
-                          {showId && (
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if (!user?.bw_id) return;
-                                await navigator.clipboard.writeText(user.bw_id);
-                                setIdCopied(true);
-                                const tg = (window as any).Telegram?.WebApp;
-                                if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
-                                setTimeout(() => setIdCopied(false), 2000);
-                              }}
-                              className="p-0.5 hover:bg-cyan-500/10 rounded transition-colors text-cyan-500/60"
-                            >
-                              {idCopied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
-                            </button>
-                          )}
-                        </div>
+                  <div className="flex flex-col items-center text-center">
+                    <h2 className="text-cyan-50 font-black text-2xl uppercase tracking-tighter mb-1">
+                      {user.first_name || user.name || user.username}
+                    </h2>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      {isVerifiedHuman && (
+                        <button 
+                          onClick={() => onOpenRoles("Verified Human")}
+                          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 active:scale-95 transition-all"
+                        >
+                          <UserCheck size={12} className="text-cyan-400" />
+                          <span className="text-[9px] font-black uppercase text-cyan-400 tracking-widest">Verified Human</span>
+                        </button>
+                      )}
+                      <div className="px-3 py-1 bg-cyan-500/5 border border-cyan-400/20 rounded-lg flex items-center gap-2">
+                        <span className="text-cyan-500/80 font-black text-[10px] uppercase font-mono tracking-tight">
+                          BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
+                        </span>
+                        <button onClick={() => setShowId(!showId)} className="text-cyan-500/40 hover:text-cyan-400">
+                          {showId ? <EyeOff size={12} /> : <Eye size={12} />}
+                        </button>
                       </div>
-                      <span className="text-cyan-500/50 text-[11px] sm:text-[13px] font-semibold tracking-wide mt-0.5">
-                        @{user.username}
-                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-400/20 rounded-full flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
-                        <span className="text-cyan-300 text-[11px] font-black uppercase tracking-widest">{t("profile.level")} {level}</span>
-                      </div>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {user.roles?.map((role: string) => (
+                        role !== "Verified Human" && (
+                          <button 
+                            key={role} 
+                            onClick={() => onOpenRoles(role)}
+                            className="px-3 py-1 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                          >
+                            <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">{role}</span>
+                          </button>
+                        )
+                      ))}
                     </div>
                   </div>
                 </div>
 
-                {/* Status Cards Grid */}
+                {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 group hover:border-cyan-500/30 transition-colors shadow-lg">
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2">
                     <div className="text-cyan-50 text-2xl font-black leading-none">{user.streak_days}</div>
                     <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.streak")}</div>
                   </div>
-
-                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 group hover:border-cyan-500/30 transition-colors shadow-lg">
+                  <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-2">
                     <div className="text-cyan-50 text-2xl font-black leading-none">{user.total_referrals || 0}</div>
                     <div className="text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.total_networks")}</div>
                   </div>
                 </div>
 
-                {/* Wallet Action Card */}
-                <div
-                  onClick={() => {
-                    if (!walletAddress) {
-                      // 🚧 TEMPORARILY DISABLED
-                      // Uncomment the line below to re-enable wallet connections
-                      // tonConnectUI.openModal();
-                      
-                      const tg = (window as any).Telegram?.WebApp;
-                      if (tg?.showAlert) {
-                        tg.showAlert("Wallet connection is currently disabled. Stay tuned for the official announcement!");
-                      } else {
-                        alert("Wallet connection is currently disabled. Stay tuned for the official announcement!");
-                      }
-                    }
-                  }}
-                  className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center group shadow-lg transition-all ${!walletAddress ? "cursor-pointer hover:border-cyan-500/30 active:scale-[0.98]" : "cursor-default opacity-90"}`}
-                >
-                  <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0 group-hover:bg-cyan-500/10 transition-colors">
-                    <Wallet className={`w-6 h-6 ${walletAddress ? "text-green-400 animate-pulse" : "text-cyan-400"}`} />
-                  </div>
+                {/* Wallet Card - HIDDEN (Not yet ready) */}
+                {/* 
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg">
+                  <div className="p-4 bg-cyan-500/5 rounded-2xl shrink-0"><Wallet className="w-6 h-6 text-cyan-400" /></div>
                   <div className="flex-1 px-4 flex items-center justify-between">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-3">
-                        <img src="/ton-transparent.png" alt="TON" className="w-5 h-5" />
-                        <span className="text-cyan-100 font-black text-xs uppercase tracking-wider">
-                          {walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}
-                        </span>
-                      </div>
-                      {walletAddress && (
-                        <span className="text-cyan-500/50 font-mono text-[9px] mt-0.5 tracking-tight truncate max-w-[140px]">
-                          {walletAddress.slice(0, 6)}...{walletAddress.slice(-6)}
-                        </span>
-                      )}
-                    </div>
-                    <div className={`w-2 h-2 rounded-full transition-colors ${walletAddress ? "bg-green-500 shadow-[0_0_10px_#4ade80]" : "bg-gray-600 group-hover:bg-cyan-500"}`}></div>
-                  </div>
-                </div>
-
-                {/* Earnings Module */}
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
-                  <div className="flex items-center justify-between border-b border-cyan-500/5 pb-3">
-                    <h3 className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.network_earnings")}</h3>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-cyan-50 text-3xl font-black">{user.referral_earnings_pending}</span>
-                      <span className="text-cyan-500/80 text-xs font-black tracking-widest">$BWAVE</span>
-                    </div>
-
-                    <div className="flex gap-3 mt-1">
-                      <button
-                        onClick={handleClaim}
-                        disabled={user.referral_earnings_pending === 0 || claiming}
-                        className={`flex-1 py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${user.referral_earnings_pending === 0
-                          ? "bg-gray-900/40 text-gray-600 border-gray-800"
-                          : "bg-cyan-500/10 text-cyan-300 border-cyan-400 group hover:shadow-[0_0_20px_#00e6ff20] active:scale-[0.97]"
-                          } disabled:opacity-50`}
-                      >
-                        {claiming ? t("profile.claiming") : claimDone ? t("profile.done") : t("profile.claim")}
-                      </button>
-                      <button
-                        onClick={handleNotifyInactive}
-                        disabled={notifying || cooldown !== null}
-                        className={`flex-1 py-3.5 text-[12px] font-black rounded-xl border transition-all uppercase tracking-[0.15em] ${cooldown !== null
-                          ? "border-gray-800 text-gray-700 bg-gray-900/20"
-                          : "border-cyan-400/20 text-cyan-500/80 hover:bg-cyan-500/5 hover:border-cyan-400/40 active:scale-[0.97]"
-                          } disabled:opacity-50`}
-                      >
-                        {notifying ? t("profile.wait") : cooldown !== null ? `${cooldownText}` : t("profile.notify_inactive")}
-                      </button>
+                      <span className="text-cyan-100 font-extrabold text-xs uppercase tracking-wider">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
+                      {walletAddress && <span className="text-cyan-500/50 font-mono text-[9px] truncate max-w-[140px]">{walletAddress}</span>}
                     </div>
                   </div>
                 </div>
+                */}
 
-                {/* Roles & Status */}
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-4">
-                  <div className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.roles")}</div>
-                  
-                  {user.roles && user.roles.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {user.roles.map((role: string, idx: number) => {
-                        // Quick style map matching RolesOverlay
-                        const styleMap: Record<string, { bg: string, border: string, text: string }> = {
-                          "Bluewave Core": { bg: "bg-red-500/10", border: "border-red-500/30", text: "text-red-400" },
-                          "Community Moderator": { bg: "bg-green-500/10", border: "border-green-500/30", text: "text-green-400" },
-                          "Verified Partner": { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400" },
-                          "Verified Human": { bg: "bg-blue-400/10", border: "border-blue-400/30", text: "text-blue-300" },
-                          "Presence Holder": { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400" },
-                          "Genesis Member": { bg: "bg-amber-700/20", border: "border-amber-700/50", text: "text-amber-600" },
-                          "Beta Explorer": { bg: "bg-gray-500/10", border: "border-gray-500/30", text: "text-gray-400" },
-                          "New Wave": { bg: "bg-teal-500/10", border: "border-teal-500/30", text: "text-teal-400" },
-                          "Active Human": { bg: "bg-cyan-500/10", border: "border-cyan-500/30", text: "text-cyan-400" },
-                          "Contributor": { bg: "bg-gray-300/10", border: "border-gray-300/30", text: "text-gray-300" },
-                          "OG": { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400" },
-                          "Super OG": { bg: "bg-fuchsia-500/10", border: "border-fuchsia-500/30", text: "text-fuchsia-400" },
-                          "Content Creator": { bg: "bg-orange-500/10", border: "border-orange-500/30", text: "text-orange-400" },
-                          "Best Commentator": { bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-400" },
-                          "Meme Architect": { bg: "bg-sky-300/10", border: "border-sky-300/30", text: "text-sky-300" },
-                          "X Supporter": { bg: "bg-stone-600/10", border: "border-stone-600/30", text: "text-stone-400" },
-                          "X Raider": { bg: "bg-rose-600/10", border: "border-rose-600/30", text: "text-rose-500" },
-                          "X Ambassador": { bg: "bg-cyan-400/10", border: "border-cyan-400/30", text: "text-cyan-300" },
-                          "Signal Guardian": { bg: "bg-zinc-100/10", border: "border-zinc-300/30", text: "text-zinc-300" },
-                          "Human Legend": { bg: "bg-slate-400/10", border: "border-slate-400/30", text: "text-slate-300" },
-                        };
-                        const style = styleMap[role] || { bg: "bg-cyan-500/10", border: "border-cyan-500/30", text: "text-cyan-400" };
-                        
-                        return (
-                          <div key={idx} className={`${style.bg} border ${style.border} px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm`}>
-                            <Award size={12} className={style.text} />
-                            <span className={`${style.text} text-[10px] font-black uppercase tracking-widest`}>{role}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="h-24 flex items-center justify-center border-2 border-dashed border-cyan-500/5 rounded-2xl bg-cyan-950/5">
-                      <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest opacity-60 italic">{t("profile.no_roles")}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Referral Assets */}
-                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 shadow-lg flex flex-col gap-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-cyan-500/70 text-[11px] font-black uppercase tracking-[0.15em]">{t("profile.referral_link")}</div>
-                      <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-none">Global Network Builder</div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(user.referral_link);
-                        setCopied(true);
-
-                        const tg = (window as any).Telegram?.WebApp;
-                        if (tg?.HapticFeedback) {
-                          tg.HapticFeedback.impactOccurred("medium");
-                        }
-
-                        setTimeout(() => setCopied(false), 1500);
-                      }}
-                      className="px-5 py-2.5 bg-cyan-500/10 border border-cyan-400/40 text-cyan-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_#00e6ff20] active:scale-[0.95]"
-                    >
-                      {copied ? t("profile.copied") : t("profile.copy")}
+                {/* Earnings Card */}
+                <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-5 flex flex-col gap-4">
+                  <h3 className="text-cyan-500/70 text-[11px] font-black uppercase tracking-widest">{t("profile.network_earnings")}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-cyan-50 text-3xl font-black">{user.referral_earnings_pending}</span>
+                    <span className="text-cyan-500/80 text-xs font-black tracking-widest">$BWAVE</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={handleClaim} disabled={claiming || user.referral_earnings_pending === 0} className="flex-1 py-3 text-cyan-400 font-black border border-cyan-500/30 rounded-xl uppercase text-xs">
+                      {claiming ? t("profile.claiming") : t("profile.claim")}
                     </button>
-                  </div>
-
-                  <div className="bg-black/40 border border-cyan-500/10 rounded-2xl p-4 group cursor-copy active:bg-cyan-500/5 transition-all">
-                    <div className="text-cyan-400 text-xs font-mono break-all opacity-60 group-hover:opacity-100 transition-opacity">
-                      {user.referral_link}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-4 pt-4 border-t border-cyan-500/5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-900"></div>
-                      <div className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                        {t("profile.joined")}: {new Date(user.joined_at).toLocaleDateString()}
-                      </div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-900"></div>
-                    </div>
+                    <button onClick={handleNotifyInactive} disabled={notifying || cooldown !== null} className="flex-1 py-3 text-cyan-500/50 font-black border border-cyan-500/10 rounded-xl uppercase text-xs">
+                      {cooldown !== null ? cooldownText : t("profile.notify_inactive")}
+                    </button>
                   </div>
                 </div>
               </div>
             )}
-            <AnimatePresence>
-              {badgeUnlocked && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="absolute top-4 left-1/2 -translate-x-1/2
-                             bg-cyan-500/20 text-cyan-200 border border-cyan-400
-                             px-3 py-1 rounded-lg text-xs shadow-[0_0_20px_#00e6ff]"
-                >
-                  {t("profile.badge_unlocked")}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Sub-overlays nested within the main container */}
-          <Settings
-            isOpen={settingsOpen}
-            onClose={() => setSettingsOpen(false)}
-            onOpenLanguage={() => setLanguageOpen(true)}
-          />
+          <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} onOpenLanguage={() => setLanguageOpen(true)} />
+          <LanguageSelector isOpen={languageOpen} onClose={() => setLanguageOpen(false)} />
+          <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
 
-          <LanguageSelector
-            isOpen={languageOpen}
-            onClose={() => setLanguageOpen(false)}
-          />
-
-          {/* Claim Boost Popup Overlay */}
-          <ClaimBoostPopup
-            isOpen={isClaimBoostOpen}
-            data={claimBoostData}
-            onClose={() => {
-              setIsClaimBoostOpen(false);
-              // Dispatch event to update global header AFTER popup closes
-              if (claimBoostData && user) {
-                window.dispatchEvent(
-                  new CustomEvent("updateBalance", { detail: user.points_balance })
-                );
-              }
-            }}
-          />
+          <AnimatePresence>
+            {badgeUnlocked && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-glow">
+                {t("profile.badge_unlocked")}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

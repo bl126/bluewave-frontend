@@ -16,7 +16,11 @@ import WhitepaperOverlay from "@/components/WhitepaperOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
+import VerifiedHumanModal from "@/components/ui/VerifiedHumanModal";
+import TONExplorerModal from "@/components/ui/TONExplorerModal";
 import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
+import RoleDetailModal from "@/components/ui/RoleDetailModal";
+import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -64,6 +68,7 @@ export default function LandingPage() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
+  const [selectedRoleName, setSelectedRoleName] = useState<string | null>(null);
   const [isBwaveScanOpen, setBwaveScanOpen] = useState(false);
 
   // 🔐 Recovery Password State
@@ -73,7 +78,16 @@ export default function LandingPage() {
   const [isStreakCelebrationOpen, setIsStreakCelebrationOpen] = useState(false);
   const [streakCelebrationData, setStreakCelebrationData] = useState({ days: 0, reward: 0 });
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal;
+  // 🛡️ Human Verification State
+  const [isHumanModalOpen, setIsHumanModalOpen] = useState(false);
+
+  // 💎 TON Explorer State
+  const [isTONModalOpen, setIsTONModalOpen] = useState(false);
+
+  // 🏆 Role Detail Modal State
+  const [selectedRoleData, setSelectedRoleData] = useState<any>(null);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isTONModalOpen || isStreakCelebrationOpen;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -168,6 +182,8 @@ export default function LandingPage() {
           streak: user.streak_days ?? 0,
           bw_id: user.bw_id,
           joined_at: user.joined_at,
+          human_verification_pending: user.human_verification_pending || false,
+          ton_explorer_pending: user.ton_explorer_pending || false,
         });
 
         // 🔥 Initial check for pending streak reward
@@ -178,6 +194,12 @@ export default function LandingPage() {
           });
           // Small delay to ensure landing state is settled
           setTimeout(() => setIsStreakCelebrationOpen(true), 1500);
+        } else if (user.human_verification_pending) {
+          // If no streak, show human verification modal
+          setTimeout(() => setIsHumanModalOpen(true), 1500);
+        } else if (user.ton_explorer_pending) {
+          // If no human verification, show TON Explorer modal
+          setTimeout(() => setIsTONModalOpen(true), 1500);
         }
 
         // Update balance
@@ -203,32 +225,78 @@ export default function LandingPage() {
     })();
   }, [apiBase]);
 
-  // 🔥 Streak Celebration Event Listener (for sequential popups)
+  // [CODE: FRONTEND_EVENT_LISTENERS]
   useEffect(() => {
-    const handleStreakEvent = (e: any) => {
-      setStreakCelebrationData({
-        days: e.detail.days,
-        reward: e.detail.reward
-      });
+    const handleStreakPop = (e: any) => {
+      const { days, reward } = e.detail;
+      setStreakCelebrationData({ days, reward });
       setIsStreakCelebrationOpen(true);
     };
 
-    window.addEventListener("showStreakCelebration", handleStreakEvent as any);
-    return () => window.removeEventListener("showStreakCelebration", handleStreakEvent as any);
+    const handleHumanPop = () => {
+      setIsHumanModalOpen(true);
+    };
+
+    window.addEventListener('showStreakCelebration' as any, handleStreakPop);
+    window.addEventListener('showHumanVerification' as any, handleHumanPop);
+    return () => {
+      window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
+      window.removeEventListener('showHumanVerification' as any, handleHumanPop);
+    };
   }, []);
 
-  const handleCloseStreakCelebration = async () => {
+  const handleClearStreakReward = async () => {
     setIsStreakCelebrationOpen(false);
-    if (telegramUser?.tg_id) {
-      try {
+    try {
+      if (telegramUser?.tg_id) {
         await fetch(`${apiBase}/api/user/clear_streak_reward`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telegram_id: telegramUser.tg_id }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
         });
-      } catch (e) {
-        console.error("Failed to clear streak reward:", e);
+        // Sequence: Check human verification -> then TON explorer
+        if (telegramUser.human_verification_pending) {
+          setTimeout(() => setIsHumanModalOpen(true), 500);
+        } else if (telegramUser.ton_explorer_pending) {
+          setTimeout(() => setIsTONModalOpen(true), 500);
+        }
       }
+    } catch (e) {
+      console.error("Clear streak error:", e);
+    }
+  };
+
+  const handleClearHumanVerification = async () => {
+    setIsHumanModalOpen(false);
+    try {
+      if (telegramUser?.tg_id) {
+        await fetch(`${apiBase}/api/user/clear_human_verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
+        });
+        // After human verification, check if there's a pending TON explorer reward
+        if (telegramUser.ton_explorer_pending) {
+          setTimeout(() => setIsTONModalOpen(true), 500);
+        }
+      }
+    } catch (e) {
+      console.error("Clear human verification error:", e);
+    }
+  };
+
+  const handleClearTONExplorer = async () => {
+    setIsTONModalOpen(false);
+    try {
+      if (telegramUser?.tg_id) {
+        await fetch(`${apiBase}/api/user/clear_ton_explorer_reward`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
+        });
+      }
+    } catch (e) {
+      console.error("Clear TON explorer error:", e);
     }
   };
 
@@ -299,7 +367,11 @@ export default function LandingPage() {
         <TopRightMenu
           onOpenWhitepaper={() => setWhitepaperOpen(true)}
           isWhitepaperActive={isWhitepaperOpen}
-          onOpenRoles={() => setRolesOpen(true)}
+          onOpenRoles={(roleName?: string) => {
+            if (roleName) setSelectedRoleName(roleName);
+            else setSelectedRoleName(null);
+            setRolesOpen(true);
+          }}
           isRolesActive={isRolesOpen}
           onOpenLedger={() => setBwaveScanOpen(true)}
         />
@@ -362,7 +434,15 @@ export default function LandingPage() {
         <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
       )}
       {isProfileOpen && (
-        <Profile isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} telegramUser={telegramUser} />
+        <Profile 
+          isOpen={isProfileOpen} 
+          onClose={() => setProfileOpen(false)} 
+          telegramUser={telegramUser} 
+          onOpenRoles={(roleName: string) => {
+            const role = findRoleByName(roleName);
+            if (role) setSelectedRoleData(role);
+          }}
+        />
       )}
 
       {/* 🌀 Loading Screen */}
@@ -383,7 +463,11 @@ export default function LandingPage() {
       {/* 🏆 Roles Overlay */}
       <RolesOverlay
         isOpen={isRolesOpen}
-        onClose={() => setRolesOpen(false)}
+        onClose={() => {
+          setRolesOpen(false);
+          setSelectedRoleName(null);
+        }}
+        initialRoleName={selectedRoleName}
       />
 
       {/* 🔐 Onboarding LOCK SCREEN */}
@@ -400,17 +484,38 @@ export default function LandingPage() {
         telegramId={telegramUser?.tg_id || 0}
       />
 
+      {/* 🔥 Streak Celebration Modal */}
       <StreakCelebrationModal
         isOpen={isStreakCelebrationOpen}
+        onClose={() => {
+          setIsStreakCelebrationOpen(false);
+          handleClearStreakReward();
+        }}
         streakDays={streakCelebrationData.days}
         rewardAmount={streakCelebrationData.reward}
-        onClose={handleCloseStreakCelebration}
+      />
+
+      {/* 🛡️ Human Verification Modal */}
+      <VerifiedHumanModal
+        isOpen={isHumanModalOpen}
+        onClose={handleClearHumanVerification}
+      />
+
+      {/* 💎 TON Explorer Modal */}
+      <TONExplorerModal
+        isOpen={isTONModalOpen}
+        onClose={handleClearTONExplorer}
       />
 
       <BwaveScanOverlay
         isOpen={isBwaveScanOpen}
         onClose={() => setBwaveScanOpen(false)}
         bwId={telegramUser?.bw_id}
+      />
+
+      <RoleDetailModal
+        role={selectedRoleData}
+        onClose={() => setSelectedRoleData(null)}
       />
     </div>
   );

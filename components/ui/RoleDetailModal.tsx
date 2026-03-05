@@ -1,0 +1,88 @@
+"use client";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Flame, Star } from "lucide-react";
+
+interface RoleDetailModalProps {
+  role: any | null;
+  onClose: () => void;
+}
+
+export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps) {
+  if (!role) return null;
+
+  return (
+    <AnimatePresence>
+      {role && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-sm"
+          />
+
+          {/* Popup */}
+          <div className="fixed inset-0 z-[510] flex items-center justify-center p-6 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ type: "spring", damping: 24, stiffness: 280 }}
+              className="relative w-full max-w-sm rounded-[2rem] border border-cyan-500/20 bg-gradient-to-b from-black/80 to-cyan-950/40 p-7 flex flex-col items-center gap-5 shadow-[0_0_50px_#00e6ff10] overflow-hidden pointer-events-auto"
+            >
+              {/* X Close */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+              >
+                <X size={16} className="text-white/50" />
+              </button>
+
+              {/* Role Icon */}
+              <div className={`p-5 rounded-[1.75rem] bg-gradient-to-br ${role.color} border-2 ${role.border} flex items-center justify-center`}>
+                {role.image ? (
+                  <img src={role.image} alt={role.name} className="w-14 h-14 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                ) : (
+                  <role.icon className={`w-14 h-14 ${role.text}`} />
+                )}
+              </div>
+
+              {/* Name & Multiplier */}
+              <div className="text-center space-y-2">
+                <h2 className={`text-2xl font-black uppercase tracking-tight ${role.text}`}>
+                  {role.name}
+                </h2>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
+                  <Flame className="text-orange-400" size={13} />
+                  <span className="text-orange-400 font-black text-xs tracking-widest">{role.boost} YIELD BOOST</span>
+                </div>
+              </div>
+
+              {/* Credential & Protocol Access */}
+              <div className="w-full space-y-3">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 block">Credential</span>
+                  <p className="text-sm text-white/75 font-medium leading-relaxed">
+                    {role.desc}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/60 flex items-center gap-1.5">
+                    <Star size={10} className="text-yellow-400" /> Protocol Access
+                  </span>
+                  <p className="text-sm text-cyan-50/85 font-semibold leading-snug">
+                    {role.benefit}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
