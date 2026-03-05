@@ -476,156 +476,228 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   };
 
 
+  // ── Badge Counts ──────────────────────────────────────────
+  type TabId = "presence" | "social" | "earn";
+  const [activeTab, setActiveTab] = useState<TabId>("presence");
+
+  const presenceBadge = presenceMissions.filter(
+    (pm) => pm.status === "inactive" || pm.status === "completed"
+  ).length;
+
+  const socialBadge = missions.filter(
+    (m) => m.status === "open" || m.status === "claim" || m.status === "waiting"
+  ).length;
+
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col overflow-y-auto text-cyan-200 
+          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col text-cyan-200
                      pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header Bar - Truly Floating */}
-          <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
-            <button
-              onClick={onClose}
-              className="group pointer-events-auto"
-            >
+          {/* ── Header ── */}
+          <div className="flex justify-between items-center px-6 pt-6 pb-3 shrink-0">
+            <button onClick={onClose} className="group">
               <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
                 <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
               </div>
             </button>
-
             <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
               {t("missions.title")}
             </h2>
-
-            <div className="w-10"></div> {/* Spacer for center alignment */}
+            <div className="w-10" />
           </div>
 
-          <div className="max-w-md mx-auto w-full p-6 pb-24 space-y-8">
-
-            {/* PRESENCE COMMIT SECTION */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <Clock size={16} className="text-cyan-400" />
-                <h3 className="text-cyan-100 text-xs font-black uppercase tracking-[0.2em]">
-                  {t("presence.title") || "PRESENCE MISSION"}
-                </h3>
-              </div>
-
-              <div className="grid gap-3">
-                {presenceMissions.map((pm) => (
-                  <PresenceCard
-                    key={pm.type}
-                    mission={pm}
-                    onActivate={handleActivatePresence}
-                    onClaim={handleClaimPresence}
-                    loadingId={presenceLoadingId}
-                  />
-                ))}
-                {presenceMissions.length === 0 && loading && (
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40"></div>
-                    <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40"></div>
-                    <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-
-            {/* NORMAL MISSIONS SECTION */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2 px-1 border-t border-cyan-900/30 pt-6">
-                <Lock size={16} className="text-cyan-400" />
-                <h3 className="text-cyan-100 text-xs font-black uppercase tracking-[0.2em]">
-                  SOCIAL PRESENCE MISSION
-                </h3>
-              </div>
-
-              <div className="space-y-3">
-                {missions.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
-                    ${m.status === "done"
-                        ? "border-gray-800 bg-black/40 opacity-50"
-                        : "border-cyan-900/50 bg-cyan-950/10 hover:border-cyan-500/30"
-                      }`}
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-cyan-100">{m.name}</p>
-                      <p className="text-xs text-cyan-500 font-mono mt-0.5">{m.points} $BWAVE</p>
-                    </div>
-
-                    {m.status === "open" && m.id !== "invite_daily" && (
-                      <button
-                        onClick={() => handleOpen(m.id)}
-                        className="px-3 py-1.5 text-xs font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-lg hover:bg-cyan-500/20 transition-colors uppercase tracking-wider"
-                      >
-                        {t("missions.open")}
-                      </button>
-                    )}
-                    {m.status === "waiting" && (
-                      <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider animate-pulse">
-                        SYNCING...
-                      </button>
-                    )}
-                    {m.status === "claim" && (
-                      <button
-                        onClick={() => handleClaim(m.id)}
-                        disabled={claimingMissionId === m.id}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition-all
-                            ${claimingMissionId === m.id
-                            ? "bg-cyan-700 text-cyan-200 border border-cyan-600 cursor-wait"
-                            : "bg-cyan-500 text-black border border-cyan-400 shadow-[0_0_15px_#00e6ff80] animate-pulse"
-                          }
-                          `}
-                      >
-                        {claimingMissionId === m.id ? "CLAIMING..." : t("missions.claim")}
-                      </button>
-                    )}
-                    {m.status === "done" && (
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-                        <Check size={12} /> {t("missions.done")}
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {loading && missions.length === 0 && (
-                  <div className="space-y-3 animate-pulse">
-                    {[1, 2, 3].map(i => <div key={i} className="h-16 bg-cyan-900/10 rounded-xl border border-cyan-900/30"></div>)}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Popup Modal */}
-            <AnimatePresence>
-              {popup && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[150]
-                             bg-cyan-950/90 border border-cyan-500/50 text-cyan-100
-                             px-6 py-3 rounded-full shadow-[0_0_30px_#00e6ff40]
-                             text-sm font-bold tracking-wide backdrop-blur-xl whitespace-nowrap"
+          {/* ── Tab Bar ── */}
+          <div className="flex items-center gap-2 px-5 pb-4 shrink-0 overflow-x-auto scrollbar-none">
+            {(["presence", "social", "earn"] as TabId[]).map((tab) => {
+              const isActive = activeTab === tab;
+              const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap border transition-all duration-200
+                    ${tab === "earn"
+                      ? isActive
+                        ? "bg-white/5 border-white/20 text-white/50"
+                        : "bg-transparent border-white/10 text-white/25 hover:border-white/20"
+                      : isActive
+                        ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_#00e6ff15]"
+                        : "bg-transparent border-cyan-900/40 text-cyan-600 hover:border-cyan-700/50 hover:text-cyan-500"
+                    }`}
                 >
-                  {popup}
+                  {tab === "presence" && "Presence"}
+                  {tab === "social" && "Social Mission"}
+                  {tab === "earn" && (
+                    <span className="flex items-center gap-1.5">
+                      Earn Drop
+                      <span className="text-[8px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full">
+                        SOON
+                      </span>
+                    </span>
+                  )}
+                  {badge > 0 && tab !== "earn" && (
+                    <span className="w-5 h-5 rounded-full bg-cyan-400 text-black text-[10px] font-black flex items-center justify-center leading-none shrink-0">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Tab Content ── */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-md mx-auto w-full px-6 pb-24 space-y-4 pt-2">
+
+              {/* PRESENCE TAB */}
+              {activeTab === "presence" && (
+                <motion.div
+                  key="presence"
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-3"
+                >
+                  {presenceMissions.map((pm) => (
+                    <PresenceCard
+                      key={pm.type}
+                      mission={pm}
+                      onActivate={handleActivatePresence}
+                      onClaim={handleClaimPresence}
+                      loadingId={presenceLoadingId}
+                    />
+                  ))}
+                  {presenceMissions.length === 0 && loading && (
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
+                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
+                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
+                    </div>
+                  )}
                 </motion.div>
               )}
-            </AnimatePresence>
 
+              {/* SOCIAL TAB */}
+              {activeTab === "social" && (
+                <motion.div
+                  key="social"
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-3"
+                >
+                  {missions.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
+                      ${m.status === "done"
+                          ? "border-gray-800 bg-black/40 opacity-50"
+                          : "border-cyan-900/50 bg-cyan-950/10 hover:border-cyan-500/30"
+                        }`}
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-cyan-100">{m.name}</p>
+                        <p className="text-xs text-cyan-500 font-mono mt-0.5">{m.points} $BWAVE</p>
+                      </div>
+                      {m.status === "open" && m.id !== "invite_daily" && (
+                        <button onClick={() => handleOpen(m.id)} className="px-3 py-1.5 text-xs font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-lg hover:bg-cyan-500/20 transition-colors uppercase tracking-wider">
+                          {t("missions.open")}
+                        </button>
+                      )}
+                      {m.status === "waiting" && (
+                        <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider animate-pulse">
+                          SYNCING...
+                        </button>
+                      )}
+                      {m.status === "claim" && (
+                        <button
+                          onClick={() => handleClaim(m.id)}
+                          disabled={claimingMissionId === m.id}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition-all ${claimingMissionId === m.id
+                            ? "bg-cyan-700 text-cyan-200 border border-cyan-600 cursor-wait"
+                            : "bg-cyan-500 text-black border border-cyan-400 shadow-[0_0_15px_#00e6ff80] animate-pulse"
+                            }`}
+                        >
+                          {claimingMissionId === m.id ? "CLAIMING..." : t("missions.claim")}
+                        </button>
+                      )}
+                      {m.status === "done" && (
+                        <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+                          <Check size={12} /> {t("missions.done")}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {loading && missions.length === 0 && (
+                    <div className="space-y-3 animate-pulse">
+                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-cyan-900/10 rounded-xl border border-cyan-900/30" />)}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* EARN DROP TAB */}
+              {activeTab === "earn" && (
+                <motion.div
+                  key="earn"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
+                >
+                  <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.15)]">
+                    <span className="text-4xl">🎁</span>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest">Earn Drop</h3>
+                    <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">
+                      Coming Soon
+                    </div>
+                  </div>
+                  <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      Exclusive token drops for the most active Bluewave members. Participate in{" "}
+                      <span className="text-cyan-400 font-semibold">Presence Missions</span> and{" "}
+                      <span className="text-cyan-400 font-semibold">Social Missions</span> to secure your eligibility.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
+                      <Clock size={12} className="text-orange-400" />
+                      Stay active — drops are awarded to consistent participants.
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Toast Popup */}
+              <AnimatePresence>
+                {popup && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[150]
+                               bg-cyan-950/90 border border-cyan-500/50 text-cyan-100
+                               px-6 py-3 rounded-full shadow-[0_0_30px_#00e6ff40]
+                               text-sm font-bold tracking-wide backdrop-blur-xl whitespace-nowrap"
+                  >
+                    {popup}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+            </div>
           </div>
         </motion.div>
       )}
 
-      {/* Claim Boost Popup Overlay - Rendered OUTSIDE the scrolling area so it stays perfectly centered */}
+      {/* Claim Boost Popup - outside scrollable area */}
       <ClaimBoostPopup
         isOpen={isClaimBoostOpen}
         data={claimBoostData}
@@ -639,6 +711,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           }
         }}
       />
+
     </AnimatePresence>
   );
 }
+
