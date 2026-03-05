@@ -20,6 +20,7 @@ import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
+import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -71,6 +72,7 @@ export default function LandingPage() {
   const [isAboutOpen, setAboutOpen] = useState(false);
   const [isRoadmapOpen, setRoadmapOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
+  const [isBwaveScanOpen, setBwaveScanOpen] = useState(false);
 
   // 🔐 Recovery Password State
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
@@ -172,6 +174,7 @@ export default function LandingPage() {
           total_referrals: user.total_referrals ?? 0,
           inactive_referrals_cache: user.inactive_referrals_cache ?? 0,
           streak: user.streak_days ?? 0,
+          bw_id: user.bw_id,
           joined_at: user.joined_at,
         });
 
@@ -356,6 +359,15 @@ export default function LandingPage() {
             setRolesOpen(true);
           }}
           isRolesActive={isRolesOpen}
+          onOpenLedger={() => {
+            setWhitepaperOpen(false);
+            setStatsOpen(false);
+            setPresenceScoreOpen(false);
+            setAboutOpen(false);
+            setRoadmapOpen(false);
+            setRolesOpen(false);
+            setBwaveScanOpen(true);
+          }}
         />
       )}
 
@@ -448,8 +460,14 @@ export default function LandingPage() {
           setWhitepaperOpen(false);
           setPresenceScoreOpen(true);
         }}
-        onOpenLedger={() => {/* implementation for ledger */ }}
-        onOpenFAQ={() => {/* implementation for faq */ }}
+        onOpenLedger={() => {
+          setStatsOpen(false);
+          setBwaveScanOpen(true);
+        }}
+        onOpenFAQ={() => {
+          setStatsOpen(false);
+          // FAQ logic if exists, but for now just placeholder
+        }}
       />
 
       {/* 🎯 Presence Score Overlay */}
@@ -495,6 +513,12 @@ export default function LandingPage() {
         streakDays={streakCelebrationData.days}
         rewardAmount={streakCelebrationData.reward}
         onClose={handleCloseStreakCelebration}
+      />
+
+      <BwaveScanOverlay
+        isOpen={isBwaveScanOpen}
+        onClose={() => setBwaveScanOpen(false)}
+        bwId={telegramUser?.bw_id}
       />
     </div>
   );
