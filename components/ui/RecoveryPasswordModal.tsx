@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Lock, CheckCircle2, AlertTriangle, Key } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle2, AlertTriangle, Key, Eye, EyeOff } from "lucide-react";
 
 interface RecoveryPasswordModalProps {
     isOpen: boolean;
@@ -13,6 +13,8 @@ interface RecoveryPasswordModalProps {
 export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }: RecoveryPasswordModalProps) {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [step, setStep] = useState<"intro" | "form" | "success">("intro");
@@ -132,13 +134,20 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                                     <div className="relative">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
                                         <input
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="Minimum 6 characters"
-                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
+                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(v => !v)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500/50 hover:text-cyan-300 transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -147,13 +156,20 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                                     <div className="relative">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
                                         <input
-                                            type="password"
+                                            type={showConfirm ? "text" : "password"}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Repeat password"
-                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
+                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirm(v => !v)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500/50 hover:text-cyan-300 transition-colors"
+                                        >
+                                            {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
                                     </div>
                                 </div>
 
