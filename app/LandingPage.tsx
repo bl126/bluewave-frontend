@@ -13,10 +13,6 @@ import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
 import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "@/components/ui/TopRightMenu";
 import WhitepaperOverlay from "@/components/WhitepaperOverlay";
-import StatsOverlay from "@/components/ui/StatsOverlay";
-import PresenceScoreOverlay from "@/components/ui/PresenceScoreOverlay";
-import AboutBluewaveOverlay from "@/components/ui/AboutBluewaveOverlay";
-import RoadmapOverlay from "@/components/ui/RoadmapOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
@@ -67,10 +63,6 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
-  const [isStatsOpen, setStatsOpen] = useState(false);
-  const [isPresenceScoreOpen, setPresenceScoreOpen] = useState(false);
-  const [isAboutOpen, setAboutOpen] = useState(false);
-  const [isRoadmapOpen, setRoadmapOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
   const [isBwaveScanOpen, setBwaveScanOpen] = useState(false);
 
@@ -81,7 +73,7 @@ export default function LandingPage() {
   const [isStreakCelebrationOpen, setIsStreakCelebrationOpen] = useState(false);
   const [streakCelebrationData, setStreakCelebrationData] = useState({ days: 0, reward: 0 });
 
-  const isAnyOverlayOpen = isProfileOpen || isAboutOpen || isRoadmapOpen || isPresenceScoreOpen || isStatsOpen || isWhitepaperOpen || isRolesOpen || showRecoveryModal;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -303,71 +295,13 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && !isProfileOpen && !isMissionOpen && !isLeaderboardOpen && (
+      {!onboardingOpen && !isLoading && !isAnyOverlayOpen && (
         <TopRightMenu
-          onOpenWhitepaper={() => {
-            setStatsOpen(false);
-            setPresenceScoreOpen(false);
-            setAboutOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(false);
-            setWhitepaperOpen(true);
-          }}
+          onOpenWhitepaper={() => setWhitepaperOpen(true)}
           isWhitepaperActive={isWhitepaperOpen}
-          onOpenStats={() => {
-            setWhitepaperOpen(false);
-            setPresenceScoreOpen(false);
-            setAboutOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(false);
-            setStatsOpen(true);
-          }}
-          isStatsActive={isStatsOpen}
-          onOpenPresenceScore={() => {
-            setWhitepaperOpen(false);
-            setStatsOpen(false);
-            setAboutOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(false);
-            setPresenceScoreOpen(true);
-          }}
-          isPresenceScoreActive={isPresenceScoreOpen}
-          onOpenAbout={() => {
-            setWhitepaperOpen(false);
-            setStatsOpen(false);
-            setPresenceScoreOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(false);
-            setAboutOpen(true);
-          }}
-          isAboutActive={isAboutOpen}
-          onOpenRoadmap={() => {
-            setWhitepaperOpen(false);
-            setStatsOpen(false);
-            setPresenceScoreOpen(false);
-            setAboutOpen(false);
-            setRolesOpen(false);
-            setRoadmapOpen(true);
-          }}
-          isRoadmapActive={isRoadmapOpen}
-          onOpenRoles={() => {
-            setWhitepaperOpen(false);
-            setStatsOpen(false);
-            setPresenceScoreOpen(false);
-            setAboutOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(true);
-          }}
+          onOpenRoles={() => setRolesOpen(true)}
           isRolesActive={isRolesOpen}
-          onOpenLedger={() => {
-            setWhitepaperOpen(false);
-            setStatsOpen(false);
-            setPresenceScoreOpen(false);
-            setAboutOpen(false);
-            setRoadmapOpen(false);
-            setRolesOpen(false);
-            setBwaveScanOpen(true);
-          }}
+          onOpenLedger={() => setBwaveScanOpen(true)}
         />
       )}
 
@@ -444,48 +378,6 @@ export default function LandingPage() {
       <WhitepaperOverlay
         isOpen={isWhitepaperOpen}
         onClose={() => setWhitepaperOpen(false)}
-      />
-
-      {/* 📊 Stats Overlay */}
-      <StatsOverlay
-        isOpen={isStatsOpen}
-        onClose={() => setStatsOpen(false)}
-        onOpenWhitepaper={() => {
-          setStatsOpen(false);
-          setPresenceScoreOpen(false);
-          setWhitepaperOpen(true);
-        }}
-        onOpenPresenceScore={() => {
-          setStatsOpen(false);
-          setWhitepaperOpen(false);
-          setPresenceScoreOpen(true);
-        }}
-        onOpenLedger={() => {
-          setStatsOpen(false);
-          setBwaveScanOpen(true);
-        }}
-        onOpenFAQ={() => {
-          setStatsOpen(false);
-          // FAQ logic if exists, but for now just placeholder
-        }}
-      />
-
-      {/* 🎯 Presence Score Overlay */}
-      <PresenceScoreOverlay
-        isOpen={isPresenceScoreOpen}
-        onClose={() => setPresenceScoreOpen(false)}
-      />
-
-      {/* ℹ️ About Bluewave Overlay */}
-      <AboutBluewaveOverlay
-        isOpen={isAboutOpen}
-        onClose={() => setAboutOpen(false)}
-      />
-
-      {/* 🗺️ Roadmap Overlay */}
-      <RoadmapOverlay
-        isOpen={isRoadmapOpen}
-        onClose={() => setRoadmapOpen(false)}
       />
 
       {/* 🏆 Roles Overlay */}

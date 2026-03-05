@@ -82,14 +82,9 @@
     "global_list": "Global Network List"
   },
   "menu": {
-    "about": "About Bluewave",
-    "presence_score": "Presence Score",
-    "presence_ledger": "BwaveScan",
-    "ecosystem_roles": "🏆 Ecosystem Roles",
     "whitepaper": "Whitepaper v1.0",
-    "roadmap": "Roadmap",
-    "faq": "FAQ",
-    "stats": "Stats"
+    "ecosystem_roles": "🏆 Ecosystem Roles",
+    "presence_ledger": "BwaveScan"
   },
   "stats": {
     "back": "Back",

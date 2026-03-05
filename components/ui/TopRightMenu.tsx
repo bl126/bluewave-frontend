@@ -5,35 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TopRightMenuProps {
-  onOpenPresenceScore?: () => void;
   onOpenLedger?: () => void;
-  onOpenFAQ?: () => void;
-  onOpenStats?: () => void;
   onOpenWhitepaper?: () => void;
-  onOpenAbout?: () => void;
-  onOpenRoadmap?: () => void;
   isWhitepaperActive?: boolean;
-  isStatsActive?: boolean;
-  isPresenceScoreActive?: boolean;
-  isAboutActive?: boolean;
-  isRoadmapActive?: boolean;
   onOpenRoles?: () => void;
   isRolesActive?: boolean;
 }
 
 export default function TopRightMenu({
-  onOpenPresenceScore,
   onOpenLedger,
-  onOpenFAQ,
-  onOpenStats,
   onOpenWhitepaper,
-  onOpenAbout,
-  onOpenRoadmap,
   isWhitepaperActive,
-  isStatsActive,
-  isPresenceScoreActive,
-  isAboutActive,
-  isRoadmapActive,
   onOpenRoles,
   isRolesActive,
 }: TopRightMenuProps) {
@@ -115,37 +97,16 @@ export default function TopRightMenu({
             >
 
               <MenuItem
-                label={t("menu.about")}
-                onClick={() => { setOpen(false); onOpenAbout?.(); }}
-                isActive={isAboutActive}
-              />
-              <MenuItem
-                label={t("menu.presence_score")}
-                onClick={() => { setOpen(false); onOpenPresenceScore?.(); }}
-                isActive={isPresenceScoreActive}
-              />
-              <MenuItem label={t("menu.presence_ledger")} onClick={() => { setOpen(false); onOpenLedger?.(); }} />
-              <MenuItem
                 label={t("menu.whitepaper")}
                 onClick={() => { setOpen(false); onOpenWhitepaper?.(); }}
                 isActive={isWhitepaperActive}
-              />
-              <MenuItem
-                label={t("menu.roadmap")}
-                onClick={() => { setOpen(false); onOpenRoadmap?.(); }}
-                isActive={isRoadmapActive}
               />
               <MenuItem
                 label={t("menu.ecosystem_roles").replace("🏆 ", "")}
                 onClick={() => { setOpen(false); onOpenRoles?.(); }}
                 isActive={isRolesActive}
               />
-              <MenuItem label={t("menu.faq")} onClick={() => { setOpen(false); onOpenFAQ?.(); }} />
-              <MenuItem
-                label={t("menu.stats")}
-                onClick={() => { setOpen(false); onOpenStats?.(); }}
-                isActive={isStatsActive}
-              />
+              <MenuItem label={t("menu.presence_ledger")} onClick={() => { setOpen(false); onOpenLedger?.(); }} />
             </motion.div>
           </>
         )}
