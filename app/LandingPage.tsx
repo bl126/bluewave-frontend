@@ -398,7 +398,7 @@ export default function LandingPage() {
       )}
 
       {/* 🧭 Navigation Bar */}
-      {!onboardingOpen && (
+      {!onboardingOpen && !isLoading && !isWhitepaperOpen && !isBwaveScanOpen && !isRolesOpen && (
         <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {

@@ -18,7 +18,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl }: Bot
     const tabs = [
         { id: "home", icon: Home, label: t("nav.home") || "Home" },
         { id: "missions", icon: Rocket, label: t("nav.missions") || "Missions" },
-        { id: "leaderboard", icon: BarChart3, label: t("nav.leaderboard") || "Chart" },
+        { id: "leaderboard", icon: BarChart3, label: t("nav.leaderboard") || "Leaderboard" },
         { id: "market", icon: ShoppingCart, label: t("nav.market") || "Market" },
         { id: "profile", idIsProfile: true, label: t("nav.profile") || "Profile" },
     ];

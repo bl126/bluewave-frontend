@@ -229,11 +229,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
           transition={{ duration: 0.3 }}
         >
           {/* Header Bar */}
-          <div className="flex justify-between items-center px-6 py-4 shrink-0 bg-transparent border-b border-white/5">
-            <h2 className="text-cyan-500/80 text-[10px] font-black tracking-[0.4em] uppercase opacity-80">
+          <div className="relative flex items-center justify-end px-6 py-4 shrink-0 bg-transparent border-b border-white/5 min-h-[64px]">
+            <h2 className="absolute left-1/2 -translate-x-1/2 text-cyan-500/80 text-[10px] font-black tracking-[0.4em] uppercase opacity-80">
               {t("nav.profile")}
             </h2>
-            <button onClick={() => setSettingsOpen(true)} className="group">
+            <button onClick={() => setSettingsOpen(true)} className="group z-10">
               <div className="p-1.5 rounded-full bg-cyan-950/20 group-hover:bg-cyan-900/40 transition-colors border border-cyan-900/40 shadow-[0_0_10px_-5px_#22d3ee]">
                 <MoreVertical size={16} className="text-cyan-400 group-hover:text-cyan-200" />
               </div>

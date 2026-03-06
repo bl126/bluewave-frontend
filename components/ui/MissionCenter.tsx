@@ -517,11 +517,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           transition={{ duration: 0.3 }}
         >
           {/* ── Header ── */}
-          <div className="flex justify-between items-center px-6 pt-6 pb-3 shrink-0">
+          <div className="flex justify-center items-center px-6 pt-6 pb-3 shrink-0">
             <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
               {t("missions.title")}
             </h2>
-            <div className="w-10" />
           </div>
 
           {/* ── Tab Bar ── */}

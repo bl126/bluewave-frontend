@@ -92,13 +92,10 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           {/* Floating Header - Consistent with Mission Center */}
-          <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
-
+          <div className="flex justify-center items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
             <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
               {t("leaderboard.title")}
             </h2>
-
-            <div className="w-10"></div> {/* Spacer for center alignment */}
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">

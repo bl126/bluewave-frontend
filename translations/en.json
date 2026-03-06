@@ -40,6 +40,7 @@
     "saving": "Saving..."
   },
   "nav": {
+    "home": "Home",
     "missions": "Missions",
     "leaderboard": "Leaderboard",
     "market": "Market",
@@ -50,7 +51,7 @@
     "connecting": "Connecting..."
   },
   "missions": {
-    "title": "MISSION CENTER",
+    "title": "Mission Center",
     "open": "Open",
     "waiting": "Waiting...",
     "claim": "Claim",
@@ -66,7 +67,7 @@
     "share_button": "Join Bluewave"
   },
   "leaderboard": {
-    "title": "LEADERBOARD",
+    "title": "Leaderboard",
     "loading": "Loading...",
     "error_load": "Could not load leaderboard",
     "you": "YOU",
