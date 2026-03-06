@@ -23,6 +23,7 @@ import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
 import RoleDetailModal from "@/components/ui/RoleDetailModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { mutate } from "swr";
 
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
@@ -38,6 +39,9 @@ export default function LandingPage() {
       try {
         tg.ready();
         tg.expand();
+        if (tg.disableVerticalSwipes) {
+          tg.disableVerticalSwipes();
+        }
         console.log("Telegram WebApp initialized:", tg.initDataUnsafe);
       } catch (e) {
         console.error("WebApp init error:", e);
@@ -130,17 +134,15 @@ export default function LandingPage() {
       return;
     }
 
-    // Fetch user from backend using saved tg_id
+    // Fetch unified initial state from backend
     (async () => {
       try {
-        const res = await fetch(`${apiBase}/api/user/${savedTgId}`);
+        const res = await fetch(`${apiBase}/api/init/${savedTgId}`);
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          if (err.detail === "TOO_FAST") {
+          if (err.detail === "TOO_FAST" || res.status === 429) {
             console.warn("Rate limited. Retrying in 1.2s...");
-            setTimeout(() => {
-              window.location.reload();
-            }, 1200);
+            setTimeout(() => { window.location.reload(); }, 1200);
             return;
           }
           setOnboardingOpen(true);
@@ -148,7 +150,8 @@ export default function LandingPage() {
           return;
         }
 
-        const user = await res.json();
+        const data = await res.json();
+        const user = data.profile;
 
         // If onboarding not completed → force onboarding
         if (!user.first_login_completed) {
@@ -188,26 +191,23 @@ export default function LandingPage() {
           ton_explorer_pending: user.ton_explorer_pending || false,
         });
 
-        // 🔥 Initial check for pending streak reward
+        // 🔥 Initial check for pending rewards from init data
         if (user.streak_reward_pending) {
           setStreakCelebrationData({
             days: user.streak_days || 0,
             reward: user.streak_reward_amount || 0
           });
-          // Small delay to ensure landing state is settled
           setTimeout(() => setIsStreakCelebrationOpen(true), 1500);
         } else if (user.human_verification_pending) {
-          // If no streak, show human verification modal
           setTimeout(() => setIsHumanModalOpen(true), 1500);
         } else if (user.ton_explorer_pending) {
-          // If no human verification, show TON Explorer modal
           setTimeout(() => setIsTONModalOpen(true), 1500);
         }
 
         // Update balance
         setBalance(user.points_balance ?? null);
 
-        // 🔐 Check Recovery Password Status
+        // 🔐 Check Recovery Password Status (Batching this too would be nice, but it's small)
         fetch(`${apiBase}/api/user/has_recovery_password/${tgIdNum}`)
           .then(res => res.json())
           .then(data => {
@@ -217,7 +217,15 @@ export default function LandingPage() {
           })
           .catch(err => console.error("Error checking recovery password:", err));
 
-        // ⭐ OPTIMIZATION: Show UI immediately once user is loaded
+        // ⭐ SEED SWR Cache for instant-open overlays
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        mutate(`${apiUrl}/api/user/${tgIdNum}`, user, false);
+        mutate(`${apiUrl}/api/missions/all/${tgIdNum}`, data.missions, false);
+        mutate(`${apiUrl}/api/presence/list/${tgIdNum}`, data.presence, false);
+        mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
+        mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
+
+        // ⭐ OPTIMIZATION: Show UI immediately once data is loaded
         setIsLoading(false);
       } catch (err) {
         console.error("Error:", err);

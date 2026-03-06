@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useApi } from "@/lib/useApi";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
@@ -160,29 +161,30 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const storyDataRef = useRef<{ poster_url: string; caption: string; ref_link: string } | null>(null);
 
   // [CODE: FETCH_DATA]
-  const loadData = async () => {
-    if (!telegram_id) return;
+  // 1. Fetch Presence Missions
+  const { data: presenceMissionsData, loading: presenceLoading, mutate: mutatePresence } =
+    useApi(telegram_id && isOpen ? `/presence/list/${telegram_id}` : null);
 
-    try {
-      // 1. Fetch Presence Missions
-      const pRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/presence/list/${telegram_id}`);
-      const pData = await pRes.json();
-      if (Array.isArray(pData)) {
-        setPresenceMissions(pData);
-      }
+  // 2. Fetch Normal Missions
+  const { data: missionsData, loading: missionsLoading, mutate: mutateMissions } =
+    useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}` : null);
 
-      // 2. Fetch Normal Missions
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/missions/all/${telegram_id}`);
-      const data = await res.json();
+  useEffect(() => {
+    if (presenceMissionsData) {
+      setPresenceMissions(presenceMissionsData);
+    }
+  }, [presenceMissionsData]);
 
+  useEffect(() => {
+    if (missionsData) {
       let finalList: Mission[] = [];
-      if (data.normal) finalList.push(...data.normal);
-      if (data.daily) finalList.push(...data.daily);
-      if (data.onboarding) finalList.push(...data.onboarding);
-      if (data.story && Object.keys(data.story).length > 0) {
-        finalList.push(data.story);
+      if (missionsData.normal) finalList.push(...missionsData.normal);
+      if (missionsData.daily) finalList.push(...missionsData.daily);
+      if (missionsData.onboarding) finalList.push(...missionsData.onboarding);
+      if (missionsData.story && Object.keys(missionsData.story).length > 0) {
+        finalList.push(missionsData.story);
         // 🚀 PRE-FETCH story deeplink only if NOT DONE
-        if (data.story.status !== "done") {
+        if (missionsData.story.status !== "done" && !storyDataRef.current) {
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`)
             .then(r => r.json())
             .then(dlData => {
@@ -200,17 +202,17 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       });
 
       setMissions(finalList);
-      setLoading(false);
-
-    } catch (e) {
-      console.error(e);
-      setError(t("missions.error_load"));
     }
-  };
+  }, [missionsData, telegram_id]);
 
   useEffect(() => {
-    if (isOpen) loadData();
-  }, [isOpen, telegram_id]);
+    setLoading(presenceLoading || missionsLoading);
+  }, [presenceLoading, missionsLoading]);
+
+  const loadData = async () => {
+    mutatePresence();
+    mutateMissions();
+  };
 
 
   // [CODE: PRESENCE_HANDLERS]

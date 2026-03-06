@@ -5,8 +5,8 @@ import { cacheManager, CACHE_TTL } from "./cacheManager";
 export const fetcher = async (url: string) => {
   // ⭐ Try to get from localStorage cache first (for stable data)
   const cacheKey = new URL(url).pathname + new URL(url).search;
-  
-  if (url.includes("/countries")) {
+
+  if (url.includes("/countries") || url.includes("/leaderboard") || url.includes("/user/")) {
     const cached = cacheManager.get(cacheKey);
     if (cached) {
       console.log("📦 Cache hit:", cacheKey);
@@ -16,7 +16,7 @@ export const fetcher = async (url: string) => {
 
   // Fetch from network (use standard HTTP caching, not no-cache)
   const res = await fetch(url);
-  
+
   if (!res.ok) {
     const err: any = new Error("API error");
     err.status = res.status;
@@ -28,6 +28,10 @@ export const fetcher = async (url: string) => {
   // ⭐ Cache stable data in localStorage
   if (url.includes("/countries")) {
     cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
+  } else if (url.includes("/leaderboard")) {
+    cacheManager.set(cacheKey, data, CACHE_TTL.LEADERBOARD);
+  } else if (url.includes("/user/")) {
+    cacheManager.set(cacheKey, data, CACHE_TTL.USER_PROFILE);
   }
 
   return data;

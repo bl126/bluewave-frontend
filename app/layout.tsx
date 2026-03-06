@@ -11,11 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="h-full">
       <head>
         {/* lets the app use the full visual viewport (iOS safe areas too) */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         {/* ⭐ Telegram Mini App Script (MUST BE HERE) */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-      <body className="h-full overflow-hidden bg-black">
+      <body className="h-full overflow-hidden bg-black selection:bg-cyan-500/30 touch-none overscroll-none">
         <Providers>
           <SnowLayer />
           {children}
