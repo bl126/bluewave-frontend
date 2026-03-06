@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import VerifiedHumanRing from "./VerifiedHumanRing";
 import { useApi } from "@/lib/useApi";
 
 interface LeaderboardProps {
@@ -67,14 +66,6 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
         </div>
       );
     };
-
-    if (isVerifiedHuman) {
-      return (
-        <VerifiedHumanRing size={size === "lg" ? "lg" : size === "md" ? "md" : "sm"}>
-          {renderContent()}
-        </VerifiedHumanRing>
-      );
-    }
 
     return (
       <div className={`${sizeClasses[size]} relative`}>
