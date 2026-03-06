@@ -3,7 +3,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Hammer, MessageCircle, ExternalLink } from "lucide-react";
-import BluewaveGlobe from "./BluewaveGlobe";
 
 export default function MaintenanceOverlay() {
     const telegramLink = "https://t.me/bluewaveprotocol";
@@ -29,24 +28,18 @@ export default function MaintenanceOverlay() {
 
                 <div className="relative p-8 flex flex-col items-center text-center">
 
-                    {/* Pulsing Visual */}
-                    <div className="w-48 h-48 relative mb-6">
-                        <BluewaveGlobe />
+                    {/* Centered Hammer Icon */}
+                    <div className="w-24 h-24 relative mb-6 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-full" />
                         <motion.div
                             animate={{
-                                scale: [1, 1.15, 1],
-                                opacity: [0.5, 0.2, 0.5]
+                                scale: [1, 1.1, 1],
+                                rotate: [0, -10, 0]
                             }}
-                            transition={{ duration: 4, repeat: Infinity }}
-                            className="absolute inset-4 border border-cyan-400/30 rounded-full blur-md"
-                        />
-                        {/* Maintenance Icon Tag */}
-                        <motion.div
-                            animate={{ y: [0, -5, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="absolute -bottom-2 -right-2 bg-cyan-500 text-black p-3 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative z-10 bg-cyan-500 text-black p-5 rounded-3xl shadow-[0_0_30px_rgba(6,182,212,0.5)]"
                         >
-                            <Hammer size={24} strokeWidth={2.5} />
+                            <Hammer size={40} strokeWidth={2.5} />
                         </motion.div>
                     </div>
 
