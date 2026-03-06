@@ -49,20 +49,8 @@ export default function LandingPage() {
     }
   }, []);
 
-  // [CODE: FRONTEND_BROWSER_BLOCK]
-  // ❗ Block users opening in browser – Bluewave is Telegram-only
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const tg = (window as any).Telegram?.WebApp;
-    // ❗ If not in Telegram, we show the onboarding but don't use blocking alert()
-    if (!tg) {
-      console.warn("Bluewave should be opened inside Telegram.");
-      setOnboardingOpen(true);
-    }
-  }, []);
-
   // [CODE: FRONTEND_STATE_MANAGEMENT]
-  // 👤 Store Telegram user info (manual onboarding, not Telegram init)
+  // 👤 Store Telegram user info
   const [telegramUser, setTelegramUser] = useState<any>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [isMissionOpen, setMissionOpen] = useState(false);
@@ -97,46 +85,36 @@ export default function LandingPage() {
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
-  // ⭐ Pull username + id from Telegram InitData, preload into state
-  useEffect(() => {
-    try {
-      const tg = (window as any).Telegram?.WebApp;
-      const tgUser = tg?.initDataUnsafe?.user;
-      if (tgUser) {
-        const autoUsername = tgUser.username?.toLowerCase() || `bw_user_${tgUser.id}`;
-        setTelegramUser({
-          id: tgUser.id,
-          tg_id: tgUser.id,
-          username: autoUsername,
-          first_name: tgUser.first_name,
-          last_name: tgUser.last_name,
-          photo_url: tgUser.photo_url || null,
-        });
-
-        // Pre-store for onboarding to pick up
-        window.localStorage.setItem("bw_tg_id", String(tgUser.id));
-      }
-    } catch (e) {
-      console.log("TG InitData error:", e);
-    }
-  }, []);
-
-  // 🔥 NEW: Check onboarding status using localStorage + Supabase
+  // ⭐ Unified Initialization: Profile + Auth + Data Preloading
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const savedTgId = window.localStorage.getItem("bw_tg_id");
-
-    // No saved ID → force onboarding
-    if (!savedTgId) {
-      setOnboardingOpen(true);
-      setIsLoading(false);
-      return;
-    }
-
-    // Fetch unified initial state from backend
     (async () => {
       try {
+        const tg = (window as any).Telegram?.WebApp;
+        const tgUser = tg?.initDataUnsafe?.user;
+
+        // 1. Determine Telegram ID (Prioritize live WebApp data)
+        let effectiveTgId = tgUser?.id || window.localStorage.getItem("bw_tg_id");
+
+        if (!effectiveTgId) {
+          // In some cases (slow script load), wait a bit and try again once
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const retryTg = (window as any).Telegram?.WebApp;
+          effectiveTgId = retryTg?.initDataUnsafe?.user?.id || window.localStorage.getItem("bw_tg_id");
+        }
+
+        if (!effectiveTgId) {
+          console.warn("No Telegram ID found. Redirecting to onboarding...");
+          setOnboardingOpen(true);
+          setIsLoading(false);
+          return;
+        }
+
+        const savedTgId = String(effectiveTgId);
+
+        // 2. Fetch unified initial state from backend
+        // This endpoint returns { profile, missions, presence, leaderboard }
         const res = await fetch(`${apiBase}/api/init/${savedTgId}`);
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -145,6 +123,7 @@ export default function LandingPage() {
             setTimeout(() => { window.location.reload(); }, 1200);
             return;
           }
+          // User not found or DB error -> show onboarding
           setOnboardingOpen(true);
           setIsLoading(false);
           return;
@@ -153,20 +132,20 @@ export default function LandingPage() {
         const data = await res.json();
         const user = data.profile;
 
-        // If onboarding not completed → force onboarding
+        // 3. If onboarding not completed in DB -> force onboarding
         if (!user.first_login_completed) {
           setOnboardingOpen(true);
           setIsLoading(false);
           return;
         }
 
-        // Otherwise login success
+        // 4. Success Logged In -> Prepare App State
         const tgIdNum = Number(savedTgId);
+        window.localStorage.setItem("bw_tg_id", savedTgId);
 
-        // ⭐ SYNC fresh Telegram photo to backend DB if available
-        const tg = (window as any).Telegram?.WebApp;
+        // SYNC fresh Telegram photo if available
         const livePhoto = tg?.initDataUnsafe?.user?.photo_url;
-        if (livePhoto) {
+        if (livePhoto && livePhoto !== user.photo_url) {
           fetch(`${apiBase}/api/user/update_profile`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -174,12 +153,13 @@ export default function LandingPage() {
           }).catch(err => console.error("Photo sync error:", err));
         }
 
+        // Populate global state
         setTelegramUser({
           id: tgIdNum,
           tg_id: tgIdNum,
           username: user.username,
-          first_name: user.name,
-          photo_url: livePhoto || user.photo_url || null, // prefer live, then DB, then null
+          first_name: tg?.initDataUnsafe?.user?.first_name || user.name,
+          photo_url: livePhoto || user.photo_url || null,
           points_balance: user.points_balance ?? 0,
           referral_earnings_pending: user.referral_earnings_pending ?? 0,
           total_referrals: user.total_referrals ?? 0,
@@ -204,10 +184,9 @@ export default function LandingPage() {
           setTimeout(() => setIsTONModalOpen(true), 1500);
         }
 
-        // Update balance
         setBalance(user.points_balance ?? null);
 
-        // 🔐 Check Recovery Password Status (Batching this too would be nice, but it's small)
+        // Invalidate cache for sub-queries
         fetch(`${apiBase}/api/user/has_recovery_password/${tgIdNum}`)
           .then(res => res.json())
           .then(data => {
@@ -217,7 +196,7 @@ export default function LandingPage() {
           })
           .catch(err => console.error("Error checking recovery password:", err));
 
-        // ⭐ SEED SWR Cache for instant-open overlays
+        // ⭐ SEED SWR Cache
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         mutate(`${apiUrl}/api/user/${tgIdNum}`, user, false);
         mutate(`${apiUrl}/api/missions/all/${tgIdNum}`, data.missions, false);
@@ -225,15 +204,17 @@ export default function LandingPage() {
         mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
         mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
 
-        // ⭐ OPTIMIZATION: Show UI immediately once data is loaded
+        // All ready
         setIsLoading(false);
       } catch (err) {
-        console.error("Error:", err);
+        console.error("Initialization error:", err);
         setOnboardingOpen(true);
         setIsLoading(false);
       }
     })();
   }, [apiBase]);
+
+  // Remove the redundant browser block useEffect (merged above)
 
   // [CODE: FRONTEND_EVENT_LISTENERS]
   useEffect(() => {
