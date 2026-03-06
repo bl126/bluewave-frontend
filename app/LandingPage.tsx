@@ -24,6 +24,7 @@ import RoleDetailModal from "@/components/ui/RoleDetailModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
+import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
@@ -81,7 +82,10 @@ export default function LandingPage() {
   // 🏆 Role Detail Modal State
   const [selectedRoleData, setSelectedRoleData] = useState<any>(null);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isTONModalOpen || isStreakCelebrationOpen;
+  // 🛡️ Maintenance State
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -132,7 +136,15 @@ export default function LandingPage() {
         const data = await res.json();
         const user = data.profile;
 
-        // 3. If onboarding not completed in DB -> force onboarding
+        // 3. Maintenance Check (Bypass for Admins)
+        const ADMIN_IDS = [5023869471]; // Primary Admin
+        if (data.maintenance && !ADMIN_IDS.includes(Number(savedTgId))) {
+          setIsMaintenanceMode(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // 4. If onboarding not completed in DB -> force onboarding
         if (!user.first_login_completed) {
           setOnboardingOpen(true);
           setIsLoading(false);
@@ -425,6 +437,10 @@ export default function LandingPage() {
       )}
 
       {/* 🌀 Loading Screen */}
+      <AnimatePresence>
+        {isMaintenanceMode && <MaintenanceOverlay key="maintenance" />}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isLoading && (
           <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1 }} className="fixed inset-0 z-[100]">
