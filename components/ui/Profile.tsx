@@ -424,38 +424,32 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     )}
 
                     {activeTab === "roles" && (
-                      <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-6">
-                        <div className="flex items-center gap-2">
-                          <Award size={16} className="text-cyan-400" />
-                          <h3 className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.roles")}</h3>
-                        </div>
-                        <div className="min-h-[200px] border border-cyan-950/50 bg-black/20 rounded-2xl p-4">
-                          {!user.roles || user.roles.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center gap-3">
-                              <ShieldCheck size={40} className="text-cyan-900/40" />
-                              <span className="text-cyan-500/20 text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles")}</span>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-3 gap-3">
-                              {user.roles.map((role: string) => (
-                                <button
-                                  key={role}
-                                  onClick={() => onOpenRoles(role)}
-                                  className="group relative aspect-square bg-cyan-500/5 border border-cyan-500/10 rounded-2xl hover:bg-cyan-500/10 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 p-2"
-                                >
-                                  <div className="p-2 rounded-full bg-cyan-400/10 text-cyan-400 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-                                    <UserCheck size={18} />
-                                  </div>
-                                  <span className="text-[8px] font-black text-cyan-400 uppercase tracking-tighter text-center leading-none">
-                                    {role.split(' ').map((word, i) => (
-                                      <span key={i} className="block">{word}</span>
-                                    ))}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                      <div className="py-4">
+                        {!user.roles || user.roles.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center gap-3 py-10 opacity-30">
+                            <ShieldCheck size={40} />
+                            <span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles")}</span>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-3">
+                            {user.roles.map((role: string) => (
+                              <button
+                                key={role}
+                                onClick={() => onOpenRoles(role)}
+                                className="group relative aspect-square bg-cyan-500/5 border border-cyan-500/10 rounded-2xl hover:bg-cyan-500/10 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg"
+                              >
+                                <div className="p-2 rounded-full bg-cyan-400/10 text-cyan-400 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                                  <UserCheck size={18} />
+                                </div>
+                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-tighter text-center leading-none">
+                                  {role.split(' ').map((word, i) => (
+                                    <span key={i} className="block">{word}</span>
+                                  ))}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
