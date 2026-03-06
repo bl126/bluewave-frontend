@@ -230,11 +230,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
         >
           {/* Header Bar */}
           <div className="flex justify-between items-center px-6 py-4 shrink-0 bg-transparent border-b border-white/5">
-            <button onClick={onClose} className="group">
-              <div className="p-1.5 rounded-full bg-cyan-950/20 group-hover:bg-cyan-900/40 transition-colors border border-cyan-900/40 shadow-[0_0_10px_-5px_#22d3ee]">
-                <ArrowLeft size={16} className="text-cyan-400 group-hover:text-cyan-200" />
-              </div>
-            </button>
             <h2 className="text-cyan-500/80 text-[10px] font-black tracking-[0.4em] uppercase opacity-80">
               {t("nav.profile")}
             </h2>
@@ -246,7 +241,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
           </div>
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="max-w-md mx-auto w-full px-6 pt-6 pb-24">
+            <div className="max-w-md mx-auto w-full px-6 pt-6 pb-32">
               {loading && !user && (
                 <div className="flex flex-col items-center justify-center pt-20 gap-4">
                   <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />

@@ -9,7 +9,8 @@ import Leaderboard from "@/components/ui/Leaderboard";
 import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
 import OnboardingModal from "@/components/ui/OnboardingModal";
-import { Wallet, Rocket, Trophy, Store, User } from "lucide-react";
+import { Wallet } from "lucide-react";
+import BottomNav, { TabId } from "@/components/ui/BottomNav";
 import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "@/components/ui/TopRightMenu";
 import WhitepaperOverlay from "@/components/WhitepaperOverlay";
@@ -69,6 +70,7 @@ export default function LandingPage() {
   const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
   const [selectedRoleName, setSelectedRoleName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("home");
   const [isBwaveScanOpen, setBwaveScanOpen] = useState(false);
 
   // 🔐 Recovery Password State
@@ -397,47 +399,35 @@ export default function LandingPage() {
 
       {/* 🧭 Navigation Bar */}
       {!onboardingOpen && (
-        <motion.div
-          initial={{ y: 60, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="absolute left-1/2 -translate-x-1/2 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30
-                     flex items-center justify-around w-[92%] max-w-sm bg-black/50 backdrop-blur-md
-                     rounded-2xl p-2 shadow-[0_0_20px_#00e6ff30] border border-cyan-900"
-        >
-          <button onClick={() => setMissionOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Rocket size={18} /> {t("nav.missions")}
-          </button>
-
-          <button onClick={() => setLeaderboardOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Trophy size={18} /> {t("nav.leaderboard")}
-          </button>
-
-          <button onClick={() => setMarketOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <Store size={18} /> {t("nav.market")}
-          </button>
-
-          <button onClick={() => setProfileOpen(true)} className="flex flex-col items-center text-xs text-cyan-400 hover:text-cyan-200">
-            <User size={18} /> {t("nav.profile")}
-          </button>
-        </motion.div>
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            // Sync legacy booleans for lazy-rendering compatibility
+            setMissionOpen(tab === "missions");
+            setLeaderboardOpen(tab === "leaderboard");
+            setMarketOpen(tab === "market");
+            setProfileOpen(tab === "profile");
+          }}
+          userAvatarUrl={telegramUser?.photo_url}
+        />
       )}
 
       {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
       {isMissionOpen && (
-        <MissionCenter isOpen={isMissionOpen} onClose={() => setMissionOpen(false)} telegramUser={telegramUser} />
+        <MissionCenter isOpen={isMissionOpen} onClose={() => { setMissionOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
       )}
       {isLeaderboardOpen && (
-        <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setLeaderboardOpen(false)} telegramUser={telegramUser} />
+        <Leaderboard isOpen={isLeaderboardOpen} onClose={() => { setLeaderboardOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
       )}
       {isMarketOpen && (
-        <Marketplace isOpen={isMarketOpen} onClose={() => setMarketOpen(false)} />
+        <Marketplace isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} />
       )}
       {isProfileOpen && (
-        <Profile 
-          isOpen={isProfileOpen} 
-          onClose={() => setProfileOpen(false)} 
-          telegramUser={telegramUser} 
+        <Profile
+          isOpen={isProfileOpen}
+          onClose={() => { setProfileOpen(false); setActiveTab("home"); }}
+          telegramUser={telegramUser}
           onOpenRoles={(roleName: string) => {
             const role = findRoleByName(roleName);
             if (role) setSelectedRoleData(role);

@@ -518,11 +518,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         >
           {/* ── Header ── */}
           <div className="flex justify-between items-center px-6 pt-6 pb-3 shrink-0">
-            <button onClick={onClose} className="group">
-              <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
-                <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
-              </div>
-            </button>
             <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
               {t("missions.title")}
             </h2>
@@ -570,7 +565,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
           {/* ── Tab Content ── */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-md mx-auto w-full px-6 pb-24 space-y-4 pt-2">
+            <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
 
               {/* PRESENCE TAB */}
               {activeTab === "presence" && (

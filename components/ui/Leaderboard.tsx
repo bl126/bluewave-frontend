@@ -93,14 +93,6 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
         >
           {/* Floating Header - Consistent with Mission Center */}
           <div className="flex justify-between items-center p-6 sticky top-0 z-50 bg-transparent pointer-events-none">
-            <button
-              onClick={onClose}
-              className="group pointer-events-auto"
-            >
-              <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
-                <ArrowLeft size={20} className="text-cyan-400 group-hover:text-cyan-200" />
-              </div>
-            </button>
 
             <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
               {t("leaderboard.title")}
