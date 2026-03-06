@@ -135,7 +135,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
 
                             {/* Close Label */}
                             <p className="mt-6 text-[10px] text-cyan-900 font-bold uppercase tracking-widest">
-                                Keep the wave moving 🌊
+                                Keep the wave moving
                             </p>
                         </div>
 
