@@ -93,7 +93,8 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -50, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="fixed top-[env(safe-area-inset-top,10px)] left-1/2 -translate-x-1/2 z-[150] mt-2"
+                    className="fixed left-1/2 -translate-x-1/2 z-[150] mt-2"
+                    style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 8px)" }}
                 >
                     <motion.button
                         onClick={() => setIsExpanded(true)}

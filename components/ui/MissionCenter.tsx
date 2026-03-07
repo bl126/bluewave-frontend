@@ -515,8 +515,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col text-cyan-200
-                     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col text-cyan-200"
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.02 }}

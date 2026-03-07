@@ -55,7 +55,10 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
             {/* Navigation Bar */}
-            <div className="flex justify-between items-center p-4 sticky top-0 z-50 bg-black/60 backdrop-blur-xl">
+            <div
+              className="flex justify-between items-center px-4 pt-4 pb-2 sticky top-0 z-50 bg-black/60 backdrop-blur-xl"
+              style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 8px)" }}
+            >
               <button
                 onClick={onClose}
                 className="p-2 -ml-2 rounded-full active:bg-white/10 transition-colors"
@@ -68,7 +71,7 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
               {/* Header & Intro */}
               <div className="space-y-4 pt-2">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tight text-center">Ecosystem Roles</h2>
-                
+
                 <div className="text-sm leading-relaxed space-y-4 bg-cyan-950/20 p-5 rounded-2xl border border-cyan-500/20">
                   <p className="text-white/80">
                     <strong className="text-cyan-300">Role credentials are protocol-level attributes</strong> permanently bound to your BW ID. Each role carries a yield multiplier that applies automatically across every reward event in the Bluewave Ecosystem.

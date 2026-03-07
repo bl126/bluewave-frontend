@@ -44,7 +44,8 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[200] bg-black flex flex-col pt-[env(safe-area-inset-top)]"
+                    className="fixed inset-0 z-[200] bg-black flex flex-col"
+                    style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))" }}
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
