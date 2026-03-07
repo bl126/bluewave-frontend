@@ -102,7 +102,15 @@ export default function LandingPage() {
     if (!tg?.BackButton) return;
 
     const handleBack = () => {
-      // Close all overlays and return to home
+      if (isBwaveScanOpen) {
+        setBwaveScanOpen(false);
+        return;
+      }
+      if (isRolesOpen) {
+        setRolesOpen(false);
+        return;
+      }
+      // Close all other overlays and return to home
       setMissionOpen(false);
       setLeaderboardOpen(false);
       setMarketOpen(false);
@@ -124,7 +132,7 @@ export default function LandingPage() {
     return () => {
       tg.BackButton.offClick(handleBack);
     };
-  }, [isAnyOverlayOpen]);
+  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 

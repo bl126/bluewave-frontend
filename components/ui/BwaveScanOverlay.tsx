@@ -45,7 +45,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
             {isOpen && (
                 <motion.div
                     className="fixed inset-0 z-[200] bg-black flex flex-col"
-                    style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))" }}
+                    style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 35px)" }}
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
@@ -82,12 +82,6 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                                 title="Open in Browser"
                             >
                                 <ExternalLink size={18} />
-                            </button>
-                            <button
-                                onClick={onClose}
-                                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
-                            >
-                                <X size={20} />
                             </button>
                         </div>
                     </div>

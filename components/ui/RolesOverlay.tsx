@@ -49,24 +49,12 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
         {isOpen && (
           <motion.div
             className="fixed inset-0 z-[100] bg-black backdrop-blur-3xl flex flex-col overflow-y-auto"
+            style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 25px)" }}
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            {/* Navigation Bar */}
-            <div
-              className="flex justify-between items-center px-4 pt-4 pb-2 sticky top-0 z-50 bg-black/60 backdrop-blur-xl"
-              style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 8px)" }}
-            >
-              <button
-                onClick={onClose}
-                className="p-2 -ml-2 rounded-full active:bg-white/10 transition-colors"
-              >
-                <ArrowLeft size={24} className="text-cyan-400" />
-              </button>
-            </div>
-
             <div className="max-w-2xl mx-auto w-full p-6 pb-24 flex flex-col gap-10">
               {/* Header & Intro */}
               <div className="space-y-4 pt-2">
@@ -135,7 +123,7 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence >
 
       <RoleDetailModal role={selectedRole} onClose={() => setSelectedRole(null)} />
     </>
