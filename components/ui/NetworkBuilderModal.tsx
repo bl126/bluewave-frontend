@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Award, Users, ShieldCheck, Sparkles, Network } from "lucide-react";
+import { X, Award, Users, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface NetworkBuilderModalProps {
@@ -74,7 +74,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
                                     animate={{ rotate: 0, scale: 1 }}
                                     transition={{ delay: 0.2, type: "spring" }}
                                 >
-                                    <Network size={48} className="text-white" />
+                                    <Target size={48} className="text-white" />
                                 </motion.div>
 
                                 {/* Floating particles */}
@@ -102,7 +102,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
                                 >
-                                    Congratulations! You've successfully built a network of 10+ active humans.
+                                    Congratulations! You've successfully built a network of 10+ humans.
                                     Your influence in the ecosystem is growing!
                                 </motion.p>
                             </div>
@@ -129,7 +129,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
                                     </div>
                                     <div>
                                         <h4 className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Network Size</h4>
-                                        <p className="text-white text-xs font-bold leading-none">10+ Active Human Nodes</p>
+                                        <p className="text-white text-xs font-bold leading-none">10+ Human Nodes</p>
                                     </div>
                                 </div>
                             </motion.div>

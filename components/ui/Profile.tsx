@@ -9,6 +9,7 @@ import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
+import { findRoleByName } from "@/lib/roles";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -421,22 +422,26 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                           </div>
                         ) : (
                           <div className="grid grid-cols-3 gap-3">
-                            {user.roles.map((role: string) => (
-                              <button
-                                key={role}
-                                onClick={() => onOpenRoles(role)}
-                                className="group relative aspect-square bg-cyan-500/5 border border-cyan-500/10 rounded-2xl hover:bg-cyan-500/10 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg"
-                              >
-                                <div className="p-2 rounded-full bg-cyan-400/10 text-cyan-400 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-                                  <UserCheck size={18} />
-                                </div>
-                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-tighter text-center leading-none">
-                                  {role.split(' ').map((word, i) => (
-                                    <span key={i} className="block">{word}</span>
-                                  ))}
-                                </span>
-                              </button>
-                            ))}
+                            {user.roles.map((role: string) => {
+                              const roleData = findRoleByName(role);
+                              const Icon = roleData?.icon || UserCheck;
+                              return (
+                                <button
+                                  key={role}
+                                  onClick={() => onOpenRoles(role)}
+                                  className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-cyan-500/5 to-cyan-500/5'} border ${roleData?.border || 'border-cyan-500/10'} rounded-2xl active:scale-95 transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}
+                                >
+                                  <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-cyan-400'} group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]`}>
+                                    <Icon size={18} />
+                                  </div>
+                                  <span className={`text-[8px] font-black ${roleData?.text || 'text-cyan-400'} uppercase tracking-tighter text-center leading-none`}>
+                                    {role.split(' ').map((word, i) => (
+                                      <span key={i} className="block">{word}</span>
+                                    ))}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
