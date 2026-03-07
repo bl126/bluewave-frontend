@@ -26,6 +26,7 @@ import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
+import BalancePill from "@/components/ui/BalancePill";
 
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
@@ -415,22 +416,12 @@ export default function LandingPage() {
         />
       )}
 
-      {/* 💰 Top-left Balance */}
-      {!onboardingOpen && (
-        <div className="absolute top-4 left-4 z-[60] flex items-center gap-2 text-cyan-400 font-semibold text-sm">
-          <Wallet size={16} />
-          <span>
-            {balance !== null
-              ? `${balance.toLocaleString()} $BWAVE`
-              : telegramUser
-                ? t("balance.loading")
-                : (
-                  <span className="text-cyan-400 animate-pulse">
-                    {t("balance.connecting")}
-                  </span>
-                )}
-          </span>
-        </div>
+      {/* 💰 Floating Balance Pill */}
+      {!onboardingOpen && !isLoading && (
+        <BalancePill
+          balance={balance}
+          isVisible={!isWhitepaperOpen && !isBwaveScanOpen}
+        />
       )}
 
       {/* 🧭 Navigation Bar */}
