@@ -84,16 +84,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-2xl flex flex-col text-cyan-200"
+          className={`fixed inset-0 bg-black/90 backdrop-blur-2xl flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen ? 'z-[210]' : 'z-[120]'}`}
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          {/* Floating Header Removed */}
-
-          <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar">
             {loading && !data && (
               <div className="flex flex-col items-center justify-center h-full space-y-4 animate-pulse">
                 <div className="w-20 h-20 bg-cyan-900/20 rounded-full border border-cyan-900/40"></div>
