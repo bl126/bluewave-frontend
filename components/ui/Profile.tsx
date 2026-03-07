@@ -232,13 +232,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Floating Settings Button */}
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="absolute top-6 right-6 z-[130] p-2 rounded-full bg-black/20 border border-white/5 backdrop-blur-md text-cyan-500/50 hover:text-cyan-400 transition-all active:scale-95"
-          >
-            <MoreVertical size={20} />
-          </button>
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <div className="max-w-md mx-auto w-full px-6 pt-6 pb-32">
@@ -322,16 +315,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: -4, scale: 0.95 }}
                               transition={{ duration: 0.15 }}
-                              className="absolute bottom-8 right-0 w-48 z-[50] bg-black/80 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff20] overflow-hidden"
+                              className="absolute top-8 right-0 w-44 z-[50] bg-black/80 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff20] overflow-hidden"
                             >
                               <button
                                 onClick={() => {
                                   setMenuOpen(false);
                                   onOpenEcosystemRoles?.();
                                 }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
                               >
-                                <Award size={13} className="text-cyan-400" />
                                 Ecosystem Roles
                               </button>
                               <button
@@ -340,9 +332,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                   onClose();
                                   setTimeout(() => onOpenBwaveScan?.(), 300);
                                 }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
                               >
-                                <Info size={13} className="text-cyan-400" />
                                 BwaveScan
                               </button>
                               <button
@@ -350,9 +341,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                   setMenuOpen(false);
                                   setSettingsOpen(true);
                                 }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
                               >
-                                <ShieldCheck size={13} className="text-cyan-400" />
                                 Settings
                               </button>
                             </motion.div>
