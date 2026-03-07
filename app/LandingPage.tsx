@@ -9,8 +9,8 @@ import Leaderboard from "@/components/ui/Leaderboard";
 import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
 import OnboardingModal from "@/components/ui/OnboardingModal";
-import { Wallet } from "lucide-react";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
+
 import LoadingScreen from "./LoadingScreen";
 import TopRightMenu from "@/components/ui/TopRightMenu";
 import WhitepaperOverlay from "@/components/WhitepaperOverlay";

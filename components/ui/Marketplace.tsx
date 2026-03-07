@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+
 
 interface MarketplaceProps {
   isOpen: boolean;
@@ -21,32 +21,36 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-cyan-400 transition-colors z-[130]"
-            >
-              <X size={20} />
-            </button>
-
             {/* content */}
-            <div className="flex flex-col items-center justify-center h-full w-full gap-4 relative">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,230,255,0.05)_0%,transparent_50%)] pointer-events-none" />
+            <div className="flex flex-col items-center justify-center h-full w-full gap-6 relative px-4">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,230,255,0.03)_0%,transparent_60%)] pointer-events-none" />
 
-              <h3 className="text-xl md:text-2xl font-black text-cyan-300 uppercase tracking-widest leading-relaxed px-4">
-                Exchange your presence for value
-              </h3>
+              {/* Skeleton Grid */}
+              <div className="w-full max-w-sm flex flex-col gap-4 opacity-40 animate-pulse">
+                {/* Simulated Tabs */}
+                <div className="flex justify-center gap-3 w-full mb-2">
+                  <div className="h-6 w-20 rounded-full bg-cyan-900/40 border border-cyan-800/30"></div>
+                  <div className="h-6 w-24 rounded-full bg-cyan-900/20 border border-cyan-800/20"></div>
+                  <div className="h-6 w-16 rounded-full bg-cyan-900/20 border border-cyan-800/20"></div>
+                </div>
 
-              <motion.div
-                className="px-6 py-2 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 font-bold text-sm tracking-wider uppercase mt-2 shadow-[0_0_20px_#00e6ff20]"
-                animate={{
-                  boxShadow: ["0 0 10px #00e6ff10", "0 0 20px #00e6ff40", "0 0 10px #00e6ff10"],
-                  opacity: [0.8, 1, 0.8]
-                }}
+                {/* Simulated Square Grid */}
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="aspect-square rounded-2xl bg-cyan-950/30 border border-cyan-800/20"></div>
+                  <div className="aspect-square rounded-2xl bg-cyan-950/30 border border-cyan-800/20"></div>
+                  <div className="aspect-square rounded-2xl bg-cyan-950/30 border border-cyan-800/20"></div>
+                  <div className="aspect-square rounded-2xl bg-cyan-950/30 border border-cyan-800/20"></div>
+                </div>
+              </div>
+
+              {/* Tiny Status Text */}
+              <motion.p
+                className="text-[10px] sm:text-xs text-cyan-500/80 font-semibold tracking-widest uppercase mt-4"
+                animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                Coming soon in beta
-              </motion.div>
+                in beta phase
+              </motion.p>
             </div>
           </motion.div>
         </>

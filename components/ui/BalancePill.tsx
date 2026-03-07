@@ -93,24 +93,26 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -50, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="fixed top-[env(safe-area-inset-top,10px)] left-1/2 -translate-x-1/2 z-[70] mt-4"
+                    className="fixed top-[env(safe-area-inset-top,10px)] left-1/2 -translate-x-1/2 z-[150] mt-2"
                 >
                     <motion.button
                         onClick={() => setIsExpanded(true)}
                         layout
+                        whileTap={{ scale: 0.95 }}
                         className="flex items-center justify-center bg-black/40 backdrop-blur-xl border border-cyan-500/30 
                        text-cyan-400 font-black shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden"
                         animate={{
                             borderRadius: isExpanded ? "16px" : "9999px",
-                            padding: isExpanded ? "8px 24px" : "6px 16px",
+                            padding: isExpanded ? "6px 16px" : "4px 12px",
+                            scale: isExpanded ? 1.05 : 1,
                         }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     >
-                        <motion.span layout="position" className="tracking-wider whitespace-nowrap">
+                        <motion.span layout="position" className="tracking-wider whitespace-nowrap text-xs">
                             {balance !== null ? (
                                 <>
                                     {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}{" "}
-                                    <span className="text-[10px] sm:text-xs tracking-widest text-cyan-200/80">$BWAVE</span>
+                                    <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-200/80">$BWAVE</span>
                                 </>
                             ) : (
                                 <span className="animate-pulse">...</span>
