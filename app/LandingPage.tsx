@@ -21,6 +21,7 @@ import VerifiedHumanModal from "@/components/ui/VerifiedHumanModal";
 import TONExplorerModal from "@/components/ui/TONExplorerModal";
 import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
 import RoleDetailModal from "@/components/ui/RoleDetailModal";
+import NetworkBuilderModal from "@/components/ui/NetworkBuilderModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
@@ -76,8 +77,12 @@ export default function LandingPage() {
   // 🛡️ Human Verification State
   const [isHumanModalOpen, setIsHumanModalOpen] = useState(false);
 
+  // 🌐 Network Builder State
+  const [isNetworkBuilderModalOpen, setIsNetworkBuilderModalOpen] = useState(false);
+
   // 💎 TON Explorer State
   const [isTONModalOpen, setIsTONModalOpen] = useState(false);
+
 
   // 🏆 Role Detail Modal State
   const [selectedRoleData, setSelectedRoleData] = useState<any>(null);
@@ -85,7 +90,7 @@ export default function LandingPage() {
   // 🛡️ Maintenance State
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -180,6 +185,7 @@ export default function LandingPage() {
           bw_id: user.bw_id,
           joined_at: user.joined_at,
           human_verification_pending: user.human_verification_pending || false,
+          network_builder_pending: user.network_builder_pending || false,
           ton_explorer_pending: user.ton_explorer_pending || false,
         });
 
@@ -192,6 +198,8 @@ export default function LandingPage() {
           setTimeout(() => setIsStreakCelebrationOpen(true), 1500);
         } else if (user.human_verification_pending) {
           setTimeout(() => setIsHumanModalOpen(true), 1500);
+        } else if (user.network_builder_pending) {
+          setTimeout(() => setIsNetworkBuilderModalOpen(true), 1500);
         } else if (user.ton_explorer_pending) {
           setTimeout(() => setIsTONModalOpen(true), 1500);
         }
@@ -240,11 +248,17 @@ export default function LandingPage() {
       setIsHumanModalOpen(true);
     };
 
+    const handleNetworkPop = () => {
+      setIsNetworkBuilderModalOpen(true);
+    };
+
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
+    window.addEventListener('showNetworkBuilder' as any, handleNetworkPop);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
       window.removeEventListener('showHumanVerification' as any, handleHumanPop);
+      window.removeEventListener('showNetworkBuilder' as any, handleNetworkPop);
     };
   }, []);
 
@@ -278,13 +292,34 @@ export default function LandingPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ telegram_id: telegramUser.tg_id })
         });
-        // After human verification, check if there's a pending TON explorer reward
-        if (telegramUser.ton_explorer_pending) {
+        // After human verification, check if there's a pending Network Builder reward
+        if (telegramUser.network_builder_pending) {
+          setTimeout(() => setIsNetworkBuilderModalOpen(true), 500);
+        } else if (telegramUser.ton_explorer_pending) {
           setTimeout(() => setIsTONModalOpen(true), 500);
         }
       }
     } catch (e) {
       console.error("Clear human verification error:", e);
+    }
+  };
+
+  const handleClearNetworkBuilder = async () => {
+    setIsNetworkBuilderModalOpen(false);
+    try {
+      if (telegramUser?.tg_id) {
+        await fetch(`${apiBase}/api/user/clear_network_builder_celebration`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
+        });
+        // After network builder, check if there's a pending TON explorer reward
+        if (telegramUser.ton_explorer_pending) {
+          setTimeout(() => setIsTONModalOpen(true), 500);
+        }
+      }
+    } catch (e) {
+      console.error("Clear network builder error:", e);
     }
   };
 
@@ -494,6 +529,12 @@ export default function LandingPage() {
       <VerifiedHumanModal
         isOpen={isHumanModalOpen}
         onClose={handleClearHumanVerification}
+      />
+
+      {/* 🌐 Network Builder Modal */}
+      <NetworkBuilderModal
+        isOpen={isNetworkBuilderModalOpen}
+        onClose={handleClearNetworkBuilder}
       />
 
       {/* 💎 TON Explorer Modal */}
