@@ -1,52 +1,29 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BluButton() {
     const [isOpen, setIsOpen] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [snapEdge, setSnapEdge] = useState<"left" | "right">("left");
-    const [yFraction, setYFraction] = useState(0.15); // 15% from top
 
-    const handleDragEnd = (_: any, info: any) => {
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-
-        const finalX = info.point.x;
-        const finalY = Math.max(screenH * 0.10, Math.min(screenH * 0.88, info.point.y));
-
-        const newEdge: "left" | "right" = finalX < screenW / 2 ? "left" : "right";
-        setSnapEdge(newEdge);
-        setYFraction(finalY / screenH);
-        setTimeout(() => setIsDragging(false), 100);
-    };
-
+    // Static position: 15% from top, 4px from left
     const buttonStyle: React.CSSProperties = {
         position: "fixed",
         zIndex: 85,
-        top: `calc(${yFraction * 100}vh - 24px)`,
-        ...(snapEdge === "left" ? { left: "4px" } : { right: "4px" }),
+        top: "15%",
+        left: "4px",
         touchAction: "none",
     };
 
     return (
         <>
-            {/* BLU Draggable Button */}
+            {/* BLU Static Button */}
             <motion.div
-                drag
-                dragMomentum={false}
-                dragElastic={0.05}
-                onDragStart={() => {
-                    setIsDragging(true);
-                    setIsOpen(false);
-                }}
-                onDragEnd={handleDragEnd}
                 style={buttonStyle}
                 className="select-none"
             >
                 <motion.button
-                    onClick={() => { if (!isDragging) setIsOpen(prev => !prev); }}
+                    onClick={() => setIsOpen(prev => !prev)}
                     whileHover={{ opacity: 1, scale: 1.1 }}
                     whileTap={{ scale: 0.92 }}
                     animate={{ opacity: isOpen ? 1 : 0.55 }}

@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
@@ -49,6 +49,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [showId, setShowId] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
@@ -289,69 +290,73 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                       </div>
                     </div>
 
-                    {/* ⋮ 3-Dot Menu — bottom-right of card */}
+                    {/* ⋮ 3-Dot Menu Button */}
                     <div className="absolute bottom-4 right-4">
                       <button
+                        ref={menuButtonRef}
                         onClick={() => setMenuOpen(!menuOpen)}
                         className="p-1.5 rounded-full text-cyan-500/40 hover:text-cyan-400 hover:bg-white/5 transition-colors"
                       >
                         <MoreVertical size={16} />
                       </button>
-
-                      <AnimatePresence>
-                        {menuOpen && (
-                          <>
-                            {/* Click outside layer */}
-                            <motion.div
-                              className="fixed inset-0 z-[140]"
-                              onClick={() => setMenuOpen(false)}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                            />
-                            {/* Dropdown — fixed so it renders above overflow-hidden */}
-                            <motion.div
-                              initial={{ opacity: 0, y: -4, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                              transition={{ duration: 0.15 }}
-                              className="fixed z-[150] w-44 bg-black/90 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff30] overflow-hidden"
-                              style={{ bottom: "auto", right: "16px", top: "auto", marginTop: "8px" }}
-                            >
-                              <button
-                                onClick={() => {
-                                  setMenuOpen(false);
-                                  onOpenEcosystemRoles?.();
-                                }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
-                              >
-                                Ecosystem Roles
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setMenuOpen(false);
-                                  onClose();
-                                  setTimeout(() => onOpenBwaveScan?.(), 300);
-                                }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
-                              >
-                                BwaveScan
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setMenuOpen(false);
-                                  setSettingsOpen(true);
-                                }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
-                              >
-                                Settings
-                              </button>
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
                     </div>
                   </div>
+
+                  <AnimatePresence>
+                    {menuOpen && (
+                      <>
+                        {/* Click outside layer */}
+                        <motion.div
+                          className="fixed inset-0 z-[140]"
+                          onClick={() => setMenuOpen(false)}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        />
+                        {/* Dropdown — rendered outside the overflow-hidden card */}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="fixed z-[150] w-44 bg-black/90 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff30] overflow-hidden"
+                          style={{
+                            top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto',
+                            right: '24px'
+                          }}
+                        >
+                          <button
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onOpenEcosystemRoles?.();
+                            }}
+                            className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
+                          >
+                            Ecosystem Roles
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onClose();
+                              setTimeout(() => onOpenBwaveScan?.(), 300);
+                            }}
+                            className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
+                          >
+                            BwaveScan
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setSettingsOpen(true);
+                            }}
+                            className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
+                          >
+                            Settings
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
 
                   {/* 2. Tab Navigation */}
                   <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-1 shrink-0">
