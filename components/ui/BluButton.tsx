@@ -1,74 +1,58 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function BluButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    // Track which edge (left/right) the button is snapped to
     const [snapEdge, setSnapEdge] = useState<"left" | "right">("left");
-    // Y position as fraction of screen (0.5 = center)
-    const [yFraction, setYFraction] = useState(0.5);
-
-    const dragRef = useRef<HTMLDivElement>(null);
-    const dragStartPos = useRef({ x: 0, y: 0 });
-
-    // Compute pixel position from edge + yFraction
-    const getStyle = () => {
-        const top = `calc(${yFraction * 100}vh - 20px)`;
-        if (snapEdge === "left") {
-            return { top, left: "-12px" };
-        } else {
-            return { top, right: "-12px", left: "auto" };
-        }
-    };
+    const [yFraction, setYFraction] = useState(0.15); // 15% from top
 
     const handleDragEnd = (_: any, info: any) => {
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
 
-        // Determine closest edge
         const finalX = info.point.x;
-        const finalY = Math.max(screenH * 0.15, Math.min(screenH * 0.85, info.point.y));
+        const finalY = Math.max(screenH * 0.10, Math.min(screenH * 0.88, info.point.y));
 
         const newEdge: "left" | "right" = finalX < screenW / 2 ? "left" : "right";
         setSnapEdge(newEdge);
         setYFraction(finalY / screenH);
-        setIsDragging(false);
+        setTimeout(() => setIsDragging(false), 100);
+    };
+
+    const buttonStyle: React.CSSProperties = {
+        position: "fixed",
+        zIndex: 85,
+        top: `calc(${yFraction * 100}vh - 24px)`,
+        ...(snapEdge === "left" ? { left: "4px" } : { right: "4px" }),
+        touchAction: "none",
     };
 
     return (
         <>
             {/* BLU Draggable Button */}
             <motion.div
-                ref={dragRef}
                 drag
                 dragMomentum={false}
-                dragElastic={0.08}
+                dragElastic={0.05}
                 onDragStart={() => {
                     setIsDragging(true);
                     setIsOpen(false);
                 }}
                 onDragEnd={handleDragEnd}
-                style={{
-                    position: "fixed",
-                    zIndex: 80,
-                    ...getStyle(),
-                    touchAction: "none",
-                }}
+                style={buttonStyle}
                 className="select-none"
             >
                 <motion.button
-                    onClick={() => {
-                        if (!isDragging) setIsOpen(true);
-                    }}
-                    whileHover={{ opacity: 1, scale: 1.06 }}
-                    whileTap={{ scale: 0.94 }}
-                    animate={{ opacity: isOpen ? 1 : 0.3 }}
-                    transition={{ duration: 0.25 }}
-                    className="w-10 h-10 rounded-full bg-black/60 border border-cyan-500/30 backdrop-blur-xl 
-                     flex items-center justify-center shadow-[0_0_12px_rgba(0,230,255,0.15)]"
+                    onClick={() => { if (!isDragging) setIsOpen(prev => !prev); }}
+                    whileHover={{ opacity: 1, scale: 1.1 }}
+                    whileTap={{ scale: 0.92 }}
+                    animate={{ opacity: isOpen ? 1 : 0.55 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-12 h-12 rounded-full bg-black/70 border border-cyan-500/40 backdrop-blur-xl 
+                               flex items-center justify-center shadow-[0_0_16px_rgba(0,230,255,0.2)]"
                 >
                     <span className="text-[9px] font-black tracking-widest text-cyan-400 uppercase leading-none">
                         BLU
@@ -82,7 +66,7 @@ export default function BluButton() {
                     <>
                         {/* Backdrop */}
                         <motion.div
-                            className="fixed inset-0 z-[85]"
+                            className="fixed inset-0 z-[86]"
                             onClick={() => setIsOpen(false)}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -95,12 +79,12 @@ export default function BluButton() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.96 }}
                             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                            className="fixed z-[90] bottom-24 left-1/2 -translate-x-1/2
-                         w-[85vw] max-w-sm
-                         bg-black/50 backdrop-blur-2xl
-                         border border-cyan-900/30
-                         rounded-3xl overflow-hidden
-                         shadow-[0_0_30px_rgba(0,230,255,0.08)]"
+                            className="fixed z-[87] bottom-24 left-1/2 -translate-x-1/2
+                                       w-[85vw] max-w-sm
+                                       bg-black/50 backdrop-blur-2xl
+                                       border border-cyan-900/30
+                                       rounded-3xl overflow-hidden
+                                       shadow-[0_0_30px_rgba(0,230,255,0.08)]"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 pt-4 pb-2">
@@ -120,21 +104,17 @@ export default function BluButton() {
 
                             {/* Skeleton Chat Bubbles */}
                             <div className="px-5 py-3 flex flex-col gap-3 animate-pulse">
-                                {/* BLU message (left) */}
                                 <div className="flex items-end gap-2">
                                     <div className="w-5 h-5 rounded-full bg-cyan-900/30 shrink-0" />
                                     <div className="h-8 w-3/4 rounded-2xl rounded-bl-sm bg-cyan-900/20 border border-cyan-800/20" />
                                 </div>
-                                {/* User message (right) */}
                                 <div className="flex justify-end">
                                     <div className="h-7 w-1/2 rounded-2xl rounded-br-sm bg-white/5 border border-white/10" />
                                 </div>
-                                {/* BLU message (left) long */}
                                 <div className="flex items-end gap-2">
                                     <div className="w-5 h-5 rounded-full bg-cyan-900/30 shrink-0" />
                                     <div className="h-12 w-full rounded-2xl rounded-bl-sm bg-cyan-900/20 border border-cyan-800/20" />
                                 </div>
-                                {/* User message (right) short */}
                                 <div className="flex justify-end">
                                     <div className="h-7 w-1/3 rounded-2xl rounded-br-sm bg-white/5 border border-white/10" />
                                 </div>

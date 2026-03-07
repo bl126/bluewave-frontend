@@ -303,26 +303,27 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           <>
                             {/* Click outside layer */}
                             <motion.div
-                              className="fixed inset-0 z-[40]"
+                              className="fixed inset-0 z-[140]"
                               onClick={() => setMenuOpen(false)}
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
                             />
-                            {/* Dropdown */}
+                            {/* Dropdown — fixed so it renders above overflow-hidden */}
                             <motion.div
                               initial={{ opacity: 0, y: -4, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: -4, scale: 0.95 }}
                               transition={{ duration: 0.15 }}
-                              className="absolute top-8 right-0 w-44 z-[50] bg-black/80 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff20] overflow-hidden"
+                              className="fixed z-[150] w-44 bg-black/90 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff30] overflow-hidden"
+                              style={{ bottom: "auto", right: "16px", top: "auto", marginTop: "8px" }}
                             >
                               <button
                                 onClick={() => {
                                   setMenuOpen(false);
                                   onOpenEcosystemRoles?.();
                                 }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
                               >
                                 Ecosystem Roles
                               </button>
@@ -332,7 +333,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                   onClose();
                                   setTimeout(() => onOpenBwaveScan?.(), 300);
                                 }}
-                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors"
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5"
                               >
                                 BwaveScan
                               </button>
