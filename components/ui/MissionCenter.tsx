@@ -230,6 +230,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await res.json();
 
       if (data.success) {
+        setPresenceLoadingId(null); // Unlock UI immediately
         // If it was a 1h mission and a bonus was awarded, update balance
         if (data.streak_info?.bonus_awarded) {
           const uRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/balance/${telegram_id}`);
@@ -238,15 +239,15 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
             new CustomEvent("updateBalance", { detail: uData.balance })
           );
         }
-        // Refresh list to get new state
-        await loadData();
+        // Refresh list to get new state (background)
+        loadData();
       } else {
+        setPresenceLoadingId(null);
         setPopup(t("presence.error_activate"));
         setTimeout(() => setPopup(null), 2500);
       }
     } catch (e) {
       console.error(e);
-    } finally {
       setPresenceLoadingId(null);
     }
   };
@@ -264,6 +265,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await res.json();
 
       if (data.success) {
+        setPresenceLoadingId(null); // Unlock UI immediately
+
         // Prepare Boost Popup if there was a base_reward (meaning it applied the math)
         if (data.base_reward !== undefined) {
           setClaimBoostData({
@@ -291,11 +294,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           });
         }
 
-        await loadData(); // Refresh UI
+        loadData(); // Refresh UI in background
+      } else {
+        setPresenceLoadingId(null);
       }
     } catch (e) {
       console.error(e);
-    } finally {
       setPresenceLoadingId(null);
     }
   };

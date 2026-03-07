@@ -69,7 +69,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
                             {/* Icon / Badge Visual */}
                             <div className="relative">
                                 <motion.div
-                                    className="w-24 h-24 rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.4)]"
+                                    className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-[0_0_30px_rgba(99,102,241,0.4)]"
                                     initial={{ rotate: -10, scale: 0.8 }}
                                     animate={{ rotate: 0, scale: 1 }}
                                     transition={{ delay: 0.2, type: "spring" }}
