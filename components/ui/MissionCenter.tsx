@@ -522,15 +522,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* ── Header ── */}
-          <div className="flex justify-center items-center px-6 pt-6 pb-3 shrink-0">
-            <h2 className="text-cyan-400 text-lg font-bold tracking-widest uppercase opacity-80 backdrop-blur-md px-4 py-1 rounded-full bg-black/20 border border-cyan-900/30">
-              {t("missions.title")}
-            </h2>
-          </div>
+          {/* ── Header Removed ── */}
+
 
           {/* ── Tab Bar ── */}
-          <div className="flex items-center gap-2 px-5 pb-4 shrink-0 overflow-x-auto scrollbar-none">
+          <div className="flex items-center justify-between w-full px-4 pt-6 pb-4 shrink-0">
             {(["presence", "social", "earn"] as TabId[]).map((tab) => {
               const isActive = activeTab === tab;
               const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
@@ -538,7 +534,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap border transition-all duration-200
+                  className={`relative flex flex-col items-center justify-center flex-1 py-2 mx-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200
+
                     ${tab === "earn"
                       ? isActive
                         ? "bg-white/5 border-white/20 text-white/50"
@@ -549,17 +546,17 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                     }`}
                 >
                   {tab === "presence" && "Presence"}
-                  {tab === "social" && "Social Mission"}
+                  {tab === "social" && "Social"}
                   {tab === "earn" && (
-                    <span className="flex items-center gap-1.5">
-                      Earn Drop
-                      <span className="text-[8px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full">
+                    <span className="flex flex-col items-center gap-1">
+                      Earn
+                      <span className="text-[7px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1 py-[1px] rounded-full">
                         SOON
                       </span>
                     </span>
                   )}
                   {badge > 0 && tab !== "earn" && (
-                    <span className="w-5 h-5 rounded-full bg-cyan-400 text-black text-[10px] font-black flex items-center justify-center leading-none shrink-0">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_10px_#00e6ff]">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
