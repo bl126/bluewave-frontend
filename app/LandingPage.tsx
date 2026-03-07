@@ -25,6 +25,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import BalancePill from "@/components/ui/BalancePill";
+import BluButton from "@/components/ui/BluButton";
 
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
@@ -404,6 +405,11 @@ export default function LandingPage() {
           balance={balance}
           isVisible={!isBwaveScanOpen}
         />
+      )}
+
+      {/* 🤖 BLU AI Assistant Button */}
+      {!onboardingOpen && !isLoading && !isMaintenanceMode && (
+        <BluButton />
       )}
 
       {/* 🧭 Navigation Bar */}
