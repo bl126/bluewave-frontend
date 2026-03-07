@@ -324,8 +324,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                         {/* Stats Grid */}
                         <div className="grid grid-cols-3 gap-3">
                           <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
-                            <span className="text-white text-xl font-black">{level || "1"}</span>
-                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">LEVEL</span>
+                            <span className="text-white text-lg font-black">{level || "1"}</span>
+                            <span className="text-cyan-500/50 text-[7px] font-black uppercase tracking-widest">LEVEL</span>
                           </div>
                           <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
                             <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
