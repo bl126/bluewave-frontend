@@ -33,14 +33,18 @@ export default function LandingPage() {
   const { t } = useLanguage();
 
   // [CODE: FRONTEND_TELEGRAM_WEBAPP_INIT]
-  // ⭐ ENSURE Telegram WebApp is initialized
+  // ⭐ ENSURE Telegram WebApp is initialized + request full screen
   useEffect(() => {
     if (typeof window === "undefined") return;
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
       try {
         tg.ready();
-        tg.expand();
+        tg.expand(); // Expand to max height (all Telegram versions)
+        // 🖥️ Request true full screen (Telegram 8.0+ / Bot API 8.0+)
+        if (typeof tg.requestFullscreen === "function") {
+          tg.requestFullscreen();
+        }
         if (tg.disableVerticalSwipes) {
           tg.disableVerticalSwipes();
         }
@@ -90,6 +94,37 @@ export default function LandingPage() {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
+
+  // [CODE: TELEGRAM_BACK_BUTTON]
+  // 🔙 Sync Telegram's native Back Button with overlay state
+  useEffect(() => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (!tg?.BackButton) return;
+
+    const handleBack = () => {
+      // Close all overlays and return to home
+      setMissionOpen(false);
+      setLeaderboardOpen(false);
+      setMarketOpen(false);
+      setProfileOpen(false);
+      setRolesOpen(false);
+      setBwaveScanOpen(false);
+      setSelectedRoleData(null);
+      setIsNetworkBuilderModalOpen(false);
+      setActiveTab("home");
+    };
+
+    if (isAnyOverlayOpen) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(handleBack);
+    } else {
+      tg.BackButton.hide();
+    }
+
+    return () => {
+      tg.BackButton.offClick(handleBack);
+    };
+  }, [isAnyOverlayOpen]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
