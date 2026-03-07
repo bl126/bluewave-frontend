@@ -17,10 +17,12 @@ interface ProfileProps {
   onClose: () => void;
   telegramUser: any;
   onOpenRoles: (roleName: string) => void;
+  onOpenBwaveScan?: () => void;
+  onOpenEcosystemRoles?: () => void;
 }
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
-export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: ProfileProps) {
+export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles }: ProfileProps) {
   const { t } = useLanguage();
 
   // Tab State
@@ -46,6 +48,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
   const [languageOpen, setLanguageOpen] = useState(false);
   const [showId, setShowId] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
@@ -291,6 +294,71 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                           </button>
                         </div>
                       </div>
+                    </div>
+
+                    {/* ⋮ 3-Dot Menu — bottom-right of card */}
+                    <div className="absolute bottom-4 right-4">
+                      <button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="p-1.5 rounded-full text-cyan-500/40 hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      <AnimatePresence>
+                        {menuOpen && (
+                          <>
+                            {/* Click outside layer */}
+                            <motion.div
+                              className="fixed inset-0 z-[40]"
+                              onClick={() => setMenuOpen(false)}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                            />
+                            {/* Dropdown */}
+                            <motion.div
+                              initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute bottom-8 right-0 w-48 z-[50] bg-black/80 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff20] overflow-hidden"
+                            >
+                              <button
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  onOpenEcosystemRoles?.();
+                                }}
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                              >
+                                <Award size={13} className="text-cyan-400" />
+                                Ecosystem Roles
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  onClose();
+                                  setTimeout(() => onOpenBwaveScan?.(), 300);
+                                }}
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                              >
+                                <Info size={13} className="text-cyan-400" />
+                                BwaveScan
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  setSettingsOpen(true);
+                                }}
+                                className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors flex items-center gap-2"
+                              >
+                                <ShieldCheck size={13} className="text-cyan-400" />
+                                Settings
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 

@@ -12,8 +12,6 @@ import OnboardingModal from "@/components/ui/OnboardingModal";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
 
 import LoadingScreen from "./LoadingScreen";
-import TopRightMenu from "@/components/ui/TopRightMenu";
-import WhitepaperOverlay from "@/components/WhitepaperOverlay";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
@@ -62,7 +60,6 @@ export default function LandingPage() {
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [isWhitepaperOpen, setWhitepaperOpen] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
   const [selectedRoleName, setSelectedRoleName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -91,7 +88,7 @@ export default function LandingPage() {
   // 🛡️ Maintenance State
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isWhitepaperOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -401,31 +398,16 @@ export default function LandingPage() {
       <div className="absolute inset-0 z-0 pointer-events-none">
         <BluewaveGlobe />
       </div>
-      {/* TopRightMenu */}
-      {!onboardingOpen && !isLoading && !isAnyOverlayOpen && (
-        <TopRightMenu
-          onOpenWhitepaper={() => setWhitepaperOpen(true)}
-          isWhitepaperActive={isWhitepaperOpen}
-          onOpenRoles={(roleName?: string) => {
-            if (roleName) setSelectedRoleName(roleName);
-            else setSelectedRoleName(null);
-            setRolesOpen(true);
-          }}
-          isRolesActive={isRolesOpen}
-          onOpenLedger={() => setBwaveScanOpen(true)}
-        />
-      )}
-
       {/* 💰 Floating Balance Pill */}
       {!onboardingOpen && !isLoading && (
         <BalancePill
           balance={balance}
-          isVisible={!isWhitepaperOpen && !isBwaveScanOpen}
+          isVisible={!isBwaveScanOpen}
         />
       )}
 
       {/* 🧭 Navigation Bar */}
-      {!onboardingOpen && !isLoading && !isWhitepaperOpen && !isBwaveScanOpen && !isRolesOpen && (
+      {!onboardingOpen && !isLoading && !isBwaveScanOpen && !isRolesOpen && (
         <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {
@@ -459,6 +441,12 @@ export default function LandingPage() {
             const role = findRoleByName(roleName);
             if (role) setSelectedRoleData(role);
           }}
+          onOpenBwaveScan={() => setBwaveScanOpen(true)}
+          onOpenEcosystemRoles={() => {
+            setProfileOpen(false);
+            setActiveTab("home");
+            setTimeout(() => setRolesOpen(true), 300);
+          }}
         />
       )}
 
@@ -474,12 +462,6 @@ export default function LandingPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 📄 Whitepaper Overlay */}
-      <WhitepaperOverlay
-        isOpen={isWhitepaperOpen}
-        onClose={() => setWhitepaperOpen(false)}
-      />
 
       {/* 🏆 Roles Overlay */}
       <RolesOverlay
