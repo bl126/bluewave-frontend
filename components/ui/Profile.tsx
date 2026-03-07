@@ -228,17 +228,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header Bar */}
-          <div className="relative flex items-center justify-end px-6 py-4 shrink-0 bg-transparent border-b border-white/5 min-h-[64px]">
-            <h2 className="absolute left-1/2 -translate-x-1/2 text-cyan-500/80 text-[10px] font-black tracking-[0.4em] uppercase opacity-80">
-              {t("nav.profile")}
-            </h2>
-            <button onClick={() => setSettingsOpen(true)} className="group z-10">
-              <div className="p-1.5 rounded-full bg-cyan-950/20 group-hover:bg-cyan-900/40 transition-colors border border-cyan-900/40 shadow-[0_0_10px_-5px_#22d3ee]">
-                <MoreVertical size={16} className="text-cyan-400 group-hover:text-cyan-200" />
-              </div>
-            </button>
-          </div>
+          {/* Floating Settings Button */}
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="absolute top-6 right-6 z-[130] p-2 rounded-full bg-black/20 border border-white/5 backdrop-blur-md text-cyan-500/50 hover:text-cyan-400 transition-all active:scale-95"
+          >
+            <MoreVertical size={20} />
+          </button>
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <div className="max-w-md mx-auto w-full px-6 pt-6 pb-32">
@@ -252,9 +248,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
               {user && (
                 <div className="flex flex-col gap-6">
                   {/* 1. Static User Info Card */}
-                  <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/10 rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden">
+                  <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/10 rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden pt-10">
                     <div className="relative">
-                      <div className="w-24 h-24 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20] relative z-10">
+                      <div className="w-20 h-20 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20] relative z-10">
                         <img
                           src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
                           alt="avatar"
@@ -264,46 +260,35 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
 
                       {/* Streak Badge */}
                       {user.streak_days >= 3 && (
-                        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-cyan-950 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_#22d3ee] z-20">
-                          <Flame size={16} className="text-cyan-400" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-cyan-950 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_#22d3ee] z-20">
+                          <Flame size={12} className="text-cyan-400" />
                         </div>
                       )}
                     </div>
 
-                    <div className="flex-1 flex flex-col items-start gap-1.5">
+                    <div className="flex-1 flex flex-col items-start gap-1">
                       <div className="flex flex-col">
                         <h2 className="text-white text-xl font-black uppercase tracking-tight">
                           {user.name && user.name.length > 15 ? user.name.slice(0, 12) + "..." : (user.name || user.username)}
                         </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-cyan-500/40 text-[10px] font-black uppercase tracking-widest">{user.username}</span>
-                          <div className="w-1 h-1 rounded-full bg-cyan-900" />
-                          <div className="flex items-center gap-1.5 py-0.5">
-                            <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
-                              BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
-                            </span>
-                            <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
-                              {showId ? <EyeOff size={10} /> : <Eye size={10} />}
-                            </button>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(user.bw_id || "");
-                                setIdCopied(true);
-                                setTimeout(() => setIdCopied(false), 2000);
-                              }}
-                              className="text-cyan-500/30 hover:text-cyan-400"
-                            >
-                              {idCopied ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
-                            </button>
-                          </div>
+                        <div className="flex items-center gap-1.5 py-0.5">
+                          <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
+                            BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
+                          </span>
+                          <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
+                            {showId ? <EyeOff size={10} /> : <Eye size={10} />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.bw_id || "");
+                              setIdCopied(true);
+                              setTimeout(() => setIdCopied(false), 2000);
+                            }}
+                            className="text-cyan-500/30 hover:text-cyan-400"
+                          >
+                            {idCopied ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
+                          </button>
                         </div>
-                      </div>
-
-                      <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                        <span className="text-[9px] font-black uppercase text-cyan-100 tracking-[0.15em] leading-none">
-                          LEVEL {level}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -337,14 +322,18 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles }: 
                     {activeTab === "bio" && (
                       <>
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-5 flex flex-col items-center gap-2">
-                            <span className="text-white text-2xl font-black">{user.streak_days || 0}</span>
-                            <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.streak")}</span>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
+                            <span className="text-white text-xl font-black">{level || "1"}</span>
+                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">LEVEL</span>
                           </div>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-5 flex flex-col items-center gap-2">
-                            <span className="text-white text-2xl font-black">{user.total_referrals || 0}</span>
-                            <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.total_networks")}</span>
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
+                            <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
+                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak")}</span>
+                          </div>
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
+                            <span className="text-white text-xl font-black">{user.total_referrals || 0}</span>
+                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">NETWORKS</span>
                           </div>
                         </div>
 
