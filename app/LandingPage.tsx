@@ -302,11 +302,9 @@ export default function LandingPage() {
     setIsStreakCelebrationOpen(false);
     try {
       if (telegramUser?.tg_id) {
-        await fetch(`${apiBase}/api/user/clear_streak_reward`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
-        });
+        const data = await postApi("/user/clear_streak_reward", { telegram_id: telegramUser.tg_id });
+        if (data.error) throw new Error(data.error);
+
         // Sequence: Check human verification -> then TON explorer
         if (telegramUser.human_verification_pending) {
           setTimeout(() => setIsHumanModalOpen(true), 500);
@@ -323,11 +321,9 @@ export default function LandingPage() {
     setIsHumanModalOpen(false);
     try {
       if (telegramUser?.tg_id) {
-        await fetch(`${apiBase}/api/user/clear_human_verification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
-        });
+        const data = await postApi("/user/clear_human_verification", { telegram_id: telegramUser.tg_id });
+        if (data.error) throw new Error(data.error);
+
         // After human verification, check if there's a pending Network Builder reward
         if (telegramUser.network_builder_pending) {
           setTimeout(() => setIsNetworkBuilderModalOpen(true), 500);
@@ -344,11 +340,9 @@ export default function LandingPage() {
     setIsNetworkBuilderModalOpen(false);
     try {
       if (telegramUser?.tg_id) {
-        await fetch(`${apiBase}/api/user/clear_network_builder_celebration`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
-        });
+        const data = await postApi("/user/clear_network_builder_celebration", { telegram_id: telegramUser.tg_id });
+        if (data.error) throw new Error(data.error);
+
         // After network builder, check if there's a pending TON explorer reward
         if (telegramUser.ton_explorer_pending) {
           setTimeout(() => setIsTONModalOpen(true), 500);
@@ -363,11 +357,8 @@ export default function LandingPage() {
     setIsTONModalOpen(false);
     try {
       if (telegramUser?.tg_id) {
-        await fetch(`${apiBase}/api/user/clear_ton_explorer_reward`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: telegramUser.tg_id })
-        });
+        const data = await postApi("/user/clear_ton_explorer_reward", { telegram_id: telegramUser.tg_id });
+        if (data.error) throw new Error(data.error);
       }
     } catch (e) {
       console.error("Clear TON explorer error:", e);
@@ -377,8 +368,7 @@ export default function LandingPage() {
   // 💰 Fetch balance (unchanged)
   const fetchBalance = async (tgId: number) => {
     try {
-      const res = await fetch(`${apiBase}/api/balance/${tgId}`);
-      const data = await res.json();
+      const data = await getApi(`/balance/${tgId}`);
       if (data.balance !== undefined) setBalance(data.balance);
     } catch (e) {
       console.error("Error fetching balance:", e);

@@ -1,8 +1,7 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Lock, CheckCircle2, AlertTriangle, Key, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Key, Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { postApi } from "@/lib/useApi";
 
 interface RecoveryPasswordModalProps {
     isOpen: boolean;
@@ -34,16 +33,13 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
         setError(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/set_recovery_password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ telegram_id: telegramId, password }),
+            const data = await postApi("/user/set_recovery_password", {
+                telegram_id: telegramId,
+                password
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.detail || "Failed to set password");
+            if (data.error) {
+                throw new Error(data.error);
             }
 
             setStep("success");
