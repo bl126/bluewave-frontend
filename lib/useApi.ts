@@ -11,11 +11,14 @@ export async function postApi(path: string, body: any = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api${path}`;
 
+  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-telegram-init-data": initData || "",
       },
       body: JSON.stringify(body),
     });
@@ -38,8 +41,14 @@ export async function getApi(path: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api${path}`;
 
+  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: {
+        "x-telegram-init-data": initData || "",
+      },
+    });
 
     const json = await res.json();
 

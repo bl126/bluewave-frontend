@@ -15,7 +15,13 @@ export const fetcher = async (url: string) => {
   }
 
   // Fetch from network (use standard HTTP caching, not no-cache)
-  const res = await fetch(url);
+  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+
+  const res = await fetch(url, {
+    headers: {
+      "x-telegram-init-data": initData || "",
+    },
+  });
 
   if (!res.ok) {
     const err: any = new Error("API error");
