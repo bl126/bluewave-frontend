@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getApi, postApi } from "@/lib/useApi";
 
 
 // [CODE: FRONTEND_ONBOARDING_TYPES]
@@ -69,9 +70,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
 
       const fetchUsername = async () => {
         try {
-          const res = await fetch(`${apiBase}/api/user/username/${tg_id}`);
-          if (!res.ok) return;
-          const data = await res.json();
+          const data = await getApi(`/user/username/${tg_id}`);
           if (data.username) {
             setUsername(data.username.toLowerCase());
           }
@@ -96,24 +95,21 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     }
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/login/request_code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: cleanUsername }),
-      });
+      const data = await postApi(`/login/request_code`, { username: cleanUsername });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      // Since postApi returns data and handles errors via a common check, 
+      // we need to check if the response was successful or had a detail error.
+      // But postApi currently doesn't throw on 4xx, it returns the body.
+
+      if (data.detail) {
         if (data.detail === "NOT_REGISTERED") {
           setError(t("onboarding.error_not_registered"));
         } else if (data.detail === "RATE_LIMITED") {
           setError(t("onboarding.error_rate_limit"));
         } else if (data.detail === "TELEGRAM_DELIVERY_FAILED") {
           setError(t("onboarding.error_delivery_failed"));
-        } else if (data.detail) {
-          setError(`${t("onboarding.error_request_code")} (${data.detail})`);
         } else {
-          setError(t("onboarding.error_request_code"));
+          setError(`${t("onboarding.error_request_code")} (${data.detail})`);
         }
         return;
       }
@@ -134,14 +130,9 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     }
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/login/verify_code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), code: code.trim() }),
-      });
+      const data = await postApi(`/login/verify_code`, { username: username.trim(), code: code.trim() });
 
-      const data = await res.json();
-      if (!res.ok) {
+      if (data.detail) {
         if (data.detail === "CODE_INVALID") setError(t("onboarding.error_invalid_code"));
         else if (data.detail === "CODE_EXPIRED") setError(t("onboarding.error_expired_code"));
         else if (data.detail === "NOT_REGISTERED") {
@@ -179,17 +170,12 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     }
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/user/update_profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tg_id: verifiedUser.tg_id,
-          country_code: country,
-        }),
+      const data = await postApi(`/user/update_profile`, {
+        tg_id: verifiedUser.tg_id,
+        country_code: country,
       });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      if (data.error || !data.success) {
         setError(t("onboarding.error_save_profile"));
         return;
       }

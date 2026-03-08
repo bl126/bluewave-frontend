@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useApi } from "@/lib/useApi";
+import { useApi, getApi, postApi } from "@/lib/useApi";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
@@ -185,8 +185,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         finalList.push(missionsData.story);
         // 🚀 PRE-FETCH story deeplink only if NOT DONE
         if (missionsData.story.status !== "done" && !storyDataRef.current) {
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`)
-            .then(r => r.json())
+          getApi(`/story/deeplink/${telegram_id}`)
             .then(dlData => {
               console.log("STORY_PREFETCH: Cached deeplink data", dlData);
               storyDataRef.current = dlData;
@@ -222,19 +221,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     setPresenceLoadingId(type);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/presence/activate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg_id: telegram_id, mission_type: type }),
-      });
-      const data = await res.json();
+      const data = await postApi(`/presence/activate`, { tg_id: telegram_id, mission_type: type });
 
       if (data.success) {
         setPresenceLoadingId(null); // Unlock UI immediately
         // If it was a 1h mission and a bonus was awarded, update balance
         if (data.streak_info?.bonus_awarded) {
-          const uRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/balance/${telegram_id}`);
-          const uData = await uRes.json();
+          const uData = await getApi(`/balance/${telegram_id}`);
           window.dispatchEvent(
             new CustomEvent("updateBalance", { detail: uData.balance })
           );
@@ -257,12 +250,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     setPresenceLoadingId(type);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/presence/claim`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg_id: telegram_id, mission_type: type }),
-      });
-      const data = await res.json();
+      const data = await postApi(`/presence/claim`, { tg_id: telegram_id, mission_type: type });
 
       if (data.success) {
         setPresenceLoadingId(null); // Unlock UI immediately
@@ -353,9 +341,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
 
         try {
-          const dlRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/story/deeplink/${telegram_id}`);
-          if (!dlRes.ok) throw new Error(`Backend: ${dlRes.status}`);
-          const dlData = await dlRes.json();
+          const dlData = await getApi(`/story/deeplink/${telegram_id}`);
+          if (dlData.error) throw new Error(`Backend: ${dlData.error}`);
           console.log("STORY_MISSION: ASYNC data fetched:", dlData.poster_url);
 
           storyDataRef.current = dlData;
@@ -424,11 +411,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
     // Normal Mission
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/mission/open`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegram_id, mission_id: id }),
-      });
+      await postApi(`/mission/open`, { telegram_id, mission_id: id });
 
       const mission = missions.find(m => m.id === id);
 
@@ -455,19 +438,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     setClaimCooldown(true);
 
     try {
-      let endpoint = "/api/claim_mission";
+      let endpoint = "/claim_mission";
       let payload: any = { telegram_id, mission_id: id };
 
-      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") endpoint = "/api/claim/onboarding";
-      else if (id === "invite_daily") { endpoint = "/api/claim/daily"; payload = { telegram_id }; }
-      else if (id === "story_post") { endpoint = "/api/claim/story_post"; payload = { telegram_id }; }
+      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") endpoint = "/claim/onboarding";
+      else if (id === "invite_daily") { endpoint = "/claim/daily"; payload = { telegram_id }; }
+      else if (id === "story_post") { endpoint = "/claim/story_post"; payload = { telegram_id }; }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
+      const result = await postApi(endpoint, payload);
 
       if (result.claimed) {
         window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));

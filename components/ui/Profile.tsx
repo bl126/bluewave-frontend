@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { useApi } from "@/lib/useApi";
+import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -59,14 +59,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
   useEffect(() => {
     if (walletAddress && telegramId) {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL;
-      fetch(`${apiBase}/api/user/update_profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tg_id: telegramId,
-          wallet_address: walletAddress
-        })
+      postApi(`/user/update_profile`, {
+        tg_id: telegramId,
+        wallet_address: walletAddress
       }).catch(err => console.error("Wallet sync error:", err));
     }
   }, [walletAddress, telegramId]);
@@ -152,12 +147,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const handleClaim = async () => {
     if (claiming) return;
     setClaiming(true);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/claim_referral`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: telegramId }),
-    });
-    const result = await res.json();
+    const result = await postApi(`/claim_referral`, { telegram_id: telegramId });
     if (result.claimed) {
       setClaimBoostData({
         base_claimed: result.base_claimed,
@@ -183,8 +173,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   };
 
   async function loadCooldown() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_usage/${telegramId}`);
-    const data = await res.json();
+    const data = await getApi(`/notify_usage/${telegramId}`);
     if (!data.last_sent) {
       setCooldown(null);
       return;
@@ -201,12 +190,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     if (cooldown !== null || notifying) return;
     setNotifying(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notify_inactive`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tg_id: telegramId }),
-      });
-      const data = await res.json();
+      const data = await postApi(`/notify_inactive`, { tg_id: telegramId });
 
       if (data.blocked) {
         setCooldownText("Limit Reached");

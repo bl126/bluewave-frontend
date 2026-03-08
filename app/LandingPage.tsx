@@ -23,6 +23,7 @@ import NetworkBuilderModal from "@/components/ui/NetworkBuilderModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
+import { getApi, postApi } from "@/lib/useApi";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
@@ -166,21 +167,18 @@ export default function LandingPage() {
 
         // 2. Fetch unified initial state from backend
         // This endpoint returns { profile, missions, presence, leaderboard }
-        const res = await fetch(`${apiBase}/api/init/${savedTgId}`);
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          if (err.detail === "TOO_FAST" || res.status === 429) {
+        const data = await getApi(`/init/${savedTgId}`);
+        if (data.error) {
+          if (data.error === "TOO_FAST") {
             console.warn("Rate limited. Retrying in 1.2s...");
             setTimeout(() => { window.location.reload(); }, 1200);
             return;
           }
-          // User not found or DB error -> show onboarding
+          // User not found or auth error -> show onboarding
           setOnboardingOpen(true);
           setIsLoading(false);
           return;
         }
-
-        const data = await res.json();
         const user = data.profile;
 
         // 3. Maintenance Check (Bypass for Admins)
@@ -205,11 +203,8 @@ export default function LandingPage() {
         // SYNC fresh Telegram photo if available
         const livePhoto = tg?.initDataUnsafe?.user?.photo_url;
         if (livePhoto && livePhoto !== user.photo_url) {
-          fetch(`${apiBase}/api/user/update_profile`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tg_id: tgIdNum, photo_url: livePhoto })
-          }).catch(err => console.error("Photo sync error:", err));
+          postApi(`/user/update_profile`, { tg_id: tgIdNum, photo_url: livePhoto })
+            .catch(err => console.error("Photo sync error:", err));
         }
 
         // Populate global state
@@ -249,8 +244,7 @@ export default function LandingPage() {
         setBalance(user.points_balance ?? null);
 
         // Invalidate cache for sub-queries
-        fetch(`${apiBase}/api/user/has_recovery_password/${tgIdNum}`)
-          .then(res => res.json())
+        getApi(`/user/has_recovery_password/${tgIdNum}`)
           .then(data => {
             if (data.has_password === false) {
               setShowRecoveryModal(true);
