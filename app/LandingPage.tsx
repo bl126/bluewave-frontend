@@ -244,13 +244,15 @@ export default function LandingPage() {
         setBalance(user.points_balance ?? null);
 
         // Invalidate cache for sub-queries
-        getApi(`/user/has_recovery_password/${tgIdNum}`)
-          .then(data => {
-            if (data.has_password === false) {
-              setShowRecoveryModal(true);
-            }
-          })
-          .catch(err => console.error("Error checking recovery password:", err));
+        if (tgIdNum > 0) {
+          getApi(`/user/has_recovery_password/${tgIdNum}`)
+            .then(data => {
+              if (data.has_password === false && !data.error) {
+                setShowRecoveryModal(true);
+              }
+            })
+            .catch(err => console.error("Error checking recovery password:", err));
+        }
 
         // ⭐ SEED SWR Cache
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
