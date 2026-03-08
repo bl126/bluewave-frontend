@@ -19,6 +19,7 @@ import VerifiedHumanModal from "@/components/ui/VerifiedHumanModal";
 import TONExplorerModal from "@/components/ui/TONExplorerModal";
 import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
 import RoleDetailModal from "@/components/ui/RoleDetailModal";
+import RoleCelebrationModal from "@/components/ui/RoleCelebrationModal";
 import NetworkBuilderModal from "@/components/ui/NetworkBuilderModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -94,7 +95,11 @@ export default function LandingPage() {
   // 🛡️ Maintenance State
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode;
+  // 🏆 Role Celebration State
+  const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  const [currentCelebratingRole, setCurrentCelebratingRole] = useState<string | null>(null);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -241,6 +246,12 @@ export default function LandingPage() {
           setTimeout(() => setIsTONModalOpen(true), 1500);
         }
 
+        if (user.pending_role_notifications?.length > 0) {
+          setPendingRoles(user.pending_role_notifications);
+          // Show the first one after a short delay
+          setTimeout(() => setCurrentCelebratingRole(user.pending_role_notifications[0]), 2000);
+        }
+
         setBalance(user.points_balance ?? null);
 
         // Invalidate cache for sub-queries
@@ -364,6 +375,25 @@ export default function LandingPage() {
       }
     } catch (e) {
       console.error("Clear TON explorer error:", e);
+    }
+  };
+
+  const handleClearRoleCelebration = async (role: string) => {
+    setCurrentCelebratingRole(null);
+    try {
+      if (telegramUser?.tg_id) {
+        await postApi("/user/clear_role_notification", { telegram_id: telegramUser.tg_id, role });
+
+        // Check if there are more pending roles
+        const nextRoles = pendingRoles.filter(r => r !== role);
+        setPendingRoles(nextRoles);
+
+        if (nextRoles.length > 0) {
+          setTimeout(() => setCurrentCelebratingRole(nextRoles[0]), 500);
+        }
+      }
+    } catch (e) {
+      console.error("Clear role notification error:", e);
     }
   };
 
@@ -556,6 +586,14 @@ export default function LandingPage() {
         onClose={() => setBwaveScanOpen(false)}
         bwId={telegramUser?.bw_id}
       />
+
+      {currentCelebratingRole && (
+        <RoleCelebrationModal
+          isOpen={!!currentCelebratingRole}
+          roleName={currentCelebratingRole}
+          onClose={() => handleClearRoleCelebration(currentCelebratingRole)}
+        />
+      )}
 
       <RoleDetailModal
         role={selectedRoleData}
