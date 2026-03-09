@@ -62,11 +62,15 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
       console.log("Telegram initData error:", e);
     }
 
-    // 3️⃣ Fallback → extract tg_id from URL & fetch username from backend
+    // 3️⃣ Fallback → extract tg_id from URL or LocalStorage & fetch username from backend
     try {
       const url = new URL(window.location.href);
-      const tg_id = url.searchParams.get("tg_id");
+      const tg_id = url.searchParams.get("tg_id") || window.localStorage.getItem("bw_tg_id");
+
       if (!tg_id) return;
+
+      // Immediate fallback to avoid "loading..." state for new users
+      setUsername(`bw_user_${tg_id}`);
 
       const fetchUsername = async () => {
         try {

@@ -60,6 +60,7 @@ export default function LandingPage() {
   // [CODE: FRONTEND_STATE_MANAGEMENT]
   // 👤 Store Telegram user info
   const [telegramUser, setTelegramUser] = useState<any>(null);
+  const [fallbackUsername, setFallbackUsername] = useState<string>("");
   const [balance, setBalance] = useState<number | null>(null);
   const [isMissionOpen, setMissionOpen] = useState(false);
   const [isLeaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -159,6 +160,11 @@ export default function LandingPage() {
           await new Promise(resolve => setTimeout(resolve, 500));
           const retryTg = (window as any).Telegram?.WebApp;
           effectiveTgId = retryTg?.initDataUnsafe?.user?.id || window.localStorage.getItem("bw_tg_id");
+        }
+
+        if (effectiveTgId) {
+          const retryTgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user || tgUser;
+          setFallbackUsername(retryTgUser?.username || `bw_user_${effectiveTgId}`);
         }
 
         if (!effectiveTgId) {
@@ -542,7 +548,7 @@ export default function LandingPage() {
       <OnboardingModal
         isOpen={onboardingOpen}
         onComplete={handleOnboardingComplete}
-        autoUsername={telegramUser?.username}
+        autoUsername={telegramUser?.username || fallbackUsername}
       />
 
       {/* 🛡️ Recovery Password LOCK SCREEN */}
