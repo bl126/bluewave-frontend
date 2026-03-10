@@ -99,6 +99,7 @@ export default function LandingPage() {
   // 🏆 Role Celebration State
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
   const [currentCelebratingRole, setCurrentCelebratingRole] = useState<string | null>(null);
+  const [initialProfile, setInitialProfile] = useState<any>(null);
 
   // 🤖 Daily AI Reward State
   const [isAIPopupOpen, setIsAIPopupOpen] = useState(false);
@@ -216,6 +217,7 @@ export default function LandingPage() {
         // Using explicit !== true check to handle potential nulls safely
         if (user.first_login_completed !== true) {
           console.log("Onboarding not completed for user:", savedTgId);
+          setInitialProfile(user);
           setOnboardingOpen(true);
           setIsLoading(false);
           return;
@@ -587,6 +589,7 @@ export default function LandingPage() {
         isOpen={onboardingOpen}
         onComplete={handleOnboardingComplete}
         autoUsername={telegramUser?.username || fallbackUsername}
+        initialUser={initialProfile}
       />
 
       {/* 🛡️ Recovery Password LOCK SCREEN */}

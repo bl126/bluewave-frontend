@@ -13,6 +13,7 @@ interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: (user: any) => void;
   autoUsername?: string;
+  initialUser?: any;
 }
 
 interface VerifyResponse {
@@ -25,9 +26,9 @@ interface VerifyResponse {
 
 import { ALL_COUNTRIES } from "@/lib/constants";
 
-export default function OnboardingModal({ isOpen, onComplete, autoUsername }: OnboardingModalProps) {
+export default function OnboardingModal({ isOpen, onComplete, autoUsername, initialUser }: OnboardingModalProps) {
   const { t } = useLanguage();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(initialUser ? 3 : 1);
 
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
@@ -35,7 +36,14 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [verifiedUser, setVerifiedUser] = useState<VerifyResponse | null>(null);
+  const [verifiedUser, setVerifiedUser] = useState<VerifyResponse | null>(initialUser || null);
+
+  useEffect(() => {
+    if (initialUser) {
+      setVerifiedUser(initialUser);
+      setStep(3);
+    }
+  }, [initialUser]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -105,15 +113,16 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
       // we need to check if the response was successful or had a detail error.
       // But postApi currently doesn't throw on 4xx, it returns the body.
 
-      if (data.detail) {
-        if (data.detail === "NOT_REGISTERED") {
+      if (data.error || data.detail) {
+        const err = data.error || data.detail;
+        if (err === "NOT_REGISTERED") {
           setError(t("onboarding.error_not_registered"));
-        } else if (data.detail === "RATE_LIMITED") {
+        } else if (err === "RATE_LIMITED" || err === "TOO_FAST") {
           setError(t("onboarding.error_rate_limit"));
-        } else if (data.detail === "TELEGRAM_DELIVERY_FAILED") {
+        } else if (err === "TELEGRAM_DELIVERY_FAILED") {
           setError(t("onboarding.error_delivery_failed"));
         } else {
-          setError(`${t("onboarding.error_request_code")} (${data.detail})`);
+          setError(`${t("onboarding.error_request_code")} (${err})`);
         }
         return;
       }
@@ -136,12 +145,18 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     try {
       const data = await postApi(`/login/verify_code`, { username: username.trim(), code: code.trim() });
 
-      if (data.detail) {
-        if (data.detail === "CODE_INVALID") setError(t("onboarding.error_invalid_code"));
-        else if (data.detail === "CODE_EXPIRED") setError(t("onboarding.error_expired_code"));
-        else if (data.detail === "NOT_REGISTERED") {
+      if (data.error || data.detail) {
+        const err = data.error || data.detail;
+        if (err === "CODE_INVALID") setError(t("onboarding.error_invalid_code"));
+        else if (err === "CODE_EXPIRED") setError(t("onboarding.error_expired_code"));
+        else if (err === "NOT_REGISTERED") {
           setError(t("onboarding.error_not_registered"));
-        } else setError(t("onboarding.error_verify_failed"));
+        } else setError(`${t("onboarding.error_verify_failed")} (${err})`);
+        return;
+      }
+
+      if (!data.tg_id) {
+        setError("Verification successful but Telegram ID missing. Please retry.");
         return;
       }
 
