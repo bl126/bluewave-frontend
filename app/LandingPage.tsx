@@ -28,7 +28,7 @@ import { getApi, postApi } from "@/lib/useApi";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
-
+import DailyAIPopup from "@/components/ui/DailyAIPopup";
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
@@ -100,7 +100,11 @@ export default function LandingPage() {
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
   const [currentCelebratingRole, setCurrentCelebratingRole] = useState<string | null>(null);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole;
+  // 🤖 Daily AI Reward State
+  const [isAIPopupOpen, setIsAIPopupOpen] = useState(false);
+  const [aiPointsAwarded, setAIPointsAwarded] = useState(0);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -164,7 +168,9 @@ export default function LandingPage() {
 
         if (effectiveTgId) {
           const retryTgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user || tgUser;
-          setFallbackUsername(retryTgUser?.username || `bw_user_${effectiveTgId}`);
+          if (retryTgUser?.username) {
+            setFallbackUsername(retryTgUser.username);
+          }
         }
 
         if (!effectiveTgId) {
@@ -257,6 +263,16 @@ export default function LandingPage() {
           // Show the first one after a short delay
           setTimeout(() => setCurrentCelebratingRole(user.pending_role_notifications[0]), 2000);
         }
+
+        /* [BLU_FREEZE] Mark off AI rewards
+        if (user.pending_ai_rewards && user.pending_ai_rewards.length > 0) {
+          const sum = user.pending_ai_rewards.reduce((acc: number, cur: any) => acc + (cur.action_data?.points_awarded || 0), 0);
+          if (sum > 0) {
+            setAIPointsAwarded(sum);
+            setTimeout(() => setIsAIPopupOpen(true), 2500);
+          }
+        }
+        */
 
         setBalance(user.points_balance ?? null);
 
@@ -403,6 +419,18 @@ export default function LandingPage() {
     }
   };
 
+  const handleClearAIPopup = async () => {
+    setIsAIPopupOpen(false);
+    try {
+      if (telegramUser?.tg_id) {
+        // We'll create this endpoint in the backend to mark AI notifications as read
+        await postApi("/user/clear_ai_rewards", { telegram_id: telegramUser.tg_id });
+      }
+    } catch (e) {
+      console.error("Clear AI Rewards error:", e);
+    }
+  };
+
   // 💰 Fetch balance (unchanged)
   const fetchBalance = async (tgId: number) => {
     try {
@@ -418,6 +446,7 @@ export default function LandingPage() {
     // skip initial - already got it from user fetch
   }, [telegramUser]);
 
+  /* [BLU_FREEZE] Mark off Daily AI Reward logic
   // 🔁 Listen for global balance updates (unchanged)
   useEffect(() => {
     const handleBalanceUpdate = (event: any) => {
@@ -426,6 +455,7 @@ export default function LandingPage() {
     window.addEventListener("updateBalance", handleBalanceUpdate);
     return () => window.removeEventListener("updateBalance", handleBalanceUpdate);
   }, []);
+  */
 
   // 🔄 Refresh balance every 60s (unchanged)
   useEffect(() => {
@@ -605,6 +635,15 @@ export default function LandingPage() {
         role={selectedRoleData}
         onClose={() => setSelectedRoleData(null)}
       />
+
+      {/* [BLU_FREEZE] DailyAIPopup disabled
+      isAIPopupOpen && (
+        <DailyAIPopup
+          pointsAwarded={aiPointsAwarded}
+          onClose={handleClearAIPopup}
+        />
+      )
+      */}
     </div>
   );
 }

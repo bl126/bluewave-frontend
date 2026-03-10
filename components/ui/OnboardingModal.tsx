@@ -176,6 +176,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername }: On
     try {
       const data = await postApi(`/user/update_profile`, {
         tg_id: verifiedUser.tg_id,
+        username: username.trim(),
         country_code: country,
       });
 
