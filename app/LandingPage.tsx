@@ -191,6 +191,12 @@ export default function LandingPage() {
             setTimeout(() => { window.location.reload(); }, 1200);
             return;
           }
+
+          if (data.error === "AUTH_REQUIRED" || data.error === "IDENTITY_MISMATCH") {
+            console.warn("Auth error. Clearing stale ID and showing onboarding...", data.error);
+            window.localStorage.removeItem("bw_tg_id");
+          }
+
           // User not found or auth error -> show onboarding
           setOnboardingOpen(true);
           setIsLoading(false);
@@ -207,7 +213,9 @@ export default function LandingPage() {
         }
 
         // 4. If onboarding not completed in DB -> force onboarding
-        if (!user.first_login_completed) {
+        // Using explicit !== true check to handle potential nulls safely
+        if (user.first_login_completed !== true) {
+          console.log("Onboarding not completed for user:", savedTgId);
           setOnboardingOpen(true);
           setIsLoading(false);
           return;
