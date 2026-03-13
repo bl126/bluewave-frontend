@@ -245,7 +245,18 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await postApi(`/presence/activate`, { tg_id: telegram_id, mission_type: type });
 
       if (data.success) {
+        // Optimistically update local state so UI reflects activation immediately
+        setPresenceMissions(prev => prev.map(m =>
+          m.type === type ? {
+            ...m,
+            status: "active",
+            activated_at: Date.now(),
+            expires_at: Date.now() + (m.duration_seconds * 1000)
+          } : m
+        ));
+
         setPresenceLoadingId(null); // Unlock UI immediately
+
         // If it was a 1h mission and a bonus was awarded, update balance
         if (data.streak_info?.bonus_awarded) {
           const uData = await getApi(`/balance/${telegram_id}`);
@@ -254,7 +265,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           );
         }
         // Refresh list to get new state (background)
-        loadData();
+        mutatePresence();
       } else {
         setPresenceLoadingId(null);
         setPopup(t("presence.error_activate"));
@@ -704,7 +715,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[150]
+                    className="fixed bottom-1/3 left-1/2 -translate-x-1/2 z-[200]
                                bg-cyan-950/90 border border-cyan-500/50 text-cyan-100
                                px-6 py-3 rounded-full shadow-[0_0_30px_#00e6ff40]
                                text-sm font-bold tracking-wide backdrop-blur-xl whitespace-nowrap"
