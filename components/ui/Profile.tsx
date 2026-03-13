@@ -429,7 +429,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               disabled={notifying || cooldown !== null}
                               className="flex-1 h-14 bg-black/40 border border-cyan-950 rounded-2xl text-cyan-500/40 font-bold uppercase text-[10px] leading-tight px-2 hover:text-cyan-400 transition-all"
                             >
-                              {cooldown !== null ? cooldownText : t("profile.notify_inactive")}
+                              {notifying ? "Notifying..." : (cooldown !== null ? cooldownText : t("profile.notify_inactive"))}
                             </button>
                           </div>
                         </div>

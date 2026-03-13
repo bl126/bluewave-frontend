@@ -116,7 +116,7 @@ function PresenceCard({
           `}
         >
           {isLoading ? t("profile.wait") : // reusing 'Please wait...' or similar
-            isCompleted ? t("presence.claim_reward").replace("{{amount}}", mission.reward.toString()) :
+            isCompleted ? t("presence.claim_reward").replace("{{amount}}", (mission.reward || 0).toString()) :
               isActive ? "SYNCING..." :
                 t("presence.activate")}
         </button>
@@ -143,6 +143,15 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   const [loading, setLoading] = useState(true);
 
+  if (!telegram_id && isOpen) {
+    return (
+      <div className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-cyan-500">
+        <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4" />
+        <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Synchronizing...</span>
+      </div>
+    );
+  }
+
   // Independent loading states
   const [presenceLoadingId, setPresenceLoadingId] = useState<string | null>(null);
   const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
@@ -162,29 +171,33 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
   // [CODE: FETCH_DATA]
   // 1. Fetch Presence Missions
-  const { data: presenceMissionsData, loading: presenceLoading, mutate: mutatePresence } =
+  const { data: presenceMissionsData, loading: presenceLoading, mutate: mutatePresence, error: presenceError } =
     useApi(telegram_id && isOpen ? `/presence/list/${telegram_id}` : null);
 
   // 2. Fetch Normal Missions
-  const { data: missionsData, loading: missionsLoading, mutate: mutateMissions } =
+  const { data: missionsData, loading: missionsLoading, mutate: mutateMissions, error: missionsError } =
     useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}` : null);
 
   useEffect(() => {
     if (presenceMissionsData) {
-      setPresenceMissions(presenceMissionsData);
+      if (Array.isArray(presenceMissionsData)) {
+        setPresenceMissions(presenceMissionsData);
+      } else if ((presenceMissionsData as any).error) {
+        setError((presenceMissionsData as any).error);
+      }
     }
   }, [presenceMissionsData]);
 
   useEffect(() => {
     if (missionsData) {
       let finalList: Mission[] = [];
-      if (missionsData.normal) finalList.push(...missionsData.normal);
-      if (missionsData.daily) finalList.push(...missionsData.daily);
-      if (missionsData.onboarding) finalList.push(...missionsData.onboarding);
-      if (missionsData.story && Object.keys(missionsData.story).length > 0) {
+      if (Array.isArray(missionsData.normal)) finalList.push(...missionsData.normal);
+      if (Array.isArray(missionsData.daily)) finalList.push(...missionsData.daily);
+      if (Array.isArray(missionsData.onboarding)) finalList.push(...missionsData.onboarding);
+      if (missionsData.story && typeof missionsData.story === "object" && !Array.isArray(missionsData.story) && Object.keys(missionsData.story).length > 0) {
         finalList.push(missionsData.story);
         // 🚀 PRE-FETCH story deeplink only if NOT DONE
-        if (missionsData.story.status !== "done" && !storyDataRef.current) {
+        if (missionsData.story.status !== "done" && !storyDataRef.current && telegram_id) {
           getApi(`/story/deeplink/${telegram_id}`)
             .then(dlData => {
               console.log("STORY_PREFETCH: Cached deeplink data", dlData);
@@ -207,6 +220,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   useEffect(() => {
     setLoading(presenceLoading || missionsLoading);
   }, [presenceLoading, missionsLoading]);
+
+  useEffect(() => {
+    const err = presenceError || missionsError;
+    if (err) {
+      console.error("MissionCenter Error:", err);
+      setError(typeof err === "string" ? err : (err.message || "Failed to load missions"));
+    }
+  }, [presenceError, missionsError]);
 
   const loadData = async () => {
     mutatePresence();
@@ -480,13 +501,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   type TabId = "presence" | "social" | "earn";
   const [activeTab, setActiveTab] = useState<TabId>("presence");
 
-  const presenceBadge = presenceMissions.filter(
+  const presenceBadge = Array.isArray(presenceMissions) ? presenceMissions.filter(
     (pm) => pm.status === "inactive" || pm.status === "completed"
-  ).length;
+  ).length : 0;
 
-  const socialBadge = missions.filter(
+  const socialBadge = Array.isArray(missions) ? missions.filter(
     (m) => m.status === "open" || m.status === "claim" || m.status === "waiting"
-  ).length;
+  ).length : 0;
 
 
   return (
@@ -500,7 +521,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          {/* ── Header Removed ── */}
 
 
           {/* ── Tab Bar ── */}
@@ -546,6 +566,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           {/* ── Tab Content ── */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
+
+              {error && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-center font-bold">
+                  {error === "AUTH_REQUIRED" ? "Session expired. Please restart the app." : error}
+                </div>
+              )}
 
               {/* PRESENCE TAB */}
               {activeTab === "presence" && (
@@ -629,6 +655,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                   {loading && missions.length === 0 && (
                     <div className="space-y-3 animate-pulse">
                       {[1, 2, 3].map(i => <div key={i} className="h-16 bg-cyan-900/10 rounded-xl border border-cyan-900/30" />)}
+                    </div>
+                  )}
+                  {!loading && missions.length === 0 && !error && (
+                    <div className="py-20 text-center opacity-30 italic text-xs uppercase tracking-widest">
+                      {t("missions.no_missions") || "No social missions available"}
                     </div>
                   )}
                 </motion.div>
