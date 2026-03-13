@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, getApi, postApi } from "@/lib/useApi";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
@@ -138,10 +138,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const { t } = useLanguage();
   const telegram_id = telegramUser?.id;
 
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [presenceMissions, setPresenceMissions] = useState<PresenceMission[]>([]);
+  // [CODE: MISSION_STATE]
+  const [optimisticPresence, setOptimisticPresence] = useState<Record<string, any>>({});
+  const [optimisticSocial, setOptimisticSocial] = useState<Record<string, any>>({});
 
-  const [loading, setLoading] = useState(true);
+  const [presenceLoadingId, setPresenceLoadingId] = useState<string | null>(null);
+  const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
 
   if (!telegram_id && isOpen) {
     return (
@@ -151,10 +153,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       </div>
     );
   }
-
-  // Independent loading states
-  const [presenceLoadingId, setPresenceLoadingId] = useState<string | null>(null);
-  const [claimingMissionId, setClaimingMissionId] = useState<string | null>(null);
 
   // Claim Boost Popup states
   const [isClaimBoostOpen, setIsClaimBoostOpen] = useState(false);
@@ -178,56 +176,64 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   const { data: missionsData, loading: missionsLoading, mutate: mutateMissions, error: missionsError } =
     useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}` : null);
 
-  useEffect(() => {
-    if (presenceMissionsData) {
-      if (Array.isArray(presenceMissionsData)) {
-        setPresenceMissions(presenceMissionsData);
-      } else if ((presenceMissionsData as any).error) {
-        setError((presenceMissionsData as any).error);
-      }
+  // 3. Derived Presence Missions
+  const presenceMissions = useMemo(() => {
+    if (!Array.isArray(presenceMissionsData)) return [];
+    return presenceMissionsData.map((m: PresenceMission) => ({
+      ...m,
+      ...(optimisticPresence[m.type] || {})
+    }));
+  }, [presenceMissionsData, optimisticPresence]);
+
+  // 4. Derived Social/Normal Missions
+  const missions = useMemo(() => {
+    if (!missionsData) return [];
+    let finalList: Mission[] = [];
+    if (Array.isArray(missionsData.normal)) finalList.push(...missionsData.normal);
+    if (Array.isArray(missionsData.daily)) finalList.push(...missionsData.daily);
+    if (Array.isArray(missionsData.onboarding)) finalList.push(...missionsData.onboarding);
+    if (missionsData.story && typeof missionsData.story === "object" && !Array.isArray(missionsData.story) && Object.keys(missionsData.story).length > 0) {
+      finalList.push(missionsData.story);
     }
-  }, [presenceMissionsData]);
+
+    // Merge optimistic updates
+    finalList = finalList.map((m: Mission) => ({
+      ...m,
+      ...(optimisticSocial[m.id] || {})
+    }));
+
+    // Sort onboarding first
+    const onboardingIds = ["join_channel", "join_news", "join_community", "join_bwavescan"];
+    return finalList.sort((a, b) =>
+      (onboardingIds.includes(a.id) ? -1 : 1) - (onboardingIds.includes(b.id) ? -1 : 1)
+    );
+  }, [missionsData, optimisticSocial]);
+
+  const loading = presenceLoading || missionsLoading;
 
   useEffect(() => {
-    if (missionsData) {
-      let finalList: Mission[] = [];
-      if (Array.isArray(missionsData.normal)) finalList.push(...missionsData.normal);
-      if (Array.isArray(missionsData.daily)) finalList.push(...missionsData.daily);
-      if (Array.isArray(missionsData.onboarding)) finalList.push(...missionsData.onboarding);
-      if (missionsData.story && typeof missionsData.story === "object" && !Array.isArray(missionsData.story) && Object.keys(missionsData.story).length > 0) {
-        finalList.push(missionsData.story);
-        // 🚀 PRE-FETCH story deeplink only if NOT DONE
-        if (missionsData.story.status !== "done" && !storyDataRef.current && telegram_id) {
-          getApi(`/story/deeplink/${telegram_id}`)
-            .then(dlData => {
-              console.log("STORY_PREFETCH: Cached deeplink data", dlData);
-              storyDataRef.current = dlData;
-            })
-            .catch(e => console.error("STORY_PREFETCH: Failed", e));
-        }
-      }
+    if (presenceMissionsData && (presenceMissionsData as any).error) {
+      setError((presenceMissionsData as any).error);
+    } else if (missionsData && (missionsData as any).error) {
+      setError((missionsData as any).error);
+    } else if (presenceError || missionsError) {
+      const err = presenceError || missionsError;
+      setError(typeof err === "string" ? err : (err?.message || "Sync Error"));
+    } else {
+      setError("");
+    }
+  }, [presenceMissionsData, missionsData, presenceError, missionsError]);
 
-      // Sort onboarding first
-      finalList.sort((a, b) => {
-        const onboardingIds = ["join_channel", "join_news", "join_community", "join_bwavescan"];
-        return (onboardingIds.includes(a.id) ? -1 : 1) - (onboardingIds.includes(b.id) ? -1 : 1);
-      });
-
-      setMissions(finalList);
+  // Story Prefetch
+  useEffect(() => {
+    if (missionsData?.story && missionsData.story.status !== "done" && !storyDataRef.current && telegram_id) {
+      getApi(`/story/deeplink/${telegram_id}`)
+        .then(dlData => {
+          storyDataRef.current = dlData;
+        })
+        .catch(e => console.error("STORY_PREFETCH: Failed", e));
     }
   }, [missionsData, telegram_id]);
-
-  useEffect(() => {
-    setLoading(presenceLoading || missionsLoading);
-  }, [presenceLoading, missionsLoading]);
-
-  useEffect(() => {
-    const err = presenceError || missionsError;
-    if (err) {
-      console.error("MissionCenter Error:", err);
-      setError(typeof err === "string" ? err : (err.message || "Failed to load missions"));
-    }
-  }, [presenceError, missionsError]);
 
   const loadData = async () => {
     mutatePresence();
@@ -245,15 +251,18 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
       const data = await postApi(`/presence/activate`, { tg_id: telegram_id, mission_type: type });
 
       if (data.success) {
+        const mission = presenceMissionsData?.find((m: any) => m.type === type);
+        const duration = mission?.duration_seconds || 3600;
+
         // Optimistically update local state so UI reflects activation immediately
-        setPresenceMissions(prev => prev.map(m =>
-          m.type === type ? {
-            ...m,
+        setOptimisticPresence(prev => ({
+          ...prev,
+          [type]: {
             status: "active",
             activated_at: Date.now(),
-            expires_at: Date.now() + (m.duration_seconds * 1000)
-          } : m
-        ));
+            expires_at: Date.now() + (duration * 1000)
+          }
+        }));
 
         setPresenceLoadingId(null); // Unlock UI immediately
 
@@ -314,7 +323,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           });
         }
 
-        loadData(); // Refresh UI in background
+        // Clear optimistic override once backend confirms
+        setOptimisticPresence(prev => {
+          const next = { ...prev };
+          delete next[type];
+          return next;
+        });
+
+        mutatePresence(); // Refresh UI in background
       } else {
         setPresenceLoadingId(null);
       }
@@ -358,9 +374,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
           try {
             tg.shareToStory(cached.poster_url, { text: cached.caption });
             console.log("STORY_MISSION: SYNC path success");
-            setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+            setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
             setTimeout(() => {
-              setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+              setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
             }, 18000);
             return;
           } catch (e) {
@@ -370,7 +386,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
         // 2. ASYNC PATH / FALLBACK: Fetch fresh data and try shareToStory again
         console.log("STORY_MISSION: Running ASYNC path");
-        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
 
         try {
           const dlData = await getApi(`/story/deeplink/${telegram_id}`);
@@ -387,7 +403,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 tg.shareToStory(dlData.poster_url, { text: dlData.caption });
                 console.log("STORY_MISSION: ASYNC shareToStory success");
                 setTimeout(() => {
-                  setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+                  setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
                 }, 18000);
                 return;
               } catch (e) {
@@ -408,19 +424,19 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         } catch (e) {
           console.error("STORY_MISSION: Total failure:", e);
           setPopup("Failed to load story mission. Please try again.");
-          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
+          setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
           setTimeout(() => setPopup(null), 3000);
           return;
         }
 
         setTimeout(() => {
-          setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+          setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
         }, 18000);
         return;
       }
 
       if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") {
-        const m = missions.find(m => m.id === id);
+        const m = (missions as Mission[]).find((m: Mission) => m.id === id);
         const tg = (window as any).Telegram?.WebApp;
         if (m?.url) {
           if (tg?.openTelegramLink && m.url.includes("t.me/")) {
@@ -432,11 +448,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       }
 
-      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+      setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
 
       // Simulate waiting time for "Syncing..." effect
       setTimeout(() => {
-        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
       }, 5000);
       return;
     }
@@ -445,7 +461,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
     try {
       await postApi(`/mission/open`, { telegram_id, mission_id: id });
 
-      const mission = missions.find(m => m.id === id);
+      const mission = (missions as Mission[]).find((m: Mission) => m.id === id);
 
       // 🚀 FORCE OPEN LINK LOGIC (Fixes "Open Again" not working)
       if (mission?.url) {
@@ -457,9 +473,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       }
 
-      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "waiting" } : m));
+      setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
       setTimeout(() => {
-        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "claim" } : m));
+        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
       }, 8000);
     } catch (e) { console.error(e); }
   };
@@ -483,7 +499,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "done" } : m));
+        setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
 
         // 🔥 Trigger Streak Celebration immediately for non-boost missions
         if (result.streak_info?.bonus_awarded) {
@@ -493,14 +509,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       } else {
         setPopup(t("missions.popup_complete") || "Not completed");
-        // Reset to "open" so user can try again
-        setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
+        // Clear optimistic override
+        setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
         setTimeout(() => setPopup(null), 2500);
       }
     } catch (e) {
       console.error(e);
-      // Fallback reset on error
-      setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "open" } : m));
+      // Clear optimistic override on error
+      setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
     } finally {
       setClaimingMissionId(null);
       setTimeout(() => setClaimCooldown(false), 1000);
@@ -512,12 +528,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
   type TabId = "presence" | "social" | "earn";
   const [activeTab, setActiveTab] = useState<TabId>("presence");
 
-  const presenceBadge = Array.isArray(presenceMissions) ? presenceMissions.filter(
-    (pm) => pm.status === "inactive" || pm.status === "completed"
+  const presenceBadge = Array.isArray(presenceMissions) ? (presenceMissions as PresenceMission[]).filter(
+    (pm: PresenceMission) => pm.status === "inactive" || pm.status === "completed"
   ).length : 0;
 
-  const socialBadge = Array.isArray(missions) ? missions.filter(
-    (m) => m.status === "open" || m.status === "claim" || m.status === "waiting"
+  const socialBadge = Array.isArray(missions) ? (missions as Mission[]).filter(
+    (m: Mission) => m.status === "open" || m.status === "claim" || m.status === "waiting"
   ).length : 0;
 
 
@@ -593,7 +609,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                   transition={{ duration: 0.2 }}
                   className="space-y-3"
                 >
-                  {presenceMissions.map((pm) => (
+                  {presenceMissions.map((pm: PresenceMission) => (
                     <PresenceCard
                       key={pm.type}
                       mission={pm}
@@ -607,6 +623,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
                       <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
                       <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
+                    </div>
+                  )}
+                  {presenceMissions.length === 0 && !loading && (
+                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                      <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center opacity-50">
+                        <Clock size={20} className="text-cyan-400" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-cyan-200 uppercase tracking-widest">{t("presence.no_missions") || "System Offline"}</p>
+                        <p className="text-[10px] text-cyan-500/70 max-w-[200px] leading-relaxed">
+                          We couldn't synchronize your presence mission. Please check your connection and reload.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => mutatePresence()}
+                        className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all font-mono"
+                      >
+                        ⚡ RETRY SYNC
+                      </button>
                     </div>
                   )}
                 </motion.div>
