@@ -387,14 +387,18 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Wallet Card */}
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group opacity-60 grayscale hover:grayscale-0 transition-all">
+                        <div
+                          onClick={() => !walletAddress && tonConnectUI.openModal()}
+                          className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all 
+                            ${walletAddress ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
+                        >
                           <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
                             <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
                           </div>
                           <div className="flex-1 px-4 flex flex-col">
-                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{walletAddress ? t("profile.wallet_connected") : t("profile.connect_wallet")}</span>
-                            {walletAddress && <span className="text-cyan-500/40 font-mono text-[9px] truncate max-w-[150px]">{walletAddress}</span>}
-                            <span className="text-cyan-500/20 text-[8px] font-bold uppercase tracking-widest mt-0.5">COMING SOON</span>
+                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
+                              {walletAddress ? "Connected" : "Connect TON Wallet"}
+                            </span>
                           </div>
                         </div>
 
