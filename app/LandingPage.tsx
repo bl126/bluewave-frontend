@@ -333,13 +333,19 @@ export default function LandingPage() {
       setIsNetworkBuilderModalOpen(true);
     };
 
+    const handleTONPop = () => {
+      setIsTONModalOpen(true);
+    };
+
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
     window.addEventListener('showNetworkBuilder' as any, handleNetworkPop);
+    window.addEventListener('showTONExplorer' as any, handleTONPop);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
       window.removeEventListener('showHumanVerification' as any, handleHumanPop);
       window.removeEventListener('showNetworkBuilder' as any, handleNetworkPop);
+      window.removeEventListener('showTONExplorer' as any, handleTONPop);
     };
   }, []);
 

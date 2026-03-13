@@ -62,6 +62,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
       postApi(`/user/update_profile`, {
         tg_id: telegramId,
         wallet_address: walletAddress
+      }).then((res) => {
+        // If the backend says ton_explorer_pending is true, trigger the modal immediately
+        if (res?.ton_explorer_pending) {
+          window.dispatchEvent(new CustomEvent('showTONExplorer'));
+        }
       }).catch(err => console.error("Wallet sync error:", err));
     }
   }, [walletAddress, telegramId]);
