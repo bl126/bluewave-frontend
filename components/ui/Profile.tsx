@@ -57,33 +57,31 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const walletAddress = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
 
-  // Track the last wallet we synced PER user so we never bleed wallets across accounts.
-  // TON Connect stores wallet in browser localStorage (device-level), so when a different
-  // Telegram account opens the app, useTonAddress() still returns the previous user's wallet.
-  // We guard against this by resetting lastSyncedWalletRef whenever telegramId changes.
-  const lastSyncedWalletRef = useRef<string | null>(null);
-  const lastSyncedTelegramIdRef = useRef<number | null>(null);
-
+  // ✅ CORRECT approach: onStatusChange fires ONLY when user actively connects/disconnects.
+  // useTonAddress() reads localStorage on mount — so it can return another user's wallet
+  // if you switch accounts in the same browser. We must NOT use it to sync to the backend.
   useEffect(() => {
-    // Reset the synced wallet whenever the user (telegramId) changes
-    if (lastSyncedTelegramIdRef.current !== telegramId) {
-      lastSyncedWalletRef.current = null;
-      lastSyncedTelegramIdRef.current = telegramId;
-    }
+    if (!tonConnectUI || !telegramId) return;
 
-    // Only sync if: wallet is freshly connected for THIS user and hasn't been synced yet
-    if (walletAddress && telegramId && walletAddress !== lastSyncedWalletRef.current) {
-      lastSyncedWalletRef.current = walletAddress;
-      postApi(`/user/update_profile`, {
-        tg_id: telegramId,
-        wallet_address: walletAddress
-      }).then((res) => {
-        if (res?.ton_explorer_pending) {
-          window.dispatchEvent(new CustomEvent('showTONExplorer'));
-        }
-      }).catch(err => console.error("Wallet sync error:", err));
-    }
-  }, [walletAddress, telegramId]);
+    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
+      if (wallet?.account?.address && telegramId) {
+        // User JUST connected a wallet right now (not a stale localStorage read)
+        const address = wallet.account.address;
+        postApi(`/user/update_profile`, {
+          tg_id: telegramId,
+          wallet_address: address
+        }).then((res) => {
+          if (res?.ton_explorer_pending) {
+            window.dispatchEvent(new CustomEvent('showTONExplorer'));
+          }
+        }).catch(err => console.error("Wallet sync error:", err));
+      }
+      // wallet === null means user disconnected — no backend update needed for that
+    });
+
+    return () => unsubscribe();
+  }, [tonConnectUI, telegramId]);
+
 
   useEffect(() => {
     if (!telegramId) {
@@ -419,20 +417,26 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Wallet Card */}
-                        <div
-                          onClick={() => !walletAddress && tonConnectUI.openModal()}
-                          className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all 
-                            ${walletAddress ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
-                        >
-                          <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
-                            <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
-                          </div>
-                          <div className="flex-1 px-4 flex flex-col">
-                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
-                              {walletAddress ? "Connected" : "Connect TON Wallet"}
-                            </span>
-                          </div>
-                        </div>
+                        {/* isWalletOwner: only true if TON Connect wallet matches THIS user's saved DB wallet */}
+                        {(() => {
+                          const isWalletOwner = !!(walletAddress && user.wallet_address && walletAddress === user.wallet_address);
+                          return (
+                            <div
+                              onClick={() => !isWalletOwner && tonConnectUI.openModal()}
+                              className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all 
+                                ${isWalletOwner ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
+                            >
+                              <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
+                                <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
+                              </div>
+                              <div className="flex-1 px-4 flex flex-col">
+                                <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
+                                  {isWalletOwner ? "Connected" : "Connect TON Wallet"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Earnings Card */}
                         <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
