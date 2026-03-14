@@ -7,7 +7,7 @@ import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useTonAddress, useTonConnectUI, toUserFriendlyAddress } from "@tonconnect/ui-react";
+import { useTonAddress, useTonConnectUI, TonConnectButton, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
 
@@ -65,14 +65,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
     const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
       if (wallet?.account?.address && telegramId) {
-        // wallet.account.address is the raw (0:xxxx) format.
-        // Convert to user-friendly EQD... format using the utility from @tonconnect/ui-react.
-        // This avoids the race condition where useTonAddress() hasn't updated yet.
         let friendlyAddress: string;
         try {
           friendlyAddress = toUserFriendlyAddress(wallet.account.address);
         } catch {
-          friendlyAddress = wallet.account.address; // fallback to raw if conversion fails
+          friendlyAddress = wallet.account.address;
         }
         postApi(`/user/update_profile`, {
           tg_id: telegramId,
@@ -81,14 +78,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           if (res?.ton_explorer_pending) {
             window.dispatchEvent(new CustomEvent('showTONExplorer'));
           }
-          // Refresh user profile so wallet_address appears in DB-driven state
           mutate();
         }).catch(err => console.error("Wallet sync error:", err));
       }
     });
 
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tonConnectUI, telegramId]);
 
 
@@ -426,25 +422,39 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Wallet Card */}
-                        {/* Use DB wallet_address as source of truth — avoids address format mismatch */}
                         {(() => {
-                          // 'Connected' = user.wallet_address is set in DB (they previously connected)
-                          // Do NOT compare walletAddress (TON Connect) vs user.wallet_address
-                          // because useTonAddress() format may differ from what was stored.
                           const isWalletConnected = !!(user?.wallet_address);
                           return (
-                            <div
-                              onClick={() => !isWalletConnected && tonConnectUI.openModal()}
-                              className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all 
-                                ${isWalletConnected ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
-                            >
-                              <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
-                                <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
+                            <div className="relative">
+                              {/* Invisible official TonConnectButton — handles TWA link opening natively */}
+                              <div className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden">
+                                <TonConnectButton />
                               </div>
-                              <div className="flex-1 px-4 flex flex-col">
-                                <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
-                                  {isWalletConnected ? "Connected" : "Connect TON Wallet"}
-                                </span>
+                              {/* Styled card — clicks the official button under the hood */}
+                              <div
+                                onClick={() => {
+                                  if (isWalletConnected) return;
+                                  // Trigger the official TonConnectButton which has proper TWA support
+                                  const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null;
+                                  if (btn) {
+                                    btn.click();
+                                  } else {
+                                    // Fallback if button not found
+                                    tonConnectUI.openModal();
+                                  }
+                                }}
+                                className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all
+                                  ${isWalletConnected ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
+                              >
+                                <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
+                                  <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
+                                </div>
+                                <div className="flex-1 px-4 flex flex-col">
+                                  <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
+                                    {isWalletConnected ? "Connected" : "Connect TON Wallet"}
+                                  </span>
+
+                                </div>
                               </div>
                             </div>
                           );

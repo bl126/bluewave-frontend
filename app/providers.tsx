@@ -2,12 +2,8 @@
 
 import { SWRConfig } from "swr";
 import { fetcher } from "@/lib/swrFetcher";
-
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-
-// Note: window.open is patched at the HTML level in layout.tsx to intercept
-// TON Connect wallet deep-links and route them through Telegram.WebApp.openLink().
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json"
         actionsConfiguration={{
           twaReturnUrl: "https://t.me/Bluewave_Ecosystem_bot/miniapp",
-          returnStrategy: "back"
+          returnStrategy: "back",
         }}
       >
         <SWRConfig
