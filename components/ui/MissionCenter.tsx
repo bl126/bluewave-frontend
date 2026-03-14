@@ -499,7 +499,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
+
+        // ✅ Mark as done optimistically — do NOT delete override, SWR cache still has "open"
+        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "done" } }));
+        // Sync from server in background to confirm
+        mutateMissions();
 
         // 🔥 Trigger Streak Celebration immediately for non-boost missions
         if (result.streak_info?.bonus_awarded) {
@@ -509,7 +513,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
         }
       } else {
         setPopup(t("missions.popup_complete") || "Not completed");
-        // Clear optimistic override
+        // Clear optimistic override on failed claim
         setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
         setTimeout(() => setPopup(null), 2500);
       }

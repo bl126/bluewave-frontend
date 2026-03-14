@@ -130,24 +130,37 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     }
   }, [swrUser?.level]);
 
+  // Initialize cooldownText immediately when cooldown is set (so it shows before first tick)
+  const formatMs = (ms: number) => {
+    const h = String(Math.floor(ms / 3600000)).padStart(2, "0");
+    const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, "0");
+    const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
+  const cooldownRef = useRef<number | null>(null);
+  cooldownRef.current = cooldown;
+
   useEffect(() => {
     if (cooldown === null) return;
+    // Show immediately on set
+    setCooldownText(formatMs(cooldown));
+
     const interval = setInterval(() => {
-      setCooldown(prev => {
-        if (!prev || prev <= 1000) {
-          setCooldown(null);
-          return null;
-        }
-        const next = prev - 1000;
-        const h = String(Math.floor(next / 3600000)).padStart(2, "0");
-        const m = String(Math.floor((next % 3600000) / 60000)).padStart(2, "0");
-        const s = String(Math.floor((next % 60000) / 1000)).padStart(2, "0");
-        setCooldownText(`${h}:${m}:${s}`);
-        return next;
-      });
+      const prev = cooldownRef.current;
+      if (!prev || prev <= 1000) {
+        setCooldown(null);
+        clearInterval(interval);
+        return;
+      }
+      const next = prev - 1000;
+      cooldownRef.current = next;
+      setCooldown(next);
+      setCooldownText(formatMs(next));
     }, 1000);
     return () => clearInterval(interval);
-  }, [cooldown]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cooldown !== null]); // Only restart the interval when cooldown toggles on/off
 
   const handleClaim = async () => {
     if (claiming) return;
