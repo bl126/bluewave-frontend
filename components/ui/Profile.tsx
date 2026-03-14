@@ -7,7 +7,7 @@ import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
+import { useTonAddress, useTonConnectUI, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
 
@@ -65,10 +65,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
     const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
       if (wallet?.account?.address && telegramId) {
-        // useTonAddress() returns the user-friendly address — use that for storage so
-        // the stored value matches what useTonAddress() returns for display checks.
-        // wallet.account.address is raw (0:...) — we need user-friendly instead.
-        const friendlyAddress = walletAddress || wallet.account.address;
+        // wallet.account.address is the raw (0:xxxx) format.
+        // Convert to user-friendly EQD... format using the utility from @tonconnect/ui-react.
+        // This avoids the race condition where useTonAddress() hasn't updated yet.
+        let friendlyAddress: string;
+        try {
+          friendlyAddress = toUserFriendlyAddress(wallet.account.address);
+        } catch {
+          friendlyAddress = wallet.account.address; // fallback to raw if conversion fails
+        }
         postApi(`/user/update_profile`, {
           tg_id: telegramId,
           wallet_address: friendlyAddress
@@ -83,7 +88,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     });
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tonConnectUI, telegramId]);
 
 
