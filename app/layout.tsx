@@ -14,6 +14,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         {/* ⭐ Telegram Mini App Script (MUST BE HERE) */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        {/* 💎 TON Connect: patch window.open before any bundle loads so wallet
+            deep-links are routed through Telegram.WebApp.openLink() instead of
+            being silently blocked by the Telegram Mini App sandbox. */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          (function() {
+            var _origOpen = window.open.bind(window);
+            window.open = function(url, target, features) {
+              var href = (url && typeof url === 'object') ? url.toString() : (url || '');
+              var tg = window.Telegram && window.Telegram.WebApp;
+              if (tg && href) {
+                try {
+                  if (href.indexOf('https://t.me/') === 0 || href.indexOf('tg://') === 0) {
+                    tg.openTelegramLink(href);
+                    return null;
+                  }
+                  if (href.indexOf('https://') === 0 || href.indexOf('http://') === 0) {
+                    tg.openLink(href, { try_instant_view: false });
+                    return null;
+                  }
+                } catch(err) {
+                  console.warn('[TonConnect] openLink fallback to window.open:', err);
+                }
+              }
+              return _origOpen(url, target, features);
+            };
+          })();
+        ` }} />
       </head>
       <body className="h-full overflow-hidden bg-black selection:bg-cyan-500/30 touch-none overscroll-none">
         <Providers>
