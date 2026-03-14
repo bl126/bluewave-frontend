@@ -14,28 +14,54 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         {/* ⭐ Telegram Mini App Script (MUST BE HERE) */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        {/* 💎 TON Connect: patch window.open before any bundle loads so wallet
-            deep-links are routed through Telegram.WebApp.openLink() instead of
-            being silently blocked by the Telegram Mini App sandbox. */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
+        {/* 💎 TON Connect TWA Fix:
+            1. Seed the sessionStorage key that @tonconnect/ui uses for TWA detection.
+               The library reads tgWebAppPlatform from location.hash but Next.js clears
+               the hash before the library can read it, so tmaPlatform stays "unknown"
+               and the library falls back to window.open() which Telegram blocks.
+            2. Also patch window.open() as a safety net for any remaining calls.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: `
           (function() {
+            try {
+              var tg = window.Telegram && window.Telegram.WebApp;
+              var platform = (tg && tg.platform) || 'tdesktop';
+              var version  = (tg && tg.version)  || '7.0';
+              var initData = (tg && tg.initData)  || '';
+
+              // Seed the key @tonconnect/ui uses as its sessionStorage fallback.
+              // Key: "ton-connect-session_storage_launchParams"
+              var existing = sessionStorage.getItem('ton-connect-session_storage_launchParams');
+              if (!existing) {
+                var params = {
+                  tgWebAppPlatform: platform,
+                  tgWebAppVersion: version,
+                  tgWebAppData: initData
+                };
+                sessionStorage.setItem(
+                  'ton-connect-session_storage_launchParams',
+                  JSON.stringify(params)
+                );
+              }
+            } catch(e) {}
+
+            // Safety net: patch window.open so any remaining calls still work.
             var _origOpen = window.open.bind(window);
             window.open = function(url, target, features) {
               var href = (url && typeof url === 'object') ? url.toString() : (url || '');
-              var tg = window.Telegram && window.Telegram.WebApp;
-              if (tg && href) {
+              var tg2 = window.Telegram && window.Telegram.WebApp;
+              if (tg2 && href) {
                 try {
                   if (href.indexOf('https://t.me/') === 0 || href.indexOf('tg://') === 0) {
-                    tg.openTelegramLink(href);
+                    tg2.openTelegramLink(href);
                     return null;
                   }
                   if (href.indexOf('https://') === 0 || href.indexOf('http://') === 0) {
-                    tg.openLink(href, { try_instant_view: false });
+                    tg2.openLink(href, { try_instant_view: false });
                     return null;
                   }
                 } catch(err) {
-                  console.warn('[TonConnect] openLink fallback to window.open:', err);
+                  console.warn('[TonConnect] openLink fallback:', err);
                 }
               }
               return _origOpen(url, target, features);
