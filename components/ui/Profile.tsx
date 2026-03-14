@@ -57,29 +57,33 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const walletAddress = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
 
-  // ✅ CORRECT approach: onStatusChange fires ONLY when user actively connects/disconnects.
-  // useTonAddress() reads localStorage on mount — so it can return another user's wallet
-  // if you switch accounts in the same browser. We must NOT use it to sync to the backend.
+  // ✅ onStatusChange fires ONLY when user actively connects/disconnects — never on mount.
+  // useTonAddress() returns user-friendly format (EQD...). We store that in the DB
+  // so the display comparison works correctly.
   useEffect(() => {
     if (!tonConnectUI || !telegramId) return;
 
     const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
       if (wallet?.account?.address && telegramId) {
-        // User JUST connected a wallet right now (not a stale localStorage read)
-        const address = wallet.account.address;
+        // useTonAddress() returns the user-friendly address — use that for storage so
+        // the stored value matches what useTonAddress() returns for display checks.
+        // wallet.account.address is raw (0:...) — we need user-friendly instead.
+        const friendlyAddress = walletAddress || wallet.account.address;
         postApi(`/user/update_profile`, {
           tg_id: telegramId,
-          wallet_address: address
+          wallet_address: friendlyAddress
         }).then((res) => {
           if (res?.ton_explorer_pending) {
             window.dispatchEvent(new CustomEvent('showTONExplorer'));
           }
+          // Refresh user profile so wallet_address appears in DB-driven state
+          mutate();
         }).catch(err => console.error("Wallet sync error:", err));
       }
-      // wallet === null means user disconnected — no backend update needed for that
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tonConnectUI, telegramId]);
 
 
@@ -417,21 +421,24 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Wallet Card */}
-                        {/* isWalletOwner: only true if TON Connect wallet matches THIS user's saved DB wallet */}
+                        {/* Use DB wallet_address as source of truth — avoids address format mismatch */}
                         {(() => {
-                          const isWalletOwner = !!(walletAddress && user.wallet_address && walletAddress === user.wallet_address);
+                          // 'Connected' = user.wallet_address is set in DB (they previously connected)
+                          // Do NOT compare walletAddress (TON Connect) vs user.wallet_address
+                          // because useTonAddress() format may differ from what was stored.
+                          const isWalletConnected = !!(user?.wallet_address);
                           return (
                             <div
-                              onClick={() => !isWalletOwner && tonConnectUI.openModal()}
+                              onClick={() => !isWalletConnected && tonConnectUI.openModal()}
                               className={`bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all 
-                                ${isWalletOwner ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
+                                ${isWalletConnected ? "grayscale-0 opacity-100 cursor-default" : "grayscale opacity-60 cursor-pointer hover:grayscale-0 hover:opacity-100 hover:border-cyan-500/30 active:scale-95"}`}
                             >
                               <div className="p-3 bg-cyan-500/5 rounded-2xl shadow-inner border border-cyan-500/10">
                                 <img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" />
                               </div>
                               <div className="flex-1 px-4 flex flex-col">
                                 <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">
-                                  {isWalletOwner ? "Connected" : "Connect TON Wallet"}
+                                  {isWalletConnected ? "Connected" : "Connect TON Wallet"}
                                 </span>
                               </div>
                             </div>

@@ -10,7 +10,13 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
-      <TonConnectUIProvider manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json">
+      <TonConnectUIProvider
+        manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json"
+        actionsConfiguration={{
+          twaReturnUrl: "https://t.me/Bluewave_Ecosystem_bot/miniapp",
+          returnStrategy: "back"
+        }}
+      >
         <SWRConfig
           value={{
             fetcher,
