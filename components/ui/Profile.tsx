@@ -57,13 +57,27 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const walletAddress = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
 
+  // Track the last wallet we synced PER user so we never bleed wallets across accounts.
+  // TON Connect stores wallet in browser localStorage (device-level), so when a different
+  // Telegram account opens the app, useTonAddress() still returns the previous user's wallet.
+  // We guard against this by resetting lastSyncedWalletRef whenever telegramId changes.
+  const lastSyncedWalletRef = useRef<string | null>(null);
+  const lastSyncedTelegramIdRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (walletAddress && telegramId) {
+    // Reset the synced wallet whenever the user (telegramId) changes
+    if (lastSyncedTelegramIdRef.current !== telegramId) {
+      lastSyncedWalletRef.current = null;
+      lastSyncedTelegramIdRef.current = telegramId;
+    }
+
+    // Only sync if: wallet is freshly connected for THIS user and hasn't been synced yet
+    if (walletAddress && telegramId && walletAddress !== lastSyncedWalletRef.current) {
+      lastSyncedWalletRef.current = walletAddress;
       postApi(`/user/update_profile`, {
         tg_id: telegramId,
         wallet_address: walletAddress
       }).then((res) => {
-        // If the backend says ton_explorer_pending is true, trigger the modal immediately
         if (res?.ton_explorer_pending) {
           window.dispatchEvent(new CustomEvent('showTONExplorer'));
         }
