@@ -480,8 +480,8 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, [telegramUser]);
 
-  // 🔥 NEW: Called when onboarding completes successfully
-  const handleOnboardingComplete = (user: any) => {
+  // 🔥 Called when onboarding completes successfully
+  const handleOnboardingComplete = async (user: any) => {
     const tgId = user.tg_id;
 
     // Save for future auto-login
@@ -489,17 +489,64 @@ export default function LandingPage() {
       window.localStorage.setItem("bw_tg_id", String(tgId));
     }
 
-    // Set user into state
-    setTelegramUser({
-      id: tgId,
-      tg_id: tgId,
-      username: user.username,
-      first_name: user.first_name,
-      photo_url: user.photo_url || null,
-      points_balance: user.points_balance ?? null,
-    });
+    // Re-fetch full profile from backend to get all fields (bw_id, roles, balance, etc.)
+    try {
+      const data = await getApi(`/init/${tgId}`);
+      if (!data.error) {
+        const fullUser = data.profile;
 
-    setBalance(user.points_balance ?? null);
+        // Seed SWR cache — same as initial load (fixes Bug #4)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        mutate(`${apiUrl}/api/user/${tgId}`, fullUser, false);
+        mutate(`${apiUrl}/api/missions/all/${tgId}`, data.missions, false);
+        mutate(`${apiUrl}/api/presence/list/${tgId}`, data.presence, false);
+        mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
+
+        // Set full user into state (fixes Bug #3)
+        setTelegramUser({
+          id: tgId,
+          tg_id: tgId,
+          username: fullUser.username,
+          first_name: fullUser.name,
+          photo_url: fullUser.photo_url || null,
+          points_balance: fullUser.points_balance ?? 0,
+          referral_earnings_pending: fullUser.referral_earnings_pending ?? 0,
+          total_referrals: fullUser.total_referrals ?? 0,
+          inactive_referrals_cache: fullUser.inactive_referrals_cache ?? 0,
+          streak: fullUser.streak_days ?? 0,
+          bw_id: fullUser.bw_id,
+          joined_at: fullUser.joined_at,
+          human_verification_pending: fullUser.human_verification_pending || false,
+          network_builder_pending: fullUser.network_builder_pending || false,
+          ton_explorer_pending: fullUser.ton_explorer_pending || false,
+        });
+
+        setBalance(fullUser.points_balance ?? null);
+      } else {
+        // Fallback: use partial user data if re-fetch fails
+        setTelegramUser({
+          id: tgId,
+          tg_id: tgId,
+          username: user.username,
+          first_name: user.first_name,
+          photo_url: user.photo_url || null,
+          points_balance: user.points_balance ?? null,
+        });
+        setBalance(user.points_balance ?? null);
+      }
+    } catch (e) {
+      console.error("Post-onboarding re-fetch error:", e);
+      // Fallback: use partial user data
+      setTelegramUser({
+        id: tgId,
+        tg_id: tgId,
+        username: user.username,
+        first_name: user.first_name,
+        photo_url: user.photo_url || null,
+        points_balance: user.points_balance ?? null,
+      });
+      setBalance(user.points_balance ?? null);
+    }
 
     setOnboardingOpen(false);
   };

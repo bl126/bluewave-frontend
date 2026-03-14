@@ -164,7 +164,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
       setVerifiedUser(user);
 
       // If user already completed onboarding earlier (another device), just finish.
-      if (user.first_login_completed && user.country_code) {
+      if (user.first_login_completed) {
         onComplete(user);
         return;
       }
