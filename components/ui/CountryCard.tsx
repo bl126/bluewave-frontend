@@ -11,8 +11,8 @@ interface CountryCardProps {
     onClose: () => void;
 }
 
-const CARD_W = 170;
-const CARD_H = 72;
+const MIN_CARD_W = 180;
+const MAX_CARD_W = 260; // wider for very long names
 const EDGE_PAD = 14;
 
 export default function CountryCard({
@@ -24,23 +24,29 @@ export default function CountryCard({
 }: CountryCardProps) {
     const [displayed, setDisplayed] = useState("");
     const [visible, setVisible] = useState(false);
-    const [cardPos, setCardPos] = useState({ x: 0, y: 0 });
+    const [cardPos, setCardPos] = useState({ x: 0, y: 0, width: MIN_CARD_W });
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // ── Compute clamped card position ──
+    // ── Compute dynamic width & position ──
     useEffect(() => {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
+        // Estimate width based on name length (crude but effective)
+        const estimatedW = Math.max(MIN_CARD_W, Math.min(MAX_CARD_W, 60 + countryName.length * 8));
+        const cardH = 72;
+
         let cx = dotX + 24;
-        if (cx + CARD_W > vw - EDGE_PAD) cx = dotX - CARD_W - 24;
-        cx = Math.max(EDGE_PAD, Math.min(cx, vw - CARD_W - EDGE_PAD));
+        // Flip if it overflows right
+        if (cx + estimatedW > vw - EDGE_PAD) cx = dotX - estimatedW - 24;
+        // Clamp horizontally
+        cx = Math.max(EDGE_PAD, Math.min(cx, vw - estimatedW - EDGE_PAD));
 
-        let cy = dotY - CARD_H / 2;
-        cy = Math.max(EDGE_PAD, Math.min(cy, vh - CARD_H - EDGE_PAD));
+        let cy = dotY - cardH / 2;
+        cy = Math.max(EDGE_PAD, Math.min(cy, vh - cardH - EDGE_PAD));
 
-        setCardPos({ x: cx, y: cy });
-    }, [dotX, dotY]);
+        setCardPos({ x: cx, y: cy, width: estimatedW });
+    }, [dotX, dotY, countryName]);
 
     // ── Fade-in ──
     useEffect(() => {
@@ -67,14 +73,13 @@ export default function CountryCard({
 
     return (
         <>
-            {/* ── Floating Card ── */}
             <div
                 style={{
                     position: "absolute",
                     left: cardPos.x,
                     top: cardPos.y,
-                    width: CARD_W,
-                    height: CARD_H,
+                    width: cardPos.width,
+                    minHeight: 72,
                     zIndex: 60,
                     opacity: visible ? 1 : 0,
                     transform: visible
@@ -100,12 +105,11 @@ export default function CountryCard({
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
-                        padding: "0 14px",
+                        padding: "12px 14px",
                         position: "relative",
                         overflow: "hidden",
                     }}
                 >
-                    {/* Corner accent */}
                     <div
                         style={{
                             position: "absolute",
@@ -119,7 +123,6 @@ export default function CountryCard({
                         }}
                     />
 
-                    {/* Flag */}
                     <span
                         style={{
                             fontSize: 26,
@@ -131,7 +134,6 @@ export default function CountryCard({
                         {flag}
                     </span>
 
-                    {/* Country name */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                             style={{
@@ -140,10 +142,10 @@ export default function CountryCard({
                                 color: "#e8f9ff",
                                 letterSpacing: "0.04em",
                                 fontFamily: "system-ui, -apple-system, sans-serif",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
                                 textShadow: "0 0 12px rgba(0,230,255,0.35)",
+                                lineHeight: 1.2,
+                                wordBreak: "break-word",
+                                whiteSpace: "normal",
                             }}
                         >
                             {displayed}
@@ -164,7 +166,6 @@ export default function CountryCard({
                         </div>
                     </div>
 
-                    {/* Close button */}
                     <button
                         onClick={onClose}
                         style={{
@@ -181,23 +182,10 @@ export default function CountryCard({
                             padding: 0,
                             transition: "background 0.2s, border-color 0.2s",
                         }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                                "rgba(0,230,255,0.18)";
-                            (e.currentTarget as HTMLButtonElement).style.borderColor =
-                                "rgba(0,230,255,0.5)";
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background =
-                                "rgba(0,230,255,0.08)";
-                            (e.currentTarget as HTMLButtonElement).style.borderColor =
-                                "rgba(0,230,255,0.25)";
-                        }}
                     >
                         <X size={11} color="rgba(0,230,255,0.8)" strokeWidth={2.5} />
                     </button>
 
-                    {/* Scan-line shimmer */}
                     <div
                         style={{
                             position: "absolute",
