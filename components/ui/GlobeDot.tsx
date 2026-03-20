@@ -3,7 +3,21 @@ import * as THREE from "three";
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 
-export default function GlobeDot({ position }: { position: THREE.Vector3 }) {
+interface GlobeDotProps {
+  position: THREE.Vector3;
+  countryName: string;
+  flag: string;
+  bwCount: number;
+  onClick: (pos: THREE.Vector3) => void;
+}
+
+export default function GlobeDot({
+  position,
+  countryName,
+  flag,
+  bwCount,
+  onClick,
+}: GlobeDotProps) {
   const rippleRef = useRef<THREE.Mesh>(null);
   const grainsRef = useRef<THREE.Points>(null);
 
@@ -32,7 +46,8 @@ export default function GlobeDot({ position }: { position: THREE.Vector3 }) {
     }
 
     if (grainsRef.current) {
-      const arr = grainsRef.current.geometry.attributes.position.array as Float32Array;
+      const arr = grainsRef.current.geometry.attributes.position
+        .array as Float32Array;
       for (let i = 0; i < arr.length; i += 3) {
         arr[i] += (Math.random() - 0.5) * delta * 0.05;
         arr[i + 1] += (Math.random() - 0.5) * delta * 0.05;
@@ -44,6 +59,25 @@ export default function GlobeDot({ position }: { position: THREE.Vector3 }) {
 
   return (
     <group position={position}>
+      {/* Clickable core dot — slightly enlarged hit area */}
+      <mesh
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          onClick(position);
+        }}
+      >
+        <sphereGeometry args={[0.035, 16, 16]} />
+        <meshStandardMaterial
+          color="#00e6ff"
+          emissive="#00e6ff"
+          emissiveIntensity={3}
+          toneMapped={false}
+          transparent
+          opacity={0}
+        />
+      </mesh>
+
+      {/* Visible glowing dot */}
       <mesh>
         <sphereGeometry args={[0.02, 16, 16]} />
         <meshStandardMaterial
