@@ -6,85 +6,77 @@ import { X } from "lucide-react";
 interface CountryCardProps {
     countryName: string;
     flag: string;
-    bwCount: number;
-    /** Card anchor in px from top-left of the canvas container */
-    screenX: number;
-    screenY: number;
-    /** Dot position in px — for the SVG line start */
+    /** Dot screen position in px */
     dotX: number;
     dotY: number;
     onClose: () => void;
 }
 
-const FULL_TEXT = (name: string, count: number) =>
-    `${name}\n${count} BW ID${count !== 1 ? "s" : ""}`;
+const CARD_W = 170;
+const CARD_H = 72;
+const EDGE_PAD = 14; // min distance from any screen edge
 
 export default function CountryCard({
     countryName,
     flag,
-    bwCount,
-    screenX,
-    screenY,
     dotX,
     dotY,
     onClose,
 }: CountryCardProps) {
     const [displayed, setDisplayed] = useState("");
     const [visible, setVisible] = useState(false);
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [cardPos, setCardPos] = useState({ x: 0, y: 0, lineEndX: 0, lineEndY: 0 });
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const fullText = FULL_TEXT(countryName, bwCount);
-
-    // Fade-in on mount
+    // ── Compute clamped card position ──
     useEffect(() => {
-        const t = setTimeout(() => setVisible(true), 20);
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        // Try placing card to the right of the dot first
+        let cx = dotX + 24;
+        // Flip to left if it would overflow right edge
+        if (cx + CARD_W > vw - EDGE_PAD) cx = dotX - CARD_W - 24;
+        // Clamp horizontally within viewport
+        cx = Math.max(EDGE_PAD, Math.min(cx, vw - CARD_W - EDGE_PAD));
+
+        // Vertically centre on dot, then clamp
+        let cy = dotY - CARD_H / 2;
+        cy = Math.max(EDGE_PAD, Math.min(cy, vh - CARD_H - EDGE_PAD));
+
+        // Line connects dot → nearest vertical edge of card
+        const lineEndX = cx > dotX ? cx : cx + CARD_W;
+        const lineEndY = cy + CARD_H / 2;
+
+        setCardPos({ x: cx, y: cy, lineEndX, lineEndY });
+    }, [dotX, dotY]);
+
+    // ── Fade-in ──
+    useEffect(() => {
+        const t = setTimeout(() => setVisible(true), 30);
         return () => clearTimeout(t);
     }, []);
 
-    // Typewriter effect
+    // ── Typewriter ──
     useEffect(() => {
         let idx = 0;
         setDisplayed("");
-
-        // Small delay before typing starts (let the card appear first)
-        const startDelay = setTimeout(() => {
+        const start = setTimeout(() => {
             timerRef.current = setInterval(() => {
                 idx++;
-                setDisplayed(fullText.slice(0, idx));
-                if (idx >= fullText.length) {
-                    clearInterval(timerRef.current!);
-                }
-            }, 45);
-        }, 300);
-
+                setDisplayed(countryName.slice(0, idx));
+                if (idx >= countryName.length) clearInterval(timerRef.current!);
+            }, 55);
+        }, 280);
         return () => {
-            clearTimeout(startDelay);
+            clearTimeout(start);
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [fullText]);
-
-    // Clamp card to stay within a 380px wide viewport (mobile)
-    const CARD_W = 160;
-    const CARD_H = 80;
-
-    // Place card offset from the dot, adjusting if near edges
-    let cardX = screenX + 20;
-    let cardY = screenY - CARD_H / 2;
-
-    // Flip horizontal if card would overflow right
-    if (cardX + CARD_W > 360) cardX = screenX - CARD_W - 20;
-    // Keep vertically on screen
-    if (cardY < 10) cardY = 10;
-
-    // Line endpoints: from dot center → nearest card edge
-    const lineEndX = cardX > screenX ? cardX : cardX + CARD_W;
-    const lineEndY = cardY + CARD_H / 2;
-
-    const lines = displayed.split("\n");
+    }, [countryName]);
 
     return (
         <>
-            {/* ── SVG Connector Line ── */}
+            {/* ── SVG Line ── */}
             <svg
                 style={{
                     position: "absolute",
@@ -93,185 +85,167 @@ export default function CountryCard({
                     height: "100%",
                     pointerEvents: "none",
                     zIndex: 50,
+                    overflow: "visible",
                 }}
             >
                 <defs>
-                    <filter id="glow-line">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
-                        <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
+                    <filter id="cg-glow">
+                        <feGaussianBlur stdDeviation="3" result="b" />
+                        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
                     </filter>
                 </defs>
-                {/* Glow copy */}
+                {/* Glow halo */}
                 <line
-                    x1={dotX}
-                    y1={dotY}
-                    x2={lineEndX}
-                    y2={lineEndY}
-                    stroke="#00e6ff"
-                    strokeWidth="2"
-                    strokeOpacity="0.25"
-                    filter="url(#glow-line)"
+                    x1={dotX} y1={dotY}
+                    x2={cardPos.lineEndX} y2={cardPos.lineEndY}
+                    stroke="#00e6ff" strokeWidth="3" strokeOpacity="0.2"
+                    filter="url(#cg-glow)" strokeLinecap="round"
+                />
+                {/* Main line */}
+                <line
+                    x1={dotX} y1={dotY}
+                    x2={cardPos.lineEndX} y2={cardPos.lineEndY}
+                    stroke="#00e6ff" strokeWidth="1.5" strokeOpacity="0.75"
                     strokeLinecap="round"
                 />
-                {/* Sharp line */}
-                <line
-                    x1={dotX}
-                    y1={dotY}
-                    x2={lineEndX}
-                    y2={lineEndY}
-                    stroke="#00e6ff"
-                    strokeWidth="1.2"
-                    strokeOpacity="0.85"
-                    strokeLinecap="round"
-                    strokeDasharray="4 3"
-                />
-                {/* Dot at origin */}
-                <circle cx={dotX} cy={dotY} r={4} fill="#00e6ff" opacity="0.9" />
+                {/* Origin dot */}
+                <circle cx={dotX} cy={dotY} r={5} fill="#00e6ff" opacity="0.95"
+                    filter="url(#cg-glow)" />
             </svg>
 
-            {/* ── Floating Card ── */}
+            {/* ── Card ── */}
             <div
                 style={{
                     position: "absolute",
-                    left: cardX,
-                    top: cardY,
+                    left: cardPos.x,
+                    top: cardPos.y,
                     width: CARD_W,
+                    height: CARD_H,
                     zIndex: 60,
                     opacity: visible ? 1 : 0,
-                    transform: visible ? "scale(1)" : "scale(0.85)",
-                    transition: "opacity 0.25s ease, transform 0.25s ease",
+                    transform: visible ? "translateY(0) scale(1)" : "translateY(6px) scale(0.92)",
+                    transition: "opacity 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.3s cubic-bezier(0.22,1,0.36,1)",
                     pointerEvents: "auto",
                 }}
             >
-                {/* Card body */}
                 <div
                     style={{
-                        background: "rgba(0, 10, 20, 0.92)",
-                        border: "1px solid rgba(0, 230, 255, 0.45)",
-                        borderRadius: 12,
-                        boxShadow:
-                            "0 0 24px rgba(0,230,255,0.18), 0 0 6px rgba(0,230,255,0.1)",
-                        backdropFilter: "blur(12px)",
-                        padding: "10px 12px 10px 12px",
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 14,
+                        background: "linear-gradient(135deg, rgba(0,12,26,0.96) 0%, rgba(0,6,16,0.98) 100%)",
+                        border: "1px solid rgba(0,230,255,0.35)",
+                        boxShadow: "0 0 32px rgba(0,230,255,0.12), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,230,255,0.08)",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "0 14px",
                         position: "relative",
+                        overflow: "hidden",
                     }}
                 >
+                    {/* Subtle corner accent */}
+                    <div style={{
+                        position: "absolute", top: 0, left: 0,
+                        width: 40, height: 40,
+                        background: "radial-gradient(circle at 0% 0%, rgba(0,230,255,0.08), transparent 70%)",
+                        pointerEvents: "none",
+                    }} />
+
+                    {/* Flag */}
+                    <span style={{ fontSize: 26, lineHeight: 1, flexShrink: 0, filter: "drop-shadow(0 0 6px rgba(0,230,255,0.3))" }}>
+                        {flag}
+                    </span>
+
+                    {/* Country name typewriter */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: "0.18em",
+                            textTransform: "uppercase",
+                            color: "rgba(0,230,255,0.45)",
+                            marginBottom: 3,
+                            fontFamily: "system-ui, sans-serif",
+                        }}>
+                            Active Region
+                        </div>
+                        <div style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: "#e8f9ff",
+                            letterSpacing: "0.04em",
+                            fontFamily: "system-ui, -apple-system, sans-serif",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            textShadow: "0 0 12px rgba(0,230,255,0.35)",
+                        }}>
+                            {displayed}
+                            {/* Blinking cursor */}
+                            {displayed.length < countryName.length && (
+                                <span style={{
+                                    display: "inline-block",
+                                    width: 2,
+                                    height: 13,
+                                    background: "#00e6ff",
+                                    marginLeft: 2,
+                                    verticalAlign: "middle",
+                                    borderRadius: 1,
+                                    animation: "tw-blink 0.6s step-end infinite",
+                                }} />
+                            )}
+                        </div>
+                    </div>
+
                     {/* Close button */}
                     <button
                         onClick={onClose}
                         style={{
-                            position: "absolute",
-                            top: 6,
-                            right: 6,
-                            width: 18,
-                            height: 18,
+                            flexShrink: 0,
+                            width: 22,
+                            height: 22,
                             borderRadius: "50%",
-                            background: "rgba(0,230,255,0.12)",
-                            border: "1px solid rgba(0,230,255,0.3)",
+                            background: "rgba(0,230,255,0.08)",
+                            border: "1px solid rgba(0,230,255,0.25)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             cursor: "pointer",
                             padding: 0,
+                            transition: "background 0.2s, border-color 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,230,255,0.18)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,230,255,0.5)";
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,230,255,0.08)";
+                            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,230,255,0.25)";
                         }}
                     >
-                        <X size={10} color="#00e6ff" />
+                        <X size={11} color="rgba(0,230,255,0.8)" strokeWidth={2.5} />
                     </button>
 
-                    {/* Flag */}
-                    <div style={{ fontSize: 22, lineHeight: 1, marginBottom: 6 }}>
-                        {flag}
-                    </div>
-
-                    {/* Typewriter text */}
-                    <div
-                        style={{
-                            fontFamily: "'Courier New', monospace",
-                            fontSize: 11,
-                            color: "#00e6ff",
-                            lineHeight: 1.5,
-                            whiteSpace: "pre-wrap",
-                            textShadow: "0 0 8px rgba(0,230,255,0.6)",
-                            minHeight: 34,
-                        }}
-                    >
-                        {lines[0] && (
-                            <div
-                                style={{
-                                    fontWeight: 700,
-                                    letterSpacing: "0.05em",
-                                    fontSize: 11,
-                                    color: "#e0f9ff",
-                                }}
-                            >
-                                {lines[0]}
-                            </div>
-                        )}
-                        {lines[1] && (
-                            <div
-                                style={{
-                                    fontSize: 10,
-                                    color: "#00e6ff",
-                                    opacity: 0.8,
-                                    marginTop: 2,
-                                }}
-                            >
-                                {lines[1]}
-                            </div>
-                        )}
-                        {/* Blinking cursor */}
-                        {displayed.length < fullText.length && (
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    width: 6,
-                                    height: 12,
-                                    background: "#00e6ff",
-                                    marginLeft: 2,
-                                    verticalAlign: "middle",
-                                    animation: "blink 0.7s step-end infinite",
-                                }}
-                            />
-                        )}
-                    </div>
-
-                    {/* Scan line animation */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            inset: 0,
-                            borderRadius: 12,
-                            overflow: "hidden",
-                            pointerEvents: "none",
-                        }}
-                    >
-                        <div
-                            style={{
-                                position: "absolute",
-                                left: 0,
-                                right: 0,
-                                height: 2,
-                                background:
-                                    "linear-gradient(90deg, transparent, rgba(0,230,255,0.3), transparent)",
-                                animation: "scanline 2s linear infinite",
-                            }}
-                        />
+                    {/* Scan-line shimmer */}
+                    <div style={{
+                        position: "absolute", inset: 0, borderRadius: 14,
+                        pointerEvents: "none", overflow: "hidden",
+                    }}>
+                        <div style={{
+                            position: "absolute", left: 0, right: 0, height: 1,
+                            background: "linear-gradient(90deg, transparent 0%, rgba(0,230,255,0.2) 50%, transparent 100%)",
+                            animation: "tw-scan 2.5s linear infinite",
+                        }} />
                     </div>
                 </div>
             </div>
 
             <style>{`
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes scanline {
-          0% { top: 0; }
-          100% { top: 100%; }
-        }
+        @keyframes tw-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes tw-scan  { 0%{top:0} 100%{top:100%} }
       `}</style>
         </>
     );
