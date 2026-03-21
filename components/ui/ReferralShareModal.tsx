@@ -1,8 +1,9 @@
+// Component for sharing referral links and QR codes
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import QRCode from "react-qr-code";
 
 interface ReferralShareModalProps {
@@ -15,6 +16,8 @@ interface ReferralShareModalProps {
 
 export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, referralLink }: ReferralShareModalProps) {
     const [copied, setCopied] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+    const qrRef = useRef<HTMLDivElement>(null);
     const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
 
     const handleCopy = () => {
@@ -24,19 +27,83 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     };
 
     const handleShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Bluewave Network',
-                    text: `Join my network on Bluewave! My BW ID: ${bwId}`,
-                    url: link,
-                });
-            } catch (err) {
-                console.log('Error sharing:', err);
+        if (isSharing) return;
+        setIsSharing(true);
+
+        try {
+            const svg = qrRef.current?.querySelector("svg");
+            if (!svg || !navigator.share) {
+                handleCopy();
+                setIsSharing(false);
+                return;
             }
-        } else {
-            // Fallback to copy if share is not supported
+
+            // 1. Prepare SVG for conversion
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+
+            // Set dimensions (higher res for sharing)
+            const size = 1024;
+            canvas.width = size;
+            canvas.height = size;
+
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = async () => {
+                if (!ctx) return;
+
+                // Draw white background
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, size, size);
+
+                // Draw QR
+                ctx.drawImage(img, 0, 0, size, size);
+
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        handleCopy();
+                        setIsSharing(false);
+                        return;
+                    }
+
+                    const file = new File([blob], "bluewave-qr.png", { type: "image/png" });
+
+                    try {
+                        const shareData: ShareData = {
+                            title: 'Bluewave Network',
+                            text: `Join my network on Bluewave! Link: ${link}`,
+                            files: [file],
+                        };
+
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                        } else {
+                            // Fallback to text + link if files not supported
+                            await navigator.share({
+                                title: 'Bluewave Network',
+                                text: `Join my network on Bluewave!`,
+                                url: link
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Share failed:', err);
+                        handleCopy();
+                    } finally {
+                        URL.revokeObjectURL(url);
+                        setIsSharing(false);
+                    }
+                }, "image/png");
+            };
+
+            img.src = url;
+
+        } catch (err) {
+            console.error('Conversion failed:', err);
             handleCopy();
+            setIsSharing(false);
         }
     };
 
@@ -67,12 +134,11 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         <div className="flex flex-col items-center gap-8">
                             {/* BW ID Header */}
                             <div className="text-center space-y-1 mt-2">
-                                <span className="text-[10px] font-black text-cyan-500/50 uppercase tracking-[0.3em]">YOUR BW ID</span>
-                                <h2 className="text-xl font-black text-white uppercase tracking-tight">{bwId}</h2>
+                                <h2 className="text-2xl font-black text-white uppercase tracking-tight">{bwId}</h2>
                             </div>
 
                             {/* QR Code Container */}
-                            <div className="p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            <div ref={qrRef} className="p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                                 <div className="bg-white p-2 rounded-xl">
                                     <QRCode
                                         value={link}
@@ -86,17 +152,22 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
 
                             {/* Info Text */}
                             <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
-                                Share this code to grow your human network and earn $BWAVE rewards.
+                                Universal sharing enabled. Share your QR code and link to earn rewards.
                             </p>
 
                             {/* Primary Buttons */}
                             <div className="w-full flex flex-col gap-3">
                                 <button
                                     onClick={handleShare}
-                                    className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-cyan-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(6,182,212,0.2)]"
+                                    disabled={isSharing}
+                                    className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-cyan-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(6,182,212,0.2)] disabled:opacity-50"
                                 >
-                                    <Share2 size={16} />
-                                    Share Code
+                                    {isSharing ? (
+                                        <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                                    ) : (
+                                        <Share2 size={16} />
+                                    )}
+                                    {isSharing ? "Preparing..." : "Share Code"}
                                 </button>
 
                                 <button

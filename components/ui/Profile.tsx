@@ -10,7 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTonAddress, useTonConnectUI, TonConnectButton, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
-import ReferralShareModal from "./ReferralShareModal";
+import ReferralShareModal from "@/components/ui/ReferralShareModal";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
