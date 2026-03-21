@@ -34,7 +34,7 @@ interface CardScreen {
 
 // ─── Constants ──────────────────────────────────────────────
 const AUTO_SPIN_SPEED = 0.05;   // rad/s
-const RESUME_DELAY_MS = 5000;   // ms after drag/close before resume
+const RESUME_DELAY_MS = 2000;   // ms after drag/close before resume
 const LERP_SPEED = 0.025;  // snap-back smoothness
 const DRAG_SENSITIVITY = 0.005;  // pointer delta → rotation delta
 
@@ -334,7 +334,7 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   const handleClose = useCallback(() => {
     setSelected(null);
     setCardScreen(null);
-    // Start 5-second countdown then resume rotation
+    // Start 2-second countdown then resume rotation
     scheduleResumeRef.current?.();
   }, []);
 
