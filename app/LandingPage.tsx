@@ -105,7 +105,10 @@ export default function LandingPage() {
   const [isAIPopupOpen, setIsAIPopupOpen] = useState(false);
   const [aiPointsAwarded, setAIPointsAwarded] = useState(0);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen;
+  // 🤖 Blu Expansion State
+  const [isBluExpanded, setIsBluExpanded] = useState(false);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -122,6 +125,10 @@ export default function LandingPage() {
         setRolesOpen(false);
         return;
       }
+      if (isBluExpanded) {
+        setIsBluExpanded(false);
+        return;
+      }
       // Close all other overlays and return to home
       setMissionOpen(false);
       setLeaderboardOpen(false);
@@ -131,6 +138,7 @@ export default function LandingPage() {
       setBwaveScanOpen(false);
       setSelectedRoleData(null);
       setIsNetworkBuilderModalOpen(false);
+      setIsBluExpanded(false);
       setActiveTab("home");
     };
 
@@ -144,7 +152,7 @@ export default function LandingPage() {
     return () => {
       tg.BackButton.offClick(handleBack);
     };
-  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen]);
+  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -567,13 +575,17 @@ export default function LandingPage() {
 
       {/* 🤖 BLU AI Assistant Button */}
       {!onboardingOpen && !isLoading && !isMaintenanceMode && (
-        <BluButton />
+        <BluButton
+          isExpanded={isBluExpanded}
+          onToggleExpand={setIsBluExpanded}
+        />
       )}
 
       {/* 🧭 Navigation Bar */}
-      {!onboardingOpen && !isLoading && !isBwaveScanOpen && !isRolesOpen && (
+      {!onboardingOpen && !isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && (
         <BottomNav
           activeTab={activeTab}
+          telegramId={telegramUser?.id}
           onTabChange={(tab) => {
             setActiveTab(tab);
             // Sync legacy booleans for lazy-rendering compatibility

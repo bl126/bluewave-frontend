@@ -152,7 +152,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
 
                             {/* Info Text */}
                             <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
-                                Universal sharing enabled. Share your QR code and link to earn rewards.
+                                SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS
                             </p>
 
                             {/* Primary Buttons */}

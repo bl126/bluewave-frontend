@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { Home, Rocket, BarChart3, ShoppingCart, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useApi } from "@/lib/useApi";
+import { useMemo } from "react";
 
 export type TabId = "home" | "missions" | "leaderboard" | "market" | "profile";
 
@@ -10,10 +12,43 @@ interface BottomNavProps {
     activeTab: TabId;
     onTabChange: (tab: TabId) => void;
     userAvatarUrl?: string | null;
+    telegramId?: number | null;
 }
 
-export default function BottomNav({ activeTab, onTabChange, userAvatarUrl }: BottomNavProps) {
+export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId }: BottomNavProps) {
     const { t } = useLanguage();
+
+    // Fetch counts for Mission Badge
+    const { data: presenceMissions } = useApi(telegramId ? `/presence/list/${telegramId}` : null);
+    const { data: missionsData } = useApi(telegramId ? `/missions/all/${telegramId}` : null);
+
+    const missionBadgeCount = useMemo(() => {
+        let count = 0;
+
+        // 1. Presence Missions
+        if (Array.isArray(presenceMissions)) {
+            count += presenceMissions.filter(
+                (pm: any) => pm.status === "inactive" || pm.status === "completed"
+            ).length;
+        }
+
+        // 2. Normal Missions
+        if (missionsData) {
+            const finalList = [];
+            if (Array.isArray(missionsData.normal)) finalList.push(...missionsData.normal);
+            if (Array.isArray(missionsData.daily)) finalList.push(...missionsData.daily);
+            if (Array.isArray(missionsData.onboarding)) finalList.push(...missionsData.onboarding);
+            if (missionsData.story && typeof missionsData.story === "object" && !Array.isArray(missionsData.story)) {
+                finalList.push(missionsData.story);
+            }
+
+            count += finalList.filter(
+                (m: any) => m.status === "open" || m.status === "claim" || m.status === "waiting"
+            ).length;
+        }
+
+        return count;
+    }, [presenceMissions, missionsData]);
 
     const tabs = [
         { id: "home", icon: Home, label: t("nav.home") || "Home" },
@@ -66,6 +101,13 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl }: Bot
                                 <div className="relative">
                                     {isActive && <div className="absolute inset-0 blur-md bg-cyan-400/40 rounded-full" />}
                                     {Icon && <Icon size={20} className={`relative transition-colors ${isActive ? "text-cyan-400" : "text-cyan-100"}`} />}
+
+                                    {/* Mission Badge */}
+                                    {tab.id === "missions" && missionBadgeCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
+                                            {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

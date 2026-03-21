@@ -2,16 +2,22 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Maximize2 } from "lucide-react";
 
 interface Message {
     role: "user" | "blu";
     content: string;
 }
 
-export default function BluButton() {
+interface BluButtonProps {
+    isExpanded?: boolean;
+    onToggleExpand?: (expanded: boolean) => void;
+}
+
+export default function BluButton({ isExpanded = false, onToggleExpand }: BluButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: "blu", content: "I am Blu. How can I help you navigate the Human Layer?" }
+        { role: "blu", content: "I am Blu. How can I help you navigate the Human Presence Layer?" }
     ]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -93,29 +99,43 @@ export default function BluButton() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.96 }}
                             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                            className="fixed z-[87] bottom-24 left-1/2 -translate-x-1/2 w-[90vw] max-w-sm h-[60vh] flex flex-col bg-black/70 backdrop-blur-2xl border border-cyan-900/50 rounded-3xl overflow-hidden shadow-[0_0_40px_rgba(0,230,255,0.15)]"
+                            className={`fixed z-[87] left-1/2 -translate-x-1/2 flex flex-col bg-black/70 backdrop-blur-2xl border border-cyan-900/50 overflow-hidden shadow-[0_0_40px_rgba(0,230,255,0.15)] transition-all duration-300
+                                ${isExpanded
+                                    ? "inset-0 w-full h-full max-w-none rounded-none"
+                                    : "bottom-24 w-[90vw] max-w-sm h-[60vh] rounded-3xl"
+                                }`}
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-cyan-900/40 bg-black/40">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center shadow-[0_0_10px_rgba(0,230,255,0.3)]">
-                                        <span className="text-[9px] font-black text-cyan-300 tracking-widest">BLU</span>
+                            {!isExpanded && (
+                                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-cyan-900/40 bg-black/40">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center shadow-[0_0_10px_rgba(0,230,255,0.3)]">
+                                            <span className="text-[9px] font-black text-cyan-300 tracking-widest">BLU</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[12px] font-bold text-cyan-50 tracking-wide">Bluewave Intelligence</span>
+                                            <span className="text-[9px] text-cyan-400/60 uppercase tracking-widest">Online</span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[12px] font-bold text-cyan-50 tracking-wide">Bluewave Intelligence</span>
-                                        <span className="text-[9px] text-cyan-400/60 uppercase tracking-widest">Online</span>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => onToggleExpand?.(true)}
+                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-cyan-500 hover:text-cyan-300 transition-colors"
+                                        >
+                                            <Maximize2 size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsOpen(false)}
+                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-cyan-500 hover:text-cyan-300 transition-colors"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-cyan-500 hover:text-cyan-300 transition-colors"
-                                >
-                                    ✕
-                                </button>
-                            </div>
+                            )}
 
                             {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+                            <div className={`flex-1 overflow-y-auto p-4 flex flex-col gap-4 ${isExpanded ? "pt-10" : ""}`}>
                                 {messages.map((msg, idx) => (
                                     <div key={idx} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                                         <div className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed ${msg.role === "user"

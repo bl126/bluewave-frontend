@@ -494,6 +494,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
                               <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK BUILDER</span>
+                              <p className="text-cyan-500/30 text-[8px] font-bold uppercase leading-tight max-w-[180px]">
+                                SHARE THIS CODE TO GROW YOuR HuMAN NETWORK AND EARN $BWAVE REWARDS
+                              </p>
                             </div>
                             <button
                               onClick={() => setIsReferralModalOpen(true)}
