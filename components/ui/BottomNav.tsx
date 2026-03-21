@@ -104,7 +104,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
 
                                     {/* Mission Badge */}
                                     {tab.id === "missions" && missionBadgeCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
                                             {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
                                         </div>
                                     )}

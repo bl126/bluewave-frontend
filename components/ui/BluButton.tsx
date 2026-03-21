@@ -135,7 +135,7 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                             )}
 
                             {/* Messages Area */}
-                            <div className={`flex-1 overflow-y-auto p-4 flex flex-col gap-4 ${isExpanded ? "pt-10" : ""}`}>
+                            <div className={`flex-1 overflow-y-auto p-4 flex flex-col gap-4 ${isExpanded ? "pt-24" : ""}`}>
                                 {messages.map((msg, idx) => (
                                     <div key={idx} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                                         <div className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed ${msg.role === "user"
@@ -161,7 +161,10 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                             </div>
 
                             {/* Input Form */}
-                            <div className="p-3 bg-black/40 border-t border-cyan-900/40">
+                            <div className={isExpanded
+                                ? "p-3 mb-8 mx-4 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 rounded-2xl shadow-[0_0_30px_rgba(0,230,255,0.1)]"
+                                : "p-3 bg-black/40 border-t border-cyan-900/40"
+                            }>
                                 <form onSubmit={handleSendMessage} className="relative flex items-center">
                                     <input
                                         type="text"
