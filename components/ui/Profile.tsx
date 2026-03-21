@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTonAddress, useTonConnectUI, TonConnectButton, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
+import ReferralShareModal from "./ReferralShareModal";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -49,6 +50,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [showId, setShowId] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
@@ -84,7 +86,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     });
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tonConnectUI, telegramId]);
 
 
@@ -494,23 +496,18 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK BUILDER</span>
                             </div>
                             <button
-                              onClick={() => {
-                                const link = user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
-                                navigator.clipboard.writeText(link);
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 2000);
-                              }}
+                              onClick={() => setIsReferralModalOpen(true)}
                               className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 active:scale-95 transition-all"
                             >
-                              {copied ? t("profile.copied") : t("profile.copy")}
+                              Get link
                             </button>
                           </div>
 
-                          <div className="bg-black/40 border border-cyan-950 rounded-2xl p-4 break-all">
-                            <span className="text-cyan-500/60 font-medium text-xs font-mono">
-                              {user.referral_link || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`}
-                            </span>
-                          </div>
+                          <button
+                            className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+                          >
+                            Connect Blu
+                          </button>
 
                           <div className="flex items-center justify-center gap-3 pt-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 shadow-[0_0_5px_#22d3ee40]" />
@@ -588,6 +585,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} onOpenLanguage={() => setLanguageOpen(true)} />
           <LanguageSelector isOpen={languageOpen} onClose={() => setLanguageOpen(false)} />
           <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
+          <ReferralShareModal
+            isOpen={isReferralModalOpen}
+            onClose={() => setIsReferralModalOpen(false)}
+            telegramId={telegramId}
+            bwId={user.bw_id}
+            referralLink={user.referral_link}
+          />
 
           <AnimatePresence>
             {badgeUnlocked && (
