@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronDown, Check, Lock, Star, Zap, Target, Shield, Trophy } from "lucide-react";
+import { X, ChevronDown, Check, Star, Zap, Target, Shield, Trophy } from "lucide-react";
 import { useState } from "react";
 import { findRoleByName } from "@/lib/roles";
 
@@ -112,32 +112,32 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
+                    className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                 >
                     <motion.div
-                        className="w-full max-w-md bg-[#050505] border-t sm:border border-cyan-500/20 rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh]"
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
+                        className="relative w-full max-w-sm bg-[#050505] border border-cyan-500/20 rounded-[2.5rem] overflow-hidden flex flex-col max-h-[85vh] shadow-[0_0_50px_rgba(6,182,212,0.2)]"
+                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Exit Button */}
+                        <button
+                            onClick={onClose}
+                            className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-cyan-400 hover:text-cyan-400 transition-colors z-[160]"
+                        >
+                            <X size={20} />
+                        </button>
+
                         {/* Header */}
-                        <div className="p-6 flex items-center justify-between border-b border-white/5">
-                            <div className="flex flex-col">
-                                <h2 className="text-white text-xl font-black uppercase tracking-tight">Level System</h2>
-                                <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest">Your Presence Journey</p>
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="p-2 bg-white/5 rounded-full text-cyan-500 hover:text-cyan-400 transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
+                        <div className="p-8 pt-10 flex flex-col items-center border-b border-white/5 text-center">
+                            <h2 className="text-white text-2xl font-black uppercase tracking-tight">Level System</h2>
+                            <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest mt-1">Your Presence Journey</p>
                         </div>
 
                         {/* Content - Scrollable Accordion */}
@@ -152,8 +152,8 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                     <div
                                         key={lvl.level}
                                         className={`border transition-all duration-300 rounded-3xl overflow-hidden ${isExpanded
-                                                ? "bg-cyan-500/5 border-cyan-500/30"
-                                                : "bg-white/[0.02] border-white/5 opacity-60"
+                                            ? "bg-cyan-500/5 border-cyan-500/30"
+                                            : "bg-white/[0.02] border-white/5 opacity-60"
                                             }`}
                                     >
                                         {/* Level Card Header */}
@@ -162,8 +162,8 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                             className="w-full p-5 flex items-center gap-4 text-left"
                                         >
                                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-lg ${isCompleted || isCurrent
-                                                    ? (roleData?.border ? `${roleData.border} bg-cyan-500/10 text-cyan-400` : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400")
-                                                    : "border-white/10 bg-white/5 text-white/20"
+                                                ? (roleData?.border ? `${roleData.border} bg-cyan-500/10 text-cyan-400` : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400")
+                                                : "border-white/10 bg-white/5 text-white/20"
                                                 }`}>
                                                 <lvl.icon size={22} />
                                             </div>
