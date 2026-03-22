@@ -11,6 +11,8 @@ import { useTonAddress, useTonConnectUI, TonConnectButton, toUserFriendlyAddress
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
 import ReferralShareModal from "@/components/ui/ReferralShareModal";
+import LevelPopup from "./LevelPopup";
+import LevelUpModal from "./LevelUpModal";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -51,6 +53,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [idCopied, setIdCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [isLevelPopupOpen, setIsLevelPopupOpen] = useState(false);
+  const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
+  const [prevLevel, setPrevLevel] = useState<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
@@ -145,9 +150,17 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [level, setLevel] = useState("Loading...");
   useEffect(() => {
     if (swrUser?.level) {
+      const currentLevel = parseInt(swrUser.level);
       setLevel(swrUser.level);
+
+      // Level Up Detection
+      // We only trigger if prevLevel was set and is lower than current
+      if (prevLevel !== null && currentLevel > prevLevel) {
+        setIsLevelUpModalOpen(true);
+      }
+      setPrevLevel(currentLevel);
     }
-  }, [swrUser?.level]);
+  }, [swrUser?.level, prevLevel]);
 
   // Initialize cooldownText immediately when cooldown is set (so it shows before first tick)
   const formatMs = (ms: number) => {
@@ -409,10 +422,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                       <>
                         {/* Stats Grid */}
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
+                          <button
+                            onClick={() => setIsLevelPopupOpen(true)}
+                            className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all"
+                          >
                             <span className="text-white text-lg font-black">{level || "1"}</span>
                             <span className="text-cyan-500/50 text-[7px] font-black uppercase tracking-widest">LEVEL</span>
-                          </div>
+                          </button>
                           <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
                             <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
                             <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak")}</span>
@@ -594,6 +610,18 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
             telegramId={telegramId}
             bwId={user.bw_id}
             referralLink={user.referral_link}
+          />
+
+          <LevelPopup
+            isOpen={isLevelPopupOpen}
+            onClose={() => setIsLevelPopupOpen(false)}
+            user={user}
+          />
+
+          <LevelUpModal
+            level={isNaN(parseInt(level)) ? 1 : parseInt(level)}
+            isOpen={isLevelUpModalOpen}
+            onClose={() => setIsLevelUpModalOpen(false)}
           />
 
           <AnimatePresence>

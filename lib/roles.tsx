@@ -58,6 +58,17 @@ export const ROLE_CATEGORIES = [
       { name: "Signal Guardian", color: "from-zinc-100/20 to-zinc-300/20", border: "border-zinc-300/50", text: "text-zinc-300", desc: "Protects the community from bots and noise.", benefit: "Trust badge + moderator attention.", icon: Shield, boost: "+15%" },
       { name: "Human Legend", color: "from-slate-400/20 to-slate-500/20", border: "border-slate-400/50", text: "text-slate-300", desc: "Rare role for exceptional long-term impact.", benefit: "Eternal flex + future ecosystem privileges.", icon: Trophy, boost: "+50%" }
     ]
+  },
+  {
+    title: "Ecosystem Levels",
+    description: "Your journey through the Bluewave Presence Economy.",
+    roles: [
+      { name: "LEVEL 1", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "The 'New Wave'. Your journey begins here.", benefit: "Access to basic missions and community.", icon: Star, boost: "+1%" },
+      { name: "LEVEL 2", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Pulse Scout. Consistent presence builder.", benefit: "Higher visibility and improved referral yields.", icon: Zap, boost: "+5%" },
+      { name: "LEVEL 3", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Signal Architect. Growing the network structure.", benefit: "Advanced mission access and network influence.", icon: Target, boost: "+10%" },
+      { name: "LEVEL 4", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Wave Commander. A pillar of the ecosystem.", benefit: "Priority support and enhanced drop weighting.", icon: Shield, boost: "+20%" },
+      { name: "LEVEL 5", color: "from-fuchsia-500/20 to-fuchsia-600/20", border: "border-fuchsia-500/50", text: "text-fuchsia-400", desc: "Blu Legend. Master of the Presence Economy.", benefit: "Governance rights during alpha phases.", icon: Trophy, boost: "+50%" }
+    ]
   }
 ];
 
