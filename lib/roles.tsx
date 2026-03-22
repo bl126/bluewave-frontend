@@ -16,7 +16,7 @@ export const ROLE_CATEGORIES = [
     roles: [
       { name: "Verified Human", color: "from-blue-400/20 to-blue-500/20", border: "border-blue-400/50", text: "text-blue-300", desc: "Passed Bluewave human verification.", benefit: "Access to gated chats, missions, and drops.", icon: UserCheck, boost: "+10%" },
       { name: "Presence Holder", color: "from-emerald-500/20 to-emerald-600/20", border: "border-emerald-500/50", text: "text-emerald-400", desc: "Maintains consistent on-chain/off-chain presence.", benefit: "Higher reputation score, future rewards weighting.", icon: Zap, boost: "+10%" },
-      { name: "TON Explorer", color: "from-sky-400/20 to-sky-500/20", border: "border-sky-400/50", text: "text-sky-300", desc: "Connected a TON ecosystem wallet.", benefit: "Eligible for on-chain drops and interactions.", icon: Sparkles, image: "/ton-transparent.png", boost: "+5%" },
+      { name: "TON Explorer", color: "from-sky-400/20 to-sky-500/20", border: "border-sky-400/50", text: "text-sky-300", desc: "Connected a TON ecosystem wallet.", benefit: "Eligible for on-chain drops. Yield: +5%", icon: Sparkles, image: "https://ton.org/download/ton_symbol.png", boost: "+5%" },
       { name: "Genesis Member", color: "from-amber-700/20 to-amber-800/20", border: "border-amber-700/50", text: "text-amber-600", desc: "Early Bluewave believers.", benefit: "Priority access to features, snapshots, perks.", icon: Sparkles, boost: "+15%" },
       { name: "Beta Explorer", color: "from-gray-500/20 to-gray-600/20", border: "border-gray-500/50", text: "text-gray-400", desc: "Actively testing Bluewave features.", benefit: "Early tools, feedback influence, recognition.", icon: Target, boost: "+10%" }
     ]
@@ -63,11 +63,11 @@ export const ROLE_CATEGORIES = [
     title: "Ecosystem Levels",
     description: "Your journey through the Bluewave Presence Economy.",
     roles: [
-      { name: "LEVEL 1", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "The 'New Wave'. Your journey begins here.", benefit: "Access to basic missions and community.", icon: Star, boost: "+1%" },
-      { name: "LEVEL 2", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Pulse Scout. Consistent presence builder.", benefit: "Higher visibility and improved referral yields.", icon: Zap, boost: "+5%" },
-      { name: "LEVEL 3", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Signal Architect. Growing the network structure.", benefit: "Advanced mission access and network influence.", icon: Target, boost: "+10%" },
-      { name: "LEVEL 4", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Wave Commander. A pillar of the ecosystem.", benefit: "Priority support and enhanced drop weighting.", icon: Shield, boost: "+20%" },
-      { name: "LEVEL 5", color: "from-fuchsia-500/20 to-fuchsia-600/20", border: "border-fuchsia-500/50", text: "text-fuchsia-400", desc: "Blu Legend. Master of the Presence Economy.", benefit: "Governance rights during alpha phases.", icon: Trophy, boost: "+50%" }
+      { name: "LEVEL 1", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "The 'New Wave'. Your journey begins here.", benefit: "Access to basic missions. Yield: +1%", icon: Star, boost: "+1%" },
+      { name: "LEVEL 2", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Pulse Scout. Consistent presence builder.", benefit: "Improved referral yields. Yield: +5%", icon: Zap, boost: "+5%" },
+      { name: "LEVEL 3", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Signal Architect. Growing the network structure.", benefit: "Advanced mission access. Yield: +10%", icon: Target, boost: "+10%" },
+      { name: "LEVEL 4", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Wave Commander. A pillar of the ecosystem.", benefit: "Priority support & perks. Yield: +20%", icon: Shield, boost: "+20%" },
+      { name: "LEVEL 5", color: "from-fuchsia-500/20 to-fuchsia-600/20", border: "border-fuchsia-500/50", text: "text-fuchsia-400", desc: "Blu Legend. Master of the Presence Economy.", benefit: "Alpha governance weight. Yield: +50%", icon: Trophy, boost: "+50%" }
     ]
   }
 ];
