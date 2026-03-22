@@ -51,6 +51,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [languageOpen, setLanguageOpen] = useState(false);
   const [showId, setShowId] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
+  const [showEarnings, setShowEarnings] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [isLevelPopupOpen, setIsLevelPopupOpen] = useState(false);
@@ -278,12 +279,17 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         <h2 className="text-white text-xl font-black uppercase tracking-tight">
                           {user.name || user.username}
                         </h2>
-                        <div className="flex items-center gap-1.5 py-0.5">
-                          <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
-                            BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
-                          </span>
-                          <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
-                            {showId ? <EyeOff size={10} /> : <Eye size={10} />}
+                        <div className="flex items-center gap-2 py-0.5">
+                          <div className="flex items-center gap-1 bg-cyan-500/5 px-2 py-1 rounded-lg border border-cyan-500/10">
+                            <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
+                              BW ID: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
+                            </span>
+                            <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
+                              {showId ? <EyeOff size={10} /> : <Eye size={10} />}
+                            </button>
+                          </div>
+                          <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/5 border border-cyan-500/10 text-cyan-500/40 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all">
+                            {copied ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
                           </button>
                         </div>
                       </div>
@@ -344,19 +350,30 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           </div>
                         </div>
 
-
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
-                          <div className="flex flex-col gap-1">
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30" onClick={() => { const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null; if (btn) btn.click(); else tonConnectUI.openModal(); }}>
+                        {/* Independent Wallet Card */}
+                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30" 
+                          onClick={() => { 
+                            if (user.wallet_address) return; 
+                            const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null;
+                            if (btn) btn.click(); else tonConnectUI.openModal(); 
+                          }}>
                           <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
                             <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? "Connected" : "Connect TON Wallet"}</span>
                           </div>
                         </div>
 
-                            <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK EARNINGS</span>
+                        {/* Independent Earnings Card */}
+                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK EARNINGS</span>
+                              <button onClick={() => setShowEarnings(!showEarnings)} className="text-cyan-500/30 hover:text-cyan-400 transition-colors">
+                                {showEarnings ? <EyeOff size={12} /> : <Eye size={12} />}
+                              </button>
+                            </div>
                             <div className="flex items-baseline gap-2">
-                              <span className="text-white text-4xl font-black">{user.referral_earnings_pending}</span>
+                              <span className="text-white text-4xl font-black">{showEarnings ? user.referral_earnings_pending : "*******"}</span>
                               <span className="text-cyan-400/60 text-sm font-bold uppercase tracking-widest">$BWAVE</span>
                             </div>
                           </div>
@@ -366,6 +383,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           </div>
                         </div>
 
+                        {/* Independent Network Builder Card */}
                         <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
@@ -375,6 +393,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             <button onClick={() => setIsReferralModalOpen(true)} className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all">Get link</button>
                           </div>
                           <button className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)]">Connect Blu</button>
+                          <p className="text-cyan-500/20 text-[7px] font-bold uppercase tracking-widest mt-2">{t("profile.joined") || "MEMBERSHIP ACTIVE SINCE"}: {new Date(user.created_at).toLocaleDateString()}</p>
                         </div>
                       </>
                     )}
@@ -421,18 +440,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               )}
             </div>
           </div>
-
-          <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} onOpenLanguage={() => setLanguageOpen(true)} />
-          <LanguageSelector isOpen={languageOpen} onClose={() => setLanguageOpen(false)} />
-          <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
-          <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user.bw_id} referralLink={user.referral_link} />
-          <LevelPopup isOpen={isLevelPopupOpen} onClose={() => setIsLevelPopupOpen(false)} user={user} />
-          <LevelUpModal level={isNaN(parseInt(level)) ? 1 : parseInt(level)} isOpen={isLevelUpModalOpen} onClose={() => setIsLevelUpModalOpen(false)} />
-          <AnimatePresence>
-            {badgeUnlocked && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">Unlocked</motion.div>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {badgeUnlocked && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">Unlocked</motion.div>
+              )}
+            </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
