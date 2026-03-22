@@ -351,11 +351,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Independent Wallet Card */}
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30" 
-                          onClick={() => { 
-                            if (user.wallet_address) return; 
+                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30"
+                          onClick={() => {
+                            if (user.wallet_address) return;
                             const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null;
-                            if (btn) btn.click(); else tonConnectUI.openModal(); 
+                            if (btn) btn.click(); else tonConnectUI.openModal();
                           }}>
                           <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
@@ -394,7 +394,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           </div>
                           <button className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)]">Connect Blu</button>
                           <p className="text-cyan-500/40 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
-                            JOINED: {user.joined_at ? new Date(user.joined_at).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}).toUpperCase() : (user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}).toUpperCase() : "PROTOCOL ACTIVE")}
+                            JOINED: {(() => {
+                              const raw = user.joined_at || user.created_at;
+                              if (!raw) return "PROTOCOL ACTIVE";
+                              const d = new Date(raw);
+                              if (isNaN(d.getTime())) return "PROTOCOL ACTIVE";
+                              return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase();
+                            })()}
                           </p>
                         </div>
                       </>
@@ -442,11 +448,20 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               )}
             </div>
           </div>
-            <AnimatePresence>
-              {badgeUnlocked && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">Unlocked</motion.div>
-              )}
-            </AnimatePresence>
+
+          {/* Overlay modals — rendered inside motion.div so they appear above profile */}
+          <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} onOpenLanguage={() => setLanguageOpen(true)} />
+          <LanguageSelector isOpen={languageOpen} onClose={() => setLanguageOpen(false)} />
+          <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
+          <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user?.bw_id} referralLink={user?.referral_link} />
+          <LevelPopup isOpen={isLevelPopupOpen} onClose={() => setIsLevelPopupOpen(false)} user={user} />
+          <LevelUpModal level={isNaN(parseInt(level)) ? 1 : parseInt(level)} isOpen={isLevelUpModalOpen} onClose={() => setIsLevelUpModalOpen(false)} />
+
+          <AnimatePresence>
+            {badgeUnlocked && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">Unlocked</motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
