@@ -318,7 +318,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         >
                           <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">Ecosystem Roles</button>
                           <button onClick={() => { setMenuOpen(false); onClose(); setTimeout(() => onOpenBwaveScan?.(), 300); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">BwaveScan</button>
-                          <button onClick={() => { setMenuOpen(false); setSettingsOpen(true); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors">Settings</button>
+                          <button onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors">Settings</button>
                         </motion.div>
                       </>
                     )}
@@ -393,7 +393,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             <button onClick={() => setIsReferralModalOpen(true)} className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all">Get link</button>
                           </div>
                           <button className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)]">Connect Blu</button>
-                          <p className="text-cyan-500/20 text-[7px] font-bold uppercase tracking-widest mt-2">{t("profile.joined") || "MEMBERSHIP ACTIVE SINCE"}: {new Date(user.created_at).toLocaleDateString()}</p>
+                          <p className="text-cyan-500/40 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
+                            JOINED: {user.joined_at ? new Date(user.joined_at).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}).toUpperCase() : (user.created_at ? new Date(user.created_at).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'}).toUpperCase() : "PROTOCOL ACTIVE")}
+                          </p>
                         </div>
                       </>
                     )}
