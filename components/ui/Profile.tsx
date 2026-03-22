@@ -344,16 +344,16 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           </div>
                         </div>
 
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30" onClick={() => { const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null; if (btn) btn.click(); else tonConnectUI.openModal(); }}>
-                          <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="https://ton.org/download/ton_symbol.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
-                          <div className="flex-1 px-4 flex flex-col">
-                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? "Connected" : "Connect TON Wallet"}</span>
-                            {user.wallet_address && <span className="text-cyan-500/40 font-mono text-[9px] truncate max-w-[150px]">{user.wallet_address}</span>}
-                          </div>
-                        </div>
 
                         <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex flex-col gap-1">
+                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30" onClick={() => { const btn = document.querySelector('#ton-connect-button button') as HTMLButtonElement | null; if (btn) btn.click(); else tonConnectUI.openModal(); }}>
+                          <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
+                          <div className="flex-1 px-4 flex flex-col">
+                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? "Connected" : "Connect TON Wallet"}</span>
+                          </div>
+                        </div>
+
                             <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">NETWORK EARNINGS</span>
                             <div className="flex items-baseline gap-2">
                               <span className="text-white text-4xl font-black">{user.referral_earnings_pending}</span>
