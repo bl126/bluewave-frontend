@@ -20,10 +20,135 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     const qrRef = useRef<HTMLDivElement>(null);
     const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
 
+    const SHARE_CAPTION = `Scan me to join the human presence layer 🌊\n${link}`;
+
     const handleCopy = () => {
         navigator.clipboard.writeText(link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    /**
+     * Builds a branded share card:
+     *  ┌───────────────────────────────┐
+     *  │  BLUEWAVE                      │
+     *  │  ┌──── QR CODE ────┐          │
+     *  │  │                  │          │
+     *  │  └──────────────────┘          │
+     *  │  Scan me to join the           │
+     *  │  human presence layer          │
+     *  │  bwId                          │
+     *  └───────────────────────────────┘
+     */
+    const buildShareImage = async (): Promise<Blob | null> => {
+        const svg = qrRef.current?.querySelector("svg");
+        if (!svg) return null;
+
+        // Rasterise the QR SVG first
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const qrImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = svgUrl;
+        });
+
+        URL.revokeObjectURL(svgUrl);
+
+        // Build the branded card
+        const W = 1080;
+        const H = 1350; // portrait card
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
+
+        // --- Background ---
+        const grad = ctx.createLinearGradient(0, 0, W, H);
+        grad.addColorStop(0, "#050c18");
+        grad.addColorStop(1, "#030a12");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // --- Subtle glow behind QR ---
+        const glow = ctx.createRadialGradient(W / 2, H / 2 - 60, 20, W / 2, H / 2 - 60, 380);
+        glow.addColorStop(0, "rgba(6,182,212,0.18)");
+        glow.addColorStop(1, "rgba(6,182,212,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, W, H);
+
+        // --- Header: BLUEWAVE ---
+        ctx.font = "bold 64px -apple-system, system-ui, sans-serif";
+        ctx.letterSpacing = "8px";
+        ctx.fillStyle = "#06b6d4"; // cyan-500
+        ctx.textAlign = "center";
+        ctx.fillText("BLUEWAVE", W / 2, 140);
+
+        // Sub-header
+        ctx.font = "500 32px -apple-system, system-ui, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillText("Human Presence Layer", W / 2, 200);
+
+        // --- Divider line ---
+        ctx.strokeStyle = "rgba(6,182,212,0.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(140, 240);
+        ctx.lineTo(W - 140, 240);
+        ctx.stroke();
+
+        // --- QR card (white rounded rect) ---
+        const qrPad = 48;
+        const qrSize = 640;
+        const qrX = (W - qrSize) / 2;
+        const qrY = 300;
+
+        const rr = 40; // border radius
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(qrX + rr, qrY);
+        ctx.lineTo(qrX + qrSize - rr, qrY);
+        ctx.quadraticCurveTo(qrX + qrSize, qrY, qrX + qrSize, qrY + rr);
+        ctx.lineTo(qrX + qrSize, qrY + qrSize - rr);
+        ctx.quadraticCurveTo(qrX + qrSize, qrY + qrSize, qrX + qrSize - rr, qrY + qrSize);
+        ctx.lineTo(qrX + rr, qrY + qrSize);
+        ctx.quadraticCurveTo(qrX, qrY + qrSize, qrX, qrY + qrSize - rr);
+        ctx.lineTo(qrX, qrY + rr);
+        ctx.quadraticCurveTo(qrX, qrY, qrX + rr, qrY);
+        ctx.closePath();
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.restore();
+
+        // Draw the QR inside the white card
+        ctx.drawImage(qrImg, qrX + qrPad, qrY + qrPad, qrSize - qrPad * 2, qrSize - qrPad * 2);
+
+        // --- Caption ---
+        const captionY = qrY + qrSize + 70;
+        ctx.font = "bold 46px -apple-system, system-ui, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText("Scan me to join the", W / 2, captionY);
+        ctx.fillText("human presence layer", W / 2, captionY + 64);
+
+        // --- BW ID badge ---
+        const badgeY = captionY + 150;
+        ctx.font = "bold 36px -apple-system, system-ui, sans-serif";
+        ctx.fillStyle = "rgba(6,182,212,0.9)";
+        ctx.fillText(bwId, W / 2, badgeY);
+
+        // --- Bottom link (small) ---
+        ctx.font = "500 26px -apple-system, system-ui, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.fillText("t.me/Bluewave_Ecosystem_bot", W / 2, H - 72);
+
+        return new Promise<Blob | null>((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), "image/png");
+        });
     };
 
     const handleShare = async () => {
@@ -31,78 +156,43 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         setIsSharing(true);
 
         try {
-            const svg = qrRef.current?.querySelector("svg");
-            if (!svg || !navigator.share) {
+            if (!navigator.share) {
+                // No Web Share API — just copy the link
                 handleCopy();
                 setIsSharing(false);
                 return;
             }
 
-            // 1. Prepare SVG for conversion
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const img = new Image();
+            const blob = await buildShareImage();
 
-            // Set dimensions (higher res for sharing)
-            const size = 1024;
-            canvas.width = size;
-            canvas.height = size;
+            if (blob && navigator.canShare) {
+                const file = new File([blob], "bluewave-referral.png", { type: "image/png" });
+                const shareData: ShareData = {
+                    title: "Bluewave — Human Presence Layer",
+                    text: SHARE_CAPTION,
+                    files: [file],
+                };
 
-            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(svgBlob);
+                if (navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                    return;
+                }
+            }
 
-            img.onload = async () => {
-                if (!ctx) return;
+            // Fallback: share without image
+            await navigator.share({
+                title: "Bluewave — Human Presence Layer",
+                text: SHARE_CAPTION,
+                url: link,
+            });
 
-                // Draw white background
-                ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, size, size);
-
-                // Draw QR
-                ctx.drawImage(img, 0, 0, size, size);
-
-                canvas.toBlob(async (blob) => {
-                    if (!blob) {
-                        handleCopy();
-                        setIsSharing(false);
-                        return;
-                    }
-
-                    const file = new File([blob], "bluewave-qr.png", { type: "image/png" });
-
-                    try {
-                        const shareData: ShareData = {
-                            title: 'Bluewave Network',
-                            text: `Join my network on Bluewave! Link: ${link}`,
-                            files: [file],
-                        };
-
-                        if (navigator.canShare && navigator.canShare(shareData)) {
-                            await navigator.share(shareData);
-                        } else {
-                            // Fallback to text + link if files not supported
-                            await navigator.share({
-                                title: 'Bluewave Network',
-                                text: `Join my network on Bluewave!`,
-                                url: link
-                            });
-                        }
-                    } catch (err) {
-                        console.error('Share failed:', err);
-                        handleCopy();
-                    } finally {
-                        URL.revokeObjectURL(url);
-                        setIsSharing(false);
-                    }
-                }, "image/png");
-            };
-
-            img.src = url;
-
-        } catch (err) {
-            console.error('Conversion failed:', err);
-            handleCopy();
+        } catch (err: unknown) {
+            // User cancelled is not a real error
+            if (err instanceof Error && err.name !== "AbortError") {
+                console.error("Share failed:", err);
+                handleCopy();
+            }
+        } finally {
             setIsSharing(false);
         }
     };
@@ -137,7 +227,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                                 <h2 className="text-2xl font-black text-white uppercase tracking-tight">{bwId}</h2>
                             </div>
 
-                            {/* QR Code Container */}
+                            {/* QR Code Container (used by canvas renderer) */}
                             <div ref={qrRef} className="p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                                 <div className="bg-white p-2 rounded-xl">
                                     <QRCode
