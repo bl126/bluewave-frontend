@@ -117,6 +117,10 @@ export default function LandingPage() {
     if (!tg?.BackButton) return;
 
     const handleBack = () => {
+      if (isMaintenanceMode) {
+        tg.close();
+        return;
+      }
       if (isBwaveScanOpen) {
         setBwaveScanOpen(false);
         return;
@@ -152,7 +156,7 @@ export default function LandingPage() {
     return () => {
       tg.BackButton.offClick(handleBack);
     };
-  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded]);
+  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 

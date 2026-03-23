@@ -529,8 +529,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
 
   // ── Badge Counts ──────────────────────────────────────────
-  type TabId = "presence" | "social" | "earn";
+  type TabId = "presence" | "social" | "quest" | "earn";
   const [activeTab, setActiveTab] = useState<TabId>("presence");
+  const TABS: TabId[] = ["presence", "social", "quest", "earn"];
 
   const presenceBadge = Array.isArray(presenceMissions) ? (presenceMissions as PresenceMission[]).filter(
     (pm: PresenceMission) => pm.status === "inactive" || pm.status === "completed"
@@ -555,36 +556,45 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
 
 
           {/* ── Tab Bar ── */}
-          <div className="flex items-center justify-between w-full px-4 pt-6 pb-4 shrink-0">
-            {(["presence", "social", "earn"] as TabId[]).map((tab) => {
+          <div className="flex items-center justify-between w-full px-3 pt-6 pb-4 shrink-0 gap-1">
+            {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
               const isActive = activeTab === tab;
               const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
+              const isEarn = tab === "earn";
+              const isQuest = tab === "quest";
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative flex flex-col items-center justify-center flex-1 py-2 mx-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200
-
-                    ${tab === "earn"
+                  className={`relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all duration-200
+                    ${isEarn || isQuest
                       ? isActive
-                        ? "bg-white/5 border-white/20 text-white/50"
-                        : "bg-transparent border-white/10 text-white/25 hover:border-white/20"
+                        ? "bg-white/5 border border-white/20 text-white/50"
+                        : "bg-transparent border border-white/10 text-white/25 hover:border-white/20"
                       : isActive
-                        ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_#00e6ff15]"
-                        : "bg-transparent border-cyan-900/40 text-cyan-600 hover:border-cyan-700/50 hover:text-cyan-500"
+                        ? "bg-cyan-500/15 border border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_#00e6ff15]"
+                        : "bg-transparent border border-cyan-900/40 text-cyan-600 hover:border-cyan-700/50 hover:text-cyan-500"
                     }`}
                 >
                   {tab === "presence" && "Presence"}
                   {tab === "social" && "Social"}
-                  {tab === "earn" && (
-                    <span className="flex flex-col items-center gap-1">
-                      Earn
-                      <span className="text-[7px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1 py-[1px] rounded-full">
-                        SOON
+                  {tab === "quest" && (
+                    <span className="flex flex-col items-center gap-0.5">
+                      Quest
+                      <span className="text-[6px] font-black uppercase bg-violet-500/20 text-violet-400 border border-violet-500/30 px-1 py-[1px] rounded-full">
+                        Verified
                       </span>
                     </span>
                   )}
-                  {badge > 0 && tab !== "earn" && (
+                  {tab === "earn" && (
+                    <span className="flex flex-col items-center gap-0.5">
+                      Earn
+                      <span className="text-[6px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1 py-[1px] rounded-full">
+                        Soon
+                      </span>
+                    </span>
+                  )}
+                  {badge > 0 && tab !== "earn" && tab !== "quest" && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_10px_#00e6ff]">
                       {badge > 9 ? "9+" : badge}
                     </span>
@@ -594,8 +604,23 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
             })}
           </div>
 
-          {/* ── Tab Content ── */}
-          <div className="flex-1 overflow-y-auto">
+          {/* ── Tab Content (Swipeable) ── */}
+          <div
+            className="flex-1 overflow-y-auto"
+            onTouchStart={(e) => {
+              (e.currentTarget as any)._touchStartX = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              const startX = (e.currentTarget as any)._touchStartX;
+              if (startX === undefined) return;
+              const diff = startX - e.changedTouches[0].clientX;
+              const THRESHOLD = 60;
+              if (Math.abs(diff) < THRESHOLD) return;
+              const idx = TABS.indexOf(activeTab);
+              if (diff > 0 && idx < TABS.length - 1) setActiveTab(TABS[idx + 1]);
+              if (diff < 0 && idx > 0) setActiveTab(TABS[idx - 1]);
+            }}
+          >
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
 
               {error && (
@@ -712,6 +737,40 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                       {t("missions.no_missions") || "No social missions available"}
                     </div>
                   )}
+                </motion.div>
+              )}
+
+              {/* QUEST TAB */}
+              {activeTab === "quest" && (
+                <motion.div
+                  key="quest"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
+                >
+                  <div className="w-20 h-20 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.2)]">
+                    <span className="text-4xl">⚡</span>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest">Quests</h3>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-400 text-[10px] font-black tracking-widest uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+                      Verified Humans Only
+                    </div>
+                  </div>
+                  <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      Complete high-value quests to earn{" "}
+                      <span className="text-violet-400 font-semibold">higher points</span> and{" "}
+                      <span className="text-violet-400 font-semibold">Entropy rewards</span>. Quests are exclusively available to{" "}
+                      <span className="text-cyan-400 font-semibold">Verified Humans</span>.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
+                      <Lock size={12} className="text-violet-400" />
+                      Pass human verification to unlock quests.
+                    </div>
+                  </div>
                 </motion.div>
               )}
 

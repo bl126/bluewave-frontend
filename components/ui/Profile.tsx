@@ -13,6 +13,7 @@ import { findRoleByName } from "@/lib/roles";
 import ReferralShareModal from "@/components/ui/ReferralShareModal";
 import LevelPopup from "./LevelPopup";
 import LevelUpModal from "./LevelUpModal";
+import ConnectBluModal from "./ConnectBluModal";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -56,6 +57,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [isLevelPopupOpen, setIsLevelPopupOpen] = useState(false);
   const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
+  const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [prevLevel, setPrevLevel] = useState<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -392,7 +394,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             </div>
                             <button onClick={() => setIsReferralModalOpen(true)} className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all">Get link</button>
                           </div>
-                          <button className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)]">Connect Blu</button>
+                          <button onClick={() => setIsConnectBluOpen(true)} className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all">Connect Blu</button>
                           <p className="text-cyan-500/40 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
                             JOINED: {(() => {
                               const raw = user.joined_at || user.created_at;
@@ -455,6 +457,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
           <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user?.bw_id} referralLink={user?.referral_link} />
           <LevelPopup isOpen={isLevelPopupOpen} onClose={() => setIsLevelPopupOpen(false)} user={user} />
+          <ConnectBluModal
+            isOpen={isConnectBluOpen}
+            onClose={() => setIsConnectBluOpen(false)}
+            telegramId={telegramId}
+            isHumanVerified={!!user?.is_human_verified}
+            alreadyConnected={user?.telegram_channel || null}
+          />
           <LevelUpModal level={isNaN(parseInt(level)) ? 1 : parseInt(level)} isOpen={isLevelUpModalOpen} onClose={() => setIsLevelUpModalOpen(false)} />
 
           <AnimatePresence>
