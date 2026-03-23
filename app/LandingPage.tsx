@@ -531,6 +531,8 @@ export default function LandingPage() {
           human_verification_pending: fullUser.human_verification_pending || false,
           network_builder_pending: fullUser.network_builder_pending || false,
           ton_explorer_pending: fullUser.ton_explorer_pending || false,
+          is_human_verified: !!fullUser.is_human_verified,
+          roles: fullUser.roles || []
         });
 
         setBalance(fullUser.points_balance ?? null);
@@ -604,7 +606,12 @@ export default function LandingPage() {
 
       {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
       {isMissionOpen && (
-        <MissionCenter isOpen={isMissionOpen} onClose={() => { setMissionOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
+        <MissionCenter
+          isOpen={isMissionOpen}
+          onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
+          telegramUser={telegramUser}
+          isHumanVerified={!!telegramUser?.is_human_verified}
+        />
       )}
       {isLeaderboardOpen && (
         <Leaderboard isOpen={isLeaderboardOpen} onClose={() => { setLeaderboardOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />

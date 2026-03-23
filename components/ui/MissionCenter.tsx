@@ -13,6 +13,7 @@ interface MissionCenterProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
+  isHumanVerified: boolean;
 }
 
 interface Mission {
@@ -134,7 +135,7 @@ function PresenceCard({
 
 
 // [CODE: FRONTEND_MISSION_CENTER_MAIN_COMPONENT]
-export default function MissionCenter({ isOpen, onClose, telegramUser }: MissionCenterProps) {
+export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVerified }: MissionCenterProps) {
   const { t } = useLanguage();
   const telegram_id = telegramUser?.id;
 
@@ -578,22 +579,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                 >
                   {tab === "presence" && "Presence"}
                   {tab === "social" && "Social"}
-                  {tab === "quest" && (
-                    <span className="flex flex-col items-center gap-0.5">
-                      Quest
-                      <span className="text-[6px] font-black uppercase bg-violet-500/20 text-violet-400 border border-violet-500/30 px-1 py-[1px] rounded-full">
-                        Verified
-                      </span>
-                    </span>
-                  )}
-                  {tab === "earn" && (
-                    <span className="flex flex-col items-center gap-0.5">
-                      Earn
-                      <span className="text-[6px] font-black uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1 py-[1px] rounded-full">
-                        Soon
-                      </span>
-                    </span>
-                  )}
+                  {tab === "quest" && "Quest"}
+                  {tab === "earn" && "Earn"}
                   {badge > 0 && tab !== "earn" && tab !== "quest" && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_10px_#00e6ff]">
                       {badge > 9 ? "9+" : badge}
@@ -749,27 +736,35 @@ export default function MissionCenter({ isOpen, onClose, telegramUser }: Mission
                   transition={{ duration: 0.25 }}
                   className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
                 >
-                  <div className="w-20 h-20 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.2)]">
-                    <span className="text-4xl">⚡</span>
+                  <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]' : 'bg-violet-500/10 border-violet-500/30 shadow-[0_0_30px_rgba(139,92,246,0.2)]'} flex items-center justify-center`}>
+                    <span className="text-4xl">{isHumanVerified ? '⚡' : '🔒'}</span>
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-xl font-black text-white uppercase tracking-widest">Quests</h3>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-400 text-[10px] font-black tracking-widest uppercase">
-                      <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                      Verified Humans Only
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-violet-500/15 border-violet-500/30 text-violet-400'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-cyan-400' : 'bg-violet-400'}`} />
+                      {isHumanVerified ? 'Verified Human' : 'Verified Humans Only'}
                     </div>
                   </div>
                   <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      Complete high-value quests to earn{" "}
-                      <span className="text-violet-400 font-semibold">higher points</span> and{" "}
-                      <span className="text-violet-400 font-semibold">Entropy rewards</span>. Quests are exclusively available to{" "}
-                      <span className="text-cyan-400 font-semibold">Verified Humans</span>.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
-                      <Lock size={12} className="text-violet-400" />
-                      Pass human verification to unlock quests.
-                    </div>
+                    {isHumanVerified ? (
+                      <p className="text-sm text-white/70 leading-relaxed italic">
+                        No quests available at the moment. Check back soon for high-value missions!
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          Complete high-value quests to earn{" "}
+                          <span className="text-violet-400 font-semibold">higher points</span> and{" "}
+                          <span className="text-violet-400 font-semibold">Entropy rewards</span>. Quests are exclusively available to{" "}
+                          <span className="text-cyan-400 font-semibold">Verified Humans</span>.
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
+                          <Lock size={12} className="text-violet-400" />
+                          Pass human verification to unlock quests.
+                        </div>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
