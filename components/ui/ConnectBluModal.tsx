@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bot, Send, Twitter, Check, Loader2, ChevronRight } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { postApi } from "@/lib/useApi";
 
@@ -73,7 +73,7 @@ export default function ConnectBluModal({
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         className="fixed inset-0 z-[201] flex items-center justify-center p-6 pointer-events-none"
                     >
-                        <div className="w-full max-w-sm bg-gradient-to-b from-[#0a1a25] to-[#040c12] border border-cyan-500/30 rounded-[2rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] pointer-events-auto">
+                        <div className="w-full max-w-sm bg-black border border-cyan-500/20 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.2)] pointer-events-auto">
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 pt-6 pb-4">
                                 <div>
@@ -115,7 +115,9 @@ export default function ConnectBluModal({
                                             {/* Connect X — Coming Soon */}
                                             <div className="w-full flex items-center gap-4 bg-white/[0.02] border border-white/5 rounded-2xl p-4 opacity-50 cursor-not-allowed relative overflow-hidden">
                                                 <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                                    <Twitter size={22} className="text-white/40" />
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-[22px] h-[22px] text-white/40" fill="currentColor">
+                                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                                    </svg>
                                                 </div>
                                                 <div className="flex-1 text-left">
                                                     <p className="text-white/50 font-black text-sm uppercase tracking-wide">Connect X</p>

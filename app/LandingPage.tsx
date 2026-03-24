@@ -263,6 +263,7 @@ export default function LandingPage() {
           human_verification_pending: user.human_verification_pending || false,
           network_builder_pending: user.network_builder_pending || false,
           ton_explorer_pending: user.ton_explorer_pending || false,
+          is_human_verified: !!user.is_human_verified,
         });
 
         // 🔥 Initial check for pending rewards from init data
