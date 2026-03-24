@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bot, Send, Check, Loader2, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { postApi } from "@/lib/useApi";
 
 interface ConnectBluModalProps {
@@ -27,13 +27,25 @@ export default function ConnectBluModal({
     const [view, setView] = useState<"main" | "telegram">("main");
     const [channelInput, setChannelInput] = useState("");
     const [verifying, setVerifying] = useState(false);
-    const [verified, setVerified] = useState(!!alreadyConnected);
+    const [verified, setVerified] = useState(false);
     const [connectedInfo, setConnectedInfo] = useState({
-        title: channelTitle || "",
-        photo: channelPhoto || "",
-        username: alreadyConnected || ""
+        title: "",
+        photo: "",
+        username: ""
     });
     const [error, setError] = useState("");
+
+    // Sync state with props when modal opens or props change
+    useEffect(() => {
+        if (isOpen) {
+            setVerified(!!alreadyConnected);
+            setConnectedInfo({
+                title: channelTitle || "",
+                photo: channelPhoto || "",
+                username: alreadyConnected || ""
+            });
+        }
+    }, [isOpen, alreadyConnected, channelTitle, channelPhoto]);
 
     const handleVerify = async () => {
         if (!channelInput.trim() || verifying || verified) return;
@@ -228,27 +240,27 @@ export default function ConnectBluModal({
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col gap-4">
-                                                            <div className="w-full bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex items-center gap-4 group">
-                                                                <div className="w-14 h-14 rounded-full border-2 border-cyan-500/30 overflow-hidden bg-black flex items-center justify-center shrink-0">
+                                                            <div className="w-full bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-3.5 flex items-center gap-3 group">
+                                                                <div className="w-12 h-12 rounded-full border-2 border-cyan-500/30 overflow-hidden bg-black flex items-center justify-center shrink-0">
                                                                     {connectedInfo.photo ? (
                                                                         <img src={connectedInfo.photo} alt="Channel" className="w-full h-full object-cover" />
                                                                     ) : (
-                                                                        <Bot size={28} className="text-cyan-500/40" />
+                                                                        <Bot size={24} className="text-cyan-500/40" />
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <p className="text-white font-black text-sm uppercase truncate">{connectedInfo.title}</p>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <p className="text-white font-black text-xs uppercase truncate">{connectedInfo.title}</p>
                                                                         <div className="p-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 opacity-40">
-                                                                            <Check size={10} className="text-cyan-400" />
+                                                                            <Check size={8} className="text-cyan-400" />
                                                                         </div>
                                                                     </div>
-                                                                    <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
+                                                                    <p className="text-cyan-500/40 text-[9px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
                                                                 </div>
                                                             </div>
-                                                            <button disabled className="w-full py-3.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/50 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
-                                                                <Check size={16} />
-                                                                Connected
+                                                            <button disabled className="w-full py-3.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/50 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
+                                                                <Check size={14} />
+                                                                CONNECTED
                                                             </button>
                                                         </div>
                                                     )}
