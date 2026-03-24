@@ -10,7 +10,9 @@ interface ConnectBluModalProps {
     onClose: () => void;
     telegramId: number | null;
     isHumanVerified: boolean;
-    alreadyConnected?: string | null; // channel username if already connected
+    alreadyConnected?: string | null;
+    channelTitle?: string | null;
+    channelPhoto?: string | null;
 }
 
 export default function ConnectBluModal({
@@ -19,11 +21,18 @@ export default function ConnectBluModal({
     telegramId,
     isHumanVerified,
     alreadyConnected,
+    channelTitle,
+    channelPhoto,
 }: ConnectBluModalProps) {
     const [view, setView] = useState<"main" | "telegram">("main");
     const [channelInput, setChannelInput] = useState("");
     const [verifying, setVerifying] = useState(false);
     const [verified, setVerified] = useState(!!alreadyConnected);
+    const [connectedInfo, setConnectedInfo] = useState({
+        title: channelTitle || "",
+        photo: channelPhoto || "",
+        username: alreadyConnected || ""
+    });
     const [error, setError] = useState("");
 
     const handleVerify = async () => {
@@ -37,6 +46,11 @@ export default function ConnectBluModal({
             });
             if (res.success) {
                 setVerified(true);
+                setConnectedInfo({
+                    title: res.channel_title || "Connected",
+                    photo: res.channel_photo || "",
+                    username: res.channel || ""
+                });
             } else {
                 setError(res.error || "Verification failed. Make sure Blu bot is an admin.");
             }
@@ -213,10 +227,30 @@ export default function ConnectBluModal({
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <button disabled className="w-full py-3.5 bg-green-500/20 border border-green-500/40 text-green-400 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
-                                                            <Check size={16} />
-                                                            Done
-                                                        </button>
+                                                        <div className="flex flex-col gap-4">
+                                                            <div className="w-full bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-4 flex items-center gap-4 group">
+                                                                <div className="w-14 h-14 rounded-full border-2 border-cyan-500/30 overflow-hidden bg-black flex items-center justify-center shrink-0">
+                                                                    {connectedInfo.photo ? (
+                                                                        <img src={connectedInfo.photo} alt="Channel" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <Bot size={28} className="text-cyan-500/40" />
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <p className="text-white font-black text-sm uppercase truncate">{connectedInfo.title}</p>
+                                                                        <div className="p-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 opacity-40">
+                                                                            <Check size={10} className="text-cyan-400" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button disabled className="w-full py-3.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/50 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
+                                                                <Check size={16} />
+                                                                Connected
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             ) : (
