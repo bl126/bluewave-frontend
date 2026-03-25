@@ -528,7 +528,7 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
               <div className="space-y-1">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tight">{info.channel.title}</h2>
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase">
-                  {info.telegram_channel || info.channel.title}
+                  {info.telegram_channel ? (info.telegram_channel.startsWith('@') ? info.telegram_channel : `@${info.telegram_channel}`) : info.channel.title}
                 </div>
               </div>
             </div>
@@ -553,17 +553,14 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 relative z-10">
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => {/* Internal follow logic eventually */ }}
-                  className="h-14 bg-white/5 border border-white/10 rounded-2xl text-white/70 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
-                >
+            <div className="flex flex-col items-center gap-6 relative z-10">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-white/40 font-black uppercase text-[10px] tracking-widest">
                   Follow Channel
-                </button>
+                </span>
                 <button
                   onClick={handleFollow}
-                  className="h-14 bg-cyan-500 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+                  className="mt-2 h-10 px-8 bg-cyan-500 rounded-xl text-black font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
                 >
                   Open
                 </button>
