@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Flame, Star, CheckCircle2, Zap } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface ClaimBoostData {
   base_claimed: number;
@@ -18,6 +19,7 @@ interface ClaimBoostPopupProps {
 }
 
 export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPopupProps) {
+  const { t } = useLanguage();
   const [step, setStep] = useState(0);
   const [displayValue, setDisplayValue] = useState(0);
 
@@ -113,8 +115,8 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
               {/* Top Icon */}
               <motion.div
                 className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg border-2 ${step >= 4 ? "bg-green-500/20 border-green-500/50 text-green-400" :
-                    step >= 2 ? "bg-orange-500/20 border-orange-500/50 text-orange-400" :
-                      "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
+                  step >= 2 ? "bg-orange-500/20 border-orange-500/50 text-orange-400" :
+                    "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
                   }`}
                 animate={{
                   scale: step === 2 || step === 4 ? [1, 1.2, 1] : 1,
@@ -127,13 +129,13 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                     <Zap size={32} />}
               </motion.div>
 
-              <h2 className="text-cyan-50/60 uppercase tracking-widest text-[11px] font-bold mb-2">Claiming Presence Reward</h2>
+              <h2 className="text-cyan-50/60 uppercase tracking-widest text-[11px] font-bold mb-2">{t("claim_boost_popup.title")}</h2>
 
               {/* Dynamic Number Display */}
               <motion.div
                 className={`text-6xl font-black mb-1 flex items-baseline gap-2 ${step >= 4 ? "text-green-400 drop-shadow-[0_0_15px_#4ade80]" :
-                    step >= 2 ? "text-orange-400 drop-shadow-[0_0_15px_#f97316]" :
-                      "text-cyan-50"
+                  step >= 2 ? "text-orange-400 drop-shadow-[0_0_15px_#f97316]" :
+                    "text-cyan-50"
                   }`}
                 animate={{ scale: step === 3 ? [1, 1.1, 1] : 1 }}
                 transition={{ duration: 0.2, repeat: step === 3 ? Infinity : 0 }}
@@ -153,7 +155,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       exit={{ opacity: 0, y: -10 }}
                       className="text-cyan-400/60 uppercase tracking-widest text-xs font-bold"
                     >
-                      Calculating...
+                      {t("claim_boost_popup.calculating")}
                     </motion.div>
                   )}
 
@@ -167,7 +169,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       <div className="bg-orange-500/10 border border-orange-500/30 px-4 py-2 rounded-xl flex items-center gap-2 mb-3">
                         <Flame className="text-orange-400" size={16} />
                         <span className="text-orange-400 font-black uppercase tracking-widest text-xs">
-                          Roles Boost: {data.multiplier.toFixed(2)}x
+                          {t("claim_boost_popup.roles_boost")} {data.multiplier.toFixed(2)}x
                         </span>
                       </div>
 
@@ -180,7 +182,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                             transition={{ delay: 0.2 + (idx * 0.1) }}
                             className="text-[9px] font-black uppercase tracking-widest bg-cyan-950/50 text-cyan-300 border border-cyan-800/50 px-2 py-1 rounded"
                           >
-                            + {role}
+                            + {t(`roles_list.${role}.name`)}
                           </motion.div>
                         ))}
                       </div>
@@ -194,7 +196,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       animate={{ opacity: 1, y: 0 }}
                       className="text-cyan-500/50 uppercase tracking-widest text-[10px] font-bold text-center"
                     >
-                      No active roles boost.<br />Earn roles to multiply yields!
+                      {t("claim_boost_popup.no_boost")}<br />{t("claim_boost_popup.no_boost_hint")}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -209,7 +211,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                     onClick={onClose}
                     className="mt-6 w-full py-4 rounded-xl bg-cyan-500 text-black font-black uppercase tracking-widest text-sm hover:bg-cyan-400 active:scale-95 transition-all shadow-[0_0_20px_#00e6ff40]"
                   >
-                    Collect Rewards
+                    {t("claim_boost_popup.collect")}
                   </motion.button>
                 )}
               </AnimatePresence>

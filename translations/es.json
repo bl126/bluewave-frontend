@@ -476,4 +476,19 @@
         "default_desc": "Completa todos los criterios para desbloquear este nivel.",
         "default_benefit": "Estado superior desbloqueado."
     }
+},
+"claim_boost_popup": {
+    "title": "Reclamando recompensa de presencia",
+    "calculating": "Calculando...",
+    "roles_boost": "Impulso de roles:",
+    "no_boost": "Sin impulso de roles activo.",
+    "no_boost_hint": "¡Gana roles para multiplicar los rendimientos!",
+    "collect": "Recoger recompensas"
+},
+"level_up_modal": {
+    "title": "¡Nivel superado!",
+    "reached": "Has alcanzado el nivel",
+    "default_desc": "Has desbloqueado un nuevo nivel de la economía de presencia. Tu fuerza de señal está creciendo.",
+    "continue": "Continuar presencia"
+}
 }

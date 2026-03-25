@@ -476,4 +476,19 @@
         "default_desc": "Lengkapi semua kriteria untuk membuka level ini.",
         "default_benefit": "Status lebih tinggi terbuka."
     }
+},
+"claim_boost_popup": {
+    "title": "Mengklaim Hadiah Kehadiran",
+    "calculating": "Menghitung...",
+    "roles_boost": "Peningkatan Peran:",
+    "no_boost": "Tidak ada peningkatan peran aktif.",
+    "no_boost_hint": "Dapatkan peran untuk melipatgandakan hasil!",
+    "collect": "Kumpulkan Hadiah"
+},
+"level_up_modal": {
+    "title": "Naik Level!",
+    "reached": "Anda mencapai Level",
+    "default_desc": "Anda telah membuka tingkatan baru dalam ekonomi kehadiran. Kekuatan sinyal Anda meningkat.",
+    "continue": "Lanjutkan Kehadiran"
+}
 }

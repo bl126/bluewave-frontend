@@ -418,13 +418,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             {user.roles.map((role: string) => {
                               const roleData = findRoleByName(role);
                               const Icon = roleData?.icon || UserCheck;
+                              const translatedName = t(`roles_list.${role}.name`);
                               return (
                                 <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-cyan-500/5 to-cyan-500/5'} border ${roleData?.border || 'border-cyan-500/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
                                   <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-cyan-400'}`}>
                                     {roleData?.image ? <img src={roleData.image} alt={role} className="w-5 h-5 object-contain" /> : <Icon size={18} />}
                                   </div>
                                   <span className={`text-[8px] font-black ${roleData?.text || 'text-cyan-400'} uppercase tracking-tighter text-center leading-none`}>
-                                    {role.split(' ').map((word, i) => (<span key={i} className="block">{word}</span>))}
+                                    {translatedName.split(' ').map((word: string, i: number) => (<span key={i} className="block">{word}</span>))}
                                   </span>
                                 </button>
                               );

@@ -28,7 +28,7 @@
         "connected": "已连接",
         "notifying": "通知中...",
         "notify_inactive_btn": "通知未活跃",
-        "network_builder": "网络建设者",
+        "bitwork_builder": "网络建设者",
         "network_builder_desc": "分享此代码来扩大您的人际网络并赚取 $BWAVE 奖励",
         "get_link": "获取链接",
         "connect_blu": "连接 Blu",
@@ -381,7 +381,7 @@
         },
         "Signal Guardian": {
             "name": "信号守护者",
-            "desc": "保护社区免受机器人和噪音干扰。",
+            "desc": "保护社区免受机器人 and 噪音干扰。",
             "benefit": "信任徽章 + 版主关注。"
         },
         "Human Legend": {
@@ -475,5 +475,19 @@
         "level_verified": "经验证人类",
         "default_desc": "完成所有标准以解锁此等级。",
         "default_benefit": "解锁更高地位。"
+    },
+    "claim_boost_popup": {
+        "title": "领取存在奖励",
+        "calculating": "计算中...",
+        "roles_boost": "角色加成:",
+        "no_boost": "无活跃角色加成。",
+        "no_boost_hint": "获得角色以倍增收益!",
+        "collect": "收集奖励"
+    },
+    "level_up_modal": {
+        "title": "等级提升!",
+        "reached": "你达到了等级",
+        "default_desc": "你开启了存在经济的新阶段。你的信号强度正在增长。",
+        "continue": "继续参与"
     }
 }

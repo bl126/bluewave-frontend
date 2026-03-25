@@ -475,5 +475,19 @@
       "title": "Ecosystem Levels",
       "desc": "Your journey through the Bluewave Presence Economy."
     }
+  },
+  "claim_boost_popup": {
+    "title": "Claiming Presence Reward",
+    "calculating": "Calculating...",
+    "roles_boost": "Roles Boost:",
+    "no_boost": "No active roles boost.",
+    "no_boost_hint": "Earn roles to multiply yields!",
+    "collect": "Collect Rewards"
+  },
+  "level_up_modal": {
+    "title": "Level Up!",
+    "reached": "You reached Level",
+    "default_desc": "You've unlocked a new tier of the presence economy. Your signal strength is growing.",
+    "continue": "Continue Presence"
   }
 }

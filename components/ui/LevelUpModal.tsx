@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Star, Zap, Target, Shield, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { findRoleByName } from "@/lib/roles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LevelUpModalProps {
     level: number;
@@ -14,6 +15,7 @@ interface LevelUpModalProps {
 const LEVEL_ICONS = [Star, Zap, Target, Shield, Trophy];
 
 export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalProps) {
+    const { t } = useLanguage();
     const Icon = LEVEL_ICONS[Math.min(level - 1, 4)];
     const roleData = findRoleByName(`LEVEL ${level}`);
     const [particles, setParticles] = useState<{ id: number, x: number, y: number, color: string }[]>([]);
@@ -103,14 +105,14 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">Level Up!</h1>
+                            <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">{t("level_up_modal.title")}</h1>
                             <p className="text-cyan-400 font-bold uppercase tracking-[0.3em] text-sm mb-6">
-                                You reached Level {level}
+                                {t("level_up_modal.reached")} {level}
                             </p>
 
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-8">
                                 <p className="text-xs text-white/60 font-medium uppercase leading-relaxed">
-                                    {roleData?.desc || "You've unlocked a new tier of the presence economy. Your signal strength is growing."}
+                                    {t(`roles_list.LEVEL ${level}.desc`) || t("level_up_modal.default_desc")}
                                 </p>
                             </div>
 
@@ -118,7 +120,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                                 onClick={onClose}
                                 className="px-10 py-4 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:bg-cyan-400 transition-all active:scale-95"
                             >
-                                Continue Presence
+                                {t("level_up_modal.continue")}
                             </button>
                         </motion.div>
                     </motion.div>

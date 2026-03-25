@@ -476,4 +476,19 @@
         "default_desc": "Conclua todos os critérios para desbloquear este nível.",
         "default_benefit": "Status superior desbloqueado."
     }
+},
+"claim_boost_popup": {
+    "title": "Reivindicando Recompensa de Presença",
+    "calculating": "Calculando...",
+    "roles_boost": "Impulso de Papéis:",
+    "no_boost": "Sem impulso de papéis ativo.",
+    "no_boost_hint": "Ganhe papéis para multiplicar os rendimentos!",
+    "collect": "Coletar Recompensa"
+},
+"level_up_modal": {
+    "title": "Subiu de Nível!",
+    "reached": "Você atingiu o Nível",
+    "default_desc": "Você desbloqueou um novo nível na economia de presença. Sua força de sinal está crescendo.",
+    "continue": "Continuar Presença"
+}
 }

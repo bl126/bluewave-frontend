@@ -72,47 +72,49 @@ export default function LanguageSelector({ isOpen, onClose }: LanguageSelectorPr
                             </div>
 
                             {/* Language List */}
-                            <div className="px-6 pb-10 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-                                {languages.map((lang) => {
-                                    const isActive = language === lang.code;
-                                    return (
-                                        <button
-                                            key={lang.code}
-                                            onClick={() => handleSelectLanguage(lang.code)}
-                                            className={`w-full flex items-center gap-3 border rounded-2xl p-2.5 transition-all active:scale-[0.98] group relative overflow-hidden ${isActive
-                                                ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
-                                                : "bg-white/[0.02] border-white/5 hover:border-white/10"
-                                                }`}
-                                        >
-                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all ${isActive
-                                                ? "bg-cyan-500/20 border-cyan-500/30"
-                                                : "bg-white/5 border-white/10"
-                                                }`}>
-                                                <span className="text-xl">{lang.flag}</span>
-                                            </div>
-
-                                            <div className="flex-1 text-left">
-                                                <p className={`font-black text-sm uppercase tracking-wide transition-colors ${isActive ? "text-white" : "text-white/40 group-hover:text-white/60"
+                            <div className="px-5 pb-8 flex-1 overflow-y-auto custom-scrollbar">
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    {languages.map((lang) => {
+                                        const isActive = language === lang.code;
+                                        return (
+                                            <button
+                                                key={lang.code}
+                                                onClick={() => handleSelectLanguage(lang.code)}
+                                                className={`flex items-center gap-2.5 border rounded-2xl p-2 transition-all active:scale-[0.98] group relative overflow-hidden ${isActive
+                                                    ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+                                                    : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                                                    }`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-all ${isActive
+                                                    ? "bg-cyan-500/20 border-cyan-500/30"
+                                                    : "bg-white/5 border-white/10"
                                                     }`}>
-                                                    {lang.nativeName}
-                                                </p>
-                                                <p className="text-cyan-500/30 text-[10px] font-bold uppercase tracking-wider mt-0.5">
-                                                    {lang.name}
-                                                </p>
-                                            </div>
+                                                    <span className="text-lg">{lang.flag}</span>
+                                                </div>
 
-                                            {isActive && (
-                                                <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]"
-                                                >
-                                                    <Check size={14} className="text-black stroke-[3px]" />
-                                                </motion.div>
-                                            )}
-                                        </button>
-                                    );
-                                })}
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <p className={`font-black text-[10px] uppercase tracking-wide truncate transition-colors ${isActive ? "text-white" : "text-white/40 group-hover:text-white/60"
+                                                        }`}>
+                                                        {lang.nativeName}
+                                                    </p>
+                                                    <p className="text-cyan-500/30 text-[8px] font-bold uppercase tracking-wider mt-0.5 truncate">
+                                                        {lang.name}
+                                                    </p>
+                                                </div>
+
+                                                {isActive && (
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="absolute top-1 right-1 w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                                                    >
+                                                        <Check size={10} className="text-black stroke-[3px]" />
+                                                    </motion.div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             {/* Footer hint */}
