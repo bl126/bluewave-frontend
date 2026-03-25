@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   ChevronLeft,
   Rocket,
-  Globe
+  Globe,
+  Plus
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -297,6 +298,21 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </div>
 
+      {/* ➕ Floating Post Button (FAB) */}
+      <AnimatePresence>
+        {showHeader && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: 20 }}
+            whileTap={{ scale: 0.9 }}
+            className="fixed right-6 bottom-32 w-14 h-14 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_20px_#00e6ff] z-[160] border-4 border-black/20"
+          >
+            <Plus size={28} strokeWidth={3} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* 🏆 Leaderboard Overlay (Nested) */}
       <AnimatePresence>
         {isLeaderboardOpen && (
@@ -334,12 +350,87 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 }
 
 // ----------------------------------------------------------------------------
+// 🖼️ Media Collage Component (X-Style)
+// ----------------------------------------------------------------------------
+function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
+  if (!items || items.length === 0) return null;
+
+  const validItems = items.filter(item => item.url);
+  const count = validItems.length;
+
+  if (count === 0) return null;
+
+  // Single Item
+  if (count === 1) {
+    const item = validItems[0];
+    return (
+      <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
+        {item.type === "photo" ? (
+          <img src={item.url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
+        ) : (
+          <video src={item.url} controls className="w-full h-auto max-h-[400px]" playsInline />
+        )}
+      </div>
+    );
+  }
+
+  // 2 Items: Side by side
+  if (count === 2) {
+    return (
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[200px]">
+        {validItems.map((item, i) => (
+          <div key={i} className="relative w-full h-full">
+            {item.type === "photo" ? (
+              <img src={item.url} className="w-full h-full object-cover" />
+            ) : (
+              <video src={item.url} className="w-full h-full object-cover" />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // 3 Items: 1 large left, 2 small right
+  if (count === 3) {
+    return (
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[250px]">
+        <div className="h-full">
+          <img src={validItems[0].url} className="w-full h-full object-cover" />
+        </div>
+        <div className="grid grid-rows-2 gap-1 h-full">
+          <img src={validItems[1].url} className="w-full h-full object-cover" />
+          <img src={validItems[2].url} className="w-full h-full object-cover" />
+        </div>
+      </div>
+    );
+  }
+
+  // 4+ Items: 2x2 Grid
+  return (
+    <div className="mb-4 grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
+      {validItems.slice(0, 4).map((item, i) => (
+        <div key={i} className="relative w-full h-full">
+          <img src={item.url} className="w-full h-full object-cover" />
+          {i === 3 && count > 4 && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <span className="text-white font-black text-xl">+{count - 4}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // 📬 Post Card Component (X-Style Row)
 // ----------------------------------------------------------------------------
 function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick: () => void, onHide: () => void }) {
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const rowMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on click outside
@@ -403,11 +494,15 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
       {/* Avatar (Left) - Top Aligned */}
       <button onClick={onChannelClick} className="shrink-0">
         <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
-          {post.channel.photo ? (
-            <img src={post.channel.photo} className="w-full h-full object-cover" />
+          {post.channel.photo && !imgError ? (
+            <img
+              src={post.channel.photo}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
-              {post.channel.title[0]}
+              {post.channel.title?.[0] || "B"}
             </div>
           )}
         </div>
@@ -444,12 +539,14 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
           </div>
         </div>
 
-        <p className="text-sm text-cyan-100/70 leading-relaxed break-words mb-3">
+        <p className="text-sm text-cyan-100/70 leading-relaxed break-words whitespace-pre-wrap mb-3">
           {post.content}
         </p>
 
         {/* Media Rendering */}
-        {post.media_url && (
+        {post.media_urls && post.media_urls.length > 0 ? (
+          <MediaCollage items={post.media_urls} />
+        ) : post.media_url ? (
           <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
             {post.media_type === "photo" ? (
               <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
@@ -457,7 +554,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
               <video src={post.media_url} controls className="w-full h-auto max-h-[400px]" playsInline />
             ) : null}
           </div>
-        )}
+        ) : null}
 
         <div className="flex items-center justify-between">
           <button

@@ -34,6 +34,7 @@ export default function ConnectBluModal({
         username: ""
     });
     const [error, setError] = useState("");
+    const [imgError, setImgError] = useState(false);
 
     // Sync state with props when modal opens or props change
     useEffect(() => {
@@ -242,10 +243,17 @@ export default function ConnectBluModal({
                                                         <div className="flex flex-col gap-4">
                                                             <div className="w-full bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-3.5 flex items-center gap-3 group">
                                                                 <div className="w-12 h-12 rounded-full border-2 border-cyan-500/30 overflow-hidden bg-black flex items-center justify-center shrink-0">
-                                                                    {connectedInfo.photo ? (
-                                                                        <img src={connectedInfo.photo} alt="Channel" className="w-full h-full object-cover" />
+                                                                    {connectedInfo.photo && !imgError ? (
+                                                                        <img
+                                                                            src={connectedInfo.photo}
+                                                                            alt="Channel"
+                                                                            className="w-full h-full object-cover"
+                                                                            onError={() => setImgError(true)}
+                                                                        />
                                                                     ) : (
-                                                                        <Bot size={24} className="text-cyan-500/40" />
+                                                                        <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-sm">
+                                                                            {connectedInfo.title?.[0] || "B"}
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
