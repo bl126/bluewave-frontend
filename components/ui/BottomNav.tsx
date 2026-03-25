@@ -67,7 +67,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 y: isVisible ? 0 : 120,
                 opacity: isVisible ? 1 : 0
             }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
                  flex items-center justify-around w-[94%] max-w-md bg-black/40 backdrop-blur-xl
                  rounded-[2rem] p-1.5 shadow-[0_0_30px_rgba(0,230,255,0.15)] border border-cyan-500/10"

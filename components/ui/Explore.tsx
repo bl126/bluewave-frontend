@@ -185,9 +185,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* 🔝 Top Navigation & Dropdown */}
       <motion.div
-        animate={{ y: showHeader ? 0 : -80, opacity: showHeader ? 1 : 0 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-20 left-0 right-0 px-6 flex items-start justify-between z-[130] pointer-events-auto"
+        animate={{ y: showHeader ? 0 : -100, opacity: showHeader ? 1 : 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="fixed top-28 left-0 right-0 px-6 flex items-start justify-between z-[130] pointer-events-auto"
       >
         <div className="flex gap-12 border-b border-white/5 pb-2">
           {(["foryou", "following"] as const).map((tab) => (
@@ -463,8 +463,8 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
           <button
             onClick={handleAcknowledge}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isAcknowledged
-                ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]"
-                : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
+              ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]"
+              : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
               }`}
           >
             {isAcknowledged ? "Acknowledged" : "Acknowledge"}
