@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import BluewaveGlobe from "@/components/ui/BluewaveGlobe";
 import MissionCenter from "@/components/ui/MissionCenter";
-import Leaderboard from "@/components/ui/Leaderboard";
+import Explore from "@/components/ui/Explore";
 import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
 import OnboardingModal from "@/components/ui/OnboardingModal";
@@ -63,7 +63,7 @@ export default function LandingPage() {
   const [fallbackUsername, setFallbackUsername] = useState<string>("");
   const [balance, setBalance] = useState<number | null>(null);
   const [isMissionOpen, setMissionOpen] = useState(false);
-  const [isLeaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [isExploreOpen, setExploreOpen] = useState(false);
   const [isMarketOpen, setMarketOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,7 +108,7 @@ export default function LandingPage() {
   // 🤖 Blu Expansion State
   const [isBluExpanded, setIsBluExpanded] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isLeaderboardOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -135,7 +135,7 @@ export default function LandingPage() {
       }
       // Close all other overlays and return to home
       setMissionOpen(false);
-      setLeaderboardOpen(false);
+      setExploreOpen(false);
       setMarketOpen(false);
       setProfileOpen(false);
       setRolesOpen(false);
@@ -597,7 +597,7 @@ export default function LandingPage() {
             setActiveTab(tab);
             // Sync legacy booleans for lazy-rendering compatibility
             setMissionOpen(tab === "missions");
-            setLeaderboardOpen(tab === "leaderboard");
+            setExploreOpen(tab === "explore");
             setMarketOpen(tab === "market");
             setProfileOpen(tab === "profile");
           }}
@@ -614,9 +614,18 @@ export default function LandingPage() {
           isHumanVerified={!!telegramUser?.is_human_verified}
         />
       )}
-      {isLeaderboardOpen && (
-        <Leaderboard isOpen={isLeaderboardOpen} onClose={() => { setLeaderboardOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
-      )}
+      <AnimatePresence>
+        {isExploreOpen && (
+          <Explore
+            isOpen={isExploreOpen}
+            onClose={() => {
+              setExploreOpen(false);
+              setActiveTab("home");
+            }}
+            telegramUser={telegramUser}
+          />
+        )}
+      </AnimatePresence>
       {isMarketOpen && (
         <Marketplace isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} />
       )}

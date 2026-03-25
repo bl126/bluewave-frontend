@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, Rocket, BarChart3, ShoppingCart, User } from "lucide-react";
+import { Home, Rocket, Compass, ShoppingCart, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
 import { useMemo } from "react";
 
-export type TabId = "home" | "missions" | "leaderboard" | "market" | "profile";
+export type TabId = "home" | "missions" | "explore" | "market" | "profile";
 
 interface BottomNavProps {
     activeTab: TabId;
@@ -53,7 +53,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
     const tabs = [
         { id: "home", icon: Home, label: t("nav.home") || "Home" },
         { id: "missions", icon: Rocket, label: t("nav.missions") || "Missions" },
-        { id: "leaderboard", icon: BarChart3, label: t("nav.leaderboard") || "Leaderboard" },
+        { id: "explore", icon: Compass, label: t("nav.explore") || "Explore" },
         { id: "market", icon: ShoppingCart, label: t("nav.market") || "Market" },
         { id: "profile", idIsProfile: true, label: t("nav.profile") || "Profile" },
     ];
