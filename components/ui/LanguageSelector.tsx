@@ -79,16 +79,16 @@ export default function LanguageSelector({ isOpen, onClose }: LanguageSelectorPr
                                         <button
                                             key={lang.code}
                                             onClick={() => handleSelectLanguage(lang.code)}
-                                            className={`w-full flex items-center gap-4 border rounded-2xl p-4 transition-all active:scale-[0.98] group relative overflow-hidden ${isActive
-                                                    ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
-                                                    : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                                            className={`w-full flex items-center gap-3 border rounded-2xl p-2.5 transition-all active:scale-[0.98] group relative overflow-hidden ${isActive
+                                                ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+                                                : "bg-white/[0.02] border-white/5 hover:border-white/10"
                                                 }`}
                                         >
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border transition-all ${isActive
-                                                    ? "bg-cyan-500/20 border-cyan-500/30"
-                                                    : "bg-white/5 border-white/10"
+                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all ${isActive
+                                                ? "bg-cyan-500/20 border-cyan-500/30"
+                                                : "bg-white/5 border-white/10"
                                                 }`}>
-                                                <span className="text-2xl">{lang.flag}</span>
+                                                <span className="text-xl">{lang.flag}</span>
                                             </div>
 
                                             <div className="flex-1 text-left">

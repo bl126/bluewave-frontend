@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown, Check, Star, Zap, Target, Shield, Trophy } from "lucide-react";
 import { useState } from "react";
 import { findRoleByName } from "@/lib/roles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LevelCriterion {
     id: string;
@@ -25,7 +26,7 @@ const LEVELS: LevelData[] = [
         role: "LEVEL 1",
         icon: Star,
         criteria: [
-            { id: "default", label: "Protocol Entry", target: 1, type: "default" }
+            { id: "default", label: "level_popup.protocol_entry", target: 1, type: "default" }
         ]
     },
     {
@@ -33,11 +34,11 @@ const LEVELS: LevelData[] = [
         role: "LEVEL 2",
         icon: Zap,
         criteria: [
-            { id: "commits", label: "Presence Commits", target: 50 },
-            { id: "points", label: "$BWAVE Points", target: 10000 },
-            { id: "networks", label: "Verified Human Networks", target: 5 },
-            { id: "streak", label: "Streak Days", target: 10 },
-            { id: "verified", label: "Verified Human", target: 1, type: "boolean" }
+            { id: "commits", label: "level_popup.presence_commits", target: 50 },
+            { id: "points", label: "level_popup.bwave_points", target: 10000 },
+            { id: "networks", label: "level_popup.human_networks", target: 5 },
+            { id: "streak", label: "level_popup.streak_days", target: 10 },
+            { id: "verified", label: "level_popup.level_verified", target: 1, type: "boolean" }
         ]
     },
     {
@@ -45,11 +46,11 @@ const LEVELS: LevelData[] = [
         role: "LEVEL 3",
         icon: Target,
         criteria: [
-            { id: "commits", label: "Presence Commits", target: 500 },
-            { id: "points", label: "$BWAVE Points", target: 100000 },
-            { id: "networks", label: "Verified Human Networks", target: 20 },
-            { id: "streak", label: "Streak Days", target: 50 },
-            { id: "verified", label: "Verified Human", target: 1, type: "boolean" }
+            { id: "commits", label: "level_popup.presence_commits", target: 500 },
+            { id: "points", label: "level_popup.bwave_points", target: 100000 },
+            { id: "networks", label: "level_popup.human_networks", target: 20 },
+            { id: "streak", label: "level_popup.streak_days", target: 50 },
+            { id: "verified", label: "level_popup.level_verified", target: 1, type: "boolean" }
         ]
     },
     {
@@ -57,11 +58,11 @@ const LEVELS: LevelData[] = [
         role: "LEVEL 4",
         icon: Shield,
         criteria: [
-            { id: "commits", label: "Presence Commits", target: 1000 },
-            { id: "points", label: "$BWAVE Points", target: 500000 },
-            { id: "networks", label: "Verified Human Networks", target: 50 },
-            { id: "streak", label: "Streak Days", target: 100 },
-            { id: "verified", label: "Verified Human", target: 1, type: "boolean" }
+            { id: "commits", label: "level_popup.presence_commits", target: 1000 },
+            { id: "points", label: "level_popup.bwave_points", target: 500000 },
+            { id: "networks", label: "level_popup.human_networks", target: 50 },
+            { id: "streak", label: "level_popup.streak_days", target: 100 },
+            { id: "verified", label: "level_popup.level_verified", target: 1, type: "boolean" }
         ]
     },
     {
@@ -69,11 +70,11 @@ const LEVELS: LevelData[] = [
         role: "LEVEL 5",
         icon: Trophy,
         criteria: [
-            { id: "commits", label: "Presence Commits", target: 10000 },
-            { id: "points", label: "$BWAVE Points", target: 1000000 },
-            { id: "networks", label: "Verified Human Networks", target: 100 },
-            { id: "badges", label: "Role Badge Holder", target: 5 },
-            { id: "verified", label: "Verified Human", target: 1, type: "boolean" }
+            { id: "commits", label: "level_popup.presence_commits", target: 10000 },
+            { id: "points", label: "level_popup.bwave_points", target: 1000000 },
+            { id: "networks", label: "level_popup.human_networks", target: 100 },
+            { id: "badges", label: "level_popup.role_badge", target: 5 },
+            { id: "verified", label: "level_popup.level_verified", target: 1, type: "boolean" }
         ]
     }
 ];
@@ -86,6 +87,7 @@ interface LevelPopupProps {
 
 export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
     const [expandedLevel, setExpandedLevel] = useState<number>(user?.level ? parseInt(user.level) : 1);
+    const { t } = useLanguage();
 
     const getMetricValue = (id: string) => {
         if (!user) return 0;
@@ -136,8 +138,8 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
 
                         {/* Header */}
                         <div className="p-6 pt-8 flex flex-col items-center border-b border-white/5 text-center">
-                            <h2 className="text-white text-xl font-black uppercase tracking-tight">Level</h2>
-                            <p className="text-cyan-500/50 text-[9px] font-bold uppercase tracking-widest mt-0.5">Your Presence Journey</p>
+                            <h2 className="text-white text-xl font-black uppercase tracking-tight">{t("level_popup.title")}</h2>
+                            <p className="text-cyan-500/50 text-[9px] font-bold uppercase tracking-widest mt-0.5">{t("level_popup.subtitle")}</p>
                         </div>
 
                         {/* Content - Scrollable Accordion */}
@@ -171,7 +173,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                             <div className="flex-1 flex flex-col">
                                                 <div className="flex items-center gap-2">
                                                     <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted || isCurrent ? "text-white" : "text-white/40"}`}>
-                                                        LEVEL {lvl.level}
+                                                        {t("level_popup.level")} {lvl.level}
                                                     </span>
                                                     {isCompleted && (
                                                         <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#00E6FF]">
@@ -210,7 +212,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                                 <div key={cri.id} className="flex flex-col gap-1.5">
                                                                     <div className="flex justify-between items-end">
                                                                         <span className="text-[9px] font-black uppercase tracking-wider text-white/60">
-                                                                            {cri.label}
+                                                                            {cri.label.includes('.') ? t(cri.label) : cri.label}
                                                                         </span>
                                                                         <div className="flex items-center gap-1.5">
                                                                             {done ? (
@@ -218,9 +220,9 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                                             ) : null}
                                                                             <span className={`text-[9px] font-mono ${done ? "text-cyan-400" : "text-white/30"}`}>
                                                                                 {cri.type === "boolean"
-                                                                                    ? (done ? "VERIFIED" : "NOT YET")
+                                                                                    ? (done ? t("level_popup.verified") : t("level_popup.not_yet"))
                                                                                     : cri.type === "default"
-                                                                                        ? "ACTIVE"
+                                                                                        ? t("level_popup.active")
                                                                                         : `${current.toLocaleString()}/${target.toLocaleString()}`}
                                                                             </span>
                                                                         </div>
@@ -242,10 +244,10 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
 
                                                         <div className="mt-1 p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10">
                                                             <p className="text-[8px] text-cyan-400/60 font-medium leading-relaxed uppercase tracking-tighter">
-                                                                {roleData?.desc || "Complete all criteria to unlock this level."}
+                                                                {roleData?.desc || t("level_popup.default_desc")}
                                                             </p>
                                                             <p className="text-[8px] text-cyan-400 mt-0.5 font-bold uppercase">
-                                                                Benefit: {roleData?.benefit || "Unlocked higher status."}
+                                                                {t("level_popup.benefit")} {roleData?.benefit || t("level_popup.default_benefit")}
                                                             </p>
                                                         </div>
                                                     </div>

@@ -210,12 +210,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         </div>
 
         {/* Dropdown Menu (Floating Vertical Icons) */}
-        <div className="relative flex flex-col items-center" ref={menuRef}>
+        <div className="relative flex flex-col items-center mr-4" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="relative p-2 text-white/40 hover:text-white transition-all active:scale-95 z-20"
+            className="relative p-2 text-white/80 hover:text-white transition-all active:scale-95 z-20"
           >
-            <ChevronDown size={20} className={`transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
+            <ChevronDown size={22} className={`transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
             {unreadCount > 0 && !isMenuOpen && (
               <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_10px_#00e6ff]">
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -229,7 +229,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-10 right-0 flex flex-col items-center gap-6 py-2 z-10"
+                className="absolute top-12 flex flex-col items-center gap-6 py-4 px-3.5 bg-black/80 backdrop-blur-md border border-white/10 rounded-[2rem] z-10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
               >
                 <button
                   onClick={() => {
@@ -237,9 +237,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                     setIsNotificationsOpen(true);
                     postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
                   }}
-                  className="relative text-white/40 hover:text-cyan-400 transition-all"
+                  className="relative text-white/80 hover:text-cyan-400 transition-all"
                 >
-                  <Bell size={20} />
+                  <Bell size={22} />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
                       {unreadCount}
@@ -251,9 +251,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                     setIsMenuOpen(false);
                     setIsLeaderboardOpen(true);
                   }}
-                  className="text-white/40 hover:text-cyan-400 transition-all"
+                  className="text-white/80 hover:text-cyan-400 transition-all"
                 >
-                  <BarChart2 size={20} />
+                  <BarChart2 size={22} />
                 </button>
               </motion.div>
             )}
@@ -585,19 +585,57 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
   const { t } = useLanguage();
   const { data: info, loading } = useApi(`/explore/channel/${tgId}?current_user_id=${myId}`);
   const [following, setFollowing] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (info) setFollowing(info.is_following);
   }, [info]);
 
-  const handleFollow = () => {
-    // Navigate to channel directly
-    if (info?.channel?.link || info?.telegram_channel) {
-      let link = info.channel.link;
-      if (!link && info.telegram_channel) {
-        link = `https://t.me/${info.telegram_channel.replace('@', '')}`;
+  const handleAction = async () => {
+    if (!info) return;
+    const handle = info?.channel?.handle || info?.telegram_channel;
+    const link = handle ? `https://t.me/${handle.replace('@', '')}` : null;
+
+    if (following) {
+      if (link) {
+        const twa = (window as any).Telegram?.WebApp;
+        if (twa?.openTelegramLink) twa.openTelegramLink(link);
+        else window.open(link, '_blank');
       }
-      if (link) window.open(link, '_blank');
+      return;
+    }
+
+    try {
+      setVerifying(true);
+      const res = await postApi("/user/follow", { follower_id: myId, followed_id: tgId });
+      if (res.success && res.following) {
+        setFollowing(true);
+      } else if (res.requires_join) {
+        if (link) {
+          const twa = (window as any).Telegram?.WebApp;
+          if (twa?.openTelegramLink) twa.openTelegramLink(link);
+          else window.open(link, '_blank');
+        }
+      }
+    } catch (e) {
+      console.error("Failed to follow in app:", e);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    if (!info) return;
+    try {
+      setVerifying(true);
+      const res = await postApi("/user/follow", { follower_id: myId, followed_id: tgId });
+      if (res.success && !res.following) {
+        setFollowing(false);
+      }
+    } catch (e) {
+      console.error("Failed to unfollow:", e);
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -655,14 +693,20 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
             <div className="flex flex-col items-center gap-6 relative z-10">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-white/40 font-black uppercase text-[10px] tracking-widest">
-                  {t("explore.follow_channel")}
+                  {following ? "You are following" : t("explore.follow_channel")}
                 </span>
                 <button
-                  onClick={handleFollow}
-                  className="mt-2 h-10 px-8 bg-cyan-500 rounded-xl text-black font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+                  onClick={handleAction}
+                  disabled={verifying}
+                  className="mt-2 h-10 px-8 bg-cyan-500 rounded-xl text-black font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {t("explore.open")}
+                  {verifying ? "VERIFYING..." : (following ? "OPEN CHANNEL" : "VERIFY & FOLLOW")}
                 </button>
+                {following && (
+                  <button onClick={handleUnfollow} disabled={verifying} className="mt-3 text-[9px] text-white/30 uppercase tracking-widest hover:text-white transition-all disabled:opacity-50">
+                    Unfollow
+                  </button>
+                )}
               </div>
               <button
                 onClick={onClose}

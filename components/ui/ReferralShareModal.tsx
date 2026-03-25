@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Share2, Copy, Check } from "lucide-react";
 import { useState, useRef } from "react";
 import QRCode from "react-qr-code";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ReferralShareModalProps {
     isOpen: boolean;
@@ -19,8 +20,9 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     const [isSharing, setIsSharing] = useState(false);
     const qrRef = useRef<HTMLDivElement>(null);
     const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
+    const { t } = useLanguage();
 
-    const SHARE_CAPTION = `Scan me to join the human presence layer 🌊\n${link}`;
+    const SHARE_CAPTION = `${t("referral.share_caption")}\n${link}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(link);
@@ -86,12 +88,12 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         ctx.letterSpacing = "8px";
         ctx.fillStyle = "#06b6d4"; // cyan-500
         ctx.textAlign = "center";
-        ctx.fillText("BLUEWAVE", W / 2, 140);
+        ctx.fillText(t("referral.canvas_header"), W / 2, 140);
 
         // Sub-header
         ctx.font = "500 32px -apple-system, system-ui, sans-serif";
         ctx.fillStyle = "rgba(255,255,255,0.35)";
-        ctx.fillText("Human Presence Layer", W / 2, 200);
+        ctx.fillText(t("referral.canvas_subheader"), W / 2, 200);
 
         // --- Divider line ---
         ctx.strokeStyle = "rgba(6,182,212,0.25)";
@@ -132,8 +134,8 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         ctx.font = "bold 46px -apple-system, system-ui, sans-serif";
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
-        ctx.fillText("Scan me to join the", W / 2, captionY);
-        ctx.fillText("human presence layer", W / 2, captionY + 64);
+        ctx.fillText(t("referral.canvas_scan_1"), W / 2, captionY);
+        ctx.fillText(t("referral.canvas_scan_2"), W / 2, captionY + 64);
 
         // --- BW ID badge ---
         const badgeY = captionY + 150;
@@ -168,7 +170,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
             if (blob && navigator.canShare) {
                 const file = new File([blob], "bluewave-referral.png", { type: "image/png" });
                 const shareData: ShareData = {
-                    title: "Bluewave — Human Presence Layer",
+                    title: t("referral.share_title"),
                     text: SHARE_CAPTION,
                     files: [file],
                 };
@@ -181,7 +183,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
 
             // Fallback: share without image
             await navigator.share({
-                title: "Bluewave — Human Presence Layer",
+                title: t("referral.share_title"),
                 text: SHARE_CAPTION,
                 url: link,
             });
@@ -242,7 +244,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
 
                             {/* Info Text */}
                             <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
-                                SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS
+                                {t("referral.share_desc")}
                             </p>
 
                             {/* Primary Buttons */}
@@ -257,7 +259,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                                     ) : (
                                         <Share2 size={16} />
                                     )}
-                                    {isSharing ? "Preparing..." : "Share Code"}
+                                    {isSharing ? t("referral.preparing") : t("referral.share_btn")}
                                 </button>
 
                                 <button
@@ -265,7 +267,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                                     className="w-full h-14 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                 >
                                     {copied ? <Check size={16} className="text-cyan-400" /> : <Copy size={16} />}
-                                    {copied ? "Copied Link" : "Copy Link"}
+                                    {copied ? t("referral.copied_link") : t("referral.copy_link")}
                                 </button>
                             </div>
                         </div>

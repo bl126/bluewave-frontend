@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Flame, Star } from "lucide-react";
@@ -9,6 +10,7 @@ interface RoleDetailModalProps {
 }
 
 export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps) {
+  const { t } = useLanguage();
   if (!role) return null;
 
   return (
@@ -53,29 +55,29 @@ export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps)
               {/* Name & Multiplier */}
               <div className="text-center space-y-2">
                 <h2 className={`text-2xl font-black uppercase tracking-tight ${role.text}`}>
-                  {role.name}
+                  {t(`roles_list.${role.name}.name`) || role.name}
                 </h2>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
                   <Flame className="text-orange-400" size={13} />
-                  <span className="text-orange-400 font-black text-xs tracking-widest">{role.boost} YIELD BOOST</span>
+                  <span className="text-orange-400 font-black text-xs tracking-widest">{role.boost} {t("roles_overlay.yield_boost")}</span>
                 </div>
               </div>
 
               {/* Credential & Protocol Access */}
               <div className="w-full space-y-3">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 block">Credential</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 block">{t("roles_overlay.credential")}</span>
                   <p className="text-sm text-white/75 font-medium leading-relaxed">
-                    {role.desc}
+                    {t(`roles_list.${role.name}.desc`) || role.desc}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/60 flex items-center gap-1.5">
-                    <Star size={10} className="text-yellow-400" /> Protocol Access
+                    <Star size={10} className="text-yellow-400" /> {t("roles_overlay.protocol_access")}
                   </span>
                   <p className="text-sm text-cyan-50/85 font-semibold leading-snug">
-                    {role.benefit}
+                    {t(`roles_list.${role.name}.benefit`) || role.benefit}
                   </p>
                 </div>
               </div>

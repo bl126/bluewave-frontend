@@ -232,5 +232,248 @@
         "verifying": "Verificando...",
         "done": "Feito",
         "error": "Erro"
+    },
+    "connect_blu": {
+        "title": "Conectar Blu",
+        "subtitle": "Agente Inteligente Bluewave",
+        "connect_tg": "Conectar Canal do Telegram",
+        "connect_tg_desc": "Vincular seu canal ao Agente Blu",
+        "connect_x": "Conectar X",
+        "social_verification": "Verificação social",
+        "coming_soon": "Em breve",
+        "back": "← Volver",
+        "requirements": "Requisitos",
+        "req_1": "Adicione @blu_presencebot como administrador no seu canal.",
+        "req_2": "Conceda permissões: Postar e Excluir mensagens.",
+        "req_3": "Digite o nome de usuário do seu canal abaixo e toque em Verificar.",
+        "benefits": "Benefícios do Agente",
+        "ben_1": "• Distribuição Humana Verificada",
+        "ben_2": "• Análise avançada de canais",
+        "ben_3": "• BI e Sentiment tracking",
+        "placeholder": "@seucanal",
+        "verify_btn": "Verificar Canal",
+        "verifying": "Verificando...",
+        "connected_btn": "CONECTADO",
+        "verified_humans_only": "Somente Humanos Verificados",
+        "verified_desc": "A conexão de canal é reservada para <span className=\"text-cyan-400 font-bold\">Humanos Verificados</span>.",
+        "verified_footer": "Complete missões → Seja Verificado → Conecte Canal",
+        "copied": "COPIADO!",
+        "copy": "COPIAR",
+        "connected_fallback": "Conectado",
+        "error_verify_admin": "Falha na verificação. Certifique-se de que o robô Blu é admin.",
+        "error_connection": "Erro de conexão. Tente novamente.",
+        "req_1_prefix": "Adicione",
+        "req_1_suffix": "como administrador no seu canal.",
+        "req_1_bot": "@blu_presencebot"
+    },
+    "roles_overlay": {
+        "title": "Funções do Ecossistema",
+        "desc_1": "As credenciais de função são atributos de nível de protocolo permanentemente vinculados ao seu BW ID. Cada função carrega um multiplicador de rendimento que se aplica automaticamente.",
+        "desc_2": "Os multiplicadores acumulam-se em missões Presence e referências. Não há limite: cada credencial aumenta permanentemente a sua taxa de rendimento base.",
+        "dist_label": "Distribuição",
+        "dist_val": "Ponderada pela contribuição",
+        "assign_label": "Atribuição",
+        "assign_val": "Conquistado, não comprado",
+        "yield_boost": "IMPULSO DE RENDIMENTO",
+        "credential": "Credencial",
+        "protocol_access": "Acesso ao Protocolo"
+    },
+    "roles_list": {
+        "Bluewave Core": {
+            "name": "Núcleo Bluewave",
+            "desc": "Membros oficiais da equipe Bluewave.",
+            "benefit": "Autoridade, anúncios, decisões do ecossistema."
+        },
+        "Community Moderator": {
+            "name": "Moderador da Comunidade",
+            "desc": "Mantém o espaço humano, limpo e seguro.",
+            "benefit": "Poderes de moderación, acesso direto à equipe principal."
+        },
+        "Verified Partner": {
+            "name": "Parceiro Verificado",
+            "desc": "Projetos ou comunidades em colaboração.",
+            "benefit": "Visibilidade + selo de confiança."
+        },
+        "Verified Human": {
+            "name": "Humano Verificado",
+            "desc": "Passou na verificação humana da Bluewave.",
+            "benefit": "Acesso a chats fechados, missões e drops."
+        },
+        "Presence Holder": {
+            "name": "Detentor de Presence",
+            "desc": "Mantém uma presença consistente on-chain/off-chain.",
+            "benefit": "Maior pontuação de reputação."
+        },
+        "TON Explorer": {
+            "name": "Explorador TON",
+            "desc": "Conectou uma carteira do ecossistema TON.",
+            "benefit": "Elegível para drops on-chain. Rendimento: +5%"
+        },
+        "Genesis Member": {
+            "name": "Membro Gênesis",
+            "desc": "Primeiros apoiadores da Bluewave.",
+            "benefit": "Acesso prioritário a recursos e vantagens."
+        },
+        "Beta Explorer": {
+            "name": "Explorador Beta",
+            "desc": "Testa ativamente os recursos da Bluewave.",
+            "benefit": "Ferramentas antecipadas, influência no feedback."
+        },
+        "New Wave": {
+            "name": "Nova Onda",
+            "desc": "Acabou de chegar. Bem-vindo!",
+            "benefit": "Objetivo: Aprender, observar e interagir."
+        },
+        "Active Human": {
+            "name": "Humano Activo",
+            "desc": "Participação consistente sem spam.",
+            "benefit": "Maior visibilidade, elegibilidade para funções avançadas."
+        },
+        "Network Builder": {
+            "name": "Construtor de Rede",
+            "desc": "Convidou 10+ humanos ativos para a rede.",
+            "benefit": "Maiores rendimentos de referência e influência."
+        },
+        "Contributor": {
+            "name": "Contribuidor",
+            "desc": "Adiciona valor por meio de ideias ou ajuda.",
+            "benefit": "Impulso de reputação, chats privados de contribuidores."
+        },
+        "OG": {
+            "name": "OG",
+            "desc": "Membro consistente e orientado a valor a longo prazo.",
+            "benefit": "Acesso prioritário, drops especiais, status."
+        },
+        "Super OG": {
+            "name": "Super OG",
+            "desc": "Contribuidores de elite que moldaram a comunidade.",
+            "benefit": "Peso na governança, vantagens exclusivas."
+        },
+        "Content Creator": {
+            "name": "Criador de Conteúdo",
+            "desc": "Cria conteúdo de alta qualidade sobre a Bluewave.",
+            "benefit": "Amplificação, recompensas, destaques."
+        },
+        "Best Commentator": {
+            "name": "Melhor Comentador",
+            "desc": "Adiciona insights consistentemente nas discussões.",
+            "benefit": "Impulso de reputação + confiança da comunidade."
+        },
+        "Meme Architect": {
+            "name": "Arquiteto de Memes",
+            "desc": "Crea memes de alta sinalização que definem a cultura.",
+            "benefit": "Amplificação viral, recompensas divertidas."
+        },
+        "X Supporter": {
+            "name": "Apoiador do X",
+            "desc": "Interage com as postagens de forma autêntica.",
+            "benefit": "Acesso a missões baseadas no X."
+        },
+        "X Raider": {
+            "name": "Incursor do X",
+            "desc": "Coordena invasões significativas (sem basts).",
+            "benefit": "Recompensas exclusivas para incursores."
+        },
+        "X Ambassador": {
+            "name": "Embaixador do X",
+            "desc": "Representa publicamente a Bluewave com threads de qualidade.",
+            "benefit": "Recompensas de embaixador, anúncios antecipados."
+        },
+        "Signal Guardian": {
+            "name": "Guardião de Sinal",
+            "desc": "Protege a comunidade de bots e ruído.",
+            "benefit": "Selo de confiança + atenção do moderador."
+        },
+        "Human Legend": {
+            "name": "Lenda Humana",
+            "desc": "Função rara por impacto excepcional a longo prazo.",
+            "benefit": "Reconhecimento eterno + privilégios futuros."
+        },
+        "LEVEL 1": {
+            "name": "NÍVEL 1",
+            "desc": "A 'Nova Onda'. Sua jornada começa aqui.",
+            "benefit": "Acesso a missões básicas. Rendimento: +1%"
+        },
+        "LEVEL 2": {
+            "name": "NÍVEL 2",
+            "desc": "Explorador de Pulso. Construtor de presença constante.",
+            "benefit": "Melhoria nos rendimentos de referência. Rendimento: +5%"
+        },
+        "LEVEL 3": {
+            "name": "NÍVEL 3",
+            "desc": "Arquiteto de Sinal. Construindo a estrutura da rede.",
+            "benefit": "Acesso a missões avançadas. Rendimento: +10%"
+        },
+        "LEVEL 4": {
+            "name": "NÍVEL 4",
+            "desc": "Comandante de Onda. Um pilar do ecossistema.",
+            "benefit": "Suporte prioritário e vantagens. Rendimento: +20%"
+        },
+        "LEVEL 5": {
+            "name": "NÍVEL 5",
+            "desc": "Lenda Blu. Mestre da Economia de Presença.",
+            "benefit": "Peso na governança Alpha. Rendimento: +50%"
+        }
+    },
+    "roles_cats": {
+        "Core Team Roles": {
+            "title": "Funções da Equipe Principal",
+            "desc": "Equipe oficial e parceiros de confiança."
+        },
+        "Identity & Presence Roles": {
+            "title": "Funções de Identidade e Presença",
+            "desc": "Sinais de reputação verificáveis."
+        },
+        "Community Progression Roles": {
+            "title": "Funções de Progressão Comunitária",
+            "desc": "Conquistadas por meio de participação orgânica."
+        },
+        "Creator & Signal Roles": {
+            "title": "Funções de Criador e Sinal",
+            "desc": "Amplificadores da cultura Bluewave."
+        },
+        "X (Twitter) Roles": {
+            "title": "Funções do X (Twitter)",
+            "desc": "Comandantes da presença social."
+        },
+        "Special Recognition Roles": {
+            "title": "Funções de Reconocimiento Especial",
+            "desc": "Membros excepcionais do ecossistema."
+        },
+        "Ecosystem Levels": {
+            "title": "Níveis do Ecossistema",
+            "desc": "Sua jornada pela Economia de Presencia da Bluewave."
+        }
+    },
+    "referral": {
+        "share_desc": "COMPARTILHE ESTE CÓDIGO PARA CRESCER SUA REDE HUMANA E GANHAR RECOMPENSAS $BWAVE",
+        "share_btn": "Compartilhar Código",
+        "preparing": "Preparando...",
+        "copy_link": "Copiar Link",
+        "copied_link": "Link Copiado",
+        "share_caption": "Escaneie para entrar na camada de presença humana 🌊",
+        "share_title": "Bluewave — Camada de Presença Humana",
+        "canvas_header": "BLUEWAVE",
+        "canvas_subheader": "Camada de Presença Humana",
+        "canvas_scan_1": "Escaneie para",
+        "canvas_scan_2": "entrar agora"
+    },
+    "level_popup": {
+        "title": "Nível",
+        "subtitle": "Sua Jornada de Presença",
+        "level": "NÍVEL",
+        "active": "ATIVO",
+        "verified": "VERIFICADO",
+        "not_yet": "AINDA NÃO",
+        "benefit": "Benefício:",
+        "protocol_entry": "Entrada no Protocolo",
+        "presence_commits": "Presence Commits",
+        "bwave_points": "Pontos $BWAVE",
+        "human_networks": "Redes Humanas Verificadas",
+        "streak_days": "Dias de Sequência",
+        "role_badge": "Detentor de Emblema de Função",
+        "level_verified": "Humano Verificado",
+        "default_desc": "Conclua todos os critérios para desbloquear este nível.",
+        "default_benefit": "Status superior desbloqueado."
     }
 }

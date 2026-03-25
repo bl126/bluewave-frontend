@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Bot, Send, Check, Loader2, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { postApi } from "@/lib/useApi";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ConnectBluModalProps {
     isOpen: boolean;
@@ -35,6 +36,7 @@ export default function ConnectBluModal({
     });
     const [error, setError] = useState("");
     const [imgError, setImgError] = useState(false);
+    const { t } = useLanguage();
 
     // Sync state with props when modal opens or props change
     useEffect(() => {
@@ -60,15 +62,15 @@ export default function ConnectBluModal({
             if (res.success) {
                 setVerified(true);
                 setConnectedInfo({
-                    title: res.channel_title || "Connected",
+                    title: res.channel_title || t("connect_blu.connected_fallback"),
                     photo: res.channel_photo || "",
                     username: res.channel || ""
                 });
             } else {
-                setError(res.error || "Verification failed. Make sure Blu bot is an admin.");
+                setError(res.error || t("connect_blu.error_verify_admin"));
             }
         } catch {
-            setError("Connection error. Please try again.");
+            setError(t("connect_blu.error_connection"));
         } finally {
             setVerifying(false);
         }
@@ -104,8 +106,8 @@ export default function ConnectBluModal({
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 pt-6 pb-4">
                                 <div>
-                                    <h2 className="text-white font-black text-lg uppercase tracking-tight">Connect Blu</h2>
-                                    <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest leading-none mt-1">Bluewave Intelligence Agent</p>
+                                    <h2 className="text-white font-black text-lg uppercase tracking-tight">{t("connect_blu.title")}</h2>
+                                    <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest leading-none mt-1">{t("connect_blu.subtitle")}</p>
                                 </div>
                                 <button onClick={handleClose} className="p-2 rounded-xl bg-white/5 text-cyan-500/40 hover:text-cyan-400 transition-colors">
                                     <X size={18} />
@@ -133,8 +135,8 @@ export default function ConnectBluModal({
                                                     <Send size={22} className="text-cyan-400" />
                                                 </div>
                                                 <div className="flex-1 text-left">
-                                                    <p className="text-white font-black text-sm uppercase tracking-wide">Connect Telegram Channel</p>
-                                                    <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-wider mt-0.5">Link your channel to Blu Agent</p>
+                                                    <p className="text-white font-black text-sm uppercase tracking-wide">{t("connect_blu.connect_tg")}</p>
+                                                    <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-wider mt-0.5">{t("connect_blu.connect_tg_desc")}</p>
                                                 </div>
                                                 <ChevronRight size={16} className="text-cyan-500/30 group-hover:text-cyan-400 transition-colors" />
                                             </button>
@@ -147,11 +149,11 @@ export default function ConnectBluModal({
                                                     </svg>
                                                 </div>
                                                 <div className="flex-1 text-left">
-                                                    <p className="text-white/50 font-black text-sm uppercase tracking-wide">Connect X</p>
-                                                    <p className="text-white/20 text-[10px] font-bold uppercase tracking-wider mt-0.5">Social verification</p>
+                                                    <p className="text-white/50 font-black text-sm uppercase tracking-wide">{t("connect_blu.connect_x")}</p>
+                                                    <p className="text-white/20 text-[10px] font-bold uppercase tracking-wider mt-0.5">{t("connect_blu.social_verification")}</p>
                                                 </div>
                                                 <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white/30">
-                                                    Coming Soon
+                                                    {t("connect_blu.coming_soon")}
                                                 </span>
                                             </div>
                                         </motion.div>
@@ -170,7 +172,7 @@ export default function ConnectBluModal({
                                                 onClick={() => setView("main")}
                                                 className="flex items-center gap-1 text-cyan-500/50 text-[10px] font-black uppercase tracking-widest hover:text-cyan-400 transition-colors self-start"
                                             >
-                                                ← Back
+                                                {t("connect_blu.back")}
                                             </button>
 
                                             {/* VERIFIED human view */}
@@ -178,45 +180,47 @@ export default function ConnectBluModal({
                                                 <div className="flex flex-col gap-4">
                                                     {/* Criteria */}
                                                     <div className="bg-cyan-500/5 border border-cyan-500/15 rounded-2xl p-4 flex flex-col gap-3">
-                                                        <p className="text-cyan-400 text-[10px] font-black uppercase tracking-widest">Requirements</p>
+                                                        <p className="text-cyan-400 text-[10px] font-black uppercase tracking-widest">{t("connect_blu.requirements")}</p>
                                                         <ul className="space-y-2 text-xs text-cyan-100/70 font-medium">
                                                             <li className="flex items-start gap-2">
                                                                 <span className="text-cyan-500 font-black">01</span>
-                                                                Add{" "}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        navigator.clipboard.writeText("@blu_presencebot");
-                                                                        const btn = document.getElementById("copy-bot-btn");
-                                                                        if (btn) {
-                                                                            btn.innerText = "COPIED!";
-                                                                            setTimeout(() => btn.innerText = "COPY", 2000);
-                                                                        }
-                                                                    }}
-                                                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all active:scale-95"
-                                                                >
-                                                                    @blu_presencebot
-                                                                    <span id="copy-bot-btn" className="text-[7px] bg-cyan-500 text-black px-1 rounded ml-1">COPY</span>
-                                                                </button>{" "}
-                                                                as an admin in your channel.
+                                                                <span className="flex-1 leading-snug">
+                                                                    {t("connect_blu.req_1_prefix")}{" "}
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(t("connect_blu.req_1_bot"));
+                                                                            const btn = document.getElementById("copy-bot-btn");
+                                                                            if (btn) {
+                                                                                btn.innerText = t("connect_blu.copied");
+                                                                                setTimeout(() => btn.innerText = t("connect_blu.copy"), 2000);
+                                                                            }
+                                                                        }}
+                                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all active:scale-95"
+                                                                    >
+                                                                        {t("connect_blu.req_1_bot")}
+                                                                        <span id="copy-bot-btn" className="text-[7px] bg-cyan-500 text-black px-1 rounded ml-1">{t("connect_blu.copy")}</span>
+                                                                    </button>{" "}
+                                                                    {t("connect_blu.req_1_suffix")}
+                                                                </span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
                                                                 <span className="text-cyan-500 font-black">02</span>
-                                                                Grant permissions: Post Messages & Delete Messages.
+                                                                <span className="flex-1 leading-snug">{t("connect_blu.req_2")}</span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
                                                                 <span className="text-cyan-500 font-black">03</span>
-                                                                Enter your channel username below and tap Verify.
+                                                                <span className="flex-1 leading-snug">{t("connect_blu.req_3")}</span>
                                                             </li>
                                                         </ul>
                                                     </div>
 
                                                     {/* Benefits */}
                                                     <div className="bg-black/30 border border-white/5 rounded-2xl p-4 flex flex-col gap-2">
-                                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Agent Benefits</p>
+                                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">{t("connect_blu.benefits")}</p>
                                                         <ul className="space-y-1 text-[11px] text-white/50 font-medium">
-                                                            <li>• Verified Human Distribution</li>
-                                                            <li>• Advanced channel analytics</li>
-                                                            <li>• Sentiment tracking & AI insights</li>
+                                                            <li>{t("connect_blu.ben_1")}</li>
+                                                            <li>{t("connect_blu.ben_2")}</li>
+                                                            <li>{t("connect_blu.ben_3")}</li>
                                                         </ul>
                                                     </div>
 
@@ -225,7 +229,7 @@ export default function ConnectBluModal({
                                                         <div className="flex flex-col gap-3">
                                                             <input
                                                                 type="text"
-                                                                placeholder="@yourchannel"
+                                                                placeholder={t("connect_blu.placeholder")}
                                                                 value={channelInput}
                                                                 onChange={(e) => setChannelInput(e.target.value)}
                                                                 className="w-full bg-black/50 border border-cyan-500/20 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder:text-cyan-500/20 focus:outline-none focus:border-cyan-500/50"
@@ -236,7 +240,7 @@ export default function ConnectBluModal({
                                                                 disabled={verifying || !channelInput.trim()}
                                                                 className="w-full h-13 py-3.5 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                                             >
-                                                                {verifying ? <><Loader2 size={16} className="animate-spin" /> Verifying...</> : "Verify Channel"}
+                                                                {verifying ? <><Loader2 size={16} className="animate-spin" /> {t("connect_blu.verifying")}</> : t("connect_blu.verify_btn")}
                                                             </button>
                                                         </div>
                                                     ) : (
@@ -268,7 +272,7 @@ export default function ConnectBluModal({
                                                             </div>
                                                             <button disabled className="w-full py-3.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/50 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
                                                                 <Check size={14} />
-                                                                CONNECTED
+                                                                {t("connect_blu.connected_btn")}
                                                             </button>
                                                         </div>
                                                     )}
@@ -280,13 +284,11 @@ export default function ConnectBluModal({
                                                         <Bot size={32} className="text-cyan-400" />
                                                     </div>
                                                     <div className="flex flex-col gap-2">
-                                                        <h3 className="text-white font-black text-base uppercase tracking-wide">Verified Humans Only</h3>
-                                                        <p className="text-cyan-100/50 text-xs leading-relaxed max-w-xs">
-                                                            Connecting your Telegram channel is reserved for <span className="text-cyan-400 font-bold">Verified Humans</span>. Stay consistent with your <span className="text-cyan-400 font-bold">Presence</span> and <span className="text-cyan-400 font-bold">Social</span> missions and build your network to pass BlueWave Human Verification.
-                                                        </p>
+                                                        <h3 className="text-white font-black text-base uppercase tracking-wide">{t("connect_blu.verified_humans_only")}</h3>
+                                                        <p className="text-cyan-100/50 text-xs leading-relaxed max-w-xs" dangerouslySetInnerHTML={{ __html: t("connect_blu.verified_desc") }} />
                                                     </div>
                                                     <div className="w-full h-px bg-cyan-500/10" />
-                                                    <p className="text-cyan-500/30 text-[9px] font-black uppercase tracking-widest">Complete missions → Get Verified → Connect Channel</p>
+                                                    <p className="text-cyan-500/30 text-[9px] font-black uppercase tracking-widest">{t("connect_blu.verified_footer")}</p>
                                                 </div>
                                             )}
                                         </motion.div>

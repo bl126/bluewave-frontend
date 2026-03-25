@@ -232,5 +232,248 @@
         "verifying": "验证中...",
         "done": "完成",
         "error": "错误"
+    },
+    "connect_blu": {
+        "title": "连接 Blu",
+        "subtitle": "Bluewave 智能代理",
+        "connect_tg": "连接 Telegram 频道",
+        "connect_tg_desc": "将您的频道链接到 Blu 代理",
+        "connect_x": "连接 X",
+        "social_verification": "社交验证",
+        "coming_soon": "即将推出",
+        "back": "← 返回",
+        "requirements": "要求",
+        "req_1": "在您的频道中添加 @blu_presencebot 为管理员。",
+        "req_2": "授予权限：发布消息和删除消息。",
+        "req_3": "在下方输入您的频道用户名并点击验证。",
+        "benefits": "代理优势",
+        "ben_1": "• 经验证的分发",
+        "ben_2": "• 高级频道分析",
+        "ben_3": "• 情绪跟踪和 AI 洞察",
+        "placeholder": "@yourchannel",
+        "verify_btn": "验证频道",
+        "verifying": "验证中...",
+        "connected_btn": "已连接",
+        "verified_humans_only": "限经验证个人",
+        "verified_desc": "连接频道仅限 <span className=\"text-cyan-400 font-bold\">经验证个人</span>。",
+        "verified_footer": "完成任务 → 通过验证 → 连接频道",
+        "copied": "已复制!",
+        "copy": "复制",
+        "connected_fallback": "已连接",
+        "error_verify_admin": "验证失败。请确保 Blu 机器人是管理员。",
+        "error_connection": "连接错误。请重试。",
+        "req_1_prefix": "添加",
+        "req_1_suffix": "为管理员。",
+        "req_1_bot": "@blu_presencebot"
+    },
+    "roles_overlay": {
+        "title": "生态系统角色",
+        "desc_1": "角色凭证是永久绑定到您的 BW ID 的协议级属性。每个角色都带有收益倍数，会自动应用于团队奖励事件。",
+        "desc_2": "倍数在领取奖励时叠加。角色叠加没有上限——每项凭证的积累都会永久增加您的基础收益率。",
+        "dist_label": "分配",
+        "dist_val": "按贡献加权",
+        "assign_label": "分配方式",
+        "assign_val": "通过努力获得，而非购买",
+        "yield_boost": "收益提升",
+        "credential": "凭证",
+        "protocol_access": "协议访问权限"
+    },
+    "roles_list": {
+        "Bluewave Core": {
+            "name": "Bluewave 核心",
+            "desc": "Bluewave 官方团队成员。",
+            "benefit": "权限、公告、生态系统决策。"
+        },
+        "Community Moderator": {
+            "name": "社区版主",
+            "desc": "保持空间的人性化、整洁和安全。",
+            "benefit": "版主权限，直接联系核心团队。"
+        },
+        "Verified Partner": {
+            "name": "认证合作伙伴",
+            "desc": "合作伙伴项目或社区。",
+            "benefit": "可见度 + 信任徽章。"
+        },
+        "Verified Human": {
+            "name": "认证人类",
+            "desc": "通过了 Bluewave 人类身份验证。",
+            "benefit": "访问封闭聊天、任务和空投。"
+        },
+        "Presence Holder": {
+            "name": "出席持有者",
+            "desc": "保持一致的链上/链下出席。",
+            "benefit": "更高的声誉分数，未来奖励权重。"
+        },
+        "TON Explorer": {
+            "name": "TON 探索者",
+            "desc": "连接了 TON 生态系统钱包。",
+            "benefit": "有资格获得链上空投。收益：+5%"
+        },
+        "Genesis Member": {
+            "name": "创世成员",
+            "desc": "Bluewave 的早期支持者。",
+            "benefit": "优先体验功能、快照、特权。"
+        },
+        "Beta Explorer": {
+            "name": "Beta 探索者",
+            "desc": "积极测试 Bluewave 功能。",
+            "benefit": "早期工具、反馈影响力、认可。"
+        },
+        "New Wave": {
+            "name": "新浪潮",
+            "desc": "初来乍到。欢迎！",
+            "benefit": "目标：学习、观察、进行有意义的互动。"
+        },
+        "Active Human": {
+            "name": "活跃人类",
+            "desc": "持续参与且无垃圾信息。",
+            "benefit": "更高的可见度，有资格获得高级角色。"
+        },
+        "Network Builder": {
+            "name": "网络建设者",
+            "desc": "邀请了 10+ 名活跃人类加入网络。",
+            "benefit": "更高的推荐收益和网络影响力。"
+        },
+        "Contributor": {
+            "name": "贡献者",
+            "desc": "通过建议、反馈或帮助增加价值。",
+            "benefit": "声誉提升，私密贡献者聊天。"
+        },
+        "OG": {
+            "name": "OG",
+            "desc": "长期、一致、以价值为导向的成员。",
+            "benefit": "优先权、特别空投、身份地位。"
+        },
+        "Super OG": {
+            "name": "超级 OG",
+            "desc": "早期塑造社区的精英贡献者。",
+            "benefit": "治理权重、独家特权、认可。"
+        },
+        "Content Creator": {
+            "name": "内容创作者",
+            "desc": "创作高质量的 Bluewave 内容。",
+            "benefit": "获得推广、奖励、特色报道。"
+        },
+        "Best Commentator": {
+            "name": "最佳评论员",
+            "desc": "在讨论中持续提供见解。",
+            "benefit": "声誉提升 + 社区信任。"
+        },
+        "Meme Architect": {
+            "name": "Meme 建筑师",
+            "desc": "创作高信号、定义文化的 Meme。",
+            "benefit": "病毒式传播，趣味奖励。"
+        },
+        "X Supporter": {
+            "name": "X 支持者",
+            "desc": "真实地参与帖子互动。",
+            "benefit": "参与基于 X 的任务。"
+        },
+        "X Raider": {
+            "name": "X 突袭者",
+            "desc": "协调有意义的突袭（无机器人行为）。",
+            "benefit": "突袭专属奖励和排行榜。"
+        },
+        "X Ambassador": {
+            "name": "X 大使",
+            "desc": "通过高质量推文公开代表 Bluewave。",
+            "benefit": "大使奖励，早期公告。"
+        },
+        "Signal Guardian": {
+            "name": "信号守护者",
+            "desc": "保护社区免受机器人和噪音干扰。",
+            "benefit": "信任徽章 + 版主关注。"
+        },
+        "Human Legend": {
+            "name": "人类传奇",
+            "desc": "具有卓越长期影响力的稀有角色。",
+            "benefit": "永久荣耀 + 未来生态系统特权。"
+        },
+        "LEVEL 1": {
+            "name": "1 级",
+            "desc": "“新浪潮”。您的旅程从这里开始。",
+            "benefit": "访问基础任务。收益：+1%"
+        },
+        "LEVEL 2": {
+            "name": "2 级",
+            "desc": "脉搏侦察员。持续的出席建设者。",
+            "benefit": "提高推荐收益。收益：+5%"
+        },
+        "LEVEL 3": {
+            "name": "3 级",
+            "desc": "信号建筑师。构建网络结构。",
+            "benefit": "访问高级任务。收益：+10%"
+        },
+        "LEVEL 4": {
+            "name": "4 级",
+            "desc": "浪潮指挥官。生态系统的支柱。",
+            "benefit": "优先支持和特权。收益：+20%"
+        },
+        "LEVEL 5": {
+            "name": "5 级",
+            "desc": "Blu 传奇。出席经济的大师。",
+            "benefit": "Alpha 级治理权重。收益：+50%"
+        }
+    },
+    "roles_cats": {
+        "Core Team Roles": {
+            "title": "核心团队角色",
+            "desc": "官方团队和可信合作伙伴。"
+        },
+        "Identity & Presence Roles": {
+            "title": "身份与出席角色",
+            "desc": "可验证的声誉信号。"
+        },
+        "Community Progression Roles": {
+            "title": "社区进阶角色",
+            "desc": "通过持续的有机参与获得。"
+        },
+        "Creator & Signal Roles": {
+            "title": "创作者与信号角色",
+            "desc": "Bluewave 文化的传播者。"
+        },
+        "X (Twitter) Roles": {
+            "title": "X (Twitter) 角色",
+            "desc": "社交出席的指挥者。"
+        },
+        "Special Recognition Roles": {
+            "title": "特别认可角色",
+            "desc": "生态系统的杰出成员。"
+        },
+        "Ecosystem Levels": {
+            "title": "生态系统等级",
+            "desc": "您在 Bluewave 出席经济中的旅程。"
+        }
+    },
+    "referral": {
+        "share_desc": "分享此代码以增长您的人事网络并赚取 $BWAVE 奖励",
+        "share_btn": "分享代码",
+        "preparing": "准备中...",
+        "copy_link": "复制链接",
+        "copied_link": "已复制链接",
+        "share_caption": "扫描加入人类存在层 🌊",
+        "share_title": "Bluewave — 人类存在层",
+        "canvas_header": "BLUEWAVE",
+        "canvas_subheader": "人类存在层",
+        "canvas_scan_1": "扫描加入",
+        "canvas_scan_2": "人类存在层"
+    },
+    "level_popup": {
+        "title": "等级",
+        "subtitle": "您的 Presence 之旅",
+        "level": "等级",
+        "active": "激活",
+        "verified": "已验证",
+        "not_yet": "尚未解锁",
+        "benefit": "奖励:",
+        "protocol_entry": "协议进入",
+        "presence_commits": "Presence Commits",
+        "bwave_points": "$BWAVE 积分",
+        "human_networks": "经验证的人际网络",
+        "streak_days": "连续天数",
+        "role_badge": "角色勋章持有者",
+        "level_verified": "经验证人类",
+        "default_desc": "完成所有标准以解锁此等级。",
+        "default_benefit": "解锁更高地位。"
     }
 }

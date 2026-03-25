@@ -232,5 +232,248 @@
     "verifying": "Verifying...",
     "done": "Done",
     "error": "Error"
+  },
+  "connect_blu": {
+    "title": "Connect Blu",
+    "subtitle": "Bluewave Intelligence Agent",
+    "connect_tg": "Connect Telegram Channel",
+    "connect_tg_desc": "Link your channel to Blu Agent",
+    "connect_x": "Connect X",
+    "social_verification": "Social verification",
+    "coming_soon": "Coming Soon",
+    "back": "← Back",
+    "requirements": "Requirements",
+    "req_1": "Add @blu_presencebot as an admin in your channel.",
+    "req_2": "Grant permissions: Post Messages & Delete Messages.",
+    "req_3": "Enter your channel username below and tap Verify.",
+    "benefits": "Agent Benefits",
+    "ben_1": "• Verified Human Distribution",
+    "ben_2": "• Advanced channel analytics",
+    "ben_3": "• Sentiment tracking & AI insights",
+    "placeholder": "@yourchannel",
+    "verify_btn": "Verify Channel",
+    "verifying": "Verifying...",
+    "connected_btn": "CONNECTED",
+    "verified_humans_only": "Verified Humans Only",
+    "verified_desc": "Connecting your Telegram channel is reserved for <span className=\"text-cyan-400 font-bold\">Verified Humans</span>. Stay consistent with your <span className=\"text-cyan-400 font-bold\">Presence</span> and <span className=\"text-cyan-400 font-bold\">Social</span> missions and build your network to pass BlueWave Human Verification.",
+    "verified_footer": "Complete missions → Get Verified → Connect Channel",
+    "copied": "COPIED!",
+    "copy": "COPY",
+    "connected_fallback": "Connected",
+    "error_verify_admin": "Verification failed. Make sure Blu bot is an admin.",
+    "error_connection": "Connection error. Please try again.",
+    "req_1_prefix": "Add",
+    "req_1_suffix": "as an admin in your channel.",
+    "req_1_bot": "@blu_presencebot"
+  },
+  "referral": {
+    "share_desc": "SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS",
+    "share_btn": "Share Code",
+    "preparing": "Preparing...",
+    "copy_link": "Copy Link",
+    "copied_link": "Copied Link",
+    "share_caption": "Scan me to join the human presence layer 🌊",
+    "share_title": "Bluewave — Human Presence Layer",
+    "canvas_header": "BLUEWAVE",
+    "canvas_subheader": "Human Presence Layer",
+    "canvas_scan_1": "Scan me to join the",
+    "canvas_scan_2": "human presence layer"
+  },
+  "level_popup": {
+    "title": "Level",
+    "subtitle": "Your Presence Journey",
+    "level": "LEVEL",
+    "active": "ACTIVE",
+    "verified": "VERIFIED",
+    "not_yet": "NOT YET",
+    "benefit": "Benefit:",
+    "protocol_entry": "Protocol Entry",
+    "presence_commits": "Presence Commits",
+    "bwave_points": "$BWAVE Points",
+    "human_networks": "Verified Human Networks",
+    "streak_days": "Streak Days",
+    "role_badge": "Role Badge Holder",
+    "level_verified": "Verified Human",
+    "default_desc": "Complete all criteria to unlock this level.",
+    "default_benefit": "Unlocked higher status."
+  },
+  "roles_overlay": {
+    "title": "Ecosystem Roles",
+    "desc_1": "Role credentials are protocol-level attributes permanently bound to your BW ID. Each role carries a yield multiplier that applies automatically across every reward event in the Bluewave Ecosystem.",
+    "desc_2": "Multipliers stack additively at claim time across Presence Missions and Network Referrals. There is no ceiling on role stacking — every credential accrued permanently increases your baseline yield rate.",
+    "dist_label": "Distribution",
+    "dist_val": "Contribution-weighted",
+    "assign_label": "Assignment",
+    "assign_val": "Earned, not purchased",
+    "yield_boost": "YIELD BOOST",
+    "credential": "Credential",
+    "protocol_access": "Protocol Access"
+  },
+  "roles_list": {
+    "Bluewave Core": {
+      "name": "Bluewave Core",
+      "desc": "Official Bluewave team members.",
+      "benefit": "Authority, announcements, ecosystem decisions."
+    },
+    "Community Moderator": {
+      "name": "Community Moderator",
+      "desc": "Keeps the space human, clean, and safe.",
+      "benefit": "Moderation powers, direct access to core team."
+    },
+    "Verified Partner": {
+      "name": "Verified Partner",
+      "desc": "Collaborating projects or communities.",
+      "benefit": "Visibility + trusted badge."
+    },
+    "Verified Human": {
+      "name": "Verified Human",
+      "desc": "Passed Bluewave human verification.",
+      "benefit": "Access to gated chats, missions, and drops."
+    },
+    "Presence Holder": {
+      "name": "Presence Holder",
+      "desc": "Maintains consistent on-chain/off-chain presence.",
+      "benefit": "Higher reputation score, future rewards weighting."
+    },
+    "TON Explorer": {
+      "name": "TON Explorer",
+      "desc": "Connected a TON ecosystem wallet.",
+      "benefit": "Eligible for on-chain drops. Yield: +5%"
+    },
+    "Genesis Member": {
+      "name": "Genesis Member",
+      "desc": "Early Bluewave believers.",
+      "benefit": "Priority access to features, snapshots, perks."
+    },
+    "Beta Explorer": {
+      "name": "Beta Explorer",
+      "desc": "Actively testing Bluewave features.",
+      "benefit": "Early tools, feedback influence, recognition."
+    },
+    "New Wave": {
+      "name": "New Wave",
+      "desc": "Just arrived. Welcome",
+      "benefit": "Goal: Learn, observe, interact meaningfully."
+    },
+    "Active Human": {
+      "name": "Active Human",
+      "desc": "Consistent participation without spam.",
+      "benefit": "Higher visibility, eligibility for advanced roles."
+    },
+    "Network Builder": {
+      "name": "Network Builder",
+      "desc": "Invited 10+ active humans to the network.",
+      "benefit": "Higher referral yields and network influence."
+    },
+    "Contributor": {
+      "name": "Contributor",
+      "desc": "Adds value through ideas, feedback, or help.",
+      "benefit": "Reputation boost, private contributor chats."
+    },
+    "OG": {
+      "name": "OG",
+      "desc": "Long-term, consistent, value-driven member.",
+      "benefit": "Priority access, special drops, status."
+    },
+    "Super OG": {
+      "name": "Super OG",
+      "desc": "Elite contributors who shaped the community early.",
+      "benefit": "Governance weight, exclusive perks, recognition."
+    },
+    "Content Creator": {
+      "name": "Content Creator",
+      "desc": "Creates quality Bluewave content.",
+      "benefit": "Amplification, rewards, featured spotlights."
+    },
+    "Best Commentator": {
+      "name": "Best Commentator",
+      "desc": "Consistently adds insight in discussions.",
+      "benefit": "Reputation boost + community trust."
+    },
+    "Meme Architect": {
+      "name": "Meme Architect",
+      "desc": "Creates high-signal, culture-defining memes.",
+      "benefit": "Viral amplification, fun rewards."
+    },
+    "X Supporter": {
+      "name": "X Supporter",
+      "desc": "Engages with posts authentically.",
+      "benefit": "Access to X-based missions."
+    },
+    "X Raider": {
+      "name": "X Raider",
+      "desc": "Coordinates meaningful raids (no bot behavior).",
+      "benefit": "Raid-only rewards & leaderboards."
+    },
+    "X Ambassador": {
+      "name": "X Ambassador",
+      "desc": "Represents Bluewave publicly with high-quality threads.",
+      "benefit": "Ambassador rewards, early announcements."
+    },
+    "Signal Guardian": {
+      "name": "Signal Guardian",
+      "desc": "Protects the community from bots and noise.",
+      "benefit": "Trust badge + moderator attention."
+    },
+    "Human Legend": {
+      "name": "Human Legend",
+      "desc": "Rare role for exceptional long-term impact.",
+      "benefit": "Eternal flex + future ecosystem privileges."
+    },
+    "LEVEL 1": {
+      "name": "LEVEL 1",
+      "desc": "The 'New Wave'. Your journey begins here.",
+      "benefit": "Access to basic missions. Yield: +1%"
+    },
+    "LEVEL 2": {
+      "name": "LEVEL 2",
+      "desc": "Pulse Scout. Consistent presence builder.",
+      "benefit": "Improved referral yields. Yield: +5%"
+    },
+    "LEVEL 3": {
+      "name": "LEVEL 3",
+      "desc": "Signal Architect. Growing the network structure.",
+      "benefit": "Advanced mission access. Yield: +10%"
+    },
+    "LEVEL 4": {
+      "name": "LEVEL 4",
+      "desc": "Wave Commander. A pillar of the ecosystem.",
+      "benefit": "Priority support & perks. Yield: +20%"
+    },
+    "LEVEL 5": {
+      "name": "LEVEL 5",
+      "desc": "Blu Legend. Master of the Presence Economy.",
+      "benefit": "Alpha governance weight. Yield: +50%"
+    }
+  },
+  "roles_cats": {
+    "Core Team Roles": {
+      "title": "Core Team Roles",
+      "desc": "Official team and trusted partners."
+    },
+    "Identity & Presence Roles": {
+      "title": "Identity & Presence Roles",
+      "desc": "Verifiable reputation signals."
+    },
+    "Community Progression Roles": {
+      "title": "Community Progression Roles",
+      "desc": "Earnable through consistent organic participation."
+    },
+    "Creator & Signal Roles": {
+      "title": "Creator & Signal Roles",
+      "desc": "Amplifiers of the Bluewave culture."
+    },
+    "X (Twitter) Roles": {
+      "title": "X (Twitter) Roles",
+      "desc": "Commanders of the social presence."
+    },
+    "Special Recognition Roles": {
+      "title": "Special Recognition Roles",
+      "desc": "Exceptional members of the ecosystem."
+    },
+    "Ecosystem Levels": {
+      "title": "Ecosystem Levels",
+      "desc": "Your journey through the Bluewave Presence Economy."
+    }
   }
 }
