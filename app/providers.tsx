@@ -12,7 +12,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json"
         actionsConfiguration={{
           twaReturnUrl: "https://t.me/Bluewave_Ecosystem_bot/miniapp",
-          returnStrategy: "back",
         }}
       >
         <SWRConfig
