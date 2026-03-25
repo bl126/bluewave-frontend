@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, Rocket, Compass, ShoppingCart, User } from "lucide-react";
+import { Home, Rocket, Globe, ShoppingCart, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
 import { useMemo } from "react";
@@ -53,7 +53,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
     const tabs = [
         { id: "home", icon: Home, label: t("nav.home") || "Home" },
         { id: "missions", icon: Rocket, label: t("nav.missions") || "Missions" },
-        { id: "explore", icon: Compass, label: t("nav.explore") || "Explore" },
+        { id: "explore", icon: Globe, label: "Explore" },
         { id: "market", icon: ShoppingCart, label: t("nav.market") || "Market" },
         { id: "profile", idIsProfile: true, label: t("nav.profile") || "Profile" },
     ];
@@ -63,7 +63,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[150]
+            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
                  flex items-center justify-around w-[94%] max-w-md bg-black/40 backdrop-blur-xl
                  rounded-[2rem] p-1.5 shadow-[0_0_30px_rgba(0,230,255,0.15)] border border-cyan-500/10"
         >
