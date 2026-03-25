@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 interface MarketplaceProps {
@@ -9,6 +10,7 @@ interface MarketplaceProps {
 }
 
 export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
+  const { t } = useLanguage();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -49,7 +51,7 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                in beta phase
+                {t("marketplace.beta_phase")}
               </motion.p>
             </div>
           </motion.div>

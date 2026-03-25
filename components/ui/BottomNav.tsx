@@ -55,7 +55,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
     const tabs = [
         { id: "home", icon: Home, label: t("nav.home") || "Home" },
         { id: "missions", icon: Rocket, label: t("nav.missions") || "Missions" },
-        { id: "explore", icon: Globe, label: "Explore" },
+        { id: "explore", icon: Globe, label: t("nav.explore") || "Explore" },
         { id: "market", icon: ShoppingCart, label: t("nav.market") || "Market" },
         { id: "profile", idIsProfile: true, label: t("nav.profile") || "Profile" },
     ];

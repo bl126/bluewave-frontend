@@ -153,17 +153,17 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             <Rocket className="text-cyan-400" size={40} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tight">Explore Feed</h2>
-            <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em]">Beta Phase • Coming Soon</p>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight">{t("explore.title")}</h2>
+            <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em]">{t("explore.beta_phase")}</p>
           </div>
           <p className="text-xs text-white/30 max-w-[260px] leading-relaxed mx-auto italic">
-            "The social distribution layer is currently being calibrated across the global node network. Access is restricted to primary administrators during this epoch."
+            "{t("explore.beta_desc")}"
           </p>
           <button
             onClick={onClose}
             className="mt-8 h-14 w-40 bg-white/5 border border-white/10 rounded-2xl text-white/50 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
           >
-            Back
+            {t("common.back")}
           </button>
         </div>
       </motion.div>
@@ -198,7 +198,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               className={`relative pb-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === tab ? "text-white" : "text-white/30"
                 }`}
             >
-              {tab === "foryou" ? "For You" : "Following"}
+              {tab === "foryou" ? t("explore.for_you") : t("explore.following")}
               {activeTab === tab && (
                 <motion.div
                   layoutId="exploreTabUnderline"
@@ -272,7 +272,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         {loading && !posts && (
           <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
             <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Hydrating Feed...</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
           </div>
         )}
 
@@ -291,8 +291,8 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
             <div className="space-y-1">
-              <p className="font-black uppercase tracking-widest text-xs">No signals yet</p>
-              <p className="text-[10px] text-white/50 max-w-[200px]">The distribution feed is currently empty. Connect your channel to start broadcasting.</p>
+              <p className="font-black uppercase tracking-widest text-xs">{t("explore.no_signals")}</p>
+              <p className="text-[10px] text-white/50 max-w-[200px]">{t("explore.no_signals_desc")}</p>
             </div>
           </div>
         )}
@@ -530,7 +530,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
                     className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
                   >
                     <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
-                      Not interested
+                      {t("explore.not_interested")}
                     </button>
                   </motion.div>
                 )}
@@ -564,7 +564,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
               : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
               }`}
           >
-            {isAcknowledged ? "Acknowledged" : "Acknowledge"}
+            {isAcknowledged ? t("explore.acknowledged") : t("explore.acknowledge")}
           </button>
 
           <div className="flex items-center gap-1 opacity-40 pr-1">
@@ -633,7 +633,7 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
             <div className="space-y-4 relative z-10">
               <div className="bg-white/5 rounded-2xl p-4 text-center">
                 <p className="text-xs text-white/50 leading-relaxed italic">
-                  "Verified human distribution channel broadcast by Bluewave protocol nodes."
+                  "{t("explore.channel_desc")}"
                 </p>
               </div>
 
@@ -645,7 +645,7 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
                   <div className="flex items-center gap-2">
                     <span className="text-white text-[10px] font-black truncate">{info.name}</span>
                   </div>
-                  <span className="text-[10px] text-white/30 font-mono">BW ID: {info.bw_id}</span>
+                  <span className="text-[10px] text-white/30 font-mono">{t("explore.bw_id_label")}: {info.bw_id}</span>
                 </div>
               </div>
             </div>
@@ -653,20 +653,20 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
             <div className="flex flex-col items-center gap-6 relative z-10">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-white/40 font-black uppercase text-[10px] tracking-widest">
-                  Follow Channel
+                  {t("explore.follow_channel")}
                 </span>
                 <button
                   onClick={handleFollow}
                   className="mt-2 h-10 px-8 bg-cyan-500 rounded-xl text-black font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
                 >
-                  Open
+                  {t("explore.open")}
                 </button>
               </div>
               <button
                 onClick={onClose}
                 className="w-full h-12 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
               >
-                Close
+                {t("common.close")}
               </button>
             </div>
           </>
@@ -689,15 +689,15 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
   };
 
   const getTitle = (n: any) => {
-    if (n.type === "post_uploaded") return "Distribution Success";
-    if (n.type === "acknowledged") return "Acknowledgment";
-    return "Notification";
+    if (n.type === "post_uploaded") return t("notifications.distribution_success");
+    if (n.type === "acknowledged") return t("notifications.acknowledgment");
+    return t("notifications.notification_type");
   };
 
   const getMessage = (n: any) => {
-    if (n.type === "post_uploaded") return "Your channel post is broadcasted.";
-    if (n.type === "acknowledged") return `${n.from_user?.name || "Verified human"} acknowledged you.`;
-    return "New update received.";
+    if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
+    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
+    return t("notifications.update_msg");
   };
 
   return (
@@ -721,15 +721,15 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
               <Bell size={28} className="text-cyan-400" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">Recent Signals</h2>
-              <p className="text-[10px] text-cyan-400/60 font-black uppercase tracking-[0.2em]">Verified Distribution</p>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">{t("notifications.title")}</h2>
+              <p className="text-[10px] text-cyan-400/60 font-black uppercase tracking-[0.2em]">{t("notifications.subtitle")}</p>
             </div>
           </div>
 
           <div className="space-y-3 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar" onClick={e => e.stopPropagation()}>
             {notifications.length === 0 ? (
               <div className="py-10 text-center opacity-30">
-                <p className="text-xs font-bold uppercase tracking-widest">No alerts</p>
+                <p className="text-xs font-bold uppercase tracking-widest">{t("notifications.empty")}</p>
               </div>
             ) : notifications.map((n: any) => (
               <div key={n.id} className="flex gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-2xl items-center">
@@ -745,7 +745,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
                       onClick={onClose}
                       className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 text-[8px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all"
                     >
-                      View Post
+                      {t("notifications.view_post")}
                     </button>
                   )}
                 </div>
@@ -754,7 +754,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
           </div>
 
           <button onClick={onClose} className="w-full h-14 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl active:scale-95 transition-all">
-            Understood
+            {t("notifications.understood")}
           </button>
         </div>
       </motion.div>

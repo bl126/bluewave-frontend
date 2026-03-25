@@ -18,7 +18,27 @@
     "referral_link": "Referral Link",
     "copy": "Copy",
     "copied": "Copied",
-    "joined": "Joined"
+    "joined": "Joined",
+    "loading_protocol": "Loading Protocol...",
+    "bio": "Bio",
+    "drops": "Drops",
+    "level_label": "LEVEL",
+    "streak_label": "STREAK",
+    "networks_label": "NETWORKS",
+    "connected": "Connected",
+    "notifying": "Notifying...",
+    "notify_inactive_btn": "Notify Inactive",
+    "network_builder": "NETWORK BUILDER",
+    "network_builder_desc": "SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS",
+    "get_link": "Get link",
+    "connect_blu": "Connect Blu",
+    "joined_at": "JOINED",
+    "protocol_active": "PROTOCOL ACTIVE",
+    "no_roles_unlocked": "No roles unlocked yet",
+    "protocol_drops": "Protocol Drops",
+    "locked": "Locked",
+    "drops_desc": "Exclusive token deliveries for consistent participants. Keep your signal score high to qualify.",
+    "unlocked": "Unlocked"
   },
   "settings": {
     "title": "Settings",
@@ -42,7 +62,7 @@
   "nav": {
     "home": "Home",
     "missions": "Missions",
-    "leaderboard": "Leaderboard",
+    "explore": "Explore",
     "market": "Market",
     "profile": "Profile"
   },
@@ -64,7 +84,32 @@
     "popup_open_first": "Tap OPEN first before claiming this mission.",
     "popup_complete": "Please complete the mission properly before claiming.",
     "share_text": "This isn't a meme coin\nThis is a Presence Economy.\n#BWAVE #TON #Bluewave",
-    "share_button": "Join Bluewave"
+    "share_button": "Join Bluewave",
+    "story_hint": "Telegram rejected native sharing. Please save the image and post manually!",
+    "error_story": "Failed to load story mission. Please try again.",
+    "syncing": "Syncing...",
+    "synchronizing": "Synchronizing...",
+    "no_missions": "No social missions available",
+    "tabs": {
+      "presence": "Presence",
+      "social": "Social",
+      "quest": "Quest",
+      "earn": "Earn"
+    },
+    "quests": {
+      "title": "Quests",
+      "verified_human": "Verified Human",
+      "verified_only": "Verified Humans Only",
+      "empty": "No quests available at the moment. Check back soon for high-value missions!",
+      "desc": "Complete high-value quests to earn higher points and Entropy rewards. Quests are exclusively available to Verified Humans.",
+      "lock_hint": "Pass human verification to unlock quests."
+    },
+    "earn_drop": {
+      "title": "Earn Drop",
+      "coming_soon": "Coming Soon",
+      "desc": "Exclusive token drops for the most active Bluewave members. Participate in Presence Missions and Social Missions to secure your eligibility.",
+      "active_hint": "Stay active — drops are awarded to consistent participants."
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -104,7 +149,11 @@
     "claim_reward": "Claim {{amount}} $BWAVE",
     "accumulating": "Accumulating\nPresence Signals",
     "unlock_info": "Your Presence Score unlocks in Phase III Pre TGE",
-    "active_recording": "Protocol Presence Recording Active"
+    "active_recording": "Protocol Presence Recording Active",
+    "system_offline": "System Offline",
+    "sync_error_desc": "We couldn't synchronize your presence mission. Please check your connection and reload.",
+    "retry_sync": "⚡ RETRY SYNC",
+    "error_activate": "Failed to activate mission"
   },
   "onboarding": {
     "title": "Bluewave Onboarding",
@@ -135,6 +184,53 @@
     "error_expired_code": "Code expired. Request a new one.",
     "error_verify_failed": "Verification failed. Try again.",
     "error_select_country": "Select your country to activate your presence.",
-    "error_save_profile": "Could not save profile. Try again."
+    "error_save_profile": "Could not save profile. Try again.",
+    "error_id_missing": "Verification successful but Telegram ID missing. Please retry.",
+    "error_restart": "Something went wrong. Please restart onboarding.",
+    "contact_support": "Contact Support",
+    "lost_account": "Lost your account?"
+  },
+  "explore": {
+    "title": "Explore Feed",
+    "beta_phase": "Beta Phase • Coming Soon",
+    "beta_desc": "The social distribution layer is currently being calibrated across the global node network. Access is restricted to primary administrators during this epoch.",
+    "for_you": "For You",
+    "following": "Following",
+    "hydrating": "Hydrating Feed...",
+    "no_signals": "No signals yet",
+    "no_signals_desc": "The distribution feed is currently empty. Connect your channel to start broadcasting.",
+    "acknowledge": "Acknowledge",
+    "acknowledged": "Acknowledged",
+    "not_interested": "Not interested",
+    "open": "Open",
+    "follow_channel": "Follow Channel",
+    "channel_desc": "Verified human distribution channel broadcast by Bluewave protocol nodes.",
+    "bw_id_label": "BW ID"
+  },
+  "notifications": {
+    "title": "Recent Signals",
+    "subtitle": "Verified Distribution",
+    "empty": "No alerts",
+    "empty_desc": "Your protocol activity and network updates will appear here once the distribution cycle begins.",
+    "distribution_success": "Distribution Success",
+    "acknowledgment": "Acknowledgment",
+    "notification_type": "Notification",
+    "broadcast_msg": "Your channel post is broadcasted.",
+    "acknowledged_msg": "{{name}} acknowledged you.",
+    "update_msg": "New update received.",
+    "view_post": "View Post",
+    "understood": "Understood"
+  },
+  "marketplace": {
+    "beta_phase": "IN BETA PHASE"
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "loading": "Loading...",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "done": "Done",
+    "error": "Error"
   }
 }

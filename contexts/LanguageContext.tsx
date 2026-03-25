@@ -8,6 +8,7 @@ import pt from "../translations/pt.json";
 import hi from "../translations/hi.json";
 import id from "../translations/id.json";
 import es from "../translations/es.json";
+import zh from "../translations/zh.json";
 
 type Translations = typeof en;
 
@@ -17,7 +18,7 @@ interface LanguageContextType {
     t: (key: string) => any;
 }
 
-const translations: Record<string, any> = { en, ru, th, pt, hi, id, es };
+const translations: Record<string, any> = { en, ru, th, pt, hi, id, es, zh };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 

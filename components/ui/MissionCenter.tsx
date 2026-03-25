@@ -118,7 +118,7 @@ function PresenceCard({
         >
           {isLoading ? t("profile.wait") : // reusing 'Please wait...' or similar
             isCompleted ? t("presence.claim_reward").replace("{{amount}}", (mission.reward || 0).toString()) :
-              isActive ? "SYNCING..." :
+              isActive ? t("missions.syncing").toUpperCase() :
                 t("presence.activate")}
         </button>
       </div>
@@ -150,7 +150,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     return (
       <div className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-cyan-500">
         <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4" />
-        <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Synchronizing...</span>
+        <span className="text-[10px] font-black uppercase tracking-widest opacity-50">{t("missions.synchronizing")}</span>
       </div>
     );
   }
@@ -417,14 +417,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             if (tg?.openLink) tg.openLink(dlData.poster_url);
             else window.open(dlData.poster_url, "_blank");
 
-            setPopup("Telegram rejected native sharing. Please save the image and post manually!");
+            setPopup(t("missions.story_hint"));
             setTimeout(() => setPopup(null), 5000);
           } else {
             throw new Error("No poster URL in response");
           }
         } catch (e) {
           console.error("STORY_MISSION: Total failure:", e);
-          setPopup("Failed to load story mission. Please try again.");
+          setPopup(t("missions.error_story"));
           setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
           setTimeout(() => setPopup(null), 3000);
           return;
@@ -577,10 +577,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                         : "bg-transparent border border-cyan-900/40 text-cyan-600 hover:border-cyan-700/50 hover:text-cyan-500"
                     }`}
                 >
-                  {tab === "presence" && "Presence"}
-                  {tab === "social" && "Social"}
-                  {tab === "quest" && "Quest"}
-                  {tab === "earn" && "Earn"}
+                  {tab === "presence" && t("missions.tabs.presence")}
+                  {tab === "social" && t("missions.tabs.social")}
+                  {tab === "quest" && t("missions.tabs.quest")}
+                  {tab === "earn" && t("missions.tabs.earn")}
                   {badge > 0 && tab !== "earn" && tab !== "quest" && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_10px_#00e6ff]">
                       {badge > 9 ? "9+" : badge}
@@ -647,16 +647,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                         <Clock size={20} className="text-cyan-400" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-bold text-cyan-200 uppercase tracking-widest">{t("presence.no_missions") || "System Offline"}</p>
+                        <p className="text-sm font-bold text-cyan-200 uppercase tracking-widest">{t("presence.system_offline")}</p>
                         <p className="text-[10px] text-cyan-500/70 max-w-[200px] leading-relaxed">
-                          We couldn't synchronize your presence mission. Please check your connection and reload.
+                          {t("presence.sync_error_desc")}
                         </p>
                       </div>
                       <button
                         onClick={() => mutatePresence()}
                         className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all font-mono"
                       >
-                        ⚡ RETRY SYNC
+                        {t("presence.retry_sync")}
                       </button>
                     </div>
                   )}
@@ -692,7 +692,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       )}
                       {m.status === "waiting" && (
                         <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider animate-pulse">
-                          SYNCING...
+                          {t("missions.syncing").toUpperCase()}
                         </button>
                       )}
                       {m.status === "claim" && (
@@ -704,7 +704,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                             : "bg-cyan-500 text-black border border-cyan-400 shadow-[0_0_15px_#00e6ff80] animate-pulse"
                             }`}
                         >
-                          {claimingMissionId === m.id ? "CLAIMING..." : t("missions.claim")}
+                          {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
                         </button>
                       )}
                       {m.status === "done" && (
@@ -740,28 +740,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     <span className="text-4xl">{isHumanVerified ? '⚡' : '🔒'}</span>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white uppercase tracking-widest">Quests</h3>
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest">{t("missions.quests.title")}</h3>
                     <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-violet-500/15 border-violet-500/30 text-violet-400'}`}>
                       <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-cyan-400' : 'bg-violet-400'}`} />
-                      {isHumanVerified ? 'Verified Human' : 'Verified Humans Only'}
+                      {isHumanVerified ? t("missions.quests.verified_human") : t("missions.quests.verified_only")}
                     </div>
                   </div>
                   <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
                     {isHumanVerified ? (
                       <p className="text-sm text-white/70 leading-relaxed italic">
-                        No quests available at the moment. Check back soon for high-value missions!
+                        {t("missions.quests.empty")}
                       </p>
                     ) : (
                       <>
                         <p className="text-sm text-white/70 leading-relaxed">
-                          Complete high-value quests to earn{" "}
-                          <span className="text-violet-400 font-semibold">higher points</span> and{" "}
-                          <span className="text-violet-400 font-semibold">Entropy rewards</span>. Quests are exclusively available to{" "}
-                          <span className="text-cyan-400 font-semibold">Verified Humans</span>.
+                          {t("missions.quests.desc")}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
                           <Lock size={12} className="text-violet-400" />
-                          Pass human verification to unlock quests.
+                          {t("missions.quests.lock_hint")}
                         </div>
                       </>
                     )}
@@ -782,20 +779,18 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     <span className="text-4xl">🎁</span>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white uppercase tracking-widest">Earn Drop</h3>
+                    <h3 className="text-xl font-black text-white uppercase tracking-widest">{t("missions.earn_drop.title")}</h3>
                     <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">
-                      Coming Soon
+                      {t("missions.earn_drop.coming_soon")}
                     </div>
                   </div>
                   <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
                     <p className="text-sm text-white/70 leading-relaxed">
-                      Exclusive token drops for the most active Bluewave members. Participate in{" "}
-                      <span className="text-cyan-400 font-semibold">Presence Missions</span> and{" "}
-                      <span className="text-cyan-400 font-semibold">Social Missions</span> to secure your eligibility.
+                      {t("missions.earn_drop.desc")}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
                       <Clock size={12} className="text-orange-400" />
-                      Stay active — drops are awarded to consistent participants.
+                      {t("missions.earn_drop.active_hint")}
                     </div>
                   </div>
                 </motion.div>

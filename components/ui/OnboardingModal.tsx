@@ -156,7 +156,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
       }
 
       if (!data.tg_id) {
-        setError("Verification successful but Telegram ID missing. Please retry.");
+        setError(t("onboarding.error_id_missing"));
         return;
       }
 
@@ -180,7 +180,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
   const handleActivatePresence = async () => {
     setError(null);
     if (!verifiedUser) {
-      setError("Something went wrong. Please restart onboarding.");
+      setError(t("onboarding.error_restart"));
       return;
     }
     if (!country) {
@@ -288,7 +288,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                     rel="noopener noreferrer"
                     className="text-[11px] text-orange-400/80 hover:text-orange-300 transition-colors inline-block"
                   >
-                    Lost your account? <span className="underline">Contact Support</span>
+                    {t("onboarding.lost_account")} <span className="underline">{t("onboarding.contact_support")}</span>
                   </a>
                 </div>
               </div>
