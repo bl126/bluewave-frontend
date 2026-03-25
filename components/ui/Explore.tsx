@@ -34,10 +34,25 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fetch Notifications
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  // Fetch Notifications (Poll every 30s)
   const { data: notifications, mutate: mutateNotifications } = useApi(
-    isOpen && telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null
+    isOpen && telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null,
+    { refreshInterval: 30000 }
   );
 
   const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
@@ -118,7 +133,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       {/* 🔝 Top Navigation & Dropdown */}
-      <div className="relative px-6 flex items-start justify-between mb-6 z-20">
+      <div className="relative px-6 flex items-start justify-between mb-8 z-20">
         <div className="flex gap-12 border-b border-white/5 pb-2">
           {(["foryou", "following"] as const).map((tab) => (
             <button
@@ -139,15 +154,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           ))}
         </div>
 
-        {/* Dropdown Menu (Vertical Stack on the same line as arrow) */}
-        <div className="relative flex flex-col items-center">
+        {/* Dropdown Menu (Floating Vertical Icons) */}
+        <div className="relative flex flex-col items-center" ref={menuRef}>
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="relative p-2 text-white/40 hover:text-white transition-all active:scale-95 mb-2"
+            className="relative p-2 text-white/40 hover:text-white transition-all active:scale-95 z-20"
           >
             <ChevronDown size={20} className={`transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
             {unreadCount > 0 && !isMenuOpen && (
-              <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_10px_#00e6ff]">
+              <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_10px_#00e6ff]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </div>
             )}
@@ -156,10 +171,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -5 }}
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="flex flex-col items-center gap-4"
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-10 right-0 flex flex-col items-center gap-6 py-2 z-10"
               >
                     <button 
                       onClick={() => {
@@ -167,11 +182,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                         setIsNotificationsOpen(true);
                         postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
                       }}
-                      className="relative text-white/40 hover:text-cyan-400 transition-all p-1"
+                      className="relative text-white/40 hover:text-cyan-400 transition-all"
                     >
                       <Bell size={20} />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
+                        <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
                           {unreadCount}
                         </span>
                       )}
@@ -181,7 +196,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                         setIsMenuOpen(false);
                         setIsLeaderboardOpen(true);
                       }}
-                      className="text-white/40 hover:text-cyan-400 transition-all p-1"
+                      className="text-white/40 hover:text-cyan-400 transition-all"
                     >
                       <BarChart2 size={20} />
                     </button>
@@ -265,18 +280,20 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const rowMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (rowMenuRef.current && !rowMenuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isMenuOpen]);
 
   const handleAcknowledge = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -302,7 +319,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
   };
 
   return (
-    <div className="p-4 flex gap-3 relative hover:bg-white/[0.01] transition-all">
+    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start">
       {/* Space Dust Animation */}
       <AnimatePresence>
         {showSpaceDust && (
@@ -323,8 +340,8 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
         )}
       </AnimatePresence>
 
-      {/* Avatar (Left) - Raised position */}
-      <button onClick={onChannelClick} className="shrink-0 -mt-0.5">
+      {/* Avatar (Left) - Top Aligned */}
+      <button onClick={onChannelClick} className="shrink-0">
         <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
           {post.channel.photo ? (
             <img src={post.channel.photo} className="w-full h-full object-cover" />
@@ -337,17 +354,15 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
       </button>
 
       {/* Content area */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-col min-w-0">
-                <button onClick={onChannelClick} className="flex items-center gap-1.5 truncate">
-                    <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel.title}</span>
-                </button>
-            </div>
+      <div className="flex-1 min-w-0 pt-0.5">
+        <div className="flex items-center justify-between gap-2 mb-1">
+            <button onClick={onChannelClick} className="flex items-center gap-1.5 truncate">
+                <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel.title}</span>
+            </button>
             
             <div className="flex items-center gap-2 shrink-0">
                 <span className="text-[10px] text-white/20 font-bold uppercase">{timeAgo(post.created_at)}</span>
-                <div className="relative" ref={menuRef}>
+                <div className="relative" ref={rowMenuRef}>
                     <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/10 hover:text-white">
                         <MoreHorizontal size={14} />
                     </button>
@@ -369,13 +384,13 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
             </div>
         </div>
 
-        <p className="text-sm text-cyan-100/70 leading-relaxed break-words mt-0.5 mb-2">
+        <p className="text-sm text-cyan-100/70 leading-relaxed break-words mb-3">
           {post.content}
         </p>
 
         {/* Media Rendering */}
         {post.media_url && (
-            <div className="mb-3 rounded-2xl overflow-hidden border border-white/5 bg-black/20">
+            <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
                 {post.media_type === "photo" ? (
                     <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
                 ) : post.media_type === "video" ? (
@@ -551,7 +566,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
             </div>
           </div>
 
-          <div className="space-y-3 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar" onClick={e => e.stopPropagation()}>
             {notifications.length === 0 ? (
               <div className="py-10 text-center opacity-30">
                 <p className="text-xs font-bold uppercase tracking-widest">No alerts</p>

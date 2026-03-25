@@ -13,9 +13,10 @@ interface BottomNavProps {
     onTabChange: (tab: TabId) => void;
     userAvatarUrl?: string | null;
     telegramId?: number | null;
+    exploreBadgeCount?: number;
 }
 
-export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId }: BottomNavProps) {
+export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId, exploreBadgeCount = 0 }: BottomNavProps) {
     const { t } = useLanguage();
 
     // Fetch counts for Mission Badge
@@ -106,6 +107,13 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                                     {tab.id === "missions" && missionBadgeCount > 0 && (
                                         <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
                                             {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
+                                        </div>
+                                    )}
+
+                                    {/* Explore Badge */}
+                                    {tab.id === "explore" && exploreBadgeCount > 0 && (
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
+                                            {exploreBadgeCount > 9 ? "9+" : exploreBadgeCount}
                                         </div>
                                     )}
                                 </div>

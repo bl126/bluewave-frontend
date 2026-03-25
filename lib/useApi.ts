@@ -96,13 +96,13 @@ export function notifyInactive(telegram_id: number) {
   return postApi(`/notify_inactive`, { telegram_id });
 }
 
-export function useApi(path: string | null) {
+export function useApi(path: string | null, options: any = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const { data, error, isLoading, mutate } = useSWR(
-    path && apiUrl ? `${apiUrl}/api${path}` : null,  // SWR: null = don't fetch
+    path && apiUrl ? `${apiUrl}/api${path}` : null,
     fetcher,
-    swrConfig  // ⭐ Use optimized SWR config
+    { ...swrConfig, ...options }
   );
 
   return {

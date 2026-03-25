@@ -108,6 +108,9 @@ export default function LandingPage() {
   // 🤖 Blu Expansion State
   const [isBluExpanded, setIsBluExpanded] = useState(false);
 
+  // 🔔 Explore Notifications Count (Global State)
+  const [unreadExploreCount, setUnreadExploreCount] = useState(0);
+
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
@@ -264,7 +267,10 @@ export default function LandingPage() {
           network_builder_pending: user.network_builder_pending || false,
           ton_explorer_pending: user.ton_explorer_pending || false,
           is_human_verified: !!user.is_human_verified,
+          unread_explore_notifications: data.unread_explore_notifications || 0,
         });
+
+        setUnreadExploreCount(data.unread_explore_notifications || 0);
 
         // 🔥 Initial check for pending rewards from init data
         if (user.streak_reward_pending) {
@@ -493,6 +499,20 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, [telegramUser]);
 
+  // 🔔 Poll Explore Notifications every 45s
+  useEffect(() => {
+    if (!telegramUser?.id) return;
+    const fetchUnread = async () => {
+      try {
+        const data = await getApi(`/explore/notifications/${telegramUser.id}`);
+        const count = data?.filter((n: any) => !n.is_read).length || 0;
+        setUnreadExploreCount(count);
+      } catch (e) { console.error("Error polling explore notifs:", e); }
+    };
+    const interval = setInterval(fetchUnread, 45000);
+    return () => clearInterval(interval);
+  }, [telegramUser]);
+
   // 🔥 Called when onboarding completes successfully
   const handleOnboardingComplete = async (user: any) => {
     const tgId = user.tg_id;
@@ -533,9 +553,11 @@ export default function LandingPage() {
           network_builder_pending: fullUser.network_builder_pending || false,
           ton_explorer_pending: fullUser.ton_explorer_pending || false,
           is_human_verified: !!fullUser.is_human_verified,
-          roles: fullUser.roles || []
+          roles: fullUser.roles || [],
+          unread_explore_notifications: data.unread_explore_notifications || 0,
         });
 
+        setUnreadExploreCount(data.unread_explore_notifications || 0);
         setBalance(fullUser.points_balance ?? null);
       } else {
         // Fallback: use partial user data if re-fetch fails
@@ -593,6 +615,7 @@ export default function LandingPage() {
         <BottomNav
           activeTab={activeTab}
           telegramId={telegramUser?.id}
+          exploreBadgeCount={unreadExploreCount}
           onTabChange={(tab) => {
             setActiveTab(tab);
             // Sync legacy booleans for lazy-rendering compatibility
