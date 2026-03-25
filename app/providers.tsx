@@ -9,7 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
       <TonConnectUIProvider
-        manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json"
+        manifestUrl="/tonconnect-manifest.json"
         actionsConfiguration={{
           twaReturnUrl: "https://t.me/Bluewave_Ecosystem_bot",
         }}
