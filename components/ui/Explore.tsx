@@ -528,7 +528,7 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
               <div className="space-y-1">
                 <h2 className="text-2xl font-black text-white uppercase tracking-tight">{info.channel.title}</h2>
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase">
-                  CHANNEL SIGNAL
+                  {info.telegram_channel || info.channel.title}
                 </div>
               </div>
             </div>
@@ -547,20 +547,27 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-white text-[10px] font-black truncate">{info.name}</span>
-                    <ShieldCheck size={12} className="text-cyan-400" />
                   </div>
-                  <span className="text-[10px] text-white/30 font-mono">BW_ID: {info.bw_id}</span>
+                  <span className="text-[10px] text-white/30 font-mono">BW ID: {info.bw_id}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 relative z-10">
-              <button
-                onClick={handleFollow}
-                className="w-full h-14 bg-cyan-500 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
-              >
-                Join & Follow
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {/* Internal follow logic eventually */ }}
+                  className="h-14 bg-white/5 border border-white/10 rounded-2xl text-white/70 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
+                >
+                  Follow Channel
+                </button>
+                <button
+                  onClick={handleFollow}
+                  className="h-14 bg-cyan-500 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+                >
+                  Open
+                </button>
+              </div>
               <button
                 onClick={onClose}
                 className="w-full h-12 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
