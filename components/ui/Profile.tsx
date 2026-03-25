@@ -353,11 +353,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Independent Wallet Card */}
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30"
-                          onClick={() => {
-                            if (user?.wallet_address) return;
-                            tonConnectUI.openModal();
-                          }}>
+                        <div className="relative bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30">
+                          {/* Native Button Overlay - High Priority for Deep Links */}
+                          {!user?.wallet_address && (
+                            <div className="absolute inset-0 opacity-0 z-50">
+                              <TonConnectButton style={{ width: '100%', height: '100%' }} />
+                            </div>
+                          )}
                           <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
                             <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? "Connected" : "Connect TON Wallet"}</span>
@@ -472,11 +474,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">Unlocked</motion.div>
             )}
           </AnimatePresence>
-
-          {/* Hidden TonConnectButton for internal library state management */}
-          <div style={{ display: 'none' }} id="ton-connect-button">
-            <TonConnectButton />
-          </div>
         </motion.div>
       )}
     </AnimatePresence>
