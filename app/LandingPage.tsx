@@ -111,6 +111,9 @@ export default function LandingPage() {
   // 🔔 Explore Notifications Count (Global State)
   const [unreadExploreCount, setUnreadExploreCount] = useState(0);
 
+  // 🧭 Navigation Visibility
+  const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
+
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
@@ -368,6 +371,20 @@ export default function LandingPage() {
     };
   }, []);
 
+  // 📜 Global Scroll Listener for Navigation
+  useEffect(() => {
+    const handleScrollDir = (e: any) => {
+      const direction = e.detail;
+      if (direction === "down") {
+        setIsBottomNavVisible(false);
+      } else {
+        setIsBottomNavVisible(true);
+      }
+    };
+    window.addEventListener("scrollDirectionChanged" as any, handleScrollDir);
+    return () => window.removeEventListener("scrollDirectionChanged" as any, handleScrollDir);
+  }, []);
+
   const handleClearStreakReward = async () => {
     setIsStreakCelebrationOpen(false);
     try {
@@ -616,6 +633,7 @@ export default function LandingPage() {
           activeTab={activeTab}
           telegramId={telegramUser?.id}
           exploreBadgeCount={unreadExploreCount}
+          isVisible={isBottomNavVisible}
           onTabChange={(tab) => {
             setActiveTab(tab);
             // Sync legacy booleans for lazy-rendering compatibility

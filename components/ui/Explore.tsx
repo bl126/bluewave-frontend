@@ -1,14 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ChevronDown, 
-  Bell, 
-  BarChart2, 
-  MoreHorizontal, 
-  Eye, 
-  CheckCircle2, 
-  User, 
+import {
+  ChevronDown,
+  Bell,
+  BarChart2,
+  MoreHorizontal,
+  Eye,
+  CheckCircle2,
+  User,
   ShieldCheck,
   ChevronLeft,
   Rocket,
@@ -35,6 +35,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll visibility states
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  // Touch/Swipe states
+  const touchStart = useRef<number | null>(null);
 
   // Close menu on click outside
   useEffect(() => {
@@ -61,6 +69,49 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const { data: posts, loading, mutate } = useApi(
     isOpen && telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}` : null
   );
+
+  // Handle Scroll Direction for Header & BottomNav
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const currentScrollY = scrollContainerRef.current.scrollTop;
+
+    // Threshold for activation (ignore small jitters)
+    if (Math.abs(currentScrollY - lastScrollY.current) < 10) return;
+
+    if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+      // Scrolling Down -> Hide
+      setShowHeader(false);
+      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "down" }));
+    } else {
+      // Scrolling Up -> Show
+      setShowHeader(true);
+      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "up" }));
+    }
+    lastScrollY.current = currentScrollY;
+  };
+
+  // Touch Handlers for Swipe
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart.current === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart.current - touchEnd;
+
+    // Swipe Threshold (e.g., 80px)
+    if (Math.abs(diff) > 80) {
+      if (diff > 0 && activeTab === "foryou") {
+        // Swipe Left (finger moves left) -> Next Tab
+        setActiveTab("following");
+      } else if (diff < 0 && activeTab === "following") {
+        // Swipe Right (finger moves right) -> Prev Tab
+        setActiveTab("foryou");
+      }
+    }
+    touchStart.current = null;
+  };
 
   // TWA BackButton logic for Leaderboard
   useEffect(() => {
@@ -98,16 +149,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         <div className="absolute inset-0 bg-cyan-500/5 blur-[100px] pointer-events-none" />
         <div className="relative z-10 space-y-6">
           <div className="w-24 h-24 bg-cyan-500/10 rounded-3xl flex items-center justify-center mx-auto border border-cyan-500/20 shadow-[0_0_30px_rgba(0,230,255,0.1)]">
-             <Rocket className="text-cyan-400" size={40} />
+            <Rocket className="text-cyan-400" size={40} />
           </div>
           <div className="space-y-2">
-             <h2 className="text-3xl font-black text-white uppercase tracking-tight">Explore Feed</h2>
-             <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em]">Beta Phase • Coming Soon</p>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tight">Explore Feed</h2>
+            <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em]">Beta Phase • Coming Soon</p>
           </div>
           <p className="text-xs text-white/30 max-w-[260px] leading-relaxed mx-auto italic">
-             "The social distribution layer is currently being calibrated across the global node network. Access is restricted to primary administrators during this epoch."
+            "The social distribution layer is currently being calibrated across the global node network. Access is restricted to primary administrators during this epoch."
           </p>
-          <button 
+          <button
             onClick={onClose}
             className="mt-8 h-14 w-40 bg-white/5 border border-white/10 rounded-2xl text-white/50 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
           >
@@ -124,28 +175,31 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
       className="fixed inset-0 z-[120] bg-black flex flex-col overflow-hidden text-cyan-200"
-      style={{ 
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)", 
-        paddingBottom: "env(safe-area-inset-bottom, 0px)" 
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
       {/* 🌊 Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       {/* 🔝 Top Navigation & Dropdown */}
-      <div className="relative px-6 flex items-start justify-between mb-8 z-20">
+      <motion.div
+        animate={{ y: showHeader ? 0 : -80, opacity: showHeader ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="fixed top-20 left-0 right-0 px-6 flex items-start justify-between z-[130] pointer-events-auto"
+      >
         <div className="flex gap-12 border-b border-white/5 pb-2">
           {(["foryou", "following"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`relative pb-2 text-sm font-black uppercase tracking-widest transition-all ${
-                activeTab === tab ? "text-white" : "text-white/30"
-              }`}
+              className={`relative pb-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === tab ? "text-white" : "text-white/30"
+                }`}
             >
               {tab === "foryou" ? "For You" : "Following"}
               {activeTab === tab && (
-                <motion.div 
+                <motion.div
                   layoutId="exploreTabUnderline"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_10px_#00e6ff]"
                 />
@@ -156,7 +210,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
         {/* Dropdown Menu (Floating Vertical Icons) */}
         <div className="relative flex flex-col items-center" ref={menuRef}>
-          <button 
+          <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="relative p-2 text-white/40 hover:text-white transition-all active:scale-95 z-20"
           >
@@ -176,38 +230,44 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute top-10 right-0 flex flex-col items-center gap-6 py-2 z-10"
               >
-                    <button 
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsNotificationsOpen(true);
-                        postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
-                      }}
-                      className="relative text-white/40 hover:text-cyan-400 transition-all"
-                    >
-                      <Bell size={20} />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsLeaderboardOpen(true);
-                      }}
-                      className="text-white/40 hover:text-cyan-400 transition-all"
-                    >
-                      <BarChart2 size={20} />
-                    </button>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsNotificationsOpen(true);
+                    postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
+                  }}
+                  className="relative text-white/40 hover:text-cyan-400 transition-all"
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsLeaderboardOpen(true);
+                  }}
+                  className="text-white/40 hover:text-cyan-400 transition-all"
+                >
+                  <BarChart2 size={20} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
 
       {/* 📜 Feed Container */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="flex-1 overflow-y-auto custom-scrollbar mt-4"
+      >
         {loading && !posts && (
           <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
             <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
@@ -216,14 +276,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
 
         <div className="divide-y divide-white/[0.05]">
-            {posts?.map((post: any) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                onChannelClick={() => setSelectedChannelId(post.tg_id)}
-                onHide={() => mutate()} // Refresh on hide
-              />
-            ))}
+          {posts?.map((post: any) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onChannelClick={() => setSelectedChannelId(post.tg_id)}
+              onHide={() => mutate()} // Refresh on hide
+            />
+          ))}
         </div>
 
         {!loading && posts?.length === 0 && (
@@ -240,21 +300,21 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       {/* 🏆 Leaderboard Overlay (Nested) */}
       <AnimatePresence>
         {isLeaderboardOpen && (
-            <Leaderboard 
-                isOpen={isLeaderboardOpen} 
-                onClose={() => setIsLeaderboardOpen(false)} 
-                telegramUser={telegramUser} 
-            />
+          <Leaderboard
+            isOpen={isLeaderboardOpen}
+            onClose={() => setIsLeaderboardOpen(false)}
+            telegramUser={telegramUser}
+          />
         )}
       </AnimatePresence>
 
       {/* 👤 Channel Profile Popup */}
       <AnimatePresence>
         {selectedChannelId && (
-          <ChannelPopup 
-            tgId={selectedChannelId} 
+          <ChannelPopup
+            tgId={selectedChannelId}
             myId={telegramUser?.id}
-            onClose={() => setSelectedChannelId(null)} 
+            onClose={() => setSelectedChannelId(null)}
           />
         )}
       </AnimatePresence>
@@ -262,7 +322,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       {/* 🔔 Notifications Popup */}
       <AnimatePresence>
         {isNotificationsOpen && (
-          <NotificationsPopup 
+          <NotificationsPopup
             isOpen={isNotificationsOpen}
             notifications={notifications || []}
             onClose={() => setIsNotificationsOpen(false)}
@@ -323,7 +383,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
       {/* Space Dust Animation */}
       <AnimatePresence>
         {showSpaceDust && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center pl-16"
           >
@@ -356,32 +416,32 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
       {/* Content area */}
       <div className="flex-1 min-w-0 pt-0.5">
         <div className="flex items-center justify-between gap-2 mb-1">
-            <button onClick={onChannelClick} className="flex items-center gap-1.5 truncate">
-                <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel.title}</span>
-            </button>
-            
-            <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-white/20 font-bold uppercase">{timeAgo(post.created_at)}</span>
-                <div className="relative" ref={rowMenuRef}>
-                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/10 hover:text-white">
-                        <MoreHorizontal size={14} />
+          <button onClick={onChannelClick} className="flex items-center gap-1.5 truncate">
+            <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel.title}</span>
+          </button>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
+            <div className="relative" ref={rowMenuRef}>
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/30 hover:text-white">
+                <MoreHorizontal size={14} />
+              </button>
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, x: 10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, x: 10 }}
+                    className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
+                  >
+                    <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
+                      Not interested
                     </button>
-                    <AnimatePresence>
-                        {isMenuOpen && (
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95, x: 10 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, x: 10 }}
-                                className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
-                            >
-                                <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
-                                    Not interested
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+          </div>
         </div>
 
         <p className="text-sm text-cyan-100/70 leading-relaxed break-words mb-3">
@@ -390,30 +450,29 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
 
         {/* Media Rendering */}
         {post.media_url && (
-            <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
-                {post.media_type === "photo" ? (
-                    <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
-                ) : post.media_type === "video" ? (
-                    <video src={post.media_url} controls className="w-full h-auto max-h-[400px]" playsInline />
-                ) : null}
-            </div>
+          <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
+            {post.media_type === "photo" ? (
+              <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
+            ) : post.media_type === "video" ? (
+              <video src={post.media_url} controls className="w-full h-auto max-h-[400px]" playsInline />
+            ) : null}
+          </div>
         )}
 
         <div className="flex items-center justify-between">
-          <button 
-              onClick={handleAcknowledge}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
-                  isAcknowledged 
-                  ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]" 
-                  : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
+          <button
+            onClick={handleAcknowledge}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isAcknowledged
+                ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]"
+                : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
               }`}
           >
-              {isAcknowledged ? "Acknowledged" : "Acknowledge"}
+            {isAcknowledged ? "Acknowledged" : "Acknowledge"}
           </button>
 
-          <div className="flex items-center gap-1 opacity-10 pr-1">
-              <Eye size={10} />
-              <span className="text-[9px] font-mono font-bold">{post.views || 0}</span>
+          <div className="flex items-center gap-1 opacity-40 pr-1">
+            <Eye size={10} />
+            <span className="text-[9px] font-mono font-bold">{post.views || 0}</span>
           </div>
         </div>
       </div>
@@ -435,16 +494,16 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
   const handleFollow = () => {
     // Navigate to channel directly
     if (info?.channel?.link || info?.telegram_channel) {
-        let link = info.channel.link;
-        if (!link && info.telegram_channel) {
-            link = `https://t.me/${info.telegram_channel.replace('@', '')}`;
-        }
-        if (link) window.open(link, '_blank');
+      let link = info.channel.link;
+      if (!link && info.telegram_channel) {
+        link = `https://t.me/${info.telegram_channel.replace('@', '')}`;
+      }
+      if (link) window.open(link, '_blank');
     }
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex items-center justify-center px-6"
       onClick={onClose}
@@ -459,57 +518,57 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/5 blur-[50px] pointer-events-none" />
 
         {loading ? (
-             <div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
+          <div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
         ) : info && (
-            <>
-                <div className="flex flex-col items-center text-center gap-4 relative z-10">
-                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-500 shadow-[0_0_30px_#00e6ff40]">
-                        <img src={info.channel.photo || info.photo} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">{info.channel.title}</h2>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase">
-                            CHANNEL SIGNAL
-                        </div>
-                    </div>
+          <>
+            <div className="flex flex-col items-center text-center gap-4 relative z-10">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-500 shadow-[0_0_30px_#00e6ff40]">
+                <img src={info.channel.photo || info.photo} className="w-full h-full object-cover" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">{info.channel.title}</h2>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase">
+                  CHANNEL SIGNAL
                 </div>
+              </div>
+            </div>
 
-                <div className="space-y-4 relative z-10">
-                    <div className="bg-white/5 rounded-2xl p-4 text-center">
-                        <p className="text-xs text-white/50 leading-relaxed italic">
-                            "Verified human distribution channel broadcast by Bluewave protocol nodes."
-                        </p>
-                    </div>
+            <div className="space-y-4 relative z-10">
+              <div className="bg-white/5 rounded-2xl p-4 text-center">
+                <p className="text-xs text-white/50 leading-relaxed italic">
+                  "Verified human distribution channel broadcast by Bluewave protocol nodes."
+                </p>
+              </div>
 
-                    <div className="flex items-center gap-4 p-4 border border-white/5 rounded-2xl bg-black/40">
-                        <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5">
-                            <img src={info.photo} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="text-white text-[10px] font-black truncate">{info.name}</span>
-                                <ShieldCheck size={12} className="text-cyan-400" />
-                            </div>
-                            <span className="text-[10px] text-white/30 font-mono">BW_ID: {info.bw_id}</span>
-                        </div>
-                    </div>
+              <div className="flex items-center gap-4 p-4 border border-white/5 rounded-2xl bg-black/40">
+                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5">
+                  <img src={info.photo} className="w-full h-full object-cover" />
                 </div>
-
-                <div className="flex flex-col gap-3 relative z-10">
-                    <button 
-                        onClick={handleFollow}
-                        className="w-full h-14 bg-cyan-500 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
-                    >
-                        Join & Follow
-                    </button>
-                    <button 
-                        onClick={onClose}
-                        className="w-full h-12 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
-                    >
-                        Close
-                    </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white text-[10px] font-black truncate">{info.name}</span>
+                    <ShieldCheck size={12} className="text-cyan-400" />
+                  </div>
+                  <span className="text-[10px] text-white/30 font-mono">BW_ID: {info.bw_id}</span>
                 </div>
-            </>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 relative z-10">
+              <button
+                onClick={handleFollow}
+                className="w-full h-14 bg-cyan-500 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+              >
+                Join & Follow
+              </button>
+              <button
+                onClick={onClose}
+                className="w-full h-12 bg-white/5 rounded-2xl text-white/30 font-black uppercase text-[10px] tracking-widest hover:bg-white/10 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </>
         )}
       </motion.div>
     </motion.div>
@@ -541,7 +600,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center px-6"
       onClick={onClose}
@@ -554,7 +613,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
         onClick={e => e.stopPropagation()}
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/10 blur-[60px] pointer-events-none" />
-        
+
         <div className="relative z-10 space-y-8">
           <div className="flex flex-col items-center text-center gap-4">
             <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -579,9 +638,9 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
                 <div className="flex-1">
                   <p className="text-[10px] font-black uppercase tracking-tight text-white/90">{getTitle(n)}</p>
                   <p className="text-[10px] text-white/40 mb-2">{getMessage(n)}</p>
-                  
+
                   {n.type === "post_uploaded" && (
-                    <button 
+                    <button
                       onClick={onClose}
                       className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 text-[8px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all"
                     >

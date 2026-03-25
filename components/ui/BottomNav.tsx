@@ -14,9 +14,10 @@ interface BottomNavProps {
     userAvatarUrl?: string | null;
     telegramId?: number | null;
     exploreBadgeCount?: number;
+    isVisible?: boolean;
 }
 
-export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId, exploreBadgeCount = 0 }: BottomNavProps) {
+export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId, exploreBadgeCount = 0, isVisible = true }: BottomNavProps) {
     const { t } = useLanguage();
 
     // Fetch counts for Mission Badge
@@ -62,8 +63,11 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
     return (
         <motion.div
             initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            animate={{
+                y: isVisible ? 0 : 120,
+                opacity: isVisible ? 1 : 0
+            }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
                  flex items-center justify-around w-[94%] max-w-md bg-black/40 backdrop-blur-xl
                  rounded-[2rem] p-1.5 shadow-[0_0_30px_rgba(0,230,255,0.15)] border border-cyan-500/10"
