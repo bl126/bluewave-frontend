@@ -27,7 +27,7 @@ interface ProfileProps {
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
 export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles }: ProfileProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Tab State
   type TabId = "bio" | "roles" | "drops";

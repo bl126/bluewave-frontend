@@ -427,6 +427,7 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // 📬 Post Card Component (X-Style Row)
 // ----------------------------------------------------------------------------
 function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick: () => void, onHide: () => void }) {
+  const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -581,6 +582,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
 // 👥 Channel Profile Popup (Level-Card Centered)
 // ----------------------------------------------------------------------------
 function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onClose: () => void }) {
+  const { t } = useLanguage();
   const { data: info, loading } = useApi(`/explore/channel/${tgId}?current_user_id=${myId}`);
   const [following, setFollowing] = useState(false);
 
@@ -680,6 +682,7 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
 // 🔔 Notifications Popup (Level-Card Style)
 // ----------------------------------------------------------------------------
 function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolean, notifications: any[], onClose: () => void }) {
+  const { t } = useLanguage();
   const getIcon = (type: string) => {
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
