@@ -60,13 +60,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       });
     } else {
       twa.BackButton.hide();
-      // Reset back button to original close logic if needed, 
-      // but usually we just hide it here since Explore is an overlay.
     }
 
     return () => {
       twa.BackButton.hide();
-      twa.BackButton.offClick();
+      if (twa.BackButton.offClick) twa.BackButton.offClick();
     };
   }, [isLeaderboardOpen]);
 
@@ -120,7 +118,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       {/* 🔝 Top Navigation & Dropdown */}
-      <div className="relative px-6 flex items-center justify-between mb-6 z-20">
+      <div className="relative px-6 flex items-start justify-between mb-6 z-20">
         <div className="flex gap-12 border-b border-white/5 pb-2">
           {(["foryou", "following"] as const).map((tab) => (
             <button
@@ -141,15 +139,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           ))}
         </div>
 
-        {/* Dropdown Menu */}
-        <div className="relative">
+        {/* Dropdown Menu (Vertical Stack on the same line as arrow) */}
+        <div className="relative flex flex-col items-center">
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="relative p-2 bg-white/5 rounded-full border border-white/10 text-white/50 hover:text-white transition-all active:scale-95"
+            className="relative p-2 text-white/40 hover:text-white transition-all active:scale-95 mb-2"
           >
-            <ChevronDown size={18} className={`transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
-            {unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_10px_#00e6ff]">
+            <ChevronDown size={20} className={`transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
+            {unreadCount > 0 && !isMenuOpen && (
+              <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_10px_#00e6ff]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </div>
             )}
@@ -158,23 +156,22 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 mt-3 w-48 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="flex flex-col items-center gap-4"
               >
-                <div className="flex flex-col items-center">
                     <button 
                       onClick={() => {
                         setIsMenuOpen(false);
                         setIsNotificationsOpen(true);
                         postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
                       }}
-                      className="w-full flex items-center justify-center p-4 text-xs font-bold text-white/70 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all border-b border-white/5 relative"
+                      className="relative text-white/40 hover:text-cyan-400 transition-all p-1"
                     >
-                      <Bell size={18} />
+                      <Bell size={20} />
                       {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 w-4 h-4 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_10px_#00e6ff]">
                           {unreadCount}
                         </span>
                       )}
@@ -184,11 +181,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                         setIsMenuOpen(false);
                         setIsLeaderboardOpen(true);
                       }}
-                      className="w-full flex items-center justify-center p-4 text-xs font-bold text-white/70 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all"
+                      className="text-white/40 hover:text-cyan-400 transition-all p-1"
                     >
-                      <BarChart2 size={18} />
+                      <BarChart2 size={20} />
                     </button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -306,7 +302,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
   };
 
   return (
-    <div className="p-4 flex gap-3 relative hover:bg-white/[0.02] transition-all">
+    <div className="p-4 flex gap-3 relative hover:bg-white/[0.01] transition-all">
       {/* Space Dust Animation */}
       <AnimatePresence>
         {showSpaceDust && (
@@ -327,9 +323,9 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
         )}
       </AnimatePresence>
 
-      {/* Avatar (Left) */}
-      <button onClick={onChannelClick} className="shrink-0 pt-1">
-        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black shadow-lg">
+      {/* Avatar (Left) - Raised position */}
+      <button onClick={onChannelClick} className="shrink-0 -mt-0.5">
+        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
           {post.channel.photo ? (
             <img src={post.channel.photo} className="w-full h-full object-cover" />
           ) : (
@@ -345,15 +341,14 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
         <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col min-w-0">
                 <button onClick={onChannelClick} className="flex items-center gap-1.5 truncate">
-                    <span className="text-white font-bold text-sm truncate uppercase tracking-tight">{post.channel.title}</span>
+                    <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel.title}</span>
                 </button>
-                <span className="text-[9px] text-white/30 font-mono truncate">ID: {post.user.bw_id || post.tg_id}</span>
             </div>
             
             <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-white/30 font-bold uppercase">{timeAgo(post.created_at)}</span>
+                <span className="text-[10px] text-white/20 font-bold uppercase">{timeAgo(post.created_at)}</span>
                 <div className="relative" ref={menuRef}>
-                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/20 hover:text-white">
+                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/10 hover:text-white">
                         <MoreHorizontal size={14} />
                     </button>
                     <AnimatePresence>
@@ -362,7 +357,7 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
                                 initial={{ opacity: 0, scale: 0.95, x: 10 }}
                                 animate={{ opacity: 1, scale: 1, x: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, x: 10 }}
-                                className="absolute right-0 top-6 w-36 bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
+                                className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
                             >
                                 <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
                                     Not interested
@@ -374,23 +369,34 @@ function PostCard({ post, onChannelClick, onHide }: { post: any, onChannelClick:
             </div>
         </div>
 
-        <p className="text-sm text-cyan-100/80 leading-relaxed break-words mt-1 mb-2">
+        <p className="text-sm text-cyan-100/70 leading-relaxed break-words mt-0.5 mb-2">
           {post.content}
         </p>
+
+        {/* Media Rendering */}
+        {post.media_url && (
+            <div className="mb-3 rounded-2xl overflow-hidden border border-white/5 bg-black/20">
+                {post.media_type === "photo" ? (
+                    <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
+                ) : post.media_type === "video" ? (
+                    <video src={post.media_url} controls className="w-full h-auto max-h-[400px]" playsInline />
+                ) : null}
+            </div>
+        )}
 
         <div className="flex items-center justify-between">
           <button 
               onClick={handleAcknowledge}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
                   isAcknowledged 
                   ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]" 
-                  : "bg-white/5 text-cyan-400/70 hover:bg-white/10"
+                  : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
               }`}
           >
               {isAcknowledged ? "Acknowledged" : "Acknowledge"}
           </button>
 
-          <div className="flex items-center gap-1 opacity-20 pr-1">
+          <div className="flex items-center gap-1 opacity-10 pr-1">
               <Eye size={10} />
               <span className="text-[9px] font-mono font-bold">{post.views || 0}</span>
           </div>
@@ -414,14 +420,18 @@ function ChannelPopup({ tgId, myId, onClose }: { tgId: number, myId: number, onC
   const handleFollow = () => {
     // Navigate to channel directly
     if (info?.channel?.link || info?.telegram_channel) {
-        window.open(info.channel.link || `https://t.me/${info.telegram_channel.replace('@', '')}`, '_blank');
+        let link = info.channel.link;
+        if (!link && info.telegram_channel) {
+            link = `https://t.me/${info.telegram_channel.replace('@', '')}`;
+        }
+        if (link) window.open(link, '_blank');
     }
   };
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[150] bg-black/90 backdrop-blur-md flex items-center justify-center px-6"
+      className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex items-center justify-center px-6"
       onClick={onClose}
     >
       <motion.div
@@ -518,7 +528,7 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center px-6"
+      className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center px-6"
       onClick={onClose}
     >
       <motion.div
@@ -553,7 +563,16 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
                 </div>
                 <div className="flex-1">
                   <p className="text-[10px] font-black uppercase tracking-tight text-white/90">{getTitle(n)}</p>
-                  <p className="text-[10px] text-white/40">{getMessage(n)}</p>
+                  <p className="text-[10px] text-white/40 mb-2">{getMessage(n)}</p>
+                  
+                  {n.type === "post_uploaded" && (
+                    <button 
+                      onClick={onClose}
+                      className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 text-[8px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all"
+                    >
+                      View Post
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
