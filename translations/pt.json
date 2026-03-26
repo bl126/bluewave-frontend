@@ -214,7 +214,13 @@
         "post_error_channel": "Falha ao postar. Certifique-se de ter um canal conectado.",
         "post_error_network": "Erro de rede. Por favor, tente novamente.",
         "posting_btn": "Postando...",
-        "post_btn": "Postar"
+        "post_btn": "Postar",
+        "tabs": {
+            "foryou": "Para Você",
+            "following": "Seguindo",
+            "notifications": "Notificações",
+            "leaderboard": "Classificação"
+        }
     },
     "notifications": {
         "title": "Sinais Recentes",
@@ -273,7 +279,10 @@
         "error_connection": "Erro de conexão. Tente novamente.",
         "req_1_prefix": "Adicione",
         "req_1_suffix": "como administrador no seu canal.",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "Desconectar Canal",
+        "disconnect_desc": "Remover este canal do protocolo Bluewave.",
+        "disconnecting": "Desconectando..."
     },
     "roles_overlay": {
         "title": "Funções do Ecossistema",

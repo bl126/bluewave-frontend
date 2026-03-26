@@ -151,7 +151,13 @@
         "post_error_channel": "Gagal memposting. Pastikan Anda memiliki saluran yang terhubung.",
         "post_error_network": "Kesalahan jaringan. Silakan coba lagi.",
         "posting_btn": "Memposting...",
-        "post_btn": "Posting"
+        "post_btn": "Posting",
+        "tabs": {
+            "foryou": "Untuk Anda",
+            "following": "Mengikuti",
+            "notifications": "Notifikasi",
+            "leaderboard": "Papan Peringkat"
+        }
     },
     "menu": {
         "whitepaper": "Buku Putih v1.0",
@@ -273,7 +279,10 @@
         "error_connection": "Kesalahan koneksi. Silakan coba lagi.",
         "req_1_prefix": "Tambahkan",
         "req_1_suffix": "sebagai admin di saluran Anda.",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "Putuskan Saluran",
+        "disconnect_desc": "Hapus saluran ini dari protokol Bluewave.",
+        "disconnecting": "Memutuskan..."
     },
     "roles_overlay": {
         "title": "Peran Ekosistem",

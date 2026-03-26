@@ -10,9 +10,10 @@ interface LeaderboardProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
+  isInline?: boolean;
 }
 
-export default function Leaderboard({ isOpen, onClose, telegramUser }: LeaderboardProps) {
+export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false }: LeaderboardProps) {
   const { t } = useLanguage();
   const tg_id = telegramUser?.id;
 
@@ -84,14 +85,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser }: Leaderboa
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`fixed inset-0 bg-black/90 backdrop-blur-2xl flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen ? 'z-[210]' : 'z-[170]'}`}
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-          initial={{ opacity: 0, scale: 1.05 }}
+          className={`${isInline ? 'relative w-full' : 'fixed inset-0 bg-black/90 backdrop-blur-2xl z-[170]'} flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen && !isInline ? 'z-[210]' : ''}`}
+          style={isInline ? {} : { paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+          initial={isInline ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
+          exit={isInline ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar">
+          <div className={`${isInline ? 'w-full' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
             {loading && !data && (
               <div className="flex flex-col items-center justify-center h-full space-y-4 animate-pulse">
                 <div className="w-20 h-20 bg-cyan-900/20 rounded-full border border-cyan-900/40"></div>

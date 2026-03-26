@@ -2,13 +2,12 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Loader2,
   Bell,
-  BarChart2,
   MoreHorizontal,
   Eye,
   CheckCircle2,
   ShieldCheck,
-  ChevronLeft,
   Rocket,
   Plus,
   X,
@@ -31,10 +30,8 @@ interface ExploreProps {
 
 export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"foryou" | "following">("foryou");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"foryou" | "following" | "notifications" | "leaderboard">("foryou");
+  const [thirdTabType, setThirdTabType] = useState<"notifications" | "leaderboard">("notifications");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -51,16 +48,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [latestKnownPostId, setLatestKnownPostId] = useState<string | null>(null);
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
 
-  // Close menu on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    if (isMenuOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
 
   // Fetch Notifications
   const { data: notifications, mutate: mutateNotifications } = useApi(
@@ -119,9 +106,17 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current === null) return;
     const diff = touchStart.current - e.changedTouches[0].clientX;
+    const tabs: ("foryou" | "following" | "notifications" | "leaderboard")[] = ["foryou", "following", thirdTabType];
+    const currentIndex = tabs.indexOf(activeTab === "notifications" || activeTab === "leaderboard" ? thirdTabType : activeTab as any);
+
     if (Math.abs(diff) > 80) {
-      if (diff > 0 && activeTab === "foryou") setActiveTab("following");
-      else if (diff < 0 && activeTab === "following") setActiveTab("foryou");
+      if (diff > 0 && currentIndex < tabs.length - 1) {
+        const next = tabs[currentIndex + 1];
+        setActiveTab(next);
+      } else if (diff < 0 && currentIndex > 0) {
+        const prev = tabs[currentIndex - 1];
+        setActiveTab(prev);
+      }
     }
     touchStart.current = null;
   };
@@ -134,18 +129,24 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     if (posts && posts.length > 0) setLatestKnownPostId(posts[0]?.id);
   };
 
-  // TWA Back button
-  useEffect(() => {
-    const twa = (window as any).Telegram?.WebApp;
-    if (!twa?.BackButton) return;
-    if (isLeaderboardOpen) {
-      twa.BackButton.show();
-      twa.BackButton.onClick(() => { setIsLeaderboardOpen(false); twa.BackButton.hide(); });
+  // Handle 3rd tab click/switch
+  const handleThirdTabClick = () => {
+    if (activeTab === "notifications" || activeTab === "leaderboard") {
+      // Toggle between them if already active
+      const next = thirdTabType === "notifications" ? "leaderboard" : "notifications";
+      setThirdTabType(next);
+      setActiveTab(next);
     } else {
-      twa.BackButton.hide();
+      setActiveTab(thirdTabType);
     }
-    return () => { twa.BackButton.hide(); twa.BackButton.offClick?.(); };
-  }, [isLeaderboardOpen]);
+
+    // Clear notifications if switching to it
+    if (thirdTabType !== "notifications" || activeTab !== "notifications") {
+      if (telegramUser?.id) {
+        postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -200,16 +201,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed top-28 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
       >
-        <div className="flex items-center justify-between px-5 py-2">
+        <div className="flex items-center justify-between px-5 pt-2">
           {/* Tabs */}
-          <div className="flex gap-8">
+          <div className="flex gap-6 items-center">
             {(["foryou", "following"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative pb-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? "text-white" : "text-white/30"}`}
+                className={`relative pb-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? "text-white" : "text-white/30"}`}
               >
-                {tab === "foryou" ? t("explore.for_you") : t("explore.following")}
+                {tab === "foryou" ? t("explore.tabs.foryou") : t("explore.tabs.following")}
                 {activeTab === tab && (
                   <motion.div
                     layoutId="exploreTabUnderline"
@@ -218,47 +219,42 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 )}
               </button>
             ))}
+
+            {/* Switchable 3rd Tab */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={handleThirdTabClick}
+                className={`relative pb-3 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-white" : "text-white/30"}`}
+              >
+                {thirdTabType === "notifications" ? (
+                  <div className="relative">
+                    {t("explore.tabs.notifications")}
+                    {unreadCount > 0 && (
+                      <div className="absolute -top-1.5 -right-3 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
+                        {unreadCount > 9 ? "!" : unreadCount}
+                      </div>
+                    )}
+                  </div>
+                ) : t("explore.tabs.leaderboard")}
+
+                <div className="flex flex-col gap-0.5 opacity-40">
+                  <div className={`w-1.5 h-1.5 rounded-full border border-white/30 ${thirdTabType === "notifications" ? "bg-cyan-500" : ""}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full border border-white/30 ${thirdTabType === "leaderboard" ? "bg-cyan-500" : ""}`} />
+                </div>
+
+                {(activeTab === "notifications" || activeTab === "leaderboard") && (
+                  <motion.div
+                    layoutId="exploreTabUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
+                  />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Right icons */}
-          <div className="relative flex flex-col items-center" ref={menuRef}>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="relative p-2 text-white/80 hover:text-white transition-all active:scale-95 z-20"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
-              {unreadCount > 0 && !isMenuOpen && (
-                <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center border border-black shadow-[0_0_8px_#00e6ff]">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </div>
-              )}
-            </button>
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                  className="absolute top-10 flex flex-col items-center gap-5 py-4 px-3.5 bg-black/90 backdrop-blur-md border border-white/10 rounded-[2rem] z-10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                >
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false); setIsNotificationsOpen(true);
-                      postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
-                    }}
-                    className="relative text-white/80 hover:text-cyan-400 transition-all"
-                  >
-                    <Bell size={20} />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-cyan-500 text-black text-[8px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff]">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-                  <button onClick={() => { setIsMenuOpen(false); setIsLeaderboardOpen(true); }} className="text-white/80 hover:text-cyan-400 transition-all">
-                    <BarChart2 size={20} />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          {/* Right toggle simplified */}
+          <div className="pb-3 pr-1">
+            <Rocket size={14} className="text-cyan-500/20" />
           </div>
         </div>
 
@@ -282,7 +278,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         </AnimatePresence>
       </motion.div>
 
-      {/* ─── Feed ─── */}
+      {/* ─── Main Content Area ─── */}
       <div ref={feedTopRef} />
       <div
         ref={scrollContainerRef}
@@ -291,32 +287,67 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         onTouchEnd={onTouchEnd}
         className="flex-1 overflow-y-auto custom-scrollbar mt-16"
       >
-        {loading && !posts && (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
-            <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-            <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === "notifications" ? (
+            <motion.div
+              key="notifications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="p-4 space-y-4"
+            >
+              <NotificationsView
+                notifications={notifications || []}
+                onClear={() => mutateNotifications()}
+              />
+            </motion.div>
+          ) : activeTab === "leaderboard" ? (
+            <motion.div
+              key="leaderboard"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Leaderboard isOpen={true} onClose={() => setActiveTab("foryou")} telegramUser={telegramUser} isInline={true} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="feed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="divide-y divide-white/[0.05]"
+            >
+              {loading && !posts && (
+                <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
+                  <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
+                </div>
+              )}
 
-        <div className="divide-y divide-white/[0.05]">
-          {posts?.map((post: any) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onHide={() => mutate()}
-            />
-          ))}
-        </div>
+              {posts?.map((post: any) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onHide={() => mutate()}
+                />
+              ))}
 
-        {!loading && posts?.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
-            <div className="space-y-1">
-              <p className="font-black uppercase tracking-widest text-xs">{t("explore.no_signals")}</p>
-              <p className="text-[10px] text-white/50 max-w-[200px]">{t("explore.no_signals_desc")}</p>
-            </div>
-          </div>
-        )}
+              {!loading && posts?.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
+                  <div className="space-y-1">
+                    <p className="font-black uppercase tracking-widest text-xs">{t("explore.no_signals")}</p>
+                    <p className="text-[10px] text-white/50 max-w-[200px]">{t("explore.no_signals_desc")}</p>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ─── FAB Post Button ─── */}
@@ -329,8 +360,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             transition={{ duration: 0.12, ease: "easeInOut" }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsPostModalOpen(true)}
-            className="fixed right-5 bottom-28 w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_10px_#00e6ff40] z-[160] border-4 border-black/20"
+            className="fixed right-5 bottom-28 w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_10px_rgba(6,182,212,0.3)] z-[160] border-4 border-black/20 overflow-hidden group"
           >
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
             <Plus size={22} strokeWidth={3} />
           </motion.button>
         )}
@@ -347,23 +379,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
-      {/* ─── Leaderboard ─── */}
-      <AnimatePresence>
-        {isLeaderboardOpen && (
-          <Leaderboard isOpen={isLeaderboardOpen} onClose={() => setIsLeaderboardOpen(false)} telegramUser={telegramUser} />
-        )}
-      </AnimatePresence>
-
-      {/* ─── Notifications ─── */}
-      <AnimatePresence>
-        {isNotificationsOpen && (
-          <NotificationsPopup
-            isOpen={isNotificationsOpen}
-            notifications={notifications || []}
-            onClose={() => setIsNotificationsOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
@@ -392,7 +407,6 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       setMediaPreview(dataUrl);
-      // Strip data:...; base64, prefix
       setMediaBase64(dataUrl.split(",")[1] || "");
     };
     reader.readAsDataURL(file);
@@ -413,7 +427,8 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
       if (res?.success) {
         onPosted();
       } else {
-        setError(res?.detail || t("explore.post_error_channel"));
+        const errDetail = res?.detail || res?.error;
+        setError(errDetail === "AUTH_EXPIRED" || errDetail === "AUTH_REQUIRED" ? t("missions.session_expired") : (errDetail || t("explore.post_error_channel")));
       }
     } catch {
       setError(t("explore.post_error_network"));
@@ -425,76 +440,80 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col"
+      className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
-        transition={{ type: "spring", damping: 28, stiffness: 280 }}
-        className="mt-auto bg-gradient-to-b from-zinc-950 to-black border-t border-white/10 rounded-t-[2rem] p-6 space-y-4 pb-10"
+        initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="w-full max-w-sm bg-zinc-950 border border-white/10 rounded-[2.5rem] p-6 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-black uppercase tracking-widest text-white">{t("explore.new_signal")}</h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-all p-1">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90">{t("explore.new_signal")}</h3>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl bg-white/5 text-white/30 hover:text-white transition-all">
             <X size={18} />
           </button>
         </div>
 
         {/* Text Area */}
         <textarea
+          autoFocus
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={500}
           placeholder={t("explore.signal_placeholder")}
-          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder-white/20 resize-none outline-none focus:border-cyan-500/40 transition-colors min-h-[120px]"
+          className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder-white/10 resize-none outline-none focus:border-cyan-500/30 transition-all min-h-[140px] shadow-inner"
         />
-        <div className="text-right text-[9px] text-white/20 font-mono -mt-2">{content.length}/500</div>
+        <div className="text-right text-[8px] text-white/20 font-mono tracking-widest">{content.length}/500</div>
 
         {/* Media Preview */}
         {mediaPreview && (
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/30">
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/30 group">
             {mediaType === "photo" ? (
-              <img src={mediaPreview} className="w-full max-h-[200px] object-contain" />
+              <img src={mediaPreview} className="w-full max-h-[180px] object-contain" />
             ) : (
-              <video src={mediaPreview} className="w-full max-h-[200px]" controls playsInline />
+              <video src={mediaPreview} className="w-full max-h-[180px]" controls playsInline />
             )}
             <button
               onClick={() => { setMediaPreview(null); setMediaBase64(""); setMediaType("text"); }}
-              className="absolute top-2 right-2 w-7 h-7 bg-black/70 rounded-full flex items-center justify-center text-white"
+              className="absolute top-2 right-2 w-7 h-7 bg-black/80 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
             >
               <X size={14} />
             </button>
           </div>
         )}
 
-        {error && <p className="text-[10px] text-orange-400 font-bold">{error}</p>}
+        {error && <p className="text-[10px] text-orange-400 font-bold uppercase tracking-tight text-center">{error}</p>}
 
-        {/* Bottom Row: media attach + post button */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-3">
+        {/* Bottom Row */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex gap-2">
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <button
               onClick={() => { if (fileInputRef.current) { fileInputRef.current.accept = "image/*"; fileInputRef.current.click(); } }}
-              className="p-2 text-white/40 hover:text-cyan-400 transition-all"
+              className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all"
             >
-              <Image size={20} />
+              <Image size={18} />
             </button>
             <button
               onClick={() => { if (fileInputRef.current) { fileInputRef.current.accept = "video/*"; fileInputRef.current.click(); } }}
-              className="p-2 text-white/40 hover:text-cyan-400 transition-all"
+              className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all"
             >
-              <Video size={20} />
+              <Video size={18} />
             </button>
           </div>
           <button
             onClick={handlePost}
             disabled={posting || (!content.trim() && !mediaBase64)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 text-black font-black text-[11px] uppercase tracking-widest rounded-xl shadow-[0_0_12px_#00e6ff30] active:scale-95 transition-all disabled:opacity-40"
+            className="flex items-center gap-2 px-6 h-12 bg-cyan-500 text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all disabled:opacity-30 disabled:shadow-none"
           >
             {posting ? (
-              <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              <Loader2 size={16} className="animate-spin" />
             ) : (
               <Send size={14} />
             )}
@@ -725,10 +744,11 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
 }
 
 // ----------------------------------------------------------------------------
-// 🔔 Notifications Popup
+// 🔔 Notifications View (Inline)
 // ----------------------------------------------------------------------------
-function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolean, notifications: any[], onClose: () => void }) {
+function NotificationsView({ notifications, onClear }: { notifications: any[], onClear: () => void }) {
   const { t } = useLanguage();
+
   const getIcon = (type: string) => {
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
@@ -750,56 +770,39 @@ function NotificationsPopup({ isOpen, notifications, onClose }: { isOpen: boolea
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center px-6"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="w-full max-w-sm bg-gradient-to-b from-cyan-950/20 to-black border border-cyan-500/20 rounded-[2.5rem] p-8 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)]"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/10 blur-[60px] pointer-events-none" />
-        <div className="relative z-10 space-y-8">
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-              <Bell size={28} className="text-cyan-400" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">{t("notifications.title")}</h2>
-              <p className="text-[10px] text-cyan-400/60 font-black uppercase tracking-[0.2em]">{t("notifications.subtitle")}</p>
-            </div>
-          </div>
-
-          <div className="space-y-3 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar" onClick={e => e.stopPropagation()}>
-            {notifications.length === 0 ? (
-              <div className="py-10 text-center opacity-30">
-                <p className="text-xs font-bold uppercase tracking-widest">{t("notifications.empty")}</p>
-              </div>
-            ) : notifications.map((n: any) => (
-              <div key={n.id} className="flex gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-2xl items-center">
-                <div className="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/5 flex items-center justify-center">
-                  {getIcon(n.type)}
-                </div>
-                <div className="flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-tight text-white/90">{getTitle(n)}</p>
-                  <p className="text-[10px] text-white/40 mb-2">{getMessage(n)}</p>
-                  {n.type === "post_uploaded" && (
-                    <button onClick={onClose} className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-cyan-400 text-[8px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all">
-                      {t("notifications.view_post")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button onClick={onClose} className="w-full h-14 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl active:scale-95 transition-all">
-            {t("notifications.understood")}
-          </button>
+    <div className="space-y-4">
+      <div className="flex flex-col items-center text-center gap-2 py-4">
+        <div className="w-12 h-12 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 flex items-center justify-center">
+          <Bell size={24} className="text-cyan-400" />
         </div>
-      </motion.div>
-    </motion.div>
+        <div>
+          <h2 className="text-xl font-black text-white uppercase tracking-tight">{t("notifications.title")}</h2>
+          <p className="text-[9px] text-cyan-400/60 font-black uppercase tracking-[0.2em]">{t("notifications.subtitle")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {notifications.length === 0 ? (
+          <div className="py-20 text-center opacity-20 flex flex-col items-center gap-3">
+            <div className="p-4 rounded-full bg-white/5">
+              <Bell size={32} />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
+          </div>
+        ) : (
+          notifications.map((n: any) => (
+            <div key={n.id} className="flex gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-2xl items-center transition-all hover:bg-white/[0.05]">
+              <div className="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/5 flex items-center justify-center border border-cyan-500/10">
+                {getIcon(n.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-tight text-white/90 truncate">{getTitle(n)}</p>
+                <p className="text-[10px] text-white/40 leading-relaxed">{getMessage(n)}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

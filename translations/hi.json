@@ -213,8 +213,14 @@
         "signal_placeholder": "आज आपकी सिग्नल क्या है...",
         "post_error_channel": "पोस्ट करने में विफल। सुनिश्चित करें कि आपके पास एक जुड़ा हुआ चैनल है।",
         "post_error_network": "नेटवर्क त्रुटि। कृपया पुन: प्रयास करें।",
-        "posting_btn": "पोस्ट हो रहा है...",
-        "post_btn": "पोस्ट"
+        "posting_btn": "पोस्ट किया जा रहा है...",
+        "post_btn": "पोस्ट करें",
+        "tabs": {
+            "foryou": "आपके लिए",
+            "following": "फ़ॉलो किया जा रहा है",
+            "notifications": "सूचनाएं",
+            "leaderboard": "लीडरबोर्ड"
+        }
     },
     "notifications": {
         "title": "हाल के सिग्नल",
@@ -273,7 +279,10 @@
         "error_connection": "कनेक्शन त्रुटि। कृपया पुन: प्रयास करें।",
         "req_1_prefix": "जोड़ें",
         "req_1_suffix": "अपने चैनल में एडमिन के रूप में।",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "चैनल डिस्कनेक्ट करें",
+        "disconnect_desc": "Bluewave प्रोटोकॉल से इस चैनल को हटा दें।",
+        "disconnecting": "डिस्कनेक्ट किया जा रहा है..."
     },
     "roles_overlay": {
         "title": "पारिस्थितिकी तंत्र भूमिकाएँ",

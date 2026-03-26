@@ -214,7 +214,13 @@
         "post_error_channel": "โพสต์ไม่สำเร็จ ตรวจสอบให้แน่ใจว่าคุณมีการเชื่อมต่อช่องทาง",
         "post_error_network": "ข้อผิดพลาดของเครือข่าย กรุณาลองอีกครั้ง",
         "posting_btn": "กำลังโพสต์...",
-        "post_btn": "โพสต์"
+        "post_btn": "โพสต์",
+        "tabs": {
+            "foryou": "สำหรับคุณ",
+            "following": "กำลังติดตาม",
+            "notifications": "การแจ้งเตือน",
+            "leaderboard": "ลีดเดอร์บอร์ด"
+        }
     },
     "notifications": {
         "title": "สัญญาณล่าสุด",
@@ -273,7 +279,10 @@
         "error_connection": "ข้อผิดพลาดในการเชื่อมต่อ โปรดลองอีกครั้ง",
         "req_1_prefix": "เพิ่ม",
         "req_1_suffix": "เป็นผู้ดูแลระบบในช่องของคุณ",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "ยกเลิกการเชื่อมต่อช่อง",
+        "disconnect_desc": "ลบช่องนี้ออกจากโปรโตคอล Bluewave",
+        "disconnecting": "กำลังยกเลิกการเชื่อมต่อ..."
     },
     "roles_overlay": {
         "title": "บทบาทระบบนิเวศ",

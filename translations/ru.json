@@ -151,7 +151,13 @@
         "post_error_channel": "Ошибка публикации. Убедитесь, что у вас подключен канал.",
         "post_error_network": "Сетевая ошибка. Пожалуйста, попробуйте еще раз.",
         "posting_btn": "Публикация...",
-        "post_btn": "Опубликовать"
+        "post_btn": "Опубликовать",
+        "tabs": {
+            "foryou": "Для вас",
+            "following": "Подписки",
+            "notifications": "Уведомления",
+            "leaderboard": "Таблица лидеров"
+        }
     },
     "menu": {
         "whitepaper": "Whitepaper v1.0",
@@ -273,7 +279,10 @@
         "error_connection": "Ошибка подключения. Попробуйте еще раз.",
         "req_1_prefix": "Добавьте",
         "req_1_suffix": "в качестве администратора в ваш канал.",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "Отключить канал",
+        "disconnect_desc": "Удалить этот канал из протокола Bluewave.",
+        "disconnecting": "Отключение..."
     },
     "roles_overlay": {
         "title": "Экосистемные Роли",

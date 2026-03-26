@@ -214,7 +214,13 @@
     "post_error_channel": "Failed to post. Make sure you have a connected channel.",
     "post_error_network": "Network error. Please try again.",
     "posting_btn": "Posting...",
-    "post_btn": "Post"
+    "post_btn": "Post",
+    "tabs": {
+      "foryou": "For You",
+      "following": "Following",
+      "notifications": "Notifications",
+      "leaderboard": "Leaderboard"
+    }
   },
   "notifications": {
     "title": "Recent Signals",
@@ -273,7 +279,10 @@
     "error_connection": "Connection error. Please try again.",
     "req_1_prefix": "Add",
     "req_1_suffix": "as an admin in your channel.",
-    "req_1_bot": "@blu_presencebot"
+    "req_1_bot": "@blu_presencebot",
+    "disconnect": "Disconnect Channel",
+    "disconnect_desc": "Remove this channel from Bluewave protocol.",
+    "disconnecting": "Disconnecting..."
   },
   "referral": {
     "share_desc": "SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS",

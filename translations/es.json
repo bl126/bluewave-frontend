@@ -209,7 +209,13 @@
         "post_error_channel": "Error al publicar. Asegúrate de tener un canal conectado.",
         "post_error_network": "Error de red. Por favor, inténtalo de nuevo.",
         "posting_btn": "Publicando...",
-        "post_btn": "Publicar"
+        "post_btn": "Publicar",
+        "tabs": {
+            "foryou": "Para Ti",
+            "following": "Siguiendo",
+            "notifications": "Notificaciones",
+            "leaderboard": "Clasificación"
+        }
     },
     "notifications": {
         "title": "Señales Recientes",
@@ -268,7 +274,10 @@
         "error_connection": "Error de conexión. Inténtalo de nuevo.",
         "req_1_prefix": "Añade",
         "req_1_suffix": "como administrador en tu canal.",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "Desconectar Canal",
+        "disconnect_desc": "Eliminar este canal del protocolo Bluewave.",
+        "disconnecting": "Desconectando..."
     },
     "roles_overlay": {
         "title": "Roles del Ecosistema",

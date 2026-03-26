@@ -76,6 +76,28 @@ export default function ConnectBluModal({
         }
     };
 
+    const handleDisconnect = async () => {
+        if (!verified || verifying) return;
+        setVerifying(true);
+        setError("");
+        try {
+            const res = await postApi("/api/telegram/disconnect_channel", {
+                tg_id: telegramId
+            });
+            if (res.success) {
+                setVerified(false);
+                setConnectedInfo({ title: "", photo: "", username: "" });
+                setChannelInput("");
+            } else {
+                setError(res.error || "Disconnect failed");
+            }
+        } catch {
+            setError(t("connect_blu.error_connection"));
+        } finally {
+            setVerifying(false);
+        }
+    };
+
     const handleClose = () => {
         setView("main");
         setError("");
@@ -270,9 +292,13 @@ export default function ConnectBluModal({
                                                                     <p className="text-cyan-500/40 text-[9px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
                                                                 </div>
                                                             </div>
-                                                            <button disabled className="w-full py-3.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/50 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 cursor-default">
-                                                                <Check size={14} />
-                                                                {t("connect_blu.connected_btn")}
+                                                            <button
+                                                                onClick={handleDisconnect}
+                                                                disabled={verifying}
+                                                                className="w-full py-3.5 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                                            >
+                                                                {verifying ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                                                                {verifying ? t("connect_blu.disconnecting") : t("connect_blu.disconnect")}
                                                             </button>
                                                         </div>
                                                     )}

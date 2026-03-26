@@ -213,7 +213,13 @@
         "post_error_channel": "发布失败。请确保您已连接频道。",
         "post_error_network": "网络错误。请重试。",
         "posting_btn": "发布中...",
-        "post_btn": "发布"
+        "post_btn": "发布",
+        "tabs": {
+            "foryou": "推荐",
+            "following": "关注",
+            "notifications": "通知",
+            "leaderboard": "排行榜"
+        }
     },
     "notifications": {
         "title": "最近信号",
@@ -272,7 +278,10 @@
         "error_connection": "连接错误。请重试。",
         "req_1_prefix": "添加",
         "req_1_suffix": "为管理员。",
-        "req_1_bot": "@blu_presencebot"
+        "req_1_bot": "@blu_presencebot",
+        "disconnect": "断开频道",
+        "disconnect_desc": "从 Bluewave 协议中移除此频道。",
+        "disconnecting": "正在断开..."
     },
     "roles_overlay": {
         "title": "生态系统角色",
