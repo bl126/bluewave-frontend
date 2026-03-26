@@ -239,7 +239,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-2xl flex flex-col overflow-hidden text-cyan-200"
@@ -319,7 +319,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
                         >
                           <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.ecosystem_roles")}</button>
-                          <button onClick={() => { setMenuOpen(false); onClose(); setTimeout(() => onOpenBwaveScan?.(), 300); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.presence_ledger")}</button>
+                          <button onClick={() => { setMenuOpen(false); onOpenBwaveScan?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.presence_ledger")}</button>
                           <button onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors">{t("settings.title")}</button>
                         </motion.div>
                       </>
@@ -477,6 +477,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           </AnimatePresence>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

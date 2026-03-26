@@ -12,7 +12,7 @@ interface MarketplaceProps {
 export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
   const { t } = useLanguage();
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
           <motion.div
@@ -21,7 +21,7 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             {/* content */}
             <div className="flex flex-col items-center justify-center h-full w-full gap-6 relative px-4">
@@ -57,6 +57,6 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }

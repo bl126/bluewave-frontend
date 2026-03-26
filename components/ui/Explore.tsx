@@ -34,6 +34,8 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
+  const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const feedTopRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const touchStart = useRef<number | null>(null);
 
   // New posts pill
-  const [latestKnownPostId, setLatestKnownPostId] = useState<string | null>(null);
+
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
 
 
@@ -174,7 +176,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${isPostModalOpen ? "z-[210]" : "z-[120]"}`}
+      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[210]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -272,7 +274,13 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <Leaderboard isOpen={true} onClose={() => setActiveTab("foryou")} telegramUser={telegramUser} isInline={true} />
+              <Leaderboard
+                isOpen={true}
+                onClose={() => setActiveTab("foryou")}
+                telegramUser={telegramUser}
+                isInline={true}
+                onSheetOpenChange={setIsLeaderboardSheetOpen}
+              />
             </motion.div>
           ) : (
             <motion.div
@@ -589,8 +597,15 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
   const openChannel = () => {
     const handle = post.channel?.handle || post.channel?.title;
     if (!handle) return;
-    const clean = handle.replace(/^@/, "");
-    const link = `https://t.me/${clean}`;
+
+    let link = "";
+    if (handle.startsWith("http")) {
+      link = handle;
+    } else {
+      const clean = handle.replace(/^@/, "");
+      link = `https://t.me/${clean}`;
+    }
+
     const twa = (window as any).Telegram?.WebApp;
     if (twa?.openTelegramLink) twa.openTelegramLink(link);
     else window.open(link, "_blank");
@@ -736,39 +751,41 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col items-center text-center gap-2 py-4">
-        <div className="w-12 h-12 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 flex items-center justify-center">
-          <Bell size={24} className="text-cyan-400" />
-        </div>
-        <div>
-          <h2 className="text-xl font-black text-white uppercase tracking-tight">{t("notifications.title")}</h2>
-          <p className="text-[9px] text-cyan-400/60 font-black uppercase tracking-[0.2em]">{t("notifications.subtitle")}</p>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {notifications.length === 0 ? (
-          <div className="py-20 text-center opacity-20 flex flex-col items-center gap-3">
-            <div className="p-4 rounded-full bg-white/5">
-              <Bell size={32} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
+    <div className="space-y-3">
+      {notifications.length === 0 ? (
+        <div className="py-20 text-center opacity-20 flex flex-col items-center gap-3">
+          <div className="p-4 rounded-full bg-white/5">
+            <Bell size={32} />
           </div>
-        ) : (
-          notifications.map((n: any) => (
-            <div key={n.id} className="flex gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-2xl items-center transition-all hover:bg-white/[0.05]">
-              <div className="w-10 h-10 shrink-0 rounded-xl bg-cyan-500/5 flex items-center justify-center border border-cyan-500/10">
-                {getIcon(n.type)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-tight text-white/90 truncate">{getTitle(n)}</p>
-                <p className="text-[10px] text-white/40 leading-relaxed">{getMessage(n)}</p>
-              </div>
+          <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
+        </div>
+      ) : (
+        notifications.map((n: any) => (
+          <div
+            key={n.id}
+            className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${n.is_read
+              ? "bg-white/[0.01] border border-white/[0.03] opacity-50"
+              : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"
+              }`}
+          >
+            <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"
+              }`}>
+              {getIcon(n.type)}
             </div>
-          ))
-        )}
-      </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>
+                {getTitle(n)}
+              </p>
+              <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>
+                {getMessage(n)}
+              </p>
+            </div>
+            {!n.is_read && (
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 }

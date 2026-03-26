@@ -129,6 +129,11 @@
         "referrals_label": "REDES",
         "global_list": "Lista Global de Redes"
     },
+    "menu": {
+        "whitepaper": "Libro Blanco v1.0",
+        "ecosystem_roles": "Roles del Ecosistema",
+        "presence_ledger": "BwaveScan"
+    },
     "stats": {
         "back": "Volver",
         "metrics_label": "Métricas del Protocolo",

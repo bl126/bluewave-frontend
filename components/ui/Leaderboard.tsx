@@ -1,6 +1,4 @@
-"use client";
-
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { ArrowLeft, Trophy, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,6 +9,7 @@ interface LeaderboardProps {
   onClose: () => void;
   telegramUser: any;
   isInline?: boolean;
+  onSheetOpenChange?: (open: boolean) => void;
 }
 
 export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false }: LeaderboardProps) {
@@ -18,6 +17,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   const tg_id = telegramUser?.id;
 
   const [countriesOpen, setCountriesOpen] = useState(false);
+
+  const handleCountriesOpen = (open: boolean) => {
+    setCountriesOpen(open);
+    if (onSheetOpenChange) onSheetOpenChange(open);
+  };
 
   // Use useApi for caching and automatic revalidation
   const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null);
@@ -85,14 +89,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`${isInline ? 'relative w-full' : 'fixed inset-0 bg-black/90 backdrop-blur-2xl z-[170]'} flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen && !isInline ? 'z-[210]' : ''}`}
+          className={`${isInline ? 'relative w-full' : 'fixed inset-0 bg-black/90 backdrop-blur-2xl z-[170]'} flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen ? 'z-[210]' : ''}`}
           style={isInline ? {} : { paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={isInline ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={isInline ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className={`${isInline ? 'w-full' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
+          <div className={`${isInline ? 'w-full px-6 pb-60 custom-scrollbar' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
             {loading && !data && (
               <div className="flex flex-col items-center justify-center h-full space-y-4 animate-pulse">
                 <div className="w-20 h-20 bg-cyan-900/20 rounded-full border border-cyan-900/40"></div>
@@ -197,7 +201,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setCountriesOpen(true)}
+                    onClick={() => handleCountriesOpen(true)}
                     className="flex items-center gap-2 px-6 py-2 rounded-full bg-cyan-950/40 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.1)] hover:border-cyan-400/60 transition-all group"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -304,7 +308,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
           </div>
           <ActiveCountriesSheet
             isOpen={countriesOpen}
-            onClose={() => setCountriesOpen(false)}
+            onClose={() => handleCountriesOpen(false)}
           />
         </motion.div>
       )}
@@ -316,6 +320,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
 function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { t } = useLanguage();
   const { data: countries, loading } = useApi(isOpen ? "/countries" : null);
+  const dragControls = useDragControls();
 
   return (
     <AnimatePresence>
@@ -337,6 +342,8 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             drag="y"
+            dragControls={dragControls}
+            dragListener={false}
             dragConstraints={{ top: 0 }}
             dragElastic={0.2}
             onDragEnd={(_, info) => {
@@ -345,7 +352,10 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             className="fixed bottom-0 left-0 right-0 z-[201] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
           >
             {/* Drag Handle */}
-            <div className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing">
+            <div
+              onPointerDown={(e) => dragControls.start(e)}
+              className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none"
+            >
               <div className="w-12 h-1.5 bg-cyan-900/50 rounded-full" />
             </div>
 
@@ -358,7 +368,7 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 pb-20 custom-scrollbar">
               {loading ? (
                 <div className="grid grid-cols-2 gap-3 pb-6">
                   {[...Array(6)].map((_, i) => (

@@ -48,7 +48,7 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[100] bg-black backdrop-blur-3xl flex flex-col overflow-y-auto"
+            className="fixed inset-0 z-[210] bg-black backdrop-blur-3xl flex flex-col overflow-y-auto"
             style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 25px)" }}
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}

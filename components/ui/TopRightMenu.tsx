@@ -102,7 +102,7 @@ export default function TopRightMenu({
                 isActive={isWhitepaperActive}
               />
               <MenuItem
-                label={t("menu.ecosystem_roles").replace("🏆 ", "")}
+                label={t("menu.ecosystem_roles")}
                 onClick={() => { setOpen(false); onOpenRoles?.(); }}
                 isActive={isRolesActive}
               />

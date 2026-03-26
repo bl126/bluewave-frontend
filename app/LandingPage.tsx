@@ -127,6 +127,12 @@ export default function LandingPage() {
         tg.close();
         return;
       }
+
+      // 1. Nested Overlays/Modals (Stack-aware early returns)
+      if (selectedRoleData) {
+        setSelectedRoleData(null);
+        return;
+      }
       if (isBwaveScanOpen) {
         setBwaveScanOpen(false);
         return;
@@ -139,17 +145,43 @@ export default function LandingPage() {
         setIsBluExpanded(false);
         return;
       }
-      // Close all other overlays and return to home
-      setMissionOpen(false);
-      setExploreOpen(false);
-      setMarketOpen(false);
-      setProfileOpen(false);
-      setRolesOpen(false);
-      setBwaveScanOpen(false);
-      setSelectedRoleData(null);
-      setIsNetworkBuilderModalOpen(false);
-      setIsBluExpanded(false);
-      setActiveTab("home");
+      if (isStreakCelebrationOpen) {
+        handleClearStreakReward();
+        return;
+      }
+      if (isHumanModalOpen) {
+        handleClearHumanVerification();
+        return;
+      }
+      if (isNetworkBuilderModalOpen) {
+        handleClearNetworkBuilder();
+        return;
+      }
+      if (isTONModalOpen) {
+        handleClearTONExplorer();
+        return;
+      }
+      if (currentCelebratingRole) {
+        handleClearRoleCelebration(currentCelebratingRole);
+        return;
+      }
+      if (isAIPopupOpen) {
+        handleClearAIPopup();
+        return;
+      }
+
+      // 2. Top-Level Overlays (Close and return to Home)
+      if (activeTab !== "home") {
+        setMissionOpen(false);
+        setExploreOpen(false);
+        setMarketOpen(false);
+        setProfileOpen(false);
+        setActiveTab("home");
+        return;
+      }
+
+      // 3. App Exit
+      tg.close();
     };
 
     if (isAnyOverlayOpen) {
@@ -162,7 +194,11 @@ export default function LandingPage() {
     return () => {
       tg.BackButton.offClick(handleBack);
     };
-  }, [isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode]);
+  }, [
+    isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode,
+    selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
+    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab
+  ]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
@@ -647,17 +683,19 @@ export default function LandingPage() {
       )}
 
       {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
-      {isMissionOpen && (
-        <MissionCenter
-          isOpen={isMissionOpen}
-          onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
-          telegramUser={telegramUser}
-          isHumanVerified={!!telegramUser?.is_human_verified}
-        />
-      )}
-      <AnimatePresence>
+      <AnimatePresence mode="sync">
+        {isMissionOpen && (
+          <MissionCenter
+            key="missions"
+            isOpen={isMissionOpen}
+            onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
+            telegramUser={telegramUser}
+            isHumanVerified={!!telegramUser?.is_human_verified}
+          />
+        )}
         {isExploreOpen && (
           <Explore
+            key="explore"
             isOpen={isExploreOpen}
             onClose={() => {
               setExploreOpen(false);
@@ -666,27 +704,26 @@ export default function LandingPage() {
             telegramUser={telegramUser}
           />
         )}
+        {isMarketOpen && (
+          <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} />
+        )}
+        {isProfileOpen && (
+          <Profile
+            key="profile"
+            isOpen={isProfileOpen}
+            onClose={() => { setProfileOpen(false); setActiveTab("home"); }}
+            telegramUser={telegramUser}
+            onOpenRoles={(roleName: string) => {
+              const role = findRoleByName(roleName);
+              if (role) setSelectedRoleData(role);
+            }}
+            onOpenBwaveScan={() => setBwaveScanOpen(true)}
+            onOpenEcosystemRoles={() => {
+              setRolesOpen(true);
+            }}
+          />
+        )}
       </AnimatePresence>
-      {isMarketOpen && (
-        <Marketplace isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} />
-      )}
-      {isProfileOpen && (
-        <Profile
-          isOpen={isProfileOpen}
-          onClose={() => { setProfileOpen(false); setActiveTab("home"); }}
-          telegramUser={telegramUser}
-          onOpenRoles={(roleName: string) => {
-            const role = findRoleByName(roleName);
-            if (role) setSelectedRoleData(role);
-          }}
-          onOpenBwaveScan={() => setBwaveScanOpen(true)}
-          onOpenEcosystemRoles={() => {
-            setProfileOpen(false);
-            setActiveTab("home");
-            setTimeout(() => setRolesOpen(true), 300);
-          }}
-        />
-      )}
 
       {/* 🌀 Loading Screen */}
       <AnimatePresence>
