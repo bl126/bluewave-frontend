@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
   Bell,
+  BarChart2,
+  ChevronDown,
   MoreHorizontal,
   Eye,
   CheckCircle2,
@@ -199,11 +201,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       <motion.div
         animate={{ y: showChrome ? 0 : -80, opacity: showChrome ? 1 : 0 }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed top-28 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
+        className="fixed top-20 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
       >
         <div className="flex items-center justify-between px-5 pt-2">
           {/* Tabs */}
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-10 items-center">
             {(["foryou", "following"] as const).map((tab) => (
               <button
                 key={tab}
@@ -220,27 +222,26 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               </button>
             ))}
 
-            {/* Switchable 3rd Tab */}
+            {/* Switchable 3rd Tab Icon-based */}
             <div className="flex flex-col items-center">
               <button
                 onClick={handleThirdTabClick}
-                className={`relative pb-3 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-white" : "text-white/30"}`}
+                className={`relative pb-3 flex flex-col items-center gap-0.5 transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-cyan-400" : "text-white/30"}`}
               >
                 {thirdTabType === "notifications" ? (
                   <div className="relative">
-                    {t("explore.tabs.notifications")}
+                    <Bell size={18} />
                     {unreadCount > 0 && (
-                      <div className="absolute -top-1.5 -right-3 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
+                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
                         {unreadCount > 9 ? "!" : unreadCount}
                       </div>
                     )}
                   </div>
-                ) : t("explore.tabs.leaderboard")}
+                ) : (
+                  <BarChart2 size={18} />
+                )}
 
-                <div className="flex flex-col gap-0.5 opacity-40">
-                  <div className={`w-1.5 h-1.5 rounded-full border border-white/30 ${thirdTabType === "notifications" ? "bg-cyan-500" : ""}`} />
-                  <div className={`w-1.5 h-1.5 rounded-full border border-white/30 ${thirdTabType === "leaderboard" ? "bg-cyan-500" : ""}`} />
-                </div>
+                <ChevronDown size={10} className="opacity-40" />
 
                 {(activeTab === "notifications" || activeTab === "leaderboard") && (
                   <motion.div
@@ -285,7 +286,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         onScroll={handleScroll}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="flex-1 overflow-y-auto custom-scrollbar mt-16"
+        className="flex-1 overflow-y-auto custom-scrollbar mt-6"
       >
         <AnimatePresence mode="wait">
           {activeTab === "notifications" ? (
@@ -352,7 +353,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* ─── FAB Post Button ─── */}
       <AnimatePresence>
-        {showChrome && (
+        {showChrome && activeTab !== "leaderboard" && (
           <motion.button
             initial={{ scale: 0, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -440,7 +441,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+      className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
       onClick={onClose}
     >
       <motion.div
