@@ -234,11 +234,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             ))}
           </div>
 
-          {/* Switcher (Right) */}
-          <div className="relative pb-3">
+          {/* Switcher (Right) - Moved away from edge */}
+          <div className="relative pb-3 pr-4 flex flex-col items-center">
+            {/* Main Icon Button (Switches Tab) */}
             <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex flex-col items-center group transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-cyan-400" : "text-white/30"}`}
+              onClick={() => handleSwitcherSelect(thirdTabType)}
+              className={`transition-all pb-1.5 ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-cyan-400" : "text-white/30"}`}
             >
               <div className="relative">
                 {thirdTabType === "notifications" ? <Bell size={18} /> : <BarChart2 size={18} />}
@@ -248,15 +249,24 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   </div>
                 )}
               </div>
-              <ChevronDown size={10} className={`mt-0.5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-
-              {(activeTab === "notifications" || activeTab === "leaderboard") && (
-                <motion.div
-                  layoutId="exploreTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
-                />
-              )}
             </button>
+
+            {/* Dropdown Arrow (Only opens dropdown) */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsDropdownOpen(!isDropdownOpen); }}
+              className="absolute -bottom-2 left-0 right-0 pr-4 flex justify-center z-10 p-2 cursor-pointer"
+            >
+              <div className={`p-1 rounded-full bg-black/40 hover:bg-white/10 transition-all border border-black shadow-[0_0_10px_rgba(0,0,0,0.8)] ${isDropdownOpen ? 'bg-white/10' : ''}`}>
+                <ChevronDown size={14} className={`text-cyan-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+              </div>
+            </button>
+
+            {(activeTab === "notifications" || activeTab === "leaderboard") && (
+              <motion.div
+                layoutId="exploreTabUnderline"
+                className="absolute bottom-0 left-0 right-4 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
+              />
+            )}
 
             {/* Vertical Dropdown */}
             <AnimatePresence>
@@ -265,7 +275,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   initial={{ opacity: 0, scale: 0.95, y: 5 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 5 }}
-                  className="absolute right-0 top-full mt-1 bg-zinc-950 border border-white/10 rounded-2xl p-1.5 z-[140] min-w-[44px] shadow-2xl flex flex-col items-center"
+                  className="absolute right-4 top-full mt-1 bg-zinc-950 border border-white/10 rounded-2xl p-1.5 z-[140] min-w-[44px] shadow-2xl flex flex-col items-center"
                 >
                   <button
                     onClick={() => handleSwitcherSelect(thirdTabType === "notifications" ? "leaderboard" : "notifications")}
@@ -289,26 +299,26 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             </AnimatePresence>
           </div>
         </div>
-
-        {/* New Posts Pill */}
-        <AnimatePresence>
-          {newPostsAvailable && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.9 }}
-              className="flex justify-center pb-2"
-            >
-              <button
-                onClick={handleNewPostsPill}
-                className="px-4 py-1.5 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-[0_0_12px_#00e6ff60] active:scale-95 transition-all flex items-center gap-1.5"
-              >
-                {t("explore.new_posts_pill")}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
+
+      {/* New Posts Pill */}
+      <AnimatePresence>
+        {newPostsAvailable && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            className="fixed top-32 left-0 right-0 z-[140] flex justify-center pointer-events-none"
+          >
+            <button
+              onClick={handleNewPostsPill}
+              className="px-4 py-1.5 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-[0_0_12px_#00e6ff60] active:scale-95 transition-all flex items-center gap-1.5 pointer-events-auto"
+            >
+              {t("explore.new_posts_pill")}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─── Main Content Area ─── */}
       <div ref={feedTopRef} />
@@ -372,8 +382,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
                   <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
                   <div className="space-y-1">
-                    <p className="font-black uppercase tracking-widest text-xs">{t("explore.no_signals")}</p>
-                    <p className="text-[10px] text-white/50 max-w-[200px]">{t("explore.no_signals_desc")}</p>
+                    <p className="font-black uppercase tracking-widest text-xs">
+                      {activeTab === "following" ? t("explore.no_following") : t("explore.no_signals")}
+                    </p>
+                    <p className="text-[10px] text-white/50 max-w-[200px]">
+                      {activeTab === "following" ? t("explore.no_following_desc") : t("explore.no_signals_desc")}
+                    </p>
                   </div>
                 </div>
               )}
@@ -485,7 +499,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90">{t("explore.new_signal")}</h3>
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90">{t("explore.new_post_title")}</h3>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-white/5 text-white/30 hover:text-white transition-all">
             <X size={18} />
@@ -497,11 +511,11 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
           autoFocus
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          maxLength={500}
-          placeholder={t("explore.signal_placeholder")}
+          maxLength={250}
+          placeholder={t("explore.post_placeholder")}
           className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder-white/10 resize-none outline-none focus:border-cyan-500/30 transition-all min-h-[140px] shadow-inner"
         />
-        <div className="text-right text-[8px] text-white/20 font-mono tracking-widest">{content.length}/500</div>
+        <div className="text-right text-[8px] text-white/20 font-mono tracking-widest">{content.length}/250</div>
 
         {/* Media Preview */}
         {mediaPreview && (
