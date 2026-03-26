@@ -4,6 +4,7 @@
 
 import useSWR from "swr";
 import { fetcher, swrConfig } from "./swrFetcher";
+import { isSessionExpired, setSessionExpired } from "./session";
 
 // [CODE: FRONTEND_POST_API_HELPER]
 // ⭐ Safer POST helper (handles rate-limits + JSON errors)
@@ -12,6 +13,12 @@ export async function postApi(path: string, body: any = {}) {
   const url = `${apiUrl}/api${path}`;
 
   const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+
+  // 🛡️ Guard to prevent "burning" the API
+  if (isSessionExpired()) {
+    console.warn(`🛑 API Call Blocked (Session Expired): ${path}`);
+    return { error: "AUTH_EXPIRED" };
+  }
 
   try {
     const res = await fetch(url, {
@@ -26,6 +33,9 @@ export async function postApi(path: string, body: any = {}) {
     const json = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        setSessionExpired();
+      }
       throw new Error(json.detail || json.message || "API_ERROR");
     }
 
@@ -43,6 +53,12 @@ export async function getApi(path: string) {
 
   const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
 
+  // 🛡️ Guard to prevent "burning" the API
+  if (isSessionExpired()) {
+    console.warn(`🛑 API Call Blocked (Session Expired): ${path}`);
+    return { error: "AUTH_EXPIRED" };
+  }
+
   try {
     const res = await fetch(url, {
       headers: {
@@ -53,6 +69,9 @@ export async function getApi(path: string) {
     const json = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        setSessionExpired();
+      }
       throw new Error(json.detail || json.message || "API_ERROR");
     }
 

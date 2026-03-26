@@ -1,8 +1,15 @@
 // [CODE: FRONTEND_SWR_FETCHER]
 // lib/swrFetcher.ts
 import { cacheManager, CACHE_TTL } from "./cacheManager";
+import { isSessionExpired, setSessionExpired } from "./session";
 
 export const fetcher = async (url: string) => {
+  // 🛡️ Guard to prevent "burning" the API
+  if (isSessionExpired()) {
+    console.warn(`🛑 SWR Fetch Blocked (Session Expired): ${url}`);
+    throw new Error("AUTH_EXPIRED");
+  }
+
   // ⭐ Try to get from localStorage cache first (for stable data)
   const cacheKey = new URL(url).pathname + new URL(url).search;
 
@@ -14,7 +21,7 @@ export const fetcher = async (url: string) => {
     }
   }
 
-  // Fetch from network (use standard HTTP caching, not no-cache)
+  // Fetch from network
   const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
 
   const res = await fetch(url, {
@@ -24,6 +31,9 @@ export const fetcher = async (url: string) => {
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      setSessionExpired();
+    }
     const err: any = new Error("API error");
     err.status = res.status;
     throw err;
@@ -47,9 +57,8 @@ export const fetcher = async (url: string) => {
 export const swrConfig = {
   revalidateOnFocus: false,
   revalidateOnReconnect: true,
-  dedupingInterval: 2000, // Don't fetch same URL within 2 seconds
-  focusThrottleInterval: 300000, // 5 minutes between window focus revalidates
+  dedupingInterval: 2000,
+  focusThrottleInterval: 300000,
   errorRetryCount: 2,
   errorRetryInterval: 3000,
 } as const;
-
