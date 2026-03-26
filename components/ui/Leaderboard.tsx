@@ -12,7 +12,7 @@ interface LeaderboardProps {
   onSheetOpenChange?: (open: boolean) => void;
 }
 
-export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false }: LeaderboardProps) {
+export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false, onSheetOpenChange }: LeaderboardProps) {
   const { t } = useLanguage();
   const tg_id = telegramUser?.id;
 
