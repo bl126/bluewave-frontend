@@ -28,7 +28,8 @@
         "connected": "Conectado",
         "notifying": "Notificando...",
         "notify_inactive_btn": "Notificar Inactivos",
-        "network_builder": "CONSTRUCTOR DE REDES",
+        "limit_reached": "Límite alcanzado",
+        "network_builder": "CONSTRUCTOR DE RED",
         "network_builder_desc": "COMPARTE ESTE CÓDIGO PARA CRECER TU RED HUMANA Y GANAR RECOMPENSAS EN $BWAVE",
         "get_link": "Obtener enlace",
         "connect_blu": "Conectar Blu",
@@ -89,6 +90,7 @@
         "error_story": "Error al cargar la misión de historia. Por favor, inténtalo de nuevo.",
         "syncing": "Sincronizando...",
         "synchronizing": "Sincronizando...",
+        "session_expired": "Sesión expirada. Por favor, reinicia la aplicación.",
         "no_missions": "No hay misiones sociales disponibles",
         "tabs": {
             "presence": "Presencia",
@@ -126,11 +128,6 @@
         "rank_3": "RANGO 3",
         "referrals_label": "REDES",
         "global_list": "Lista Global de Redes"
-    },
-    "menu": {
-        "whitepaper": "Libro Blanco v1.0",
-        "ecosystem_roles": "🏆 Roles del Ecosistema",
-        "presence_ledger": "BwaveScan"
     },
     "stats": {
         "back": "Volver",
@@ -205,7 +202,14 @@
         "open": "Abrir",
         "follow_channel": "Seguir Canal",
         "channel_desc": "Canal de distribución humana verificado por los nodos del protocolo.",
-        "bw_id_label": "ID BW"
+        "bw_id_label": "ID BW",
+        "new_posts_pill": "↑ Nuevos Posts",
+        "new_signal": "Nueva Señal",
+        "signal_placeholder": "¿Cuál es tu señal hoy...",
+        "post_error_channel": "Error al publicar. Asegúrate de tener un canal conectado.",
+        "post_error_network": "Error de red. Por favor, inténtalo de nuevo.",
+        "posting_btn": "Publicando...",
+        "post_btn": "Publicar"
     },
     "notifications": {
         "title": "Señales Recientes",
@@ -475,20 +479,50 @@
         "level_verified": "Humano Verificado",
         "default_desc": "Completa todos los criterios para desbloquear este nivel.",
         "default_benefit": "Estado superior desbloqueado."
+    },
+    "claim_boost_popup": {
+        "title": "Reclamando recompensa de presencia",
+        "calculating": "Calculando...",
+        "roles_boost": "Impulso de roles:",
+        "no_boost": "Sin impulso de roles activo.",
+        "no_boost_hint": "¡Gana roles para multiplicar los rendimientos!",
+        "collect": "Recoger recompensas"
+    },
+    "level_up_modal": {
+        "title": "¡Nivel superado!",
+        "reached": "Has alcanzado el nivel",
+        "default_desc": "Has desbloqueado un nuevo nivel de la economía de presencia. Tu fuerza de señal está creciendo.",
+        "continue": "Continuar presencia"
+    },
+    "streak_celebration": {
+        "title": "¡RACHA DESBLOQUEADA!",
+        "continuum": "DÍAS DE CONTINUIDAD",
+        "reward_granted": "RECOMPENSA CONCEDIDA",
+        "claim_continue": "Reclamar y Continuar",
+        "footer": "Mantén la ola en movimiento"
+    },
+    "role_celebration": {
+        "title": "Rol Desbloqueado",
+        "desc": "Has sido reconocido por tu impacto. Ahora eres un **{{role}}** dentro del Protocolo Bluewave.",
+        "yield_multiplier": "Multiplicador de Rendimiento",
+        "boost": "IMPULSO",
+        "collect": "Recoger Impulso",
+        "dismiss": "Descartar"
+    },
+    "verified_human_modal": {
+        "title": "Identidad Verificada",
+        "badge": "Humano Verificado",
+        "desc": "Tu presencia ha sido confirmada criptográficamente. Ahora eres reconocido como un **Humano Verificado** dentro del Protocolo Bluewave.",
+        "benefit_1": "Anillo de Humano Verificado Exclusivo",
+        "benefit_2": "Procesamiento de Señal de Red Prioritario",
+        "benefit_3": "Derechos de Gobernanza del Protocolo (Fase III)",
+        "acknowledge": "Reconocer Protocolo",
+        "close": "Cerrar"
+    },
+    "daily_ai_popup": {
+        "title": "Época Finalizada",
+        "desc": "Tu señal comunitaria de ayer ha sido verificada por la capa de inteligencia.",
+        "reward_generated": "Recompensa Generada",
+        "acknowledge": "Reconocer"
     }
-},
-"claim_boost_popup": {
-    "title": "Reclamando recompensa de presencia",
-    "calculating": "Calculando...",
-    "roles_boost": "Impulso de roles:",
-    "no_boost": "Sin impulso de roles activo.",
-    "no_boost_hint": "¡Gana roles para multiplicar los rendimientos!",
-    "collect": "Recoger recompensas"
-},
-"level_up_modal": {
-    "title": "¡Nivel superado!",
-    "reached": "Has alcanzado el nivel",
-    "default_desc": "Has desbloqueado un nuevo nivel de la economía de presencia. Tu fuerza de señal está creciendo.",
-    "continue": "Continuar presencia"
-}
 }

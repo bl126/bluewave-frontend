@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShieldCheck, Sparkles, UserCheck } from "lucide-react";
+import { ShieldCheck, Sparkles, UserCheck } from "lucide-react";
 import { useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface VerifiedHumanModalProps {
     isOpen: boolean;
@@ -10,6 +11,8 @@ interface VerifiedHumanModalProps {
 }
 
 export default function VerifiedHumanModal({ isOpen, onClose }: VerifiedHumanModalProps) {
+    const { t } = useLanguage();
+
     useEffect(() => {
         if (isOpen) {
             const tg = (window as any).Telegram?.WebApp;
@@ -65,24 +68,24 @@ export default function VerifiedHumanModal({ isOpen, onClose }: VerifiedHumanMod
                             </div>
 
                             <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">
-                                Identity Verified
+                                {t("verified_human_modal.title")}
                             </h2>
 
                             <div className="flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30">
                                 <ShieldCheck size={14} className="text-cyan-400" />
-                                <span className="text-[10px] font-black uppercase text-cyan-400 tracking-widest">Verified Human</span>
+                                <span className="text-[10px] font-black uppercase text-cyan-400 tracking-widest">{t("verified_human_modal.badge")}</span>
                             </div>
 
                             <p className="text-cyan-100/60 text-sm leading-relaxed mb-8">
-                                Your presence has been cryptographically confirmed. You are now recognized as a **Verified Human** within the Bluewave Protocol.
+                                {t("verified_human_modal.desc")}
                             </p>
 
                             {/* Benefits */}
                             <div className="w-full space-y-3 mb-8">
                                 {[
-                                    "Exclusive Verified Human Ring",
-                                    "Priority Network Signal Processing",
-                                    "Protocol Governance Rights (Phase III)"
+                                    t("verified_human_modal.benefit_1"),
+                                    t("verified_human_modal.benefit_2"),
+                                    t("verified_human_modal.benefit_3")
                                 ].map((text, i) => (
                                     <div key={i} className="flex items-center gap-3 text-left">
                                         <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
@@ -96,14 +99,14 @@ export default function VerifiedHumanModal({ isOpen, onClose }: VerifiedHumanMod
                                 onClick={onClose}
                                 className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-[0_4px_20px_rgba(6,182,212,0.3)]"
                             >
-                                Acknowledge Protocol
+                                {t("verified_human_modal.acknowledge")}
                             </button>
 
                             <button
                                 onClick={onClose}
                                 className="mt-4 text-[10px] font-black uppercase tracking-widest text-cyan-500/40 hover:text-cyan-500 transition-colors"
                             >
-                                Close
+                                {t("verified_human_modal.close")}
                             </button>
                         </div>
                     </motion.div>

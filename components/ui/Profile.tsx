@@ -225,7 +225,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     try {
       const data = await postApi(`/notify_inactive`, { tg_id: telegramId });
       if (data.blocked) {
-        setCooldownText("Limit Reached");
+        setCooldownText(t("profile.limit_reached"));
         setCooldown(5000);
       } else if (data.sent > 0 || data.sent === 0) {
         const cooldownMs = 4 * 60 * 60 * 1000;

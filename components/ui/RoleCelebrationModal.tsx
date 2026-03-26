@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ShieldCheck } from "lucide-react";
 import { useEffect } from "react";
 import { findRoleByName } from "@/lib/roles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RoleCelebrationModalProps {
     isOpen: boolean;
@@ -12,6 +13,7 @@ interface RoleCelebrationModalProps {
 }
 
 export default function RoleCelebrationModal({ isOpen, roleName, onClose }: RoleCelebrationModalProps) {
+    const { t } = useLanguage();
     const roleData = findRoleByName(roleName);
     const Icon = roleData?.icon || ShieldCheck;
 
@@ -72,16 +74,18 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                             </div>
 
                             <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">
-                                Role Unlocked
+                                {t("role_celebration.title")}
                             </h2>
 
                             <div className={`flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-black/40 border ${roleData.border}`}>
                                 <Icon size={14} className={roleData.text} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${roleData.text}`}>{roleData.name}</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${roleData.text}`}>
+                                    {t(`roles_list.${roleData.name}.name`) || roleData.name}
+                                </span>
                             </div>
 
                             <p className="text-cyan-100/60 text-sm leading-relaxed mb-8">
-                                You have been recognized for your impact. You are now a **{roleData.name}** within the Bluewave Protocol.
+                                {t("role_celebration.desc").replace("{{role}}", t(`roles_list.${roleData.name}.name`) || roleData.name)}
                             </p>
 
                             {/* Benefit / Boost */}
@@ -91,13 +95,15 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                                         <Icon size={20} className={roleData.text} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Yield Multiplier</p>
-                                        <p className={`text-lg font-black ${roleData.text} leading-none`}>{roleData.boost} BOOST</p>
+                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">{t("role_celebration.yield_multiplier")}</p>
+                                        <p className={`text-lg font-black ${roleData.text} leading-none`}>{roleData.boost} {t("role_celebration.boost")}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 text-left px-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                                    <span className="text-[11px] font-bold text-cyan-50/80 uppercase tracking-tight">{roleData.benefit}</span>
+                                    <span className="text-[11px] font-bold text-cyan-50/80 uppercase tracking-tight">
+                                        {t(`roles_list.${roleData.name}.benefit`) || roleData.benefit}
+                                    </span>
                                 </div>
                             </div>
 
@@ -106,14 +112,14 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                                 onClick={onClose}
                                 className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-[0_4px_20px_rgba(6,182,212,0.3)]"
                             >
-                                Collect Boost
+                                {t("role_celebration.collect")}
                             </button>
 
                             <button
                                 onClick={onClose}
                                 className="mt-4 text-[10px] font-black uppercase tracking-widest text-cyan-500/40 hover:text-cyan-500 transition-colors"
                             >
-                                Dismiss
+                                {t("role_celebration.dismiss")}
                             </button>
                         </div>
                     </motion.div>

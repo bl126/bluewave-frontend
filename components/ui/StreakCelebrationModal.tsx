@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Check, Share2, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StreakCelebrationModalProps {
     isOpen: boolean;
@@ -15,12 +16,12 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
     rewardAmount,
     onClose,
 }) => {
+    const { t } = useLanguage();
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setShowContent(true);
-            // Optional: Add haptic feedback here if available via Telegram WebApp SDK
             const tg = (window as any).Telegram?.WebApp;
             if (tg?.HapticFeedback) {
                 tg.HapticFeedback.notificationOccurred("success");
@@ -29,7 +30,6 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
             setShowContent(false);
         }
     }, [isOpen]);
-
 
     return (
         <AnimatePresence>
@@ -95,12 +95,12 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                                 className="space-y-2 mb-8"
                             >
                                 <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase italic">
-                                    STREAK UNLOCKED!
+                                    {t("streak_celebration.title")}
                                 </h2>
                                 <div className="flex items-center justify-center gap-2">
                                     <div className="h-px w-8 bg-cyan-900" />
                                     <span className="text-cyan-400 font-mono font-bold tracking-[0.3em] text-xs uppercase">
-                                        {streakDays} DAY CONTINUUM
+                                        {streakDays} {t("streak_celebration.continuum")}
                                     </span>
                                     <div className="h-px w-8 bg-cyan-900" />
                                 </div>
@@ -115,7 +115,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 <div className="text-left">
-                                    <p className="text-[10px] text-cyan-500 font-bold uppercase tracking-widest mb-1">REWARD GRANTED</p>
+                                    <p className="text-[10px] text-cyan-500 font-bold uppercase tracking-widest mb-1">{t("streak_celebration.reward_granted")}</p>
                                     <p className="text-2xl font-black text-cyan-100 tracking-tight">+{rewardAmount} $BWAVE</p>
                                 </div>
                                 <div className="p-2 rounded-full bg-cyan-400 text-black shadow-[0_0_15px_#22d3ee]">
@@ -129,13 +129,13 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                                     onClick={onClose}
                                     className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.4)]"
                                 >
-                                    Claim & Continue
+                                    {t("streak_celebration.claim_continue")}
                                 </button>
                             </div>
 
                             {/* Close Label */}
                             <p className="mt-6 text-[10px] text-cyan-900 font-bold uppercase tracking-widest">
-                                Keep the wave moving
+                                {t("streak_celebration.footer")}
                             </p>
                         </div>
 

@@ -92,8 +92,8 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     const interval = setInterval(async () => {
       if (!latestKnownPostId) return;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        try {
-          const res = await fetch(`${apiUrl}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0`);
+      try {
+        const res = await fetch(`${apiUrl}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0`);
         const data = await res.json();
         if (data && data.length > 0 && data[0]?.id !== latestKnownPostId) {
           setNewPostsAvailable(true);
@@ -275,7 +275,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 onClick={handleNewPostsPill}
                 className="px-4 py-1.5 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-[0_0_12px_#00e6ff60] active:scale-95 transition-all flex items-center gap-1.5"
               >
-                ↑ New Posts
+                {t("explore.new_posts_pill")}
               </button>
             </motion.div>
           )}
@@ -413,10 +413,10 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
       if (res?.success) {
         onPosted();
       } else {
-        setError(res?.detail || "Failed to post. Make sure you have a connected channel.");
+        setError(res?.detail || t("explore.post_error_channel"));
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(t("explore.post_error_network"));
     } finally {
       setPosting(false);
     }
@@ -436,7 +436,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-black uppercase tracking-widest text-white">New Signal</h3>
+          <h3 className="text-sm font-black uppercase tracking-widest text-white">{t("explore.new_signal")}</h3>
           <button onClick={onClose} className="text-white/40 hover:text-white transition-all p-1">
             <X size={18} />
           </button>
@@ -447,7 +447,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={500}
-          placeholder="What's your signal today..."
+          placeholder={t("explore.signal_placeholder")}
           className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder-white/20 resize-none outline-none focus:border-cyan-500/40 transition-colors min-h-[120px]"
         />
         <div className="text-right text-[9px] text-white/20 font-mono -mt-2">{content.length}/500</div>
@@ -498,7 +498,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
             ) : (
               <Send size={14} />
             )}
-            {posting ? "Posting..." : "Post"}
+            {posting ? t("explore.posting_btn") : t("explore.post_btn")}
           </button>
         </div>
       </motion.div>

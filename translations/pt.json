@@ -27,6 +27,7 @@
         "networks_label": "REDES",
         "connected": "Conectado",
         "notifying": "Notificando...",
+        "limit_reached": "Limite atingido",
         "notify_inactive_btn": "Notificar Inativos",
         "network_builder": "CONSTRUTOR DE REDE",
         "network_builder_desc": "COMPARTILHE ESTE CÓDIGO PARA CRESCER SUA REDE HUMANA E GANHAR RECOMPENSAS $BWAVE",
@@ -89,6 +90,7 @@
         "error_story": "Falha ao carregar a missão do story. Tente novamente.",
         "syncing": "Sincronizando...",
         "synchronizing": "Sincronizando...",
+        "session_expired": "Sessão expirada. Por favor, reinicie o aplicativo.",
         "no_missions": "Nenhuma missão social disponível",
         "tabs": {
             "presence": "Presença",
@@ -205,7 +207,14 @@
         "open": "Abrir",
         "follow_channel": "Seguir Canal",
         "channel_desc": "Canal de distribuição humano verificado pelos nós do protocolo Bluewave.",
-        "bw_id_label": "ID BW"
+        "bw_id_label": "ID BW",
+        "new_posts_pill": "↑ Novos Posts",
+        "new_signal": "Novo Sinal",
+        "signal_placeholder": "Qual é o seu sinal hoje...",
+        "post_error_channel": "Falha ao postar. Certifique-se de ter um canal conectado.",
+        "post_error_network": "Erro de rede. Por favor, tente novamente.",
+        "posting_btn": "Postando...",
+        "post_btn": "Postar"
     },
     "notifications": {
         "title": "Sinais Recentes",
@@ -475,20 +484,50 @@
         "level_verified": "Humano Verificado",
         "default_desc": "Conclua todos os critérios para desbloquear este nível.",
         "default_benefit": "Status superior desbloqueado."
+    },
+    "claim_boost_popup": {
+        "title": "Reivindicando Recompensa de Presença",
+        "calculating": "Calculando...",
+        "roles_boost": "Impulso de Papéis:",
+        "no_boost": "Sem impulso de papéis ativo.",
+        "no_boost_hint": "Ganhe papéis para multiplicar os rendimentos!",
+        "collect": "Coletar Recompensa"
+    },
+    "level_up_modal": {
+        "title": "Subiu de Nível!",
+        "reached": "Você atingiu o Nível",
+        "default_desc": "Você desbloqueou um novo nível na economia de presença. Sua força de sinal está crescendo.",
+        "continue": "Continuar Presença"
+    },
+    "streak_celebration": {
+        "title": "SEQUÊNCIA DESBLOQUEADA!",
+        "continuum": "DIAS DE CONTINUIDADE",
+        "reward_granted": "RECOMPENSA CONCEDIDA",
+        "claim_continue": "Reivindicar e Continuar",
+        "footer": "Mantenha a onda em movimento"
+    },
+    "role_celebration": {
+        "title": "Papel Desbloqueado",
+        "desc": "Você foi reconhecido pelo seu impacto. Agora você é um **{{role}}** dentro do Protocolo Bluewave.",
+        "yield_multiplier": "Multiplicador de Rendimento",
+        "boost": "IMPULSO",
+        "collect": "Coletar Impulso",
+        "dismiss": "Descartar"
+    },
+    "verified_human_modal": {
+        "title": "Identidade Verificada",
+        "badge": "Humano Verificado",
+        "desc": "Sua presença foi confirmada criptograficamente. Você agora é reconhecido como um **Humano Verificado** dentro do Protocolo Bluewave.",
+        "benefit_1": "Anel de Humano Verificado Exclusivo",
+        "benefit_2": "Processamento de Sinal de Rede Prioritário",
+        "benefit_3": "Direitos de Governança do Protocolo (Fase III)",
+        "acknowledge": "Reconhecer Protocolo",
+        "close": "Fechar"
+    },
+    "daily_ai_popup": {
+        "title": "Época Finalizada",
+        "desc": "Seu sinal comunitário de ontem foi verificado pela camada de inteligência.",
+        "reward_generated": "Recompensa Gerada",
+        "acknowledge": "Reconhecer"
     }
-},
-"claim_boost_popup": {
-    "title": "Reivindicando Recompensa de Presença",
-    "calculating": "Calculando...",
-    "roles_boost": "Impulso de Papéis:",
-    "no_boost": "Sem impulso de papéis ativo.",
-    "no_boost_hint": "Ganhe papéis para multiplicar os rendimentos!",
-    "collect": "Coletar Recompensa"
-},
-"level_up_modal": {
-    "title": "Subiu de Nível!",
-    "reached": "Você atingiu o Nível",
-    "default_desc": "Você desbloqueou um novo nível na economia de presença. Sua força de sinal está crescendo.",
-    "continue": "Continuar Presença"
-}
 }

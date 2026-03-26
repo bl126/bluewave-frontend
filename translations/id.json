@@ -28,6 +28,7 @@
         "connected": "Terhubung",
         "notifying": "Memberitahu...",
         "notify_inactive_btn": "Beritahu Yang Tidak Aktif",
+        "limit_reached": "Batas Tercapai",
         "network_builder": "PEMBANGUN JARINGAN",
         "network_builder_desc": "BAGIKAN KODE INI UNTUK MEMPERBESAR JARINGAN MANUSIA ANDA DAN MENDAPATKAN HADIAH $BWAVE",
         "get_link": "Dapatkan Tautan",
@@ -89,7 +90,8 @@
         "error_story": "Gagal memuat cerita. Silakan coba lagi.",
         "syncing": "Sinkronisasi...",
         "synchronizing": "Sinkronisasi...",
-        "no_missions": "Tidak ada misi sosial",
+        "session_expired": "Sesi berakhir. Silakan restart aplikasi.",
+        "no_missions": "Tidak ada misi sosial yang tersedia",
         "tabs": {
             "presence": "Kehadiran",
             "social": "Sosial",
@@ -126,6 +128,30 @@
         "rank_3": "PERINGKAT 3",
         "referrals_label": "JARINGAN",
         "global_list": "Daftar Jaringan Global"
+    },
+    "explore": {
+        "title": "Jelajah",
+        "beta_phase": "Fase Beta • Segera Hadir",
+        "beta_desc": "Saluran ini eksklusif untuk admin selama kalibrasi.",
+        "for_you": "Untukmu",
+        "following": "Mengikuti",
+        "hydrating": "Memuat...",
+        "no_signals": "Belum ada sinyal",
+        "no_signals_desc": "Masih kosong. Sambungkan saluran Anda.",
+        "acknowledge": "Akui",
+        "acknowledged": "Diakui",
+        "not_interested": "Tidak tertarik",
+        "open": "Buka",
+        "follow_channel": "Ikuti Saluran",
+        "channel_desc": "Saluran distribusi terverifikasi.",
+        "bw_id_label": "ID BW",
+        "new_posts_pill": "↑ Postingan Baru",
+        "new_signal": "Sinyal Baru",
+        "signal_placeholder": "Apa sinyal Anda hari ini...",
+        "post_error_channel": "Gagal memposting. Pastikan Anda memiliki saluran yang terhubung.",
+        "post_error_network": "Kesalahan jaringan. Silakan coba lagi.",
+        "posting_btn": "Memposting...",
+        "post_btn": "Posting"
     },
     "menu": {
         "whitepaper": "Buku Putih v1.0",
@@ -189,23 +215,6 @@
         "error_restart": "Ada yang salah. Silakan mulai ulang.",
         "contact_support": "Hubungi Dukungan",
         "lost_account": "Kehilangan akun Anda?"
-    },
-    "explore": {
-        "title": "Jelajah",
-        "beta_phase": "Fase Beta • Segera Hadir",
-        "beta_desc": "Saluran ini eksklusif untuk admin selama kalibrasi.",
-        "for_you": "Untukmu",
-        "following": "Mengikuti",
-        "hydrating": "Memuat...",
-        "no_signals": "Belum ada sinyal",
-        "no_signals_desc": "Masih kosong. Sambungkan saluran Anda.",
-        "acknowledge": "Akui",
-        "acknowledged": "Diakui",
-        "not_interested": "Tidak tertarik",
-        "open": "Buka",
-        "follow_channel": "Ikuti Saluran",
-        "channel_desc": "Saluran distribusi terverifikasi.",
-        "bw_id_label": "ID BW"
     },
     "notifications": {
         "title": "Sinyal Terbaru",
@@ -475,20 +484,50 @@
         "level_verified": "Manusia Terverifikasi",
         "default_desc": "Lengkapi semua kriteria untuk membuka level ini.",
         "default_benefit": "Status lebih tinggi terbuka."
+    },
+    "claim_boost_popup": {
+        "title": "Mengklaim Hadiah Kehadiran",
+        "calculating": "Menghitung...",
+        "roles_boost": "Peningkatan Peran:",
+        "no_boost": "Tidak ada peningkatan peran aktif.",
+        "no_boost_hint": "Dapatkan peran untuk melipatgandakan hasil!",
+        "collect": "Kumpulkan Hadiah"
+    },
+    "level_up_modal": {
+        "title": "Naik Level!",
+        "reached": "Anda mencapai Level",
+        "default_desc": "Anda telah membuka tingkatan baru dalam ekonomi kehadiran. Kekuatan sinyal Anda meningkat.",
+        "continue": "Lanjutkan Kehadiran"
+    },
+    "streak_celebration": {
+        "title": "STREAK TERBUKA!",
+        "continuum": "HARI KONTINUUM",
+        "reward_granted": "HADIAH DIBERIKAN",
+        "claim_continue": "Klaim & Lanjutkan",
+        "footer": "Terus gerakkan gelombang"
+    },
+    "role_celebration": {
+        "title": "Peran Terbuka",
+        "desc": "Anda telah diakui atas dampak Anda. Anda sekarang adalah **{{role}}** dalam Protokol Bluewave.",
+        "yield_multiplier": "Pengganda Hasil",
+        "boost": "PENINGKATAN",
+        "collect": "Kumpulkan Peningkatan",
+        "dismiss": "Abaikan"
+    },
+    "verified_human_modal": {
+        "title": "Identitas Terverifikasi",
+        "badge": "Manusia Terverifikasi",
+        "desc": "Kehadiran Anda telah dikonfirmasi secara kriptografis. Anda sekarang diakui sebagai **Manusia Terverifikasi** dalam Protokol Bluewave.",
+        "benefit_1": "Cincin Manusia Terverifikasi Eksklusif",
+        "benefit_2": "Pemrosesan Sinyal Jaringan Prioritas",
+        "benefit_3": "Hak Tata Kelola Protokol (Fase III)",
+        "acknowledge": "Akui Protokol",
+        "close": "Tutup"
+    },
+    "daily_ai_popup": {
+        "title": "Zaman Selesai",
+        "desc": "Sinyal komunitas Anda dari kemarin telah diverifikasi oleh lapisan intelijen.",
+        "reward_generated": "Hadiah Dihasilkan",
+        "acknowledge": "Akui"
     }
-},
-"claim_boost_popup": {
-    "title": "Mengklaim Hadiah Kehadiran",
-    "calculating": "Menghitung...",
-    "roles_boost": "Peningkatan Peran:",
-    "no_boost": "Tidak ada peningkatan peran aktif.",
-    "no_boost_hint": "Dapatkan peran untuk melipatgandakan hasil!",
-    "collect": "Kumpulkan Hadiah"
-},
-"level_up_modal": {
-    "title": "Naik Level!",
-    "reached": "Anda mencapai Level",
-    "default_desc": "Anda telah membuka tingkatan baru dalam ekonomi kehadiran. Kekuatan sinyal Anda meningkat.",
-    "continue": "Lanjutkan Kehadiran"
-}
 }

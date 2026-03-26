@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DailyAIPopupProps {
     pointsAwarded: number;
@@ -10,6 +10,7 @@ interface DailyAIPopupProps {
 }
 
 export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupProps) {
+    const { t } = useLanguage();
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -68,7 +69,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 transition={{ delay: 0.3 }}
                                 className="text-2xl font-bold text-white mb-2 tracking-tight"
                             >
-                                Epoch Finalized
+                                {t("daily_ai_popup.title")}
                             </motion.h2>
 
                             <motion.p
@@ -77,7 +78,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 transition={{ delay: 0.4 }}
                                 className="text-sm text-gray-400 mb-6 leading-relaxed"
                             >
-                                Your community signal from yesterday has been verified by the intelligence layer.
+                                {t("daily_ai_popup.desc")}
                             </motion.p>
 
                             <motion.div
@@ -90,7 +91,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent pointer-events-none" />
 
                                 <span className="text-xs font-semibold text-cyan-500 uppercase tracking-[0.2em] mb-2 pointer-events-auto">
-                                    Reward Generated
+                                    {t("daily_ai_popup.reward_generated")}
                                 </span>
 
                                 <div className="flex items-center justify-center gap-2">
@@ -113,7 +114,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-cyan-600 opacity-80" />
                                 <div className="relative flex items-center justify-center rounded-xl bg-black px-4 py-3 transition-colors group-hover:bg-cyan-950/50">
                                     <span className="font-bold text-cyan-400 transition-colors group-hover:text-cyan-300">
-                                        Acknowledge
+                                        {t("daily_ai_popup.acknowledge")}
                                     </span>
                                 </div>
                             </motion.button>

@@ -26,9 +26,9 @@
         "streak_label": "连续天数",
         "networks_label": "网络数",
         "connected": "已连接",
-        "notifying": "通知中...",
-        "notify_inactive_btn": "通知未活跃",
-        "bitwork_builder": "网络建设者",
+        "notify_inactive_btn": "通知不活跃成员",
+        "limit_reached": "已达上限",
+        "network_builder": "网络建设者",
         "network_builder_desc": "分享此代码来扩大您的人际网络并赚取 $BWAVE 奖励",
         "get_link": "获取链接",
         "connect_blu": "连接 Blu",
@@ -89,6 +89,7 @@
         "error_story": "加载快拍任务失败。请重试。",
         "syncing": "同步中...",
         "synchronizing": "同步中...",
+        "session_expired": "会话已过期。请重启应用。",
         "no_missions": "暂无社交任务",
         "tabs": {
             "presence": "Presence",
@@ -205,7 +206,14 @@
         "open": "打开",
         "follow_channel": "关注频道",
         "channel_desc": "经 Bluewave 协议节点验证的人工分发频道播报。",
-        "bw_id_label": "BW ID"
+        "bw_id_label": "BW ID",
+        "new_posts_pill": "↑ 新帖子",
+        "new_signal": "新信号",
+        "signal_placeholder": "你今天的信号是什么...",
+        "post_error_channel": "发布失败。请确保您已连接频道。",
+        "post_error_network": "网络错误。请重试。",
+        "posting_btn": "发布中...",
+        "post_btn": "发布"
     },
     "notifications": {
         "title": "最近信号",
@@ -489,5 +497,36 @@
         "reached": "你达到了等级",
         "default_desc": "你开启了存在经济的新阶段。你的信号强度正在增长。",
         "continue": "继续参与"
+    },
+    "streak_celebration": {
+        "title": "连续参与奖励解锁！",
+        "continuum": "天持续记录",
+        "reward_granted": "奖赏已发放",
+        "claim_continue": "领取并继续",
+        "footer": "保持波动"
+    },
+    "role_celebration": {
+        "title": "角色已解锁",
+        "desc": "你的影响力已获得认可。你现在是 Bluewave 协议中的 **{{role}}**。",
+        "yield_multiplier": "收益加成",
+        "boost": "提升",
+        "collect": "领取加成",
+        "dismiss": "忽略"
+    },
+    "verified_human_modal": {
+        "title": "身份已验证",
+        "badge": "经验证的人类",
+        "desc": "你的存在已通过加密方式确认。你现在被认定为 Bluewave 协议中的 **经验证的人类**。",
+        "benefit_1": "专属经验证人类光环",
+        "benefit_2": "优先网络信号处理",
+        "benefit_3": "协议治理权（第三阶段）",
+        "acknowledge": "确认协议",
+        "close": "关闭"
+    },
+    "daily_ai_popup": {
+        "title": "纪元已结算",
+        "desc": "你昨天的社区信号已通过智能层验证。",
+        "reward_generated": "奖励已生成",
+        "acknowledge": "确认"
     }
 }

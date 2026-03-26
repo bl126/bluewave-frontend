@@ -612,7 +612,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
               {error && (
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-center font-bold">
-                  {error === "AUTH_REQUIRED" ? "Session expired. Please restart the app." : error}
+                  {error === "AUTH_REQUIRED" ? t("missions.session_expired") : error}
                 </div>
               )}
 

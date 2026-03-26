@@ -28,6 +28,7 @@
     "connected": "Connected",
     "notifying": "Notifying...",
     "notify_inactive_btn": "Notify Inactive",
+    "limit_reached": "Limit Reached",
     "network_builder": "NETWORK BUILDER",
     "network_builder_desc": "SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS",
     "get_link": "Get link",
@@ -89,6 +90,7 @@
     "error_story": "Failed to load story mission. Please try again.",
     "syncing": "Syncing...",
     "synchronizing": "Synchronizing...",
+    "session_expired": "Session expired. Please restart the app.",
     "no_missions": "No social missions available",
     "tabs": {
       "presence": "Presence",
@@ -205,7 +207,14 @@
     "open": "Open",
     "follow_channel": "Follow Channel",
     "channel_desc": "Verified human distribution channel broadcast by Bluewave protocol nodes.",
-    "bw_id_label": "BW ID"
+    "bw_id_label": "BW ID",
+    "new_posts_pill": "↑ New Posts",
+    "new_signal": "New Signal",
+    "signal_placeholder": "What's your signal today...",
+    "post_error_channel": "Failed to post. Make sure you have a connected channel.",
+    "post_error_network": "Network error. Please try again.",
+    "posting_btn": "Posting...",
+    "post_btn": "Post"
   },
   "notifications": {
     "title": "Recent Signals",
@@ -489,5 +498,36 @@
     "reached": "You reached Level",
     "default_desc": "You've unlocked a new tier of the presence economy. Your signal strength is growing.",
     "continue": "Continue Presence"
+  },
+  "streak_celebration": {
+    "title": "STREAK UNLOCKED!",
+    "continuum": "DAY CONTINUUM",
+    "reward_granted": "REWARD GRANTED",
+    "claim_continue": "Claim & Continue",
+    "footer": "Keep the wave moving"
+  },
+  "role_celebration": {
+    "title": "Role Unlocked",
+    "desc": "You have been recognized for your impact. You are now a **{{role}}** within the Bluewave Protocol.",
+    "yield_multiplier": "Yield Multiplier",
+    "boost": "BOOST",
+    "collect": "Collect Boost",
+    "dismiss": "Dismiss"
+  },
+  "verified_human_modal": {
+    "title": "Identity Verified",
+    "badge": "Verified Human",
+    "desc": "Your presence has been cryptographically confirmed. You are now recognized as a **Verified Human** within the Bluewave Protocol.",
+    "benefit_1": "Exclusive Verified Human Ring",
+    "benefit_2": "Priority Network Signal Processing",
+    "benefit_3": "Protocol Governance Rights (Phase III)",
+    "acknowledge": "Acknowledge Protocol",
+    "close": "Close"
+  },
+  "daily_ai_popup": {
+    "title": "Epoch Finalized",
+    "desc": "Your community signal from yesterday has been verified by the intelligence layer.",
+    "reward_generated": "Reward Generated",
+    "acknowledge": "Acknowledge"
   }
 }
