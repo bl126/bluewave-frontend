@@ -38,6 +38,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const feedTopRef = useRef<HTMLDivElement>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Scroll hide/show state
   const [showChrome, setShowChrome] = useState(true);
@@ -148,6 +149,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
       }
     }
+    setIsDropdownOpen(false);
+  };
+
+  const handleSwitcherSelect = (type: "notifications" | "leaderboard") => {
+    setThirdTabType(type);
+    setActiveTab(type);
+    setIsDropdownOpen(false);
+    if (type === "notifications" && telegramUser?.id) {
+      postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
+    }
   };
 
   if (!isOpen) return null;
@@ -188,7 +199,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className="fixed inset-0 z-[120] bg-black flex flex-col overflow-hidden text-cyan-200"
+      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${isPostModalOpen ? "z-[210]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -204,7 +215,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         className="fixed top-20 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
       >
         <div className="flex items-center justify-between px-5 pt-2">
-          {/* Tabs */}
+          {/* Tabs (Left) */}
           <div className="flex gap-10 items-center">
             {(["foryou", "following"] as const).map((tab) => (
               <button
@@ -221,45 +232,65 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 )}
               </button>
             ))}
-
-            {/* Switchable 3rd Tab Icon-based */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={handleThirdTabClick}
-                className={`relative pb-3 flex flex-col items-center gap-0.5 transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-cyan-400" : "text-white/30"}`}
-              >
-                {thirdTabType === "notifications" ? (
-                  <div className="relative">
-                    <Bell size={18} />
-                    {unreadCount > 0 && (
-                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
-                        {unreadCount > 9 ? "!" : unreadCount}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <BarChart2 size={18} />
-                )}
-
-                <ChevronDown size={10} className="opacity-40" />
-
-                {(activeTab === "notifications" || activeTab === "leaderboard") && (
-                  <motion.div
-                    layoutId="exploreTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
-                  />
-                )}
-              </button>
-            </div>
           </div>
 
-          {/* Right toggle simplified */}
-          <div className="pb-3 pr-1">
-            <Rocket size={14} className="text-cyan-500/20" />
+          {/* Switcher (Right) */}
+          <div className="relative pb-3">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className={`flex flex-col items-center group transition-all ${(activeTab === "notifications" || activeTab === "leaderboard") ? "text-cyan-400" : "text-white/30"}`}
+            >
+              <div className="relative">
+                {thirdTabType === "notifications" ? <Bell size={18} /> : <BarChart2 size={18} />}
+                {thirdTabType === "notifications" && unreadCount > 0 && (
+                  <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
+                    {unreadCount > 9 ? "!" : unreadCount}
+                  </div>
+                )}
+              </div>
+              <ChevronDown size={10} className={`mt-0.5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+
+              {(activeTab === "notifications" || activeTab === "leaderboard") && (
+                <motion.div
+                  layoutId="exploreTabUnderline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
+                />
+              )}
+            </button>
+
+            {/* Vertical Dropdown */}
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                  className="absolute right-0 top-full mt-1 bg-zinc-950 border border-white/10 rounded-2xl p-1.5 z-[140] min-w-[44px] shadow-2xl flex flex-col items-center"
+                >
+                  <button
+                    onClick={() => handleSwitcherSelect(thirdTabType === "notifications" ? "leaderboard" : "notifications")}
+                    className="p-2.5 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all"
+                  >
+                    {thirdTabType === "notifications" ? (
+                      <BarChart2 size={18} />
+                    ) : (
+                      <div className="relative">
+                        <Bell size={18} />
+                        {unreadCount > 0 && (
+                          <div className="absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-cyan-500 rounded-full flex items-center justify-center text-[6px] text-black font-black">
+                            {unreadCount}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* New Posts Pill — appears below the tab bar */}
+        {/* New Posts Pill */}
         <AnimatePresence>
           {newPostsAvailable && (
             <motion.div
@@ -380,7 +411,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
-    </motion.div>
+    </motion.div >
   );
 }
 
