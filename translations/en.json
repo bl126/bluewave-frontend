@@ -223,7 +223,8 @@
       "following": "Following",
       "notifications": "Notifications",
       "leaderboard": "Leaderboard"
-    }
+    },
+    "connect_prompt": "Connect Blu Agent to your channel from the profile"
   },
   "notifications": {
     "title": "Recent Signals",

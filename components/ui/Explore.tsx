@@ -62,6 +62,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // Status Popups & Background Action
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPostingBackground, setIsPostingBackground] = useState(false);
+  const [connectPrompt, setConnectPrompt] = useState(false);
+
+  // Fetch Current User (for channel connection status)
+  const { data: swrUser } = useApi(isOpen && telegramUser?.id ? `/user/${telegramUser.id}` : null);
+  const isConnected = !!swrUser?.telegram_channel;
 
   // Pull to refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -403,8 +408,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             exit={{ scale: 0, opacity: 0, y: 20 }}
             transition={{ duration: 0.12, ease: "easeInOut" }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => setIsPostModalOpen(true)}
-            className="fixed right-5 bottom-28 w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-black shadow-[0_0_10px_rgba(6,182,212,0.3)] z-[160] border-4 border-black/20 overflow-hidden group"
+            onClick={() => {
+              if (swrUser && !isConnected) {
+                setConnectPrompt(true);
+                setTimeout(() => setConnectPrompt(false), 3000);
+              } else {
+                setIsPostModalOpen(true);
+              }
+            }}
+            className={`fixed right-5 bottom-28 w-12 h-12 ${isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none'} rounded-full flex items-center justify-center z-[160] border-4 border-black/20 overflow-hidden group`}
           >
             <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
             <Plus size={22} strokeWidth={3} />
@@ -449,6 +461,23 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               <Rocket size={12} className="animate-pulse" />
             </div>
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">{successMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Connect Prompt Popup ─── */}
+      <AnimatePresence>
+        {connectPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-cyan-950/90 backdrop-blur-md text-cyan-200 px-4 py-3 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(0,230,255,0.2)] border border-cyan-500/30 rounded-[16px] w-[85%] max-w-[320px]"
+          >
+            <div className="w-6 h-6 bg-cyan-500/10 rounded-full flex items-center justify-center shrink-0 border border-cyan-500/20">
+              <span className="text-[10px]">🔒</span>
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-[0.1em] leading-snug">{t("explore.connect_prompt")}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -695,9 +724,12 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
     }
 
     const twa = (window as any).Telegram?.WebApp;
-    if (twa?.openLink) twa.openLink(link, { try_instant_view: true });
-    else if (twa?.openTelegramLink) twa.openTelegramLink(link);
-    else window.open(link, "_blank");
+    if (twa?.openTelegramLink) {
+      // openTelegramLink specifically handles t.me natively, allowing re-clicks
+      twa.openTelegramLink(link);
+    } else {
+      window.open(link, "_blank");
+    }
   };
 
   const timeAgo = (dateStr: string) => {
@@ -892,28 +924,31 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
   const { t } = useLanguage();
 
   const getIcon = (type: string) => {
+    if (type.startsWith("verified_acknowledgment_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <ShieldCheck size={18} className="text-cyan-400" />;
-      case "verified_acknowledgment_milestone": return <UserCheck size={18} className="text-cyan-400" />;
+      case "new_follower": return <UserCheck size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
   };
 
   const getTitle = (n: any) => {
+    if (n.type.startsWith("verified_acknowledgment_milestone")) return t("notifications.verified_milestone_title");
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
-    if (n.type === "verified_acknowledgment_milestone") return t("notifications.verified_milestone_title");
+    if (n.type === "new_follower") return "New Verified Distributor";
     return t("notifications.notification_type");
   };
 
   const getMessage = (n: any) => {
-    if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
-    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
-    if (n.type === "verified_acknowledgment_milestone") {
-      const count = n.action_data?.count || 1;
+    if (n.type.startsWith("verified_acknowledgment_milestone")) {
+      const count = n.type.split("_").pop() || "1";
       return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
     }
+    if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
+    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
+    if (n.type === "new_follower") return "A Verified Human has started distributing your signals";
     return t("notifications.update_msg");
   };
 

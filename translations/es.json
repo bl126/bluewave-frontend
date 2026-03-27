@@ -1,547 +1,548 @@
 {
-    "profile": {
-        "title": "Perfil",
-        "streak": "Racha",
-        "level": "Nivel",
-        "total_networks": "Redes Totales",
-        "network_earnings": "Ganancias de Red",
-        "claim": "Reclamar",
-        "claiming": "Reclamando...",
-        "done": "Hecho",
-        "notify_inactive": "Notificar Red Inactiva",
-        "wait": "Espera",
-        "roles": "Roles",
-        "no_roles": "Aún no hay roles asignados",
-        "connect_wallet": "CONECTAR BILLETERA TON",
-        "wallet_connected": "BILLETERA TON CONECTADA",
-        "badge_unlocked": "🔥 ¡Insignia de Racha de 3 Días Desbloqueada!",
-        "referral_link": "Enlace de Referencia",
-        "copy": "Copiar",
-        "copied": "Copiado",
-        "joined": "Unido",
-        "loading_protocol": "Cargando Protocolo...",
-        "bio": "Bio",
-        "drops": "Tokens",
-        "level_label": "NIVEL",
-        "streak_label": "RACHA",
-        "networks_label": "REDES",
-        "connected": "Conectado",
-        "notifying": "Notificando...",
-        "notify_inactive_btn": "Notificar Inactivos",
-        "limit_reached": "Límite alcanzado",
-        "network_builder": "CONSTRUCTOR DE RED",
-        "network_builder_desc": "COMPARTE ESTE CÓDIGO PARA CRECER TU RED HUMANA Y GANAR RECOMPENSAS EN $BWAVE",
-        "get_link": "Obtener enlace",
-        "connect_blu": "Conectar Blu",
-        "joined_at": "UNIDO",
-        "protocol_active": "PROTOCOLO ACTIVO",
-        "no_roles_unlocked": "Aún no se han desbloqueado roles",
-        "protocol_drops": "Entregas del Protocolo",
-        "locked": "Bloqueado",
-        "drops_desc": "Entregas exclusivas de tokens para participantes constantes. Mantén alta tu puntuación de señal para calificar.",
-        "unlocked": "Desbloqueado"
+  "profile": {
+    "title": "Perfil",
+    "streak": "Racha",
+    "level": "Nivel",
+    "total_networks": "Redes Totales",
+    "network_earnings": "Ganancias de Red",
+    "claim": "Reclamar",
+    "claiming": "Reclamando...",
+    "done": "Hecho",
+    "notify_inactive": "Notificar Red Inactiva",
+    "wait": "Espera",
+    "roles": "Roles",
+    "no_roles": "Aún no hay roles asignados",
+    "connect_wallet": "CONECTAR BILLETERA TON",
+    "wallet_connected": "BILLETERA TON CONECTADA",
+    "badge_unlocked": "🔥 ¡Insignia de Racha de 3 Días Desbloqueada!",
+    "referral_link": "Enlace de Referencia",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "joined": "Unido",
+    "loading_protocol": "Cargando Protocolo...",
+    "bio": "Bio",
+    "drops": "Tokens",
+    "level_label": "NIVEL",
+    "streak_label": "RACHA",
+    "networks_label": "REDES",
+    "connected": "Conectado",
+    "notifying": "Notificando...",
+    "notify_inactive_btn": "Notificar Inactivos",
+    "limit_reached": "Límite alcanzado",
+    "network_builder": "CONSTRUCTOR DE RED",
+    "network_builder_desc": "COMPARTE ESTE CÓDIGO PARA CRECER TU RED HUMANA Y GANAR RECOMPENSAS EN $BWAVE",
+    "get_link": "Obtener enlace",
+    "connect_blu": "Conectar Blu",
+    "joined_at": "UNIDO",
+    "protocol_active": "PROTOCOLO ACTIVO",
+    "no_roles_unlocked": "Aún no se han desbloqueado roles",
+    "protocol_drops": "Entregas del Protocolo",
+    "locked": "Bloqueado",
+    "drops_desc": "Entregas exclusivas de tokens para participantes constantes. Mantén alta tu puntuación de señal para calificar.",
+    "unlocked": "Desbloqueado"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "change_name": "Cambiar Nombre",
+    "change_name_desc": "Actualiza tu nombre de visualización",
+    "language": "Idioma",
+    "language_desc": "Elige tu idioma preferido"
+  },
+  "language": {
+    "title": "Elegir Idioma"
+  },
+  "change_name": {
+    "title": "Cambiar Nombre",
+    "label": "Nombre de Visualización",
+    "placeholder": "Ingresa tu nombre",
+    "characters": "caracteres",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando..."
+  },
+  "nav": {
+    "home": "Inicio",
+    "missions": "Misiones",
+    "explore": "Explorar",
+    "market": "Mercado",
+    "profile": "Perfil"
+  },
+  "balance": {
+    "loading": "Cargando...",
+    "connecting": "Conectando..."
+  },
+  "missions": {
+    "title": "Centro de Misiones",
+    "open": "Abrir",
+    "waiting": "Esperando...",
+    "claim": "Reclamar",
+    "claiming": "Reclamando...",
+    "done": "Hecho",
+    "loading": "Cargando...",
+    "error_load": "No se pudieron cargar las misiones.",
+    "popup_join": "Únete al grupo/canal requerido para reclamar.",
+    "popup_invite": "Invita a 2 personas hoy para desbloquear esta recompensa.",
+    "popup_open_first": "Presiona ABRIR primero antes de reclamar esta misión.",
+    "popup_complete": "Por favor completa la misión correctamente antes de reclamar.",
+    "share_text": "Esta no es una moneda meme\nEsto es una Economía de Presencia.\n#BWAVE #TON #Bluewave",
+    "share_button": "Únete a Bluewave",
+    "story_hint": "Telegram rechazó compartir de forma nativa. ¡Guarda la imagen y publícala manualmente!",
+    "error_story": "Error al cargar la misión de historia. Por favor, inténtalo de nuevo.",
+    "syncing": "Sincronizando...",
+    "synchronizing": "Sincronizando...",
+    "session_expired": "Sesión expirada. Por favor, reinicia la aplicación.",
+    "no_missions": "No hay misiones sociales disponibles",
+    "tabs": {
+      "presence": "Presencia",
+      "social": "Social",
+      "quest": "Misión",
+      "earn": "Ganar"
     },
-    "settings": {
-        "title": "Ajustes",
-        "change_name": "Cambiar Nombre",
-        "change_name_desc": "Actualiza tu nombre de visualización",
-        "language": "Idioma",
-        "language_desc": "Elige tu idioma preferido"
+    "quests": {
+      "title": "Misiones Especiales",
+      "verified_human": "Humano Verificado",
+      "verified_only": "Solo Humanos Verificados",
+      "empty": "No hay misiones especiales disponibles en este momento. ¡Vuelve pronto para misiones de alto valor!",
+      "desc": "Completa misiones de alto valor para ganar más puntos y recompensas de Entropía. Las misiones son exclusivamente para Humanos Verificados.",
+      "lock_hint": "Pasa la verificación humana para desbloquear."
     },
-    "language": {
-        "title": "Elegir Idioma"
-    },
-    "change_name": {
-        "title": "Cambiar Nombre",
-        "label": "Nombre de Visualización",
-        "placeholder": "Ingresa tu nombre",
-        "characters": "caracteres",
-        "cancel": "Cancelar",
-        "save": "Guardar",
-        "saving": "Guardando..."
-    },
-    "nav": {
-        "home": "Inicio",
-        "missions": "Misiones",
-        "explore": "Explorar",
-        "market": "Mercado",
-        "profile": "Perfil"
-    },
-    "balance": {
-        "loading": "Cargando...",
-        "connecting": "Conectando..."
-    },
-    "missions": {
-        "title": "Centro de Misiones",
-        "open": "Abrir",
-        "waiting": "Esperando...",
-        "claim": "Reclamar",
-        "claiming": "Reclamando...",
-        "done": "Hecho",
-        "loading": "Cargando...",
-        "error_load": "No se pudieron cargar las misiones.",
-        "popup_join": "Únete al grupo/canal requerido para reclamar.",
-        "popup_invite": "Invita a 2 personas hoy para desbloquear esta recompensa.",
-        "popup_open_first": "Presiona ABRIR primero antes de reclamar esta misión.",
-        "popup_complete": "Por favor completa la misión correctamente antes de reclamar.",
-        "share_text": "Esta no es una moneda meme\nEsto es una Economía de Presencia.\n#BWAVE #TON #Bluewave",
-        "share_button": "Únete a Bluewave",
-        "story_hint": "Telegram rechazó compartir de forma nativa. ¡Guarda la imagen y publícala manualmente!",
-        "error_story": "Error al cargar la misión de historia. Por favor, inténtalo de nuevo.",
-        "syncing": "Sincronizando...",
-        "synchronizing": "Sincronizando...",
-        "session_expired": "Sesión expirada. Por favor, reinicia la aplicación.",
-        "no_missions": "No hay misiones sociales disponibles",
-        "tabs": {
-            "presence": "Presencia",
-            "social": "Social",
-            "quest": "Misión",
-            "earn": "Ganar"
-        },
-        "quests": {
-            "title": "Misiones Especiales",
-            "verified_human": "Humano Verificado",
-            "verified_only": "Solo Humanos Verificados",
-            "empty": "No hay misiones especiales disponibles en este momento. ¡Vuelve pronto para misiones de alto valor!",
-            "desc": "Completa misiones de alto valor para ganar más puntos y recompensas de Entropía. Las misiones son exclusivamente para Humanos Verificados.",
-            "lock_hint": "Pasa la verificación humana para desbloquear."
-        },
-        "earn_drop": {
-            "title": "Gana Tokens",
-            "coming_soon": "Muy Pronto",
-            "desc": "Entregas exclusivas de tokens para los miembros más activos. Participa en Misiones de Presencia y Sociales para asegurar tu elegibilidad.",
-            "active_hint": "Mantente activo — las entregas se otorgan a participantes constantes."
-        }
-    },
-    "leaderboard": {
-        "title": "Clasificación",
-        "loading": "Cargando...",
-        "error_load": "No se pudo cargar la clasificación",
-        "you": "TÚ",
-        "referrals": "Redes",
-        "your_level": "Tu Nivel:",
-        "points_to_reach": "puntos para alcanzar",
-        "max_level": "Nivel Máximo Alcanzado",
-        "your_rank": "TU RANGO",
-        "elite": "ÉLITE",
-        "rank_2": "RANGO 2",
-        "rank_3": "RANGO 3",
-        "referrals_label": "REDES",
-        "global_list": "Lista Global de Redes"
-    },
-    "menu": {
-        "whitepaper": "Libro Blanco v1.0",
-        "ecosystem_roles": "Roles del Ecosistema",
-        "presence_ledger": "BwaveScan"
-    },
-    "stats": {
-        "back": "Volver",
-        "metrics_label": "Métricas del Protocolo",
-        "title": "Estadísticas de Red",
-        "upgrade_status": "Mejora del Protocolo en Curso",
-        "coming_soon": "Muy Pronto",
-        "recalibrating": "Estamos recalibrando las métricas del protocolo para mayor precisión. Los datos del ecosistema en tiempo real estarán disponibles pronto.",
-        "snapshot": "Instantánea del Protocolo v1.1.0"
-    },
-    "presence": {
-        "title": "Misión de Presencia",
-        "commit": "Compromiso de Presencia",
-        "activate": "Activar",
-        "waiting": "Esperando...",
-        "claim_reward": "Reclamar {{amount}} $BWAVE",
-        "accumulating": "Acumulando\nSeñales de Presencia",
-        "unlock_info": "Tu Puntaje de Presencia se desbloquea en la Fase III Pre TGE",
-        "active_recording": "Grabación de Presencia Activa",
-        "system_offline": "Sistema Desconectado",
-        "sync_error_desc": "No pudimos sincronizar tu misión de presencia. Por favor, comprueba tu conexión y recarga.",
-        "retry_sync": "⚡ REINTENTAR",
-        "error_activate": "No se pudo activar la misión"
-    },
-    "onboarding": {
-        "title": "Empezando con Bluewave",
-        "hero_title": "Activa Tu Presencia",
-        "hero_desc": "Esta configuración única vincula tu cuenta de Telegram al ecosistema Bluewave.",
-        "username_label": "Nombre de usuario de Telegram",
-        "loading": "Cargando...",
-        "btn_requesting": "Solicitando...",
-        "btn_request": "Solicitar Código",
-        "bot_hint": "Asegúrate de haber escrito /start en el bot de Bluewave antes de este paso.",
-        "code_sent": "Se ha enviado un código de 6 dígitos a tu cuenta de Telegram",
-        "code_label": "Código de verificación",
-        "btn_verifying": "Verificando...",
-        "btn_verify": "Verificar Código",
-        "step3_title": "Último paso — elige de dónde se mapeará tu presencia.",
-        "country_label": "País",
-        "search_placeholder": "Buscar país...",
-        "all_countries": "Todos los Países",
-        "btn_activating": "Activando...",
-        "btn_activate": "Activar Presencia",
-        "footer_note": "Tu presencia = tu acceso. Nunca pedimos contraseñas, solo tu identidad de Telegram.",
-        "error_username": "Ingresa tu usuario de Telegram.",
-        "error_request_code": "No se pudo solicitar el código. Inténtalo de nuevo.",
-        "error_rate_limit": "Demasiadas solicitudes. Por favor, espera 15 minutos.",
-        "error_delivery_failed": "No se pudo enviar el código a Telegram. Asegúrate de haber iniciado el bot de Bluewave y de no haberlo bloqueado.",
-        "error_network": "Error de red. Inténtalo de nuevo.",
-        "error_invalid_code": "Código no válido. Por favor, inténtalo de nuevo.",
-        "error_expired_code": "El código ha caducado. Solicita uno nuevo.",
-        "error_verify_failed": "La verificación ha fallado. Inténtalo de nuevo.",
-        "error_select_country": "Selecciona tu país para activar tu presencia.",
-        "error_save_profile": "No se pudo guardar el perfil. Inténtalo de nuevo.",
-        "error_id_missing": "Verificación exitosa pero falta el ID de Telegram. Por favor, reintenta.",
-        "error_restart": "Algo salió mal. Por favor, reinicia el proceso.",
-        "contact_support": "Contactar Soporte",
-        "lost_account": "¿Perdiste tu cuenta?"
-    },
-    "explore": {
-        "title": "Explorar",
-        "beta_phase": "Fase Beta • Muy Pronto",
-        "beta_desc": "La capa de distribución social está siendo calibrada. El acceso está restringido a administradores.",
-        "for_you": "Para Ti",
-        "following": "Siguiendo",
-        "hydrating": "Hidratando...",
-        "no_signals": "No hay señales",
-        "no_signals_desc": "El feed está vacío. Conecta tu canal para empezar a transmitir.",
-        "no_following": "No hay publicaciones",
-        "no_following_desc": "Sigue los canales de otros humanos verificados para ver sus publicaciones.",
-        "acknowledge": "Reconocer",
-        "acknowledged": "Reconocido",
-        "not_interested": "No me interesa",
-        "open": "Abrir",
-        "follow_channel": "Seguir Canal",
-        "channel_desc": "Canal de distribución humana verificado por los nodos del protocolo.",
-        "bw_id_label": "ID BW",
-        "new_posts_pill": "↑ Nuevos Posts",
-        "new_post_title": "Nueva Publicación",
-        "post_placeholder": "¿Qué estás pensando?...",
-        "post_error_channel": "Error al publicar. Asegúrate de tener un canal conectado.",
-        "post_error_network": "Error de red. Por favor, inténtalo de nuevo.",
-        "posting_btn": "Publicando...",
-        "post_btn": "Publicar",
-        "post_success_popup": "Difusión exitosa",
-        "tabs": {
-            "foryou": "Para Ti",
-            "following": "Siguiendo",
-            "notifications": "Notificaciones",
-            "leaderboard": "Clasificación"
-        }
-    },
-    "notifications": {
-        "title": "Señales Recientes",
-        "subtitle": "Distribución Verificada",
-        "empty": "No hay alertas",
-        "empty_desc": "Tu actividad de protocolo y las actualizaciones de la red aparecerán aquí.",
-        "distribution_success": "Distribución Exitosa",
-        "acknowledgment": "Reconocimiento",
-        "verified_milestone_title": "Reconocimiento Verificado",
-        "notification_type": "Notificación",
-        "broadcast_msg": "Tu publicación en el canal ha sido difundida.",
-        "acknowledged_msg": "{{name}} te reconoció.",
-        "verified_milestone_msg": "{{count}} humanos verificados reconocieron tu publicación",
-        "update_msg": "Nuevo mensaje de actualización recibido.",
-        "view_post": "Ver Publicación",
-        "understood": "Entendido"
-    },
-    "marketplace": {
-        "beta_phase": "EN FASE BETA"
-    },
-    "common": {
-        "back": "Volver",
-        "close": "Cerrar",
-        "loading": "Cargando...",
-        "verify": "Verificar",
-        "verifying": "Verificando...",
-        "done": "Hecho",
-        "error": "Error"
-    },
-    "connect_blu": {
-        "title": "Conectar Blu",
-        "subtitle": "Agente inteligente Bluewave",
-        "connect_tg": "Conectar Canal de Telegram",
-        "connect_tg_desc": "Vincula tu canal al Agente Blu",
-        "connect_x": "Conectar X",
-        "social_verification": "Verificación social",
-        "coming_soon": "Muy pronto",
-        "back": "← Volver",
-        "requirements": "Requisitos",
-        "req_1": "Añade a @blu_presencebot como administrador en tu canal.",
-        "req_2": "Concede permisos: Publicar y Eliminar mensajes.",
-        "req_3": "Ingresa el nombre de usuario de tu canal y toca Verificar.",
-        "benefits": "Beneficios del Agente",
-        "ben_1": "• Distribución Humana Verificada",
-        "ben_2": "• Análisis avanzado de canales",
-        "ben_3": "• Seguimiento de sentimiento e IA insights",
-        "placeholder": "@tucanal",
-        "verify_btn": "Verificar Canal",
-        "verifying": "Verificando...",
-        "connected_btn": "CONECTADO",
-        "verified_humans_only": "Solo Humanos Verificados",
-        "verified_desc": "Conectar tu canal de Telegram está reservado para <span className=\"text-cyan-400 font-bold\">Humanos Verificados</span>.",
-        "verified_footer": "Completa misiones → Verifícate → Conecta Canal",
-        "copied": "¡COPIADO!",
-        "copy": "COPIAR",
-        "connected_fallback": "Conectado",
-        "error_verify_admin": "Fallo de verificación. Asegúrate de que el bot Blu sea administrador.",
-        "error_connection": "Error de conexión. Inténtalo de nuevo.",
-        "req_1_prefix": "Añade",
-        "req_1_suffix": "como administrador en tu canal.",
-        "req_1_bot": "@blu_presencebot",
-        "disconnect": "Desconectar Canal",
-        "disconnect_desc": "Eliminar este canal del protocolo Bluewave.",
-        "disconnecting": "Desconectando..."
-    },
-    "roles_overlay": {
-        "title": "Roles del Ecosistema",
-        "desc_1": "Las credenciales de rol son atributos a nivel de protocolo vinculados permanentemente a su BW ID. Cada rol conlleva un multiplicador de rendimiento que se aplica automáticamente.",
-        "desc_2": "Los multiplicadores se acumulan en misiones Presence y referidos. No hay límite: cada credencial aumenta permanentemente su tasa de rendimiento base.",
-        "dist_label": "Distribución",
-        "dist_val": "Ponderada por contribución",
-        "assign_label": "Asignación",
-        "assign_val": "Ganado, no comprado",
-        "yield_boost": "AUMENTO DE RENDIMIENTO",
-        "credential": "Credencial",
-        "protocol_access": "Acceso al Protocolo"
-    },
-    "roles_list": {
-        "Bluewave Core": {
-            "name": "Núcleo Bluewave",
-            "desc": "Miembros oficiales del equipo de Bluewave.",
-            "benefit": "Autoridad, anuncios, decisiones del ecosistema."
-        },
-        "Community Moderator": {
-            "name": "Moderador de la Comunidad",
-            "desc": "Mantiene el espacio humano, limpio y seguro.",
-            "benefit": "Poderes de moderación, acceso directo al equipo core."
-        },
-        "Verified Partner": {
-            "name": "Socio Verificado",
-            "desc": "Proyectos o comunidades en colaboración.",
-            "benefit": "Visibilidad + insignia de confianza."
-        },
-        "Verified Human": {
-            "name": "Humano Verificado",
-            "desc": "Pasó la verificación humana de Bluewave.",
-            "benefit": "Acceso a chats cerrados, misiones y drops."
-        },
-        "Presence Holder": {
-            "name": "Poseedor de Presence",
-            "desc": "Mantiene una presencia constante on-chain/off-chain.",
-            "benefit": "Mayor puntuación de reputación."
-        },
-        "TON Explorer": {
-            "name": "Explorador de TON",
-            "desc": "Conectó una billetera del ecosistema TON.",
-            "benefit": "Elegible para drops on-chain. Rendimiento: +5%"
-        },
-        "Genesis Member": {
-            "name": "Miembro Génesis",
-            "desc": "Primeros creyentes en Bluewave.",
-            "benefit": "Acceso prioritario a funciones y perks."
-        },
-        "Beta Explorer": {
-            "name": "Explorador Beta",
-            "desc": "Prueba activamente las funciones de Bluewave.",
-            "benefit": "Herramientas tempranas, influencia en el feedback."
-        },
-        "New Wave": {
-            "name": "Nueva Ola",
-            "desc": "Acaba de llegar. ¡Bienvenido!",
-            "benefit": "Objetivo: Aprender, observar e interactuar."
-        },
-        "Active Human": {
-            "name": "Humano Activo",
-            "desc": "Participación constante sin spam.",
-            "benefit": "Mayor visibilidad, elegibilidad para roles avanzados."
-        },
-        "Network Builder": {
-            "name": "Constructor de Red",
-            "desc": "Invitó a 10+ humanos activos a la red.",
-            "benefit": "Mayores rendimientos por referidos e influencia."
-        },
-        "Contributor": {
-            "name": "Colaborador",
-            "desc": "Aporta valor mediante ideas o ayuda.",
-            "benefit": "Aumento de reputación, chats privados de colaboradores."
-        },
-        "OG": {
-            "name": "OG",
-            "desc": "Miembro consistente y orientado al valor de largo plazo.",
-            "benefit": "Acceso prioritario, drops especiales, estatus."
-        },
-        "Super OG": {
-            "name": "Súper OG",
-            "desc": "Colaboradores élite que dieron forma a la comunidad.",
-            "benefit": "Peso en gobernanza, perks exclusivos."
-        },
-        "Content Creator": {
-            "name": "Creador de Contenido",
-            "desc": "Crea contenido de alta calidad de Bluewave.",
-            "benefit": "Amplificación, recompensas, destacados."
-        },
-        "Best Commentator": {
-            "name": "Mejor Comentarista",
-            "desc": "Aporta ideas constantemente en las discusiones.",
-            "benefit": "Aumento de reputación + confianza comunitaria."
-        },
-        "Meme Architect": {
-            "name": "Arquitecto de Memes",
-            "desc": "Crea memes de alta señal que definen la cultura.",
-            "benefit": "Amplificación viral, recompensas divertidas."
-        },
-        "X Supporter": {
-            "name": "Seguidor de X",
-            "desc": "Interactúa con las publicaciones de forma auténtica.",
-            "benefit": "Acceso a misiones basadas en X."
-        },
-        "X Raider": {
-            "name": "Incursor de X",
-            "desc": "Coordina incursiones significativas (sin bots).",
-            "benefit": "Recompensas para incursores y tablas de clasificación."
-        },
-        "X Ambassador": {
-            "name": "Embajador de X",
-            "desc": "Representa públicamente a Bluewave con hilos de calidad.",
-            "benefit": "Recompensas de embajador, anuncios tempranos."
-        },
-        "Signal Guardian": {
-            "name": "Guardián de Señal",
-            "desc": "Protege a la comunidad de bots y ruido.",
-            "benefit": "Insignia de confianza + atención del moderador."
-        },
-        "Human Legend": {
-            "name": "Leyenda Humana",
-            "desc": "Rol raro por un impacto excepcional a largo plazo.",
-            "benefit": "Reconocimiento eterno + privilegios futuros."
-        },
-        "LEVEL 1": {
-            "name": "NIVEL 1",
-            "desc": "La 'Nueva Ola'. Su viaje comienza aquí.",
-            "benefit": "Acceso a misiones básicas. Rendimiento: +1%"
-        },
-        "LEVEL 2": {
-            "name": "NIVEL 2",
-            "desc": "Explorador de Pulso. Constructor de presencia constante.",
-            "benefit": "Mejora en rendimientos por referidos. Rendimiento: +5%"
-        },
-        "LEVEL 3": {
-            "name": "NIVEL 3",
-            "desc": "Arquitecto de Señal. Construyendo la estructura de la red.",
-            "benefit": "Acceso a misiones avanzadas. Rendimiento: +10%"
-        },
-        "LEVEL 4": {
-            "name": "NIVEL 4",
-            "desc": "Comandante de Ola. Un pilar del ecosistema.",
-            "benefit": "Soporte prioritario y beneficios. Rendimiento: +20%"
-        },
-        "LEVEL 5": {
-            "name": "NIVEL 5",
-            "desc": "Leyenda Blu. Maestro de la Economía de Presencia.",
-            "benefit": "Peso en gobernanza Alpha. Rendimiento: +50%"
-        }
-    },
-    "roles_cats": {
-        "Core Team Roles": {
-            "title": "Roles del Equipo Core",
-            "desc": "Equipo oficial y socios de confianza."
-        },
-        "Identity & Presence Roles": {
-            "title": "Roles de Identidad y Presencia",
-            "desc": "Señales de reputación verificables."
-        },
-        "Community Progression Roles": {
-            "title": "Roles de Progresión Comunitaria",
-            "desc": "Ganados mediante participación orgánica constante."
-        },
-        "Creator & Signal Roles": {
-            "title": "Roles de Creador y Señal",
-            "desc": "Amplificadores de la cultura Bluewave."
-        },
-        "X (Twitter) Roles": {
-            "title": "Roles de X (Twitter)",
-            "desc": "Comandantes de la presencia social."
-        },
-        "Special Recognition Roles": {
-            "title": "Roles de Reconocimiento Especial",
-            "desc": "Miembros excepcionales del ecosistema."
-        },
-        "Ecosystem Levels": {
-            "title": "Niveles del Ecosistema",
-            "desc": "Su viaje por la Economía de Presencia de Bluewave."
-        }
-    },
-    "referral": {
-        "share_desc": "COMPARTE ESTE CÓDIGO PARA CRECER TU RED HUMANA Y GANAR RECOMPENSAS EN $BWAVE",
-        "share_btn": "Compartir Código",
-        "preparing": "Preparando...",
-        "copy_link": "Copiar Enlace",
-        "copied_link": "Enlace Copiado",
-        "share_caption": "Escanea para unirte a Bluewave 🌊",
-        "share_title": "Bluewave — Capa de Presencia Humana",
-        "canvas_header": "BLUEWAVE",
-        "canvas_subheader": "Capa de Presencia Humana",
-        "canvas_scan_1": "Escanea para",
-        "canvas_scan_2": "unirte a la red"
-    },
-    "level_popup": {
-        "title": "Nivel",
-        "subtitle": "Tu viaje de presencia",
-        "level": "NIVEL",
-        "active": "ACTIVO",
-        "verified": "VERIFICADO",
-        "not_yet": "AÚN NO",
-        "benefit": "Beneficio:",
-        "protocol_entry": "Entrada al Protocolo",
-        "presence_commits": "Presence Commits",
-        "bwave_points": "Puntos $BWAVE",
-        "human_networks": "Redes Humanas Verificadas",
-        "streak_days": "Días de Racha",
-        "role_badge": "Poseedor de insignia de rol",
-        "level_verified": "Humano Verificado",
-        "default_desc": "Completa todos los criterios para desbloquear este nivel.",
-        "default_benefit": "Estado superior desbloqueado."
-    },
-    "claim_boost_popup": {
-        "title": "Reclamando recompensa de presencia",
-        "calculating": "Calculando...",
-        "roles_boost": "Impulso de roles:",
-        "no_boost": "Sin impulso de roles activo.",
-        "no_boost_hint": "¡Gana roles para multiplicar los rendimientos!",
-        "collect": "Recoger recompensas"
-    },
-    "level_up_modal": {
-        "title": "¡Nivel superado!",
-        "reached": "Has alcanzado el nivel",
-        "default_desc": "Has desbloqueado un nuevo nivel de la economía de presencia. Tu fuerza de señal está creciendo.",
-        "continue": "Continuar presencia"
-    },
-    "streak_celebration": {
-        "title": "¡RACHA DESBLOQUEADA!",
-        "continuum": "DÍAS DE CONTINUIDAD",
-        "reward_granted": "RECOMPENSA CONCEDIDA",
-        "claim_continue": "Reclamar y Continuar",
-        "footer": "Mantén la ola en movimiento"
-    },
-    "role_celebration": {
-        "title": "Rol Desbloqueado",
-        "desc": "Has sido reconocido por tu impacto. Ahora eres un **{{role}}** dentro del Protocolo Bluewave.",
-        "yield_multiplier": "Multiplicador de Rendimiento",
-        "boost": "IMPULSO",
-        "collect": "Recoger Impulso",
-        "dismiss": "Descartar"
-    },
-    "verified_human_modal": {
-        "title": "Identidad Verificada",
-        "badge": "Humano Verificado",
-        "desc": "Tu presencia ha sido confirmada criptográficamente. Ahora eres reconocido como un **Humano Verificado** dentro del Protocolo Bluewave.",
-        "benefit_1": "Anillo de Humano Verificado Exclusivo",
-        "benefit_2": "Procesamiento de Señal de Red Prioritario",
-        "benefit_3": "Derechos de Gobernanza del Protocolo (Fase III)",
-        "acknowledge": "Reconocer Protocolo",
-        "close": "Cerrar"
-    },
-    "daily_ai_popup": {
-        "title": "Época Finalizada",
-        "desc": "Tu señal comunitaria de ayer ha sido verificada por la capa de inteligencia.",
-        "reward_generated": "Recompensa Generada",
-        "acknowledge": "Reconocer"
+    "earn_drop": {
+      "title": "Gana Tokens",
+      "coming_soon": "Muy Pronto",
+      "desc": "Entregas exclusivas de tokens para los miembros más activos. Participa en Misiones de Presencia y Sociales para asegurar tu elegibilidad.",
+      "active_hint": "Mantente activo — las entregas se otorgan a participantes constantes."
     }
+  },
+  "leaderboard": {
+    "title": "Clasificación",
+    "loading": "Cargando...",
+    "error_load": "No se pudo cargar la clasificación",
+    "you": "TÚ",
+    "referrals": "Redes",
+    "your_level": "Tu Nivel:",
+    "points_to_reach": "puntos para alcanzar",
+    "max_level": "Nivel Máximo Alcanzado",
+    "your_rank": "TU RANGO",
+    "elite": "ÉLITE",
+    "rank_2": "RANGO 2",
+    "rank_3": "RANGO 3",
+    "referrals_label": "REDES",
+    "global_list": "Lista Global de Redes"
+  },
+  "menu": {
+    "whitepaper": "Libro Blanco v1.0",
+    "ecosystem_roles": "Roles del Ecosistema",
+    "presence_ledger": "BwaveScan"
+  },
+  "stats": {
+    "back": "Volver",
+    "metrics_label": "Métricas del Protocolo",
+    "title": "Estadísticas de Red",
+    "upgrade_status": "Mejora del Protocolo en Curso",
+    "coming_soon": "Muy Pronto",
+    "recalibrating": "Estamos recalibrando las métricas del protocolo para mayor precisión. Los datos del ecosistema en tiempo real estarán disponibles pronto.",
+    "snapshot": "Instantánea del Protocolo v1.1.0"
+  },
+  "presence": {
+    "title": "Misión de Presencia",
+    "commit": "Compromiso de Presencia",
+    "activate": "Activar",
+    "waiting": "Esperando...",
+    "claim_reward": "Reclamar {{amount}} $BWAVE",
+    "accumulating": "Acumulando\nSeñales de Presencia",
+    "unlock_info": "Tu Puntaje de Presencia se desbloquea en la Fase III Pre TGE",
+    "active_recording": "Grabación de Presencia Activa",
+    "system_offline": "Sistema Desconectado",
+    "sync_error_desc": "No pudimos sincronizar tu misión de presencia. Por favor, comprueba tu conexión y recarga.",
+    "retry_sync": "⚡ REINTENTAR",
+    "error_activate": "No se pudo activar la misión"
+  },
+  "onboarding": {
+    "title": "Empezando con Bluewave",
+    "hero_title": "Activa Tu Presencia",
+    "hero_desc": "Esta configuración única vincula tu cuenta de Telegram al ecosistema Bluewave.",
+    "username_label": "Nombre de usuario de Telegram",
+    "loading": "Cargando...",
+    "btn_requesting": "Solicitando...",
+    "btn_request": "Solicitar Código",
+    "bot_hint": "Asegúrate de haber escrito /start en el bot de Bluewave antes de este paso.",
+    "code_sent": "Se ha enviado un código de 6 dígitos a tu cuenta de Telegram",
+    "code_label": "Código de verificación",
+    "btn_verifying": "Verificando...",
+    "btn_verify": "Verificar Código",
+    "step3_title": "Último paso — elige de dónde se mapeará tu presencia.",
+    "country_label": "País",
+    "search_placeholder": "Buscar país...",
+    "all_countries": "Todos los Países",
+    "btn_activating": "Activando...",
+    "btn_activate": "Activar Presencia",
+    "footer_note": "Tu presencia = tu acceso. Nunca pedimos contraseñas, solo tu identidad de Telegram.",
+    "error_username": "Ingresa tu usuario de Telegram.",
+    "error_request_code": "No se pudo solicitar el código. Inténtalo de nuevo.",
+    "error_rate_limit": "Demasiadas solicitudes. Por favor, espera 15 minutos.",
+    "error_delivery_failed": "No se pudo enviar el código a Telegram. Asegúrate de haber iniciado el bot de Bluewave y de no haberlo bloqueado.",
+    "error_network": "Error de red. Inténtalo de nuevo.",
+    "error_invalid_code": "Código no válido. Por favor, inténtalo de nuevo.",
+    "error_expired_code": "El código ha caducado. Solicita uno nuevo.",
+    "error_verify_failed": "La verificación ha fallado. Inténtalo de nuevo.",
+    "error_select_country": "Selecciona tu país para activar tu presencia.",
+    "error_save_profile": "No se pudo guardar el perfil. Inténtalo de nuevo.",
+    "error_id_missing": "Verificación exitosa pero falta el ID de Telegram. Por favor, reintenta.",
+    "error_restart": "Algo salió mal. Por favor, reinicia el proceso.",
+    "contact_support": "Contactar Soporte",
+    "lost_account": "¿Perdiste tu cuenta?"
+  },
+  "explore": {
+    "title": "Explorar",
+    "beta_phase": "Fase Beta • Muy Pronto",
+    "beta_desc": "La capa de distribución social está siendo calibrada. El acceso está restringido a administradores.",
+    "for_you": "Para Ti",
+    "following": "Siguiendo",
+    "hydrating": "Hidratando...",
+    "no_signals": "No hay señales",
+    "no_signals_desc": "El feed está vacío. Conecta tu canal para empezar a transmitir.",
+    "no_following": "No hay publicaciones",
+    "no_following_desc": "Sigue los canales de otros humanos verificados para ver sus publicaciones.",
+    "acknowledge": "Reconocer",
+    "acknowledged": "Reconocido",
+    "not_interested": "No me interesa",
+    "open": "Abrir",
+    "follow_channel": "Seguir Canal",
+    "channel_desc": "Canal de distribución humana verificado por los nodos del protocolo.",
+    "bw_id_label": "ID BW",
+    "new_posts_pill": "↑ Nuevos Posts",
+    "new_post_title": "Nueva Publicación",
+    "post_placeholder": "¿Qué estás pensando?...",
+    "post_error_channel": "Error al publicar. Asegúrate de tener un canal conectado.",
+    "post_error_network": "Error de red. Por favor, inténtalo de nuevo.",
+    "posting_btn": "Publicando...",
+    "post_btn": "Publicar",
+    "post_success_popup": "Difusión exitosa",
+    "tabs": {
+      "foryou": "Para Ti",
+      "following": "Siguiendo",
+      "notifications": "Notificaciones",
+      "leaderboard": "Clasificación"
+    },
+    "connect_prompt": "Conecta el Agente Blu a tu canal desde el perfil"
+  },
+  "notifications": {
+    "title": "Señales Recientes",
+    "subtitle": "Distribución Verificada",
+    "empty": "No hay alertas",
+    "empty_desc": "Tu actividad de protocolo y las actualizaciones de la red aparecerán aquí.",
+    "distribution_success": "Distribución Exitosa",
+    "acknowledgment": "Reconocimiento",
+    "verified_milestone_title": "Reconocimiento Verificado",
+    "notification_type": "Notificación",
+    "broadcast_msg": "Tu publicación en el canal ha sido difundida.",
+    "acknowledged_msg": "{{name}} te reconoció.",
+    "verified_milestone_msg": "{{count}} humanos verificados reconocieron tu publicación",
+    "update_msg": "Nuevo mensaje de actualización recibido.",
+    "view_post": "Ver Publicación",
+    "understood": "Entendido"
+  },
+  "marketplace": {
+    "beta_phase": "EN FASE BETA"
+  },
+  "common": {
+    "back": "Volver",
+    "close": "Cerrar",
+    "loading": "Cargando...",
+    "verify": "Verificar",
+    "verifying": "Verificando...",
+    "done": "Hecho",
+    "error": "Error"
+  },
+  "connect_blu": {
+    "title": "Conectar Blu",
+    "subtitle": "Agente inteligente Bluewave",
+    "connect_tg": "Conectar Canal de Telegram",
+    "connect_tg_desc": "Vincula tu canal al Agente Blu",
+    "connect_x": "Conectar X",
+    "social_verification": "Verificación social",
+    "coming_soon": "Muy pronto",
+    "back": "← Volver",
+    "requirements": "Requisitos",
+    "req_1": "Añade a @blu_presencebot como administrador en tu canal.",
+    "req_2": "Concede permisos: Publicar y Eliminar mensajes.",
+    "req_3": "Ingresa el nombre de usuario de tu canal y toca Verificar.",
+    "benefits": "Beneficios del Agente",
+    "ben_1": "• Distribución Humana Verificada",
+    "ben_2": "• Análisis avanzado de canales",
+    "ben_3": "• Seguimiento de sentimiento e IA insights",
+    "placeholder": "@tucanal",
+    "verify_btn": "Verificar Canal",
+    "verifying": "Verificando...",
+    "connected_btn": "CONECTADO",
+    "verified_humans_only": "Solo Humanos Verificados",
+    "verified_desc": "Conectar tu canal de Telegram está reservado para <span className=\"text-cyan-400 font-bold\">Humanos Verificados</span>.",
+    "verified_footer": "Completa misiones → Verifícate → Conecta Canal",
+    "copied": "¡COPIADO!",
+    "copy": "COPIAR",
+    "connected_fallback": "Conectado",
+    "error_verify_admin": "Fallo de verificación. Asegúrate de que el bot Blu sea administrador.",
+    "error_connection": "Error de conexión. Inténtalo de nuevo.",
+    "req_1_prefix": "Añade",
+    "req_1_suffix": "como administrador en tu canal.",
+    "req_1_bot": "@blu_presencebot",
+    "disconnect": "Desconectar Canal",
+    "disconnect_desc": "Eliminar este canal del protocolo Bluewave.",
+    "disconnecting": "Desconectando..."
+  },
+  "roles_overlay": {
+    "title": "Roles del Ecosistema",
+    "desc_1": "Las credenciales de rol son atributos a nivel de protocolo vinculados permanentemente a su BW ID. Cada rol conlleva un multiplicador de rendimiento que se aplica automáticamente.",
+    "desc_2": "Los multiplicadores se acumulan en misiones Presence y referidos. No hay límite: cada credencial aumenta permanentemente su tasa de rendimiento base.",
+    "dist_label": "Distribución",
+    "dist_val": "Ponderada por contribución",
+    "assign_label": "Asignación",
+    "assign_val": "Ganado, no comprado",
+    "yield_boost": "AUMENTO DE RENDIMIENTO",
+    "credential": "Credencial",
+    "protocol_access": "Acceso al Protocolo"
+  },
+  "roles_list": {
+    "Bluewave Core": {
+      "name": "Núcleo Bluewave",
+      "desc": "Miembros oficiales del equipo de Bluewave.",
+      "benefit": "Autoridad, anuncios, decisiones del ecosistema."
+    },
+    "Community Moderator": {
+      "name": "Moderador de la Comunidad",
+      "desc": "Mantiene el espacio humano, limpio y seguro.",
+      "benefit": "Poderes de moderación, acceso directo al equipo core."
+    },
+    "Verified Partner": {
+      "name": "Socio Verificado",
+      "desc": "Proyectos o comunidades en colaboración.",
+      "benefit": "Visibilidad + insignia de confianza."
+    },
+    "Verified Human": {
+      "name": "Humano Verificado",
+      "desc": "Pasó la verificación humana de Bluewave.",
+      "benefit": "Acceso a chats cerrados, misiones y drops."
+    },
+    "Presence Holder": {
+      "name": "Poseedor de Presence",
+      "desc": "Mantiene una presencia constante on-chain/off-chain.",
+      "benefit": "Mayor puntuación de reputación."
+    },
+    "TON Explorer": {
+      "name": "Explorador de TON",
+      "desc": "Conectó una billetera del ecosistema TON.",
+      "benefit": "Elegible para drops on-chain. Rendimiento: +5%"
+    },
+    "Genesis Member": {
+      "name": "Miembro Génesis",
+      "desc": "Primeros creyentes en Bluewave.",
+      "benefit": "Acceso prioritario a funciones y perks."
+    },
+    "Beta Explorer": {
+      "name": "Explorador Beta",
+      "desc": "Prueba activamente las funciones de Bluewave.",
+      "benefit": "Herramientas tempranas, influencia en el feedback."
+    },
+    "New Wave": {
+      "name": "Nueva Ola",
+      "desc": "Acaba de llegar. ¡Bienvenido!",
+      "benefit": "Objetivo: Aprender, observar e interactuar."
+    },
+    "Active Human": {
+      "name": "Humano Activo",
+      "desc": "Participación constante sin spam.",
+      "benefit": "Mayor visibilidad, elegibilidad para roles avanzados."
+    },
+    "Network Builder": {
+      "name": "Constructor de Red",
+      "desc": "Invitó a 10+ humanos activos a la red.",
+      "benefit": "Mayores rendimientos por referidos e influencia."
+    },
+    "Contributor": {
+      "name": "Colaborador",
+      "desc": "Aporta valor mediante ideas o ayuda.",
+      "benefit": "Aumento de reputación, chats privados de colaboradores."
+    },
+    "OG": {
+      "name": "OG",
+      "desc": "Miembro consistente y orientado al valor de largo plazo.",
+      "benefit": "Acceso prioritario, drops especiales, estatus."
+    },
+    "Super OG": {
+      "name": "Súper OG",
+      "desc": "Colaboradores élite que dieron forma a la comunidad.",
+      "benefit": "Peso en gobernanza, perks exclusivos."
+    },
+    "Content Creator": {
+      "name": "Creador de Contenido",
+      "desc": "Crea contenido de alta calidad de Bluewave.",
+      "benefit": "Amplificación, recompensas, destacados."
+    },
+    "Best Commentator": {
+      "name": "Mejor Comentarista",
+      "desc": "Aporta ideas constantemente en las discusiones.",
+      "benefit": "Aumento de reputación + confianza comunitaria."
+    },
+    "Meme Architect": {
+      "name": "Arquitecto de Memes",
+      "desc": "Crea memes de alta señal que definen la cultura.",
+      "benefit": "Amplificación viral, recompensas divertidas."
+    },
+    "X Supporter": {
+      "name": "Seguidor de X",
+      "desc": "Interactúa con las publicaciones de forma auténtica.",
+      "benefit": "Acceso a misiones basadas en X."
+    },
+    "X Raider": {
+      "name": "Incursor de X",
+      "desc": "Coordina incursiones significativas (sin bots).",
+      "benefit": "Recompensas para incursores y tablas de clasificación."
+    },
+    "X Ambassador": {
+      "name": "Embajador de X",
+      "desc": "Representa públicamente a Bluewave con hilos de calidad.",
+      "benefit": "Recompensas de embajador, anuncios tempranos."
+    },
+    "Signal Guardian": {
+      "name": "Guardián de Señal",
+      "desc": "Protege a la comunidad de bots y ruido.",
+      "benefit": "Insignia de confianza + atención del moderador."
+    },
+    "Human Legend": {
+      "name": "Leyenda Humana",
+      "desc": "Rol raro por un impacto excepcional a largo plazo.",
+      "benefit": "Reconocimiento eterno + privilegios futuros."
+    },
+    "LEVEL 1": {
+      "name": "NIVEL 1",
+      "desc": "La 'Nueva Ola'. Su viaje comienza aquí.",
+      "benefit": "Acceso a misiones básicas. Rendimiento: +1%"
+    },
+    "LEVEL 2": {
+      "name": "NIVEL 2",
+      "desc": "Explorador de Pulso. Constructor de presencia constante.",
+      "benefit": "Mejora en rendimientos por referidos. Rendimiento: +5%"
+    },
+    "LEVEL 3": {
+      "name": "NIVEL 3",
+      "desc": "Arquitecto de Señal. Construyendo la estructura de la red.",
+      "benefit": "Acceso a misiones avanzadas. Rendimiento: +10%"
+    },
+    "LEVEL 4": {
+      "name": "NIVEL 4",
+      "desc": "Comandante de Ola. Un pilar del ecosistema.",
+      "benefit": "Soporte prioritario y beneficios. Rendimiento: +20%"
+    },
+    "LEVEL 5": {
+      "name": "NIVEL 5",
+      "desc": "Leyenda Blu. Maestro de la Economía de Presencia.",
+      "benefit": "Peso en gobernanza Alpha. Rendimiento: +50%"
+    }
+  },
+  "roles_cats": {
+    "Core Team Roles": {
+      "title": "Roles del Equipo Core",
+      "desc": "Equipo oficial y socios de confianza."
+    },
+    "Identity & Presence Roles": {
+      "title": "Roles de Identidad y Presencia",
+      "desc": "Señales de reputación verificables."
+    },
+    "Community Progression Roles": {
+      "title": "Roles de Progresión Comunitaria",
+      "desc": "Ganados mediante participación orgánica constante."
+    },
+    "Creator & Signal Roles": {
+      "title": "Roles de Creador y Señal",
+      "desc": "Amplificadores de la cultura Bluewave."
+    },
+    "X (Twitter) Roles": {
+      "title": "Roles de X (Twitter)",
+      "desc": "Comandantes de la presencia social."
+    },
+    "Special Recognition Roles": {
+      "title": "Roles de Reconocimiento Especial",
+      "desc": "Miembros excepcionales del ecosistema."
+    },
+    "Ecosystem Levels": {
+      "title": "Niveles del Ecosistema",
+      "desc": "Su viaje por la Economía de Presencia de Bluewave."
+    }
+  },
+  "referral": {
+    "share_desc": "COMPARTE ESTE CÓDIGO PARA CRECER TU RED HUMANA Y GANAR RECOMPENSAS EN $BWAVE",
+    "share_btn": "Compartir Código",
+    "preparing": "Preparando...",
+    "copy_link": "Copiar Enlace",
+    "copied_link": "Enlace Copiado",
+    "share_caption": "Escanea para unirte a Bluewave 🌊",
+    "share_title": "Bluewave — Capa de Presencia Humana",
+    "canvas_header": "BLUEWAVE",
+    "canvas_subheader": "Capa de Presencia Humana",
+    "canvas_scan_1": "Escanea para",
+    "canvas_scan_2": "unirte a la red"
+  },
+  "level_popup": {
+    "title": "Nivel",
+    "subtitle": "Tu viaje de presencia",
+    "level": "NIVEL",
+    "active": "ACTIVO",
+    "verified": "VERIFICADO",
+    "not_yet": "AÚN NO",
+    "benefit": "Beneficio:",
+    "protocol_entry": "Entrada al Protocolo",
+    "presence_commits": "Presence Commits",
+    "bwave_points": "Puntos $BWAVE",
+    "human_networks": "Redes Humanas Verificadas",
+    "streak_days": "Días de Racha",
+    "role_badge": "Poseedor de insignia de rol",
+    "level_verified": "Humano Verificado",
+    "default_desc": "Completa todos los criterios para desbloquear este nivel.",
+    "default_benefit": "Estado superior desbloqueado."
+  },
+  "claim_boost_popup": {
+    "title": "Reclamando recompensa de presencia",
+    "calculating": "Calculando...",
+    "roles_boost": "Impulso de roles:",
+    "no_boost": "Sin impulso de roles activo.",
+    "no_boost_hint": "¡Gana roles para multiplicar los rendimientos!",
+    "collect": "Recoger recompensas"
+  },
+  "level_up_modal": {
+    "title": "¡Nivel superado!",
+    "reached": "Has alcanzado el nivel",
+    "default_desc": "Has desbloqueado un nuevo nivel de la economía de presencia. Tu fuerza de señal está creciendo.",
+    "continue": "Continuar presencia"
+  },
+  "streak_celebration": {
+    "title": "¡RACHA DESBLOQUEADA!",
+    "continuum": "DÍAS DE CONTINUIDAD",
+    "reward_granted": "RECOMPENSA CONCEDIDA",
+    "claim_continue": "Reclamar y Continuar",
+    "footer": "Mantén la ola en movimiento"
+  },
+  "role_celebration": {
+    "title": "Rol Desbloqueado",
+    "desc": "Has sido reconocido por tu impacto. Ahora eres un **{{role}}** dentro del Protocolo Bluewave.",
+    "yield_multiplier": "Multiplicador de Rendimiento",
+    "boost": "IMPULSO",
+    "collect": "Recoger Impulso",
+    "dismiss": "Descartar"
+  },
+  "verified_human_modal": {
+    "title": "Identidad Verificada",
+    "badge": "Humano Verificado",
+    "desc": "Tu presencia ha sido confirmada criptográficamente. Ahora eres reconocido como un **Humano Verificado** dentro del Protocolo Bluewave.",
+    "benefit_1": "Anillo de Humano Verificado Exclusivo",
+    "benefit_2": "Procesamiento de Señal de Red Prioritario",
+    "benefit_3": "Derechos de Gobernanza del Protocolo (Fase III)",
+    "acknowledge": "Reconocer Protocolo",
+    "close": "Cerrar"
+  },
+  "daily_ai_popup": {
+    "title": "Época Finalizada",
+    "desc": "Tu señal comunitaria de ayer ha sido verificada por la capa de inteligencia.",
+    "reward_generated": "Recompensa Generada",
+    "acknowledge": "Reconocer"
+  }
 }

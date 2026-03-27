@@ -1,546 +1,547 @@
 {
-    "profile": {
-        "title": "个人资料",
-        "streak": "连续天数",
-        "level": "等级",
-        "total_networks": "总网络",
-        "network_earnings": "网络收益",
-        "claim": "领取",
-        "claiming": "领取中...",
-        "done": "已完成",
-        "notify_inactive": "通知未活跃网络",
-        "wait": "请稍候",
-        "roles": "角色",
-        "no_roles": "尚未分配角色",
-        "connect_wallet": "连接 TON 钱包",
-        "wallet_connected": "TON 钱包已连接",
-        "badge_unlocked": "🔥 连续 3 天徽章已解锁！",
-        "referral_link": "推广链接",
-        "copy": "复制",
-        "copied": "已复制",
-        "joined": "加入时间",
-        "loading_protocol": "正在加载协议...",
-        "bio": "简介",
-        "drops": "空投",
-        "level_label": "等级",
-        "streak_label": "连续天数",
-        "networks_label": "网络数",
-        "connected": "已连接",
-        "notify_inactive_btn": "通知不活跃成员",
-        "limit_reached": "已达上限",
-        "network_builder": "网络建设者",
-        "network_builder_desc": "分享此代码来扩大您的人际网络并赚取 $BWAVE 奖励",
-        "get_link": "获取链接",
-        "connect_blu": "连接 Blu",
-        "joined_at": "加入时间",
-        "protocol_active": "协议已激活",
-        "no_roles_unlocked": "尚未解锁任何角色",
-        "protocol_drops": "协议空投",
-        "locked": "已锁定",
-        "drops_desc": "为持续参与者提供专属代币交付。保持高信号分数以获得资格。",
-        "unlocked": "已解锁"
+  "profile": {
+    "title": "个人资料",
+    "streak": "连续天数",
+    "level": "等级",
+    "total_networks": "总网络",
+    "network_earnings": "网络收益",
+    "claim": "领取",
+    "claiming": "领取中...",
+    "done": "已完成",
+    "notify_inactive": "通知未活跃网络",
+    "wait": "请稍候",
+    "roles": "角色",
+    "no_roles": "尚未分配角色",
+    "connect_wallet": "连接 TON 钱包",
+    "wallet_connected": "TON 钱包已连接",
+    "badge_unlocked": "🔥 连续 3 天徽章已解锁！",
+    "referral_link": "推广链接",
+    "copy": "复制",
+    "copied": "已复制",
+    "joined": "加入时间",
+    "loading_protocol": "正在加载协议...",
+    "bio": "简介",
+    "drops": "空投",
+    "level_label": "等级",
+    "streak_label": "连续天数",
+    "networks_label": "网络数",
+    "connected": "已连接",
+    "notify_inactive_btn": "通知不活跃成员",
+    "limit_reached": "已达上限",
+    "network_builder": "网络建设者",
+    "network_builder_desc": "分享此代码来扩大您的人际网络并赚取 $BWAVE 奖励",
+    "get_link": "获取链接",
+    "connect_blu": "连接 Blu",
+    "joined_at": "加入时间",
+    "protocol_active": "协议已激活",
+    "no_roles_unlocked": "尚未解锁任何角色",
+    "protocol_drops": "协议空投",
+    "locked": "已锁定",
+    "drops_desc": "为持续参与者提供专属代币交付。保持高信号分数以获得资格。",
+    "unlocked": "已解锁"
+  },
+  "settings": {
+    "title": "设置",
+    "change_name": "修改名称",
+    "change_name_desc": "更新您的显示名称",
+    "language": "语言",
+    "language_desc": "选择您偏好的语言"
+  },
+  "language": {
+    "title": "选择语言"
+  },
+  "change_name": {
+    "title": "修改名称",
+    "label": "显示名称",
+    "placeholder": "输入您的名称",
+    "characters": "字符",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "保存中..."
+  },
+  "nav": {
+    "home": "首页",
+    "missions": "任务",
+    "explore": "探索",
+    "market": "市场",
+    "profile": "个人"
+  },
+  "balance": {
+    "loading": "加载中...",
+    "connecting": "连接中..."
+  },
+  "missions": {
+    "title": "任务中心",
+    "open": "打开",
+    "waiting": "等待中...",
+    "claim": "领取",
+    "claiming": "领取中...",
+    "done": "已完成",
+    "loading": "加载中...",
+    "error_load": "无法加载任务。",
+    "popup_join": "请加入所需的群组/频道以领取奖励。",
+    "popup_invite": "今天邀请 2 人以解锁此奖励。",
+    "popup_open_first": "领取此任务前，请先点击“打开”。",
+    "popup_complete": "领取奖励前，请先正确完成任务。",
+    "share_text": "这不是模英币\n这是 Presence 经济。\n#BWAVE #TON #Bluewave",
+    "share_button": "加入 Bluewave",
+    "story_hint": "Telegram 拒绝了原生分享。请保存图片并手动发布！",
+    "error_story": "加载快拍任务失败。请重试。",
+    "syncing": "同步中...",
+    "synchronizing": "同步中...",
+    "session_expired": "会话已过期。请重启应用。",
+    "no_missions": "暂无社交任务",
+    "tabs": {
+      "presence": "Presence",
+      "social": "社交",
+      "quest": "挑战",
+      "earn": "收益"
     },
-    "settings": {
-        "title": "设置",
-        "change_name": "修改名称",
-        "change_name_desc": "更新您的显示名称",
-        "language": "语言",
-        "language_desc": "选择您偏好的语言"
+    "quests": {
+      "title": "挑战任务",
+      "verified_human": "经验证人工",
+      "verified_only": "仅限经验证人工",
+      "empty": "目前暂无挑战任务。请稍后再来查看高价值任务！",
+      "desc": "完成高价值挑战任务以赚取更高积分和 Entropy 奖励。挑战任务专供经验证人工参与。",
+      "lock_hint": "通过人工验证以解锁挑战任务。"
     },
-    "language": {
-        "title": "选择语言"
-    },
-    "change_name": {
-        "title": "修改名称",
-        "label": "显示名称",
-        "placeholder": "输入您的名称",
-        "characters": "字符",
-        "cancel": "取消",
-        "save": "保存",
-        "saving": "保存中..."
-    },
-    "nav": {
-        "home": "首页",
-        "missions": "任务",
-        "explore": "探索",
-        "market": "市场",
-        "profile": "个人"
-    },
-    "balance": {
-        "loading": "加载中...",
-        "connecting": "连接中..."
-    },
-    "missions": {
-        "title": "任务中心",
-        "open": "打开",
-        "waiting": "等待中...",
-        "claim": "领取",
-        "claiming": "领取中...",
-        "done": "已完成",
-        "loading": "加载中...",
-        "error_load": "无法加载任务。",
-        "popup_join": "请加入所需的群组/频道以领取奖励。",
-        "popup_invite": "今天邀请 2 人以解锁此奖励。",
-        "popup_open_first": "领取此任务前，请先点击“打开”。",
-        "popup_complete": "领取奖励前，请先正确完成任务。",
-        "share_text": "这不是模英币\n这是 Presence 经济。\n#BWAVE #TON #Bluewave",
-        "share_button": "加入 Bluewave",
-        "story_hint": "Telegram 拒绝了原生分享。请保存图片并手动发布！",
-        "error_story": "加载快拍任务失败。请重试。",
-        "syncing": "同步中...",
-        "synchronizing": "同步中...",
-        "session_expired": "会话已过期。请重启应用。",
-        "no_missions": "暂无社交任务",
-        "tabs": {
-            "presence": "Presence",
-            "social": "社交",
-            "quest": "挑战",
-            "earn": "收益"
-        },
-        "quests": {
-            "title": "挑战任务",
-            "verified_human": "经验证人工",
-            "verified_only": "仅限经验证人工",
-            "empty": "目前暂无挑战任务。请稍后再来查看高价值任务！",
-            "desc": "完成高价值挑战任务以赚取更高积分和 Entropy 奖励。挑战任务专供经验证人工参与。",
-            "lock_hint": "通过人工验证以解锁挑战任务。"
-        },
-        "earn_drop": {
-            "title": "收益空投",
-            "coming_soon": "即将推出",
-            "desc": "为最活跃的 Bluewave 成员提供的专属代币空投。参与 Presence 任务和社交任务以确保您的资格。",
-            "active_hint": "保持活跃 — 空投将授予持续参与者。"
-        }
-    },
-    "leaderboard": {
-        "title": "排行榜",
-        "loading": "加载中...",
-        "error_load": "无法加载排行榜",
-        "you": "您",
-        "referrals": "网络数",
-        "your_level": "当前等级：",
-        "points_to_reach": "分即可晋升",
-        "max_level": "已达到最高等级",
-        "your_rank": "您的排名",
-        "elite": "精英",
-        "rank_2": "排名 2",
-        "rank_3": "排名 3",
-        "referrals_label": "网络数",
-        "global_list": "全球网络列表"
-    },
-    "menu": {
-        "whitepaper": "白皮书 v1.0",
-        "ecosystem_roles": "生态角色",
-        "presence_ledger": "BwaveScan"
-    },
-    "stats": {
-        "back": "返回",
-        "metrics_label": "网络协议指标",
-        "title": "网络统计",
-        "upgrade_status": "协议升级中",
-        "coming_soon": "即将推出",
-        "recalibrating": "我们正在重新校准协议指标，以提高精确度。实时生态数据即将上线。",
-        "snapshot": "协议快照 v1.1.0"
-    },
-    "presence": {
-        "title": "Presence 任务",
-        "commit": "Presence 提交",
-        "activate": "激活",
-        "waiting": "等待中...",
-        "claim_reward": "领取 {{amount}} $BWAVE",
-        "accumulating": "正在累积\nPresence 信号",
-        "unlock_info": "您的 Presence 分数将在 TGE 前的第三阶段解锁",
-        "active_recording": "协议 Presence 记录已激活",
-        "system_offline": "系统离线",
-        "sync_error_desc": "无法同步您的 Presence 任务。请检查您的连接并重试。",
-        "retry_sync": "⚡ 重新同步",
-        "error_activate": "激活任务失败"
-    },
-    "onboarding": {
-        "title": "Bluewave 入门",
-        "hero_title": "激活您的 Presence",
-        "hero_desc": "此一次性设置将您的 Telegram 账号链接到 Bluewave 生态系统。",
-        "username_label": "Telegram 用户名",
-        "loading": "加载中...",
-        "btn_requesting": "请求中...",
-        "btn_request": "请求代码",
-        "bot_hint": "在进行此步骤前，请确保您已在 Bluewave 机器人中输入 /start。",
-        "code_sent": "6 位验证码已发送至您的 Telegram 账号",
-        "code_label": "验证码",
-        "btn_verifying": "验证中...",
-        "btn_verify": "验证代码",
-        "step3_title": "最后一步 — 选择您的 Presence 映射来源。",
-        "country_label": "国家/地区",
-        "search_placeholder": "搜索国家/地区...",
-        "all_countries": "所有国家/地区",
-        "btn_activating": "激活中...",
-        "btn_activate": "激活 Presence",
-        "footer_note": "您的 Presence = 您的权限。我们从不询问密码 — 仅限您的 Telegram 身份。",
-        "error_username": "请输入您的 Telegram 用户名。",
-        "error_request_code": "无法请求代码。请重试。",
-        "error_rate_limit": "请求过多。请稍候 15 分钟。",
-        "error_delivery_failed": "无法将代码发送至 Telegram。请确保您已启动 Bluewave 机器人且未屏蔽它。",
-        "error_network": "网络连接错误。请重试。",
-        "error_invalid_code": "验证码无效。请重试。",
-        "error_expired_code": "验证码已过期。请申请新代码。",
-        "error_verify_failed": "验证失败。请重试。",
-        "error_select_country": "请选择您的国家/地区以激活 Presence。",
-        "error_save_profile": "无法保存个人资料。请重试。",
-        "error_id_missing": "验证成功，但缺少 Telegram ID。请重试。",
-        "error_restart": "出错了。请重新开始入门流程。",
-        "contact_support": "联系支持",
-        "lost_account": "丢失了账号？"
-    },
-    "explore": {
-        "title": "探索订阅",
-        "beta_phase": "测试阶段 • 即将推出",
-        "beta_desc": "社交分发层目前正在全球节点网络中进行校准。在此期间，仅限主管理员访问。",
-        "for_you": "为您推荐",
-        "following": "正在关注",
-        "hydrating": "正在同步订阅...",
-        "no_signals": "暂无信号",
-        "no_signals_desc": "分发订阅目前为空。连接您的频道开始广播。",
-        "no_following": "暂无关注的帖子",
-        "no_following_desc": "关注其他已验证的人类频道以查看他们的帖子。",
-        "acknowledge": "确认",
-        "acknowledged": "已确认",
-        "not_interested": "不感兴趣",
-        "open": "打开",
-        "follow_channel": "关注频道",
-        "channel_desc": "经 Bluewave 协议节点验证的人工分发频道播报。",
-        "bw_id_label": "BW ID",
-        "new_posts_pill": "↑ 新帖子",
-        "new_post_title": "新帖子",
-        "post_placeholder": "你在想什么？...",
-        "post_error_channel": "发布失败。请确保您已连接频道。",
-        "post_error_network": "网络错误。请重试。",
-        "posting_btn": "发布中...",
-        "post_btn": "发布",
-        "post_success_popup": "广播成功",
-        "tabs": {
-            "foryou": "推荐",
-            "following": "关注",
-            "notifications": "通知",
-            "leaderboard": "排行榜"
-        }
-    },
-    "notifications": {
-        "title": "最近信号",
-        "subtitle": "经验证的分发",
-        "empty": "暂无警报",
-        "empty_desc": "一旦分发周期开始，您的协议活动和网络更新将在此处显示。",
-        "distribution_success": "分发成功",
-        "acknowledgment": "确认",
-        "verified_milestone_title": "验证确认",
-        "notification_type": "通知",
-        "broadcast_msg": "您的频道帖子已广播。",
-        "acknowledged_msg": "{{name}} 确认了您。",
-        "verified_milestone_msg": "{{count}} 位已验证的人类确认了您的帖子",
-        "update_msg": "收到新更新。",
-        "view_post": "查看贴文",
-        "understood": "知晓"
-    },
-    "marketplace": {
-        "beta_phase": "测试阶段"
-    },
-    "common": {
-        "back": "返回",
-        "close": "关闭",
-        "loading": "加载中...",
-        "verify": "验证",
-        "verifying": "验证中...",
-        "done": "完成",
-        "error": "错误"
-    },
-    "connect_blu": {
-        "title": "连接 Blu",
-        "subtitle": "Bluewave 智能代理",
-        "connect_tg": "连接 Telegram 频道",
-        "connect_tg_desc": "将您的频道链接到 Blu 代理",
-        "connect_x": "连接 X",
-        "social_verification": "社交验证",
-        "coming_soon": "即将推出",
-        "back": "← 返回",
-        "requirements": "要求",
-        "req_1": "在您的频道中添加 @blu_presencebot 为管理员。",
-        "req_2": "授予权限：发布消息和删除消息。",
-        "req_3": "在下方输入您的频道用户名并点击验证。",
-        "benefits": "代理优势",
-        "ben_1": "• 经验证的分发",
-        "ben_2": "• 高级频道分析",
-        "ben_3": "• 情绪跟踪和 AI 洞察",
-        "placeholder": "@yourchannel",
-        "verify_btn": "验证频道",
-        "verifying": "验证中...",
-        "connected_btn": "已连接",
-        "verified_humans_only": "限经验证个人",
-        "verified_desc": "连接频道仅限 <span className=\"text-cyan-400 font-bold\">经验证个人</span>。",
-        "verified_footer": "完成任务 → 通过验证 → 连接频道",
-        "copied": "已复制!",
-        "copy": "复制",
-        "connected_fallback": "已连接",
-        "error_verify_admin": "验证失败。请确保 Blu 机器人是管理员。",
-        "error_connection": "连接错误。请重试。",
-        "req_1_prefix": "添加",
-        "req_1_suffix": "为管理员。",
-        "req_1_bot": "@blu_presencebot",
-        "disconnect": "断开频道",
-        "disconnect_desc": "从 Bluewave 协议中移除此频道。",
-        "disconnecting": "正在断开..."
-    },
-    "roles_overlay": {
-        "title": "生态系统角色",
-        "desc_1": "角色凭证是永久绑定到您的 BW ID 的协议级属性。每个角色都带有收益倍数，会自动应用于团队奖励事件。",
-        "desc_2": "倍数在领取奖励时叠加。角色叠加没有上限——每项凭证的积累都会永久增加您的基础收益率。",
-        "dist_label": "分配",
-        "dist_val": "按贡献加权",
-        "assign_label": "分配方式",
-        "assign_val": "通过努力获得，而非购买",
-        "yield_boost": "收益提升",
-        "credential": "凭证",
-        "protocol_access": "协议访问权限"
-    },
-    "roles_list": {
-        "Bluewave Core": {
-            "name": "Bluewave 核心",
-            "desc": "Bluewave 官方团队成员。",
-            "benefit": "权限、公告、生态系统决策。"
-        },
-        "Community Moderator": {
-            "name": "社区版主",
-            "desc": "保持空间的人性化、整洁和安全。",
-            "benefit": "版主权限，直接联系核心团队。"
-        },
-        "Verified Partner": {
-            "name": "认证合作伙伴",
-            "desc": "合作伙伴项目或社区。",
-            "benefit": "可见度 + 信任徽章。"
-        },
-        "Verified Human": {
-            "name": "认证人类",
-            "desc": "通过了 Bluewave 人类身份验证。",
-            "benefit": "访问封闭聊天、任务和空投。"
-        },
-        "Presence Holder": {
-            "name": "出席持有者",
-            "desc": "保持一致的链上/链下出席。",
-            "benefit": "更高的声誉分数，未来奖励权重。"
-        },
-        "TON Explorer": {
-            "name": "TON 探索者",
-            "desc": "连接了 TON 生态系统钱包。",
-            "benefit": "有资格获得链上空投。收益：+5%"
-        },
-        "Genesis Member": {
-            "name": "创世成员",
-            "desc": "Bluewave 的早期支持者。",
-            "benefit": "优先体验功能、快照、特权。"
-        },
-        "Beta Explorer": {
-            "name": "Beta 探索者",
-            "desc": "积极测试 Bluewave 功能。",
-            "benefit": "早期工具、反馈影响力、认可。"
-        },
-        "New Wave": {
-            "name": "新浪潮",
-            "desc": "初来乍到。欢迎！",
-            "benefit": "目标：学习、观察、进行有意义的互动。"
-        },
-        "Active Human": {
-            "name": "活跃人类",
-            "desc": "持续参与且无垃圾信息。",
-            "benefit": "更高的可见度，有资格获得高级角色。"
-        },
-        "Network Builder": {
-            "name": "网络建设者",
-            "desc": "邀请了 10+ 名活跃人类加入网络。",
-            "benefit": "更高的推荐收益和网络影响力。"
-        },
-        "Contributor": {
-            "name": "贡献者",
-            "desc": "通过建议、反馈或帮助增加价值。",
-            "benefit": "声誉提升，私密贡献者聊天。"
-        },
-        "OG": {
-            "name": "OG",
-            "desc": "长期、一致、以价值为导向的成员。",
-            "benefit": "优先权、特别空投、身份地位。"
-        },
-        "Super OG": {
-            "name": "超级 OG",
-            "desc": "早期塑造社区的精英贡献者。",
-            "benefit": "治理权重、独家特权、认可。"
-        },
-        "Content Creator": {
-            "name": "内容创作者",
-            "desc": "创作高质量的 Bluewave 内容。",
-            "benefit": "获得推广、奖励、特色报道。"
-        },
-        "Best Commentator": {
-            "name": "最佳评论员",
-            "desc": "在讨论中持续提供见解。",
-            "benefit": "声誉提升 + 社区信任。"
-        },
-        "Meme Architect": {
-            "name": "Meme 建筑师",
-            "desc": "创作高信号、定义文化的 Meme。",
-            "benefit": "病毒式传播，趣味奖励。"
-        },
-        "X Supporter": {
-            "name": "X 支持者",
-            "desc": "真实地参与帖子互动。",
-            "benefit": "参与基于 X 的任务。"
-        },
-        "X Raider": {
-            "name": "X 突袭者",
-            "desc": "协调有意义的突袭（无机器人行为）。",
-            "benefit": "突袭专属奖励和排行榜。"
-        },
-        "X Ambassador": {
-            "name": "X 大使",
-            "desc": "通过高质量推文公开代表 Bluewave。",
-            "benefit": "大使奖励，早期公告。"
-        },
-        "Signal Guardian": {
-            "name": "信号守护者",
-            "desc": "保护社区免受机器人 and 噪音干扰。",
-            "benefit": "信任徽章 + 版主关注。"
-        },
-        "Human Legend": {
-            "name": "人类传奇",
-            "desc": "具有卓越长期影响力的稀有角色。",
-            "benefit": "永久荣耀 + 未来生态系统特权。"
-        },
-        "LEVEL 1": {
-            "name": "1 级",
-            "desc": "“新浪潮”。您的旅程从这里开始。",
-            "benefit": "访问基础任务。收益：+1%"
-        },
-        "LEVEL 2": {
-            "name": "2 级",
-            "desc": "脉搏侦察员。持续的出席建设者。",
-            "benefit": "提高推荐收益。收益：+5%"
-        },
-        "LEVEL 3": {
-            "name": "3 级",
-            "desc": "信号建筑师。构建网络结构。",
-            "benefit": "访问高级任务。收益：+10%"
-        },
-        "LEVEL 4": {
-            "name": "4 级",
-            "desc": "浪潮指挥官。生态系统的支柱。",
-            "benefit": "优先支持和特权。收益：+20%"
-        },
-        "LEVEL 5": {
-            "name": "5 级",
-            "desc": "Blu 传奇。出席经济的大师。",
-            "benefit": "Alpha 级治理权重。收益：+50%"
-        }
-    },
-    "roles_cats": {
-        "Core Team Roles": {
-            "title": "核心团队角色",
-            "desc": "官方团队和可信合作伙伴。"
-        },
-        "Identity & Presence Roles": {
-            "title": "身份与出席角色",
-            "desc": "可验证的声誉信号。"
-        },
-        "Community Progression Roles": {
-            "title": "社区进阶角色",
-            "desc": "通过持续的有机参与获得。"
-        },
-        "Creator & Signal Roles": {
-            "title": "创作者与信号角色",
-            "desc": "Bluewave 文化的传播者。"
-        },
-        "X (Twitter) Roles": {
-            "title": "X (Twitter) 角色",
-            "desc": "社交出席的指挥者。"
-        },
-        "Special Recognition Roles": {
-            "title": "特别认可角色",
-            "desc": "生态系统的杰出成员。"
-        },
-        "Ecosystem Levels": {
-            "title": "生态系统等级",
-            "desc": "您在 Bluewave 出席经济中的旅程。"
-        }
-    },
-    "referral": {
-        "share_desc": "分享此代码以增长您的人事网络并赚取 $BWAVE 奖励",
-        "share_btn": "分享代码",
-        "preparing": "准备中...",
-        "copy_link": "复制链接",
-        "copied_link": "已复制链接",
-        "share_caption": "扫描加入人类存在层 🌊",
-        "share_title": "Bluewave — 人类存在层",
-        "canvas_header": "BLUEWAVE",
-        "canvas_subheader": "人类存在层",
-        "canvas_scan_1": "扫描加入",
-        "canvas_scan_2": "人类存在层"
-    },
-    "level_popup": {
-        "title": "等级",
-        "subtitle": "您的 Presence 之旅",
-        "level": "等级",
-        "active": "激活",
-        "verified": "已验证",
-        "not_yet": "尚未解锁",
-        "benefit": "奖励:",
-        "protocol_entry": "协议进入",
-        "presence_commits": "Presence Commits",
-        "bwave_points": "$BWAVE 积分",
-        "human_networks": "经验证的人际网络",
-        "streak_days": "连续天数",
-        "role_badge": "角色勋章持有者",
-        "level_verified": "经验证人类",
-        "default_desc": "完成所有标准以解锁此等级。",
-        "default_benefit": "解锁更高地位。"
-    },
-    "claim_boost_popup": {
-        "title": "领取存在奖励",
-        "calculating": "计算中...",
-        "roles_boost": "角色加成:",
-        "no_boost": "无活跃角色加成。",
-        "no_boost_hint": "获得角色以倍增收益!",
-        "collect": "收集奖励"
-    },
-    "level_up_modal": {
-        "title": "等级提升!",
-        "reached": "你达到了等级",
-        "default_desc": "你开启了存在经济的新阶段。你的信号强度正在增长。",
-        "continue": "继续参与"
-    },
-    "streak_celebration": {
-        "title": "连续参与奖励解锁！",
-        "continuum": "天持续记录",
-        "reward_granted": "奖赏已发放",
-        "claim_continue": "领取并继续",
-        "footer": "保持波动"
-    },
-    "role_celebration": {
-        "title": "角色已解锁",
-        "desc": "你的影响力已获得认可。你现在是 Bluewave 协议中的 **{{role}}**。",
-        "yield_multiplier": "收益加成",
-        "boost": "提升",
-        "collect": "领取加成",
-        "dismiss": "忽略"
-    },
-    "verified_human_modal": {
-        "title": "身份已验证",
-        "badge": "经验证的人类",
-        "desc": "你的存在已通过加密方式确认。你现在被认定为 Bluewave 协议中的 **经验证的人类**。",
-        "benefit_1": "专属经验证人类光环",
-        "benefit_2": "优先网络信号处理",
-        "benefit_3": "协议治理权（第三阶段）",
-        "acknowledge": "确认协议",
-        "close": "关闭"
-    },
-    "daily_ai_popup": {
-        "title": "纪元已结算",
-        "desc": "你昨天的社区信号已通过智能层验证。",
-        "reward_generated": "奖励已生成",
-        "acknowledge": "确认"
+    "earn_drop": {
+      "title": "收益空投",
+      "coming_soon": "即将推出",
+      "desc": "为最活跃的 Bluewave 成员提供的专属代币空投。参与 Presence 任务和社交任务以确保您的资格。",
+      "active_hint": "保持活跃 — 空投将授予持续参与者。"
     }
+  },
+  "leaderboard": {
+    "title": "排行榜",
+    "loading": "加载中...",
+    "error_load": "无法加载排行榜",
+    "you": "您",
+    "referrals": "网络数",
+    "your_level": "当前等级：",
+    "points_to_reach": "分即可晋升",
+    "max_level": "已达到最高等级",
+    "your_rank": "您的排名",
+    "elite": "精英",
+    "rank_2": "排名 2",
+    "rank_3": "排名 3",
+    "referrals_label": "网络数",
+    "global_list": "全球网络列表"
+  },
+  "menu": {
+    "whitepaper": "白皮书 v1.0",
+    "ecosystem_roles": "生态角色",
+    "presence_ledger": "BwaveScan"
+  },
+  "stats": {
+    "back": "返回",
+    "metrics_label": "网络协议指标",
+    "title": "网络统计",
+    "upgrade_status": "协议升级中",
+    "coming_soon": "即将推出",
+    "recalibrating": "我们正在重新校准协议指标，以提高精确度。实时生态数据即将上线。",
+    "snapshot": "协议快照 v1.1.0"
+  },
+  "presence": {
+    "title": "Presence 任务",
+    "commit": "Presence 提交",
+    "activate": "激活",
+    "waiting": "等待中...",
+    "claim_reward": "领取 {{amount}} $BWAVE",
+    "accumulating": "正在累积\nPresence 信号",
+    "unlock_info": "您的 Presence 分数将在 TGE 前的第三阶段解锁",
+    "active_recording": "协议 Presence 记录已激活",
+    "system_offline": "系统离线",
+    "sync_error_desc": "无法同步您的 Presence 任务。请检查您的连接并重试。",
+    "retry_sync": "⚡ 重新同步",
+    "error_activate": "激活任务失败"
+  },
+  "onboarding": {
+    "title": "Bluewave 入门",
+    "hero_title": "激活您的 Presence",
+    "hero_desc": "此一次性设置将您的 Telegram 账号链接到 Bluewave 生态系统。",
+    "username_label": "Telegram 用户名",
+    "loading": "加载中...",
+    "btn_requesting": "请求中...",
+    "btn_request": "请求代码",
+    "bot_hint": "在进行此步骤前，请确保您已在 Bluewave 机器人中输入 /start。",
+    "code_sent": "6 位验证码已发送至您的 Telegram 账号",
+    "code_label": "验证码",
+    "btn_verifying": "验证中...",
+    "btn_verify": "验证代码",
+    "step3_title": "最后一步 — 选择您的 Presence 映射来源。",
+    "country_label": "国家/地区",
+    "search_placeholder": "搜索国家/地区...",
+    "all_countries": "所有国家/地区",
+    "btn_activating": "激活中...",
+    "btn_activate": "激活 Presence",
+    "footer_note": "您的 Presence = 您的权限。我们从不询问密码 — 仅限您的 Telegram 身份。",
+    "error_username": "请输入您的 Telegram 用户名。",
+    "error_request_code": "无法请求代码。请重试。",
+    "error_rate_limit": "请求过多。请稍候 15 分钟。",
+    "error_delivery_failed": "无法将代码发送至 Telegram。请确保您已启动 Bluewave 机器人且未屏蔽它。",
+    "error_network": "网络连接错误。请重试。",
+    "error_invalid_code": "验证码无效。请重试。",
+    "error_expired_code": "验证码已过期。请申请新代码。",
+    "error_verify_failed": "验证失败。请重试。",
+    "error_select_country": "请选择您的国家/地区以激活 Presence。",
+    "error_save_profile": "无法保存个人资料。请重试。",
+    "error_id_missing": "验证成功，但缺少 Telegram ID。请重试。",
+    "error_restart": "出错了。请重新开始入门流程。",
+    "contact_support": "联系支持",
+    "lost_account": "丢失了账号？"
+  },
+  "explore": {
+    "title": "探索订阅",
+    "beta_phase": "测试阶段 • 即将推出",
+    "beta_desc": "社交分发层目前正在全球节点网络中进行校准。在此期间，仅限主管理员访问。",
+    "for_you": "为您推荐",
+    "following": "正在关注",
+    "hydrating": "正在同步订阅...",
+    "no_signals": "暂无信号",
+    "no_signals_desc": "分发订阅目前为空。连接您的频道开始广播。",
+    "no_following": "暂无关注的帖子",
+    "no_following_desc": "关注其他已验证的人类频道以查看他们的帖子。",
+    "acknowledge": "确认",
+    "acknowledged": "已确认",
+    "not_interested": "不感兴趣",
+    "open": "打开",
+    "follow_channel": "关注频道",
+    "channel_desc": "经 Bluewave 协议节点验证的人工分发频道播报。",
+    "bw_id_label": "BW ID",
+    "new_posts_pill": "↑ 新帖子",
+    "new_post_title": "新帖子",
+    "post_placeholder": "你在想什么？...",
+    "post_error_channel": "发布失败。请确保您已连接频道。",
+    "post_error_network": "网络错误。请重试。",
+    "posting_btn": "发布中...",
+    "post_btn": "发布",
+    "post_success_popup": "广播成功",
+    "tabs": {
+      "foryou": "推荐",
+      "following": "关注",
+      "notifications": "通知",
+      "leaderboard": "排行榜"
+    },
+    "connect_prompt": "从个人资料中连接 Blu Agent 到您的频道"
+  },
+  "notifications": {
+    "title": "最近信号",
+    "subtitle": "经验证的分发",
+    "empty": "暂无警报",
+    "empty_desc": "一旦分发周期开始，您的协议活动和网络更新将在此处显示。",
+    "distribution_success": "分发成功",
+    "acknowledgment": "确认",
+    "verified_milestone_title": "验证确认",
+    "notification_type": "通知",
+    "broadcast_msg": "您的频道帖子已广播。",
+    "acknowledged_msg": "{{name}} 确认了您。",
+    "verified_milestone_msg": "{{count}} 位已验证的人类确认了您的帖子",
+    "update_msg": "收到新更新。",
+    "view_post": "查看贴文",
+    "understood": "知晓"
+  },
+  "marketplace": {
+    "beta_phase": "测试阶段"
+  },
+  "common": {
+    "back": "返回",
+    "close": "关闭",
+    "loading": "加载中...",
+    "verify": "验证",
+    "verifying": "验证中...",
+    "done": "完成",
+    "error": "错误"
+  },
+  "connect_blu": {
+    "title": "连接 Blu",
+    "subtitle": "Bluewave 智能代理",
+    "connect_tg": "连接 Telegram 频道",
+    "connect_tg_desc": "将您的频道链接到 Blu 代理",
+    "connect_x": "连接 X",
+    "social_verification": "社交验证",
+    "coming_soon": "即将推出",
+    "back": "← 返回",
+    "requirements": "要求",
+    "req_1": "在您的频道中添加 @blu_presencebot 为管理员。",
+    "req_2": "授予权限：发布消息和删除消息。",
+    "req_3": "在下方输入您的频道用户名并点击验证。",
+    "benefits": "代理优势",
+    "ben_1": "• 经验证的分发",
+    "ben_2": "• 高级频道分析",
+    "ben_3": "• 情绪跟踪和 AI 洞察",
+    "placeholder": "@yourchannel",
+    "verify_btn": "验证频道",
+    "verifying": "验证中...",
+    "connected_btn": "已连接",
+    "verified_humans_only": "限经验证个人",
+    "verified_desc": "连接频道仅限 <span className=\"text-cyan-400 font-bold\">经验证个人</span>。",
+    "verified_footer": "完成任务 → 通过验证 → 连接频道",
+    "copied": "已复制!",
+    "copy": "复制",
+    "connected_fallback": "已连接",
+    "error_verify_admin": "验证失败。请确保 Blu 机器人是管理员。",
+    "error_connection": "连接错误。请重试。",
+    "req_1_prefix": "添加",
+    "req_1_suffix": "为管理员。",
+    "req_1_bot": "@blu_presencebot",
+    "disconnect": "断开频道",
+    "disconnect_desc": "从 Bluewave 协议中移除此频道。",
+    "disconnecting": "正在断开..."
+  },
+  "roles_overlay": {
+    "title": "生态系统角色",
+    "desc_1": "角色凭证是永久绑定到您的 BW ID 的协议级属性。每个角色都带有收益倍数，会自动应用于团队奖励事件。",
+    "desc_2": "倍数在领取奖励时叠加。角色叠加没有上限——每项凭证的积累都会永久增加您的基础收益率。",
+    "dist_label": "分配",
+    "dist_val": "按贡献加权",
+    "assign_label": "分配方式",
+    "assign_val": "通过努力获得，而非购买",
+    "yield_boost": "收益提升",
+    "credential": "凭证",
+    "protocol_access": "协议访问权限"
+  },
+  "roles_list": {
+    "Bluewave Core": {
+      "name": "Bluewave 核心",
+      "desc": "Bluewave 官方团队成员。",
+      "benefit": "权限、公告、生态系统决策。"
+    },
+    "Community Moderator": {
+      "name": "社区版主",
+      "desc": "保持空间的人性化、整洁和安全。",
+      "benefit": "版主权限，直接联系核心团队。"
+    },
+    "Verified Partner": {
+      "name": "认证合作伙伴",
+      "desc": "合作伙伴项目或社区。",
+      "benefit": "可见度 + 信任徽章。"
+    },
+    "Verified Human": {
+      "name": "认证人类",
+      "desc": "通过了 Bluewave 人类身份验证。",
+      "benefit": "访问封闭聊天、任务和空投。"
+    },
+    "Presence Holder": {
+      "name": "出席持有者",
+      "desc": "保持一致的链上/链下出席。",
+      "benefit": "更高的声誉分数，未来奖励权重。"
+    },
+    "TON Explorer": {
+      "name": "TON 探索者",
+      "desc": "连接了 TON 生态系统钱包。",
+      "benefit": "有资格获得链上空投。收益：+5%"
+    },
+    "Genesis Member": {
+      "name": "创世成员",
+      "desc": "Bluewave 的早期支持者。",
+      "benefit": "优先体验功能、快照、特权。"
+    },
+    "Beta Explorer": {
+      "name": "Beta 探索者",
+      "desc": "积极测试 Bluewave 功能。",
+      "benefit": "早期工具、反馈影响力、认可。"
+    },
+    "New Wave": {
+      "name": "新浪潮",
+      "desc": "初来乍到。欢迎！",
+      "benefit": "目标：学习、观察、进行有意义的互动。"
+    },
+    "Active Human": {
+      "name": "活跃人类",
+      "desc": "持续参与且无垃圾信息。",
+      "benefit": "更高的可见度，有资格获得高级角色。"
+    },
+    "Network Builder": {
+      "name": "网络建设者",
+      "desc": "邀请了 10+ 名活跃人类加入网络。",
+      "benefit": "更高的推荐收益和网络影响力。"
+    },
+    "Contributor": {
+      "name": "贡献者",
+      "desc": "通过建议、反馈或帮助增加价值。",
+      "benefit": "声誉提升，私密贡献者聊天。"
+    },
+    "OG": {
+      "name": "OG",
+      "desc": "长期、一致、以价值为导向的成员。",
+      "benefit": "优先权、特别空投、身份地位。"
+    },
+    "Super OG": {
+      "name": "超级 OG",
+      "desc": "早期塑造社区的精英贡献者。",
+      "benefit": "治理权重、独家特权、认可。"
+    },
+    "Content Creator": {
+      "name": "内容创作者",
+      "desc": "创作高质量的 Bluewave 内容。",
+      "benefit": "获得推广、奖励、特色报道。"
+    },
+    "Best Commentator": {
+      "name": "最佳评论员",
+      "desc": "在讨论中持续提供见解。",
+      "benefit": "声誉提升 + 社区信任。"
+    },
+    "Meme Architect": {
+      "name": "Meme 建筑师",
+      "desc": "创作高信号、定义文化的 Meme。",
+      "benefit": "病毒式传播，趣味奖励。"
+    },
+    "X Supporter": {
+      "name": "X 支持者",
+      "desc": "真实地参与帖子互动。",
+      "benefit": "参与基于 X 的任务。"
+    },
+    "X Raider": {
+      "name": "X 突袭者",
+      "desc": "协调有意义的突袭（无机器人行为）。",
+      "benefit": "突袭专属奖励和排行榜。"
+    },
+    "X Ambassador": {
+      "name": "X 大使",
+      "desc": "通过高质量推文公开代表 Bluewave。",
+      "benefit": "大使奖励，早期公告。"
+    },
+    "Signal Guardian": {
+      "name": "信号守护者",
+      "desc": "保护社区免受机器人 and 噪音干扰。",
+      "benefit": "信任徽章 + 版主关注。"
+    },
+    "Human Legend": {
+      "name": "人类传奇",
+      "desc": "具有卓越长期影响力的稀有角色。",
+      "benefit": "永久荣耀 + 未来生态系统特权。"
+    },
+    "LEVEL 1": {
+      "name": "1 级",
+      "desc": "“新浪潮”。您的旅程从这里开始。",
+      "benefit": "访问基础任务。收益：+1%"
+    },
+    "LEVEL 2": {
+      "name": "2 级",
+      "desc": "脉搏侦察员。持续的出席建设者。",
+      "benefit": "提高推荐收益。收益：+5%"
+    },
+    "LEVEL 3": {
+      "name": "3 级",
+      "desc": "信号建筑师。构建网络结构。",
+      "benefit": "访问高级任务。收益：+10%"
+    },
+    "LEVEL 4": {
+      "name": "4 级",
+      "desc": "浪潮指挥官。生态系统的支柱。",
+      "benefit": "优先支持和特权。收益：+20%"
+    },
+    "LEVEL 5": {
+      "name": "5 级",
+      "desc": "Blu 传奇。出席经济的大师。",
+      "benefit": "Alpha 级治理权重。收益：+50%"
+    }
+  },
+  "roles_cats": {
+    "Core Team Roles": {
+      "title": "核心团队角色",
+      "desc": "官方团队和可信合作伙伴。"
+    },
+    "Identity & Presence Roles": {
+      "title": "身份与出席角色",
+      "desc": "可验证的声誉信号。"
+    },
+    "Community Progression Roles": {
+      "title": "社区进阶角色",
+      "desc": "通过持续的有机参与获得。"
+    },
+    "Creator & Signal Roles": {
+      "title": "创作者与信号角色",
+      "desc": "Bluewave 文化的传播者。"
+    },
+    "X (Twitter) Roles": {
+      "title": "X (Twitter) 角色",
+      "desc": "社交出席的指挥者。"
+    },
+    "Special Recognition Roles": {
+      "title": "特别认可角色",
+      "desc": "生态系统的杰出成员。"
+    },
+    "Ecosystem Levels": {
+      "title": "生态系统等级",
+      "desc": "您在 Bluewave 出席经济中的旅程。"
+    }
+  },
+  "referral": {
+    "share_desc": "分享此代码以增长您的人事网络并赚取 $BWAVE 奖励",
+    "share_btn": "分享代码",
+    "preparing": "准备中...",
+    "copy_link": "复制链接",
+    "copied_link": "已复制链接",
+    "share_caption": "扫描加入人类存在层 🌊",
+    "share_title": "Bluewave — 人类存在层",
+    "canvas_header": "BLUEWAVE",
+    "canvas_subheader": "人类存在层",
+    "canvas_scan_1": "扫描加入",
+    "canvas_scan_2": "人类存在层"
+  },
+  "level_popup": {
+    "title": "等级",
+    "subtitle": "您的 Presence 之旅",
+    "level": "等级",
+    "active": "激活",
+    "verified": "已验证",
+    "not_yet": "尚未解锁",
+    "benefit": "奖励:",
+    "protocol_entry": "协议进入",
+    "presence_commits": "Presence Commits",
+    "bwave_points": "$BWAVE 积分",
+    "human_networks": "经验证的人际网络",
+    "streak_days": "连续天数",
+    "role_badge": "角色勋章持有者",
+    "level_verified": "经验证人类",
+    "default_desc": "完成所有标准以解锁此等级。",
+    "default_benefit": "解锁更高地位。"
+  },
+  "claim_boost_popup": {
+    "title": "领取存在奖励",
+    "calculating": "计算中...",
+    "roles_boost": "角色加成:",
+    "no_boost": "无活跃角色加成。",
+    "no_boost_hint": "获得角色以倍增收益!",
+    "collect": "收集奖励"
+  },
+  "level_up_modal": {
+    "title": "等级提升!",
+    "reached": "你达到了等级",
+    "default_desc": "你开启了存在经济的新阶段。你的信号强度正在增长。",
+    "continue": "继续参与"
+  },
+  "streak_celebration": {
+    "title": "连续参与奖励解锁！",
+    "continuum": "天持续记录",
+    "reward_granted": "奖赏已发放",
+    "claim_continue": "领取并继续",
+    "footer": "保持波动"
+  },
+  "role_celebration": {
+    "title": "角色已解锁",
+    "desc": "你的影响力已获得认可。你现在是 Bluewave 协议中的 **{{role}}**。",
+    "yield_multiplier": "收益加成",
+    "boost": "提升",
+    "collect": "领取加成",
+    "dismiss": "忽略"
+  },
+  "verified_human_modal": {
+    "title": "身份已验证",
+    "badge": "经验证的人类",
+    "desc": "你的存在已通过加密方式确认。你现在被认定为 Bluewave 协议中的 **经验证的人类**。",
+    "benefit_1": "专属经验证人类光环",
+    "benefit_2": "优先网络信号处理",
+    "benefit_3": "协议治理权（第三阶段）",
+    "acknowledge": "确认协议",
+    "close": "关闭"
+  },
+  "daily_ai_popup": {
+    "title": "纪元已结算",
+    "desc": "你昨天的社区信号已通过智能层验证。",
+    "reward_generated": "奖励已生成",
+    "acknowledge": "确认"
+  }
 }

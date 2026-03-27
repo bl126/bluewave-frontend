@@ -1,547 +1,548 @@
 {
-    "profile": {
-        "title": "Profil",
-        "streak": "Rentetan",
-        "level": "Tingkat",
-        "total_networks": "Total Jaringan",
-        "network_earnings": "Pendapatan Jaringan",
-        "claim": "Klaim",
-        "claiming": "Mengklaim...",
-        "done": "Selesai",
-        "notify_inactive": "Beritahu Jaringan Tidak Aktif",
-        "wait": "Tunggu",
-        "roles": "Peran",
-        "no_roles": "Belum ada peran yang ditetapkan",
-        "connect_wallet": "HUBUNGKAN DOMPET TON",
-        "wallet_connected": "DOMPET TON TERHUBUNG",
-        "badge_unlocked": "🔥 Lencana 3 Hari Terbuka!",
-        "referral_link": "Tautan Rujukan",
-        "copy": "Salin",
-        "copied": "Tersalin",
-        "joined": "Bergabung",
-        "loading_protocol": "Memuat Protokol...",
-        "bio": "Riwayat",
-        "drops": "Drop",
-        "level_label": "TINGKAT",
-        "streak_label": "RENTETAN",
-        "networks_label": "JARINGAN",
-        "connected": "Terhubung",
-        "notifying": "Memberitahu...",
-        "notify_inactive_btn": "Beritahu Yang Tidak Aktif",
-        "limit_reached": "Batas Tercapai",
-        "network_builder": "PEMBANGUN JARINGAN",
-        "network_builder_desc": "BAGIKAN KODE INI UNTUK MEMPERBESAR JARINGAN MANUSIA ANDA DAN MENDAPATKAN HADIAH $BWAVE",
-        "get_link": "Dapatkan Tautan",
-        "connect_blu": "Hubungkan Blu",
-        "joined_at": "BERGABUNG",
-        "protocol_active": "PROTOKOL AKTIF",
-        "no_roles_unlocked": "Belum ada peran yang terbuka",
-        "protocol_drops": "Drop Protokol",
-        "locked": "Terkunci",
-        "drops_desc": "Pengiriman token eksklusif untuk partisipan yang konsisten. Pertahankan sinyal untuk memenuhi syarat.",
-        "unlocked": "Terbuka"
+  "profile": {
+    "title": "Profil",
+    "streak": "Rentetan",
+    "level": "Tingkat",
+    "total_networks": "Total Jaringan",
+    "network_earnings": "Pendapatan Jaringan",
+    "claim": "Klaim",
+    "claiming": "Mengklaim...",
+    "done": "Selesai",
+    "notify_inactive": "Beritahu Jaringan Tidak Aktif",
+    "wait": "Tunggu",
+    "roles": "Peran",
+    "no_roles": "Belum ada peran yang ditetapkan",
+    "connect_wallet": "HUBUNGKAN DOMPET TON",
+    "wallet_connected": "DOMPET TON TERHUBUNG",
+    "badge_unlocked": "🔥 Lencana 3 Hari Terbuka!",
+    "referral_link": "Tautan Rujukan",
+    "copy": "Salin",
+    "copied": "Tersalin",
+    "joined": "Bergabung",
+    "loading_protocol": "Memuat Protokol...",
+    "bio": "Riwayat",
+    "drops": "Drop",
+    "level_label": "TINGKAT",
+    "streak_label": "RENTETAN",
+    "networks_label": "JARINGAN",
+    "connected": "Terhubung",
+    "notifying": "Memberitahu...",
+    "notify_inactive_btn": "Beritahu Yang Tidak Aktif",
+    "limit_reached": "Batas Tercapai",
+    "network_builder": "PEMBANGUN JARINGAN",
+    "network_builder_desc": "BAGIKAN KODE INI UNTUK MEMPERBESAR JARINGAN MANUSIA ANDA DAN MENDAPATKAN HADIAH $BWAVE",
+    "get_link": "Dapatkan Tautan",
+    "connect_blu": "Hubungkan Blu",
+    "joined_at": "BERGABUNG",
+    "protocol_active": "PROTOKOL AKTIF",
+    "no_roles_unlocked": "Belum ada peran yang terbuka",
+    "protocol_drops": "Drop Protokol",
+    "locked": "Terkunci",
+    "drops_desc": "Pengiriman token eksklusif untuk partisipan yang konsisten. Pertahankan sinyal untuk memenuhi syarat.",
+    "unlocked": "Terbuka"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "change_name": "Ubah Nama",
+    "change_name_desc": "Perbarui nama tampilan Anda",
+    "language": "Bahasa",
+    "language_desc": "Pilih bahasa pilihan Anda"
+  },
+  "language": {
+    "title": "Pilih Bahasa"
+  },
+  "change_name": {
+    "title": "Ubah Nama",
+    "label": "Nama Tampilan",
+    "placeholder": "Masukkan nama Anda",
+    "characters": "karakter",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Menyimpan..."
+  },
+  "nav": {
+    "home": "Beranda",
+    "missions": "Misi",
+    "explore": "Jelajah",
+    "market": "Pasar",
+    "profile": "Profil"
+  },
+  "balance": {
+    "loading": "Memuat...",
+    "connecting": "Menghubungkan..."
+  },
+  "missions": {
+    "title": "Pusat Misi",
+    "open": "Buka",
+    "waiting": "Menunggu...",
+    "claim": "Klaim",
+    "claiming": "Mengklaim...",
+    "done": "Selesai",
+    "loading": "Memuat...",
+    "error_load": "Gagal memuat misi.",
+    "popup_join": "Bergabunglah dengan grup/saluran untuk mengklaim.",
+    "popup_invite": "Undang 2 orang hari ini untuk mendapatkan hadiah.",
+    "popup_open_first": "Ketuk BUKA sebelum mengklaim misi ini.",
+    "popup_complete": "Harap selesaikan misi dengan benar sebelum mengklaim.",
+    "share_text": "Ini bukan koin meme\nIni adalah Ekonomi Kehadiran.\n#BWAVE #TON #Bluewave",
+    "share_button": "Bergabunglah dengan Bluewave",
+    "story_hint": "Telegram menolak berbagi langsung. Simpan gambar dan kirim manual!",
+    "error_story": "Gagal memuat cerita. Silakan coba lagi.",
+    "syncing": "Sinkronisasi...",
+    "synchronizing": "Sinkronisasi...",
+    "session_expired": "Sesi berakhir. Silakan restart aplikasi.",
+    "no_missions": "Tidak ada misi sosial yang tersedia",
+    "tabs": {
+      "presence": "Kehadiran",
+      "social": "Sosial",
+      "quest": "Pencarian",
+      "earn": "Hasilkan"
     },
-    "settings": {
-        "title": "Pengaturan",
-        "change_name": "Ubah Nama",
-        "change_name_desc": "Perbarui nama tampilan Anda",
-        "language": "Bahasa",
-        "language_desc": "Pilih bahasa pilihan Anda"
+    "quests": {
+      "title": "Tugas Spesial",
+      "verified_human": "Manusia Terverifikasi",
+      "verified_only": "Hanya Manusia Terverifikasi",
+      "empty": "Belum ada pencarian. Periksa kembali nanti!",
+      "desc": "Selesaikan misi bernilai tinggi untuk mendapatkan lebih banyak poin dan Entropi.",
+      "lock_hint": "Lulus verifikasi untuk membuka kunci."
     },
-    "language": {
-        "title": "Pilih Bahasa"
-    },
-    "change_name": {
-        "title": "Ubah Nama",
-        "label": "Nama Tampilan",
-        "placeholder": "Masukkan nama Anda",
-        "characters": "karakter",
-        "cancel": "Batal",
-        "save": "Simpan",
-        "saving": "Menyimpan..."
-    },
-    "nav": {
-        "home": "Beranda",
-        "missions": "Misi",
-        "explore": "Jelajah",
-        "market": "Pasar",
-        "profile": "Profil"
-    },
-    "balance": {
-        "loading": "Memuat...",
-        "connecting": "Menghubungkan..."
-    },
-    "missions": {
-        "title": "Pusat Misi",
-        "open": "Buka",
-        "waiting": "Menunggu...",
-        "claim": "Klaim",
-        "claiming": "Mengklaim...",
-        "done": "Selesai",
-        "loading": "Memuat...",
-        "error_load": "Gagal memuat misi.",
-        "popup_join": "Bergabunglah dengan grup/saluran untuk mengklaim.",
-        "popup_invite": "Undang 2 orang hari ini untuk mendapatkan hadiah.",
-        "popup_open_first": "Ketuk BUKA sebelum mengklaim misi ini.",
-        "popup_complete": "Harap selesaikan misi dengan benar sebelum mengklaim.",
-        "share_text": "Ini bukan koin meme\nIni adalah Ekonomi Kehadiran.\n#BWAVE #TON #Bluewave",
-        "share_button": "Bergabunglah dengan Bluewave",
-        "story_hint": "Telegram menolak berbagi langsung. Simpan gambar dan kirim manual!",
-        "error_story": "Gagal memuat cerita. Silakan coba lagi.",
-        "syncing": "Sinkronisasi...",
-        "synchronizing": "Sinkronisasi...",
-        "session_expired": "Sesi berakhir. Silakan restart aplikasi.",
-        "no_missions": "Tidak ada misi sosial yang tersedia",
-        "tabs": {
-            "presence": "Kehadiran",
-            "social": "Sosial",
-            "quest": "Pencarian",
-            "earn": "Hasilkan"
-        },
-        "quests": {
-            "title": "Tugas Spesial",
-            "verified_human": "Manusia Terverifikasi",
-            "verified_only": "Hanya Manusia Terverifikasi",
-            "empty": "Belum ada pencarian. Periksa kembali nanti!",
-            "desc": "Selesaikan misi bernilai tinggi untuk mendapatkan lebih banyak poin dan Entropi.",
-            "lock_hint": "Lulus verifikasi untuk membuka kunci."
-        },
-        "earn_drop": {
-            "title": "Hasilkan Drop",
-            "coming_soon": "Segera Hadir",
-            "desc": "Drop token untuk pengguna aktif Bluewave. Berpartisipasilah dalam misi untuk mengamankan tempat Anda.",
-            "active_hint": "Tetap aktif — drop diberikan kepada peserta yang konsisten."
-        }
-    },
-    "leaderboard": {
-        "title": "Papan Peringkat",
-        "loading": "Memuat...",
-        "error_load": "Tidak dapat memuat peringkat",
-        "you": "ANDA",
-        "referrals": "Jaringan",
-        "your_level": "Tingkat Anda:",
-        "points_to_reach": "poin untuk dicapai",
-        "max_level": "Tingkat Maksimum",
-        "your_rank": "PERINGKAT ANDA",
-        "elite": "ELIT",
-        "rank_2": "PERINGKAT 2",
-        "rank_3": "PERINGKAT 3",
-        "referrals_label": "JARINGAN",
-        "global_list": "Daftar Jaringan Global"
-    },
-    "explore": {
-        "title": "Jelajah",
-        "beta_phase": "Fase Beta • Segera Hadir",
-        "beta_desc": "Saluran ini eksklusif untuk admin selama kalibrasi.",
-        "for_you": "Untukmu",
-        "following": "Mengikuti",
-        "hydrating": "Memuat...",
-        "no_signals": "Belum ada sinyal",
-        "no_signals_desc": "Masih kosong. Sambungkan saluran Anda.",
-        "no_following": "Tidak ada Postingan",
-        "no_following_desc": "Ikuti saluran manusia terverifikasi lainnya untuk melihat postingan mereka.",
-        "acknowledge": "Akui",
-        "acknowledged": "Diakui",
-        "not_interested": "Tidak tertarik",
-        "open": "Buka",
-        "follow_channel": "Ikuti Saluran",
-        "channel_desc": "Saluran distribusi terverifikasi.",
-        "bw_id_label": "ID BW",
-        "new_posts_pill": "↑ Postingan Baru",
-        "new_post_title": "Postingan Baru",
-        "post_placeholder": "Apa yang ada di pikiran Anda?...",
-        "post_error_channel": "Gagal memposting. Pastikan Anda memiliki saluran yang terhubung.",
-        "post_error_network": "Kesalahan jaringan. Silakan coba lagi.",
-        "posting_btn": "Memposting...",
-        "post_btn": "Posting",
-        "post_success_popup": "Siaran Berhasil",
-        "tabs": {
-            "foryou": "Untuk Anda",
-            "following": "Mengikuti",
-            "notifications": "Notifikasi",
-            "leaderboard": "Papan Peringkat"
-        }
-    },
-    "menu": {
-        "whitepaper": "Buku Putih v1.0",
-        "ecosystem_roles": "Peran Ekosistem",
-        "presence_ledger": "BwaveScan"
-    },
-    "stats": {
-        "back": "Kembali",
-        "metrics_label": "Metrik Protokol",
-        "title": "Statistik Jaringan",
-        "upgrade_status": "Peningkatan Protokol",
-        "coming_soon": "Segera Hadir",
-        "recalibrating": "Kami sedang melakukan rekalibrasi. Data waktu nyata segera hadir.",
-        "snapshot": "Snapshot Protokol v1.1.0"
-    },
-    "presence": {
-        "title": "Misi Kehadiran",
-        "commit": "Komitmen",
-        "activate": "Aktifkan",
-        "waiting": "Menunggu...",
-        "claim_reward": "Klaim {{amount}} $BWAVE",
-        "accumulating": "Mendapatkan\nSinyal Kehadiran",
-        "unlock_info": "Skor Anda akan terbuka di Fase III",
-        "active_recording": "Rekaman Kehadiran Aktif",
-        "system_offline": "Sistem Offline",
-        "sync_error_desc": "Gagal sinkron. Periksa jaringan Anda.",
-        "retry_sync": "⚡ ULANGI",
-        "error_activate": "Gagal mengaktifkan misi"
-    },
-    "onboarding": {
-        "title": "Mulai Bluewave",
-        "hero_title": "Aktifkan Kehadiran Anda",
-        "hero_desc": "Ini akan menautkan akun Telegram Anda ke ekosistem.",
-        "username_label": "Nama Pengguna Telegram",
-        "loading": "Memuat...",
-        "btn_requesting": "Meminta...",
-        "btn_request": "Minta Kode",
-        "bot_hint": "Pastikan Anda telah mengetik /start di bot Bluewave.",
-        "code_sent": "Kode 6 digit telah dikirim ke Telegram Anda",
-        "code_label": "Kode Verifikasi",
-        "btn_verifying": "Memverifikasi...",
-        "btn_verify": "Verifikasi Kode",
-        "step3_title": "Langkah Terakhir — pilih dari mana asal Anda.",
-        "country_label": "Negara",
-        "search_placeholder": "Cari negara...",
-        "all_countries": "Semua Negara",
-        "btn_activating": "Mengaktifkan...",
-        "btn_activate": "Aktifkan",
-        "footer_note": "Kami tidak pernah meminta kata sandi Anda.",
-        "error_username": "Masukkan nama Telegram Anda.",
-        "error_request_code": "Tidak dapat meminta kode. Coba lagi.",
-        "error_rate_limit": "Terlalu banyak permintaan. Tunggu 15 menit.",
-        "error_delivery_failed": "Gagal mengirim ke Telegram. Pastikan bot terbuka.",
-        "error_network": "Kesalahan jaringan. Coba lagi.",
-        "error_invalid_code": "Kode tidak valid.",
-        "error_expired_code": "Kode kadaluwarsa. Minta baru.",
-        "error_verify_failed": "Verifikasi gagal. Coba lagi.",
-        "error_select_country": "Pilih negara Anda.",
-        "error_save_profile": "Gagal menyimpan profil.",
-        "error_id_missing": "Verifikasi sukses tapi ID Telegram hilang.",
-        "error_restart": "Ada yang salah. Silakan mulai ulang.",
-        "contact_support": "Hubungi Dukungan",
-        "lost_account": "Kehilangan akun Anda?"
-    },
-    "notifications": {
-        "title": "Sinyal Terbaru",
-        "subtitle": "Distribusi Terverifikasi",
-        "empty": "Tidak ada pemberitahuan",
-        "empty_desc": "Pembaruan jaringan Anda akan muncul di sini.",
-        "distribution_success": "Distribusi Sukses",
-        "acknowledgment": "Pengakuan",
-        "verified_milestone_title": "Pengakuan Terverifikasi",
-        "notification_type": "Pemberitahuan",
-        "broadcast_msg": "Postingan saluran Anda disiarkan.",
-        "acknowledged_msg": "{{name}} mengakui Anda.",
-        "verified_milestone_msg": "{{count}} manusia terverifikasi mengakui postingan Anda",
-        "update_msg": "Pembaruan baru diterima.",
-        "view_post": "Lihat Pos",
-        "understood": "Dimengerti"
-    },
-    "marketplace": {
-        "beta_phase": "DALAM FASE BETA"
-    },
-    "common": {
-        "back": "Kembali",
-        "close": "Tutup",
-        "loading": "Memuat...",
-        "verify": "Verifikasi",
-        "verifying": "Memverifikasi...",
-        "done": "Selesai",
-        "error": "Kesalahan"
-    },
-    "connect_blu": {
-        "title": "Sambungkan Blu",
-        "subtitle": "Agen Intelijen Bluewave",
-        "connect_tg": "Sambungkan Saluran Telegram",
-        "connect_tg_desc": "Tautkan saluran Anda ke Agen Blu",
-        "connect_x": "Sambungkan X",
-        "social_verification": "Verifikasi sosial",
-        "coming_soon": "Segera Hadir",
-        "back": "← Kembali",
-        "requirements": "Persyaratan",
-        "req_1": "Tambahkan @blu_presencebot sebagai admin di saluran Anda.",
-        "req_2": "Berikan izin: Posting Pesan & Hapus Pesan.",
-        "req_3": "Masukkan nama pengguna saluran Anda di bawah dan ketuk Verifikasi.",
-        "benefits": "Manfaat Agen",
-        "ben_1": "• Distribusi Terverifikasi",
-        "ben_2": "• Analisis saluran lanjutan",
-        "ben_3": "• Pelacakan sentimen & wawasan AI",
-        "placeholder": "@salurananda",
-        "verify_btn": "Verifikasi Saluran",
-        "verifying": "Memverifikasi...",
-        "connected_btn": "TERSAMBUNG",
-        "verified_humans_only": "Hanya Manusia Terverifikasi",
-        "verified_desc": "Penyambungan saluran Telegram khusus untuk <span className=\"text-cyan-400 font-bold\">Manusia Terverifikasi</span>.",
-        "verified_footer": "Selesaikan misi → Terverifikasi → Sambungkan Saluran",
-        "copied": "TERSALIN!",
-        "copy": "SALIN",
-        "connected_fallback": "Tersambung",
-        "error_verify_admin": "Verifikasi gagal. Pastikan bot Blu adalah admin.",
-        "error_connection": "Kesalahan koneksi. Silakan coba lagi.",
-        "req_1_prefix": "Tambahkan",
-        "req_1_suffix": "sebagai admin di saluran Anda.",
-        "req_1_bot": "@blu_presencebot",
-        "disconnect": "Putuskan Saluran",
-        "disconnect_desc": "Hapus saluran ini dari protokol Bluewave.",
-        "disconnecting": "Memutuskan..."
-    },
-    "roles_overlay": {
-        "title": "Peran Ekosistem",
-        "desc_1": "Kredensial peran adalah atribut tingkat protokol yang terikat secara permanen ke BW ID Anda. Setiap peran membawa pengganda hasil yang diterapkan secara otomatis.",
-        "desc_2": "Pengganda menumpuk saat klaim di Misi Presence dan Referensi. Tidak ada batasan — setiap kredensial meningkatkan tingkat hasil dasar Anda secara permanen.",
-        "dist_label": "Distribusi",
-        "dist_val": "Tertimbang kontribusi",
-        "assign_label": "Penugasan",
-        "assign_val": "Diperoleh, bukan dibeli",
-        "yield_boost": "PENINGKATAN HASIL",
-        "credential": "Kredensial",
-        "protocol_access": "Akses Protokol"
-    },
-    "roles_list": {
-        "Bluewave Core": {
-            "name": "Inti Bluewave",
-            "desc": "Anggota tim resmi Bluewave.",
-            "benefit": "Otoritas, pengumuman, keputusan ekosistem."
-        },
-        "Community Moderator": {
-            "name": "Moderator Komunitas",
-            "desc": "Menjaga ruang tetap manusiawi, bersih, dan aman.",
-            "benefit": "Kekuatan moderasi, akses langsung ke tim inti."
-        },
-        "Verified Partner": {
-            "name": "Mitra Terverifikasi",
-            "desc": "Proyek atau komunitas yang berkolaborasi.",
-            "benefit": "Visibilitas + lencana tepercaya."
-        },
-        "Verified Human": {
-            "name": "Manusia Terverifikasi",
-            "desc": "Lulus verifikasi manusia Bluewave.",
-            "benefit": "Akses ke obrolan, misi, dan drop eksklusif."
-        },
-        "Presence Holder": {
-            "name": "Pemegang Presence",
-            "desc": "Mempertahankan kehadiran on-chain/off-chain yang konsisten.",
-            "benefit": "Skor reputasi lebih tinggi."
-        },
-        "TON Explorer": {
-            "name": "Penjelajah TON",
-            "desc": "Menghubungkan dompet ekosistem TON.",
-            "benefit": "Memenuhi syarat untuk drop on-chain. Hasil: +5%"
-        },
-        "Genesis Member": {
-            "name": "Anggota Genesis",
-            "desc": "Pendukung awal Bluewave.",
-            "benefit": "Akses prioritas ke fitur dan fasilitas."
-        },
-        "Beta Explorer": {
-            "name": "Penjelajah Beta",
-            "desc": "Aktif menguji fitur Bluewave.",
-            "benefit": "Alat awal, pengaruh umpan balik."
-        },
-        "New Wave": {
-            "name": "Gelombang Baru",
-            "desc": "Baru saja tiba. Selamat datang!",
-            "benefit": "Tujuan: Belajar, mengamati, berinteraksi secara bermakna."
-        },
-        "Active Human": {
-            "name": "Manusia Aktif",
-            "desc": "Partisipasi konsisten tanpa spam.",
-            "benefit": "Visibilitas lebih tinggi, kelayakan untuk peran lanjutan."
-        },
-        "Network Builder": {
-            "name": "Pembangun Jaringan",
-            "desc": "Mengundang 10+ manusia aktif ke jaringan.",
-            "benefit": "Hasil referensi lebih tinggi dan pengaruh jaringan."
-        },
-        "Contributor": {
-            "name": "Kontributor",
-            "desc": "Menambah nilai melalui ide atau bantuan.",
-            "benefit": "Peningkatan reputasi, obrolan kontributor pribadi."
-        },
-        "OG": {
-            "name": "OG",
-            "desc": "Anggota jangka panjang, konsisten, dan berorientasi nilai.",
-            "benefit": "Akses prioritas, drop khusus, status."
-        },
-        "Super OG": {
-            "name": "Super OG",
-            "desc": "Kontributor elit yang membentuk komunitas lebih awal.",
-            "benefit": "Bobot tata kelola, fasilitas eksklusif."
-        },
-        "Content Creator": {
-            "name": "Pembuat Konten",
-            "desc": "Membuat konten Bluewave berkualitas tinggi.",
-            "benefit": "Amplifikasi, hadiah, sorotan khusus."
-        },
-        "Best Commentator": {
-            "name": "Komentator Terbaik",
-            "desc": "Konsisten menambah wawasan dalam diskusi.",
-            "benefit": "Peningkatan reputasi + kepercayaan komunitas."
-        },
-        "Meme Architect": {
-            "name": "Arsitek Meme",
-            "desc": "Membuat meme berkualitas tinggi yang mendefinisikan budaya.",
-            "benefit": "Amplifikasi viral, hadiah menyenangkan."
-        },
-        "X Supporter": {
-            "name": "Pendukung X",
-            "desc": "Berinteraksi dengan postingan secara autentik.",
-            "benefit": "Akses ke misi berbasis X."
-        },
-        "X Raider": {
-            "name": "Raider X",
-            "desc": "Mengoordinasikan penyerbuan bermakna (tanpa bot).",
-            "benefit": "Hadiah khusus raider & papan peringkat."
-        },
-        "X Ambassador": {
-            "name": "Duta X",
-            "desc": "Mewakili Bluewave secara publik dengan utas berkualitas.",
-            "benefit": "Hadiah duta, pengumuman awal."
-        },
-        "Signal Guardian": {
-            "name": "Penjaga Sinyal",
-            "desc": "Melindungi komunitas dari bot dan kebisingan.",
-            "benefit": "Lencana kepercayaan + perhatian moderator."
-        },
-        "Human Legend": {
-            "name": "Legenda Manusia",
-            "desc": "Peran langka untuk dampak jangka panjang yang luar biasa.",
-            "benefit": "Kehormatan abadi + hak istimewa ekosistem di masa depan."
-        },
-        "LEVEL 1": {
-            "name": "LEVEL 1",
-            "desc": "'Gelombang Baru'. Perjalanan Anda dimulai di sini.",
-            "benefit": "Akses ke misi dasar. Hasil: +1%"
-        },
-        "LEVEL 2": {
-            "name": "LEVEL 2",
-            "desc": "Pramuka Pulsa. Pembangun kehadiran yang konsisten.",
-            "benefit": "Hasil referensi yang ditingkatkan. Hasil: +5%"
-        },
-        "LEVEL 3": {
-            "name": "LEVEL 3",
-            "desc": "Arsitek Sinyal. Membangun struktur jaringan.",
-            "benefit": "Akses misi lanjutan. Hasil: +10%"
-        },
-        "LEVEL 4": {
-            "name": "LEVEL 4",
-            "desc": "Komandan Gelombang. Pilar ekosistem.",
-            "benefit": "Dukungan prioritas & fasilitas. Hasil: +20%"
-        },
-        "LEVEL 5": {
-            "name": "LEVEL 5",
-            "desc": "Legenda Blu. Ahli Ekonomi Presence.",
-            "benefit": "Bobot tata kelola alfa. Hasil: +50%"
-        }
-    },
-    "roles_cats": {
-        "Core Team Roles": {
-            "title": "Peran Tim Inti",
-            "desc": "Tim resmi dan mitra tepercaya."
-        },
-        "Identity & Presence Roles": {
-            "title": "Peran Identitas & Presence",
-            "desc": "Sinyal reputasi yang dapat diverifikasi."
-        },
-        "Community Progression Roles": {
-            "title": "Peran Kemajuan Komunitas",
-            "desc": "Diperoleh melalui partisipasi organik yang konsisten."
-        },
-        "Creator & Signal Roles": {
-            "title": "Peran Kreator & Sinyal",
-            "desc": "Amplifier budaya Bluewave."
-        },
-        "X (Twitter) Roles": {
-            "title": "Peran X (Twitter)",
-            "desc": "Komandan kehadiran sosial."
-        },
-        "Special Recognition Roles": {
-            "title": "Peran Pengakuan Khusus",
-            "desc": "Anggota ekosistem yang luar biasa."
-        },
-        "Ecosystem Levels": {
-            "title": "Level Ekosistem",
-            "desc": "Perjalanan Anda melalui Ekonomi Presence Bluewave."
-        }
-    },
-    "referral": {
-        "share_desc": "BAGIKAN KODE INI UNTUK MENUMBUHKAN JARINGAN MANUSIA ANDA",
-        "share_btn": "Bagikan Kode",
-        "preparing": "Menyiapkan...",
-        "copy_link": "Salin Tautan",
-        "copied_link": "Tautan Tersalin",
-        "share_caption": "Pindai saya untuk bergabung dengan Bluewave 🌊",
-        "share_title": "Bluewave — Lapisan Kehadiran Manusia",
-        "canvas_header": "BLUEWAVE",
-        "canvas_subheader": "Lapisan Kehadiran Manusia",
-        "canvas_scan_1": "Pindai saya untuk",
-        "canvas_scan_2": "bergabung sekarang"
-    },
-    "level_popup": {
-        "title": "Level",
-        "subtitle": "Perjalanan Kehadiran Anda",
-        "level": "LEVEL",
-        "active": "AKTIF",
-        "verified": "TERVERIFIKASI",
-        "not_yet": "BELUM",
-        "benefit": "Manfaat:",
-        "protocol_entry": "Entri Protokol",
-        "presence_commits": "Presence Commits",
-        "bwave_points": "Poin $BWAVE",
-        "human_networks": "Jejaring Manusia Terverifikasi",
-        "streak_days": "Hari Berurutan",
-        "role_badge": "Pemegang Lencana Peran",
-        "level_verified": "Manusia Terverifikasi",
-        "default_desc": "Lengkapi semua kriteria untuk membuka level ini.",
-        "default_benefit": "Status lebih tinggi terbuka."
-    },
-    "claim_boost_popup": {
-        "title": "Mengklaim Hadiah Kehadiran",
-        "calculating": "Menghitung...",
-        "roles_boost": "Peningkatan Peran:",
-        "no_boost": "Tidak ada peningkatan peran aktif.",
-        "no_boost_hint": "Dapatkan peran untuk melipatgandakan hasil!",
-        "collect": "Kumpulkan Hadiah"
-    },
-    "level_up_modal": {
-        "title": "Naik Level!",
-        "reached": "Anda mencapai Level",
-        "default_desc": "Anda telah membuka tingkatan baru dalam ekonomi kehadiran. Kekuatan sinyal Anda meningkat.",
-        "continue": "Lanjutkan Kehadiran"
-    },
-    "streak_celebration": {
-        "title": "STREAK TERBUKA!",
-        "continuum": "HARI KONTINUUM",
-        "reward_granted": "HADIAH DIBERIKAN",
-        "claim_continue": "Klaim & Lanjutkan",
-        "footer": "Terus gerakkan gelombang"
-    },
-    "role_celebration": {
-        "title": "Peran Terbuka",
-        "desc": "Anda telah diakui atas dampak Anda. Anda sekarang adalah **{{role}}** dalam Protokol Bluewave.",
-        "yield_multiplier": "Pengganda Hasil",
-        "boost": "PENINGKATAN",
-        "collect": "Kumpulkan Peningkatan",
-        "dismiss": "Abaikan"
-    },
-    "verified_human_modal": {
-        "title": "Identitas Terverifikasi",
-        "badge": "Manusia Terverifikasi",
-        "desc": "Kehadiran Anda telah dikonfirmasi secara kriptografis. Anda sekarang diakui sebagai **Manusia Terverifikasi** dalam Protokol Bluewave.",
-        "benefit_1": "Cincin Manusia Terverifikasi Eksklusif",
-        "benefit_2": "Pemrosesan Sinyal Jaringan Prioritas",
-        "benefit_3": "Hak Tata Kelola Protokol (Fase III)",
-        "acknowledge": "Akui Protokol",
-        "close": "Tutup"
-    },
-    "daily_ai_popup": {
-        "title": "Zaman Selesai",
-        "desc": "Sinyal komunitas Anda dari kemarin telah diverifikasi oleh lapisan intelijen.",
-        "reward_generated": "Hadiah Dihasilkan",
-        "acknowledge": "Akui"
+    "earn_drop": {
+      "title": "Hasilkan Drop",
+      "coming_soon": "Segera Hadir",
+      "desc": "Drop token untuk pengguna aktif Bluewave. Berpartisipasilah dalam misi untuk mengamankan tempat Anda.",
+      "active_hint": "Tetap aktif — drop diberikan kepada peserta yang konsisten."
     }
+  },
+  "leaderboard": {
+    "title": "Papan Peringkat",
+    "loading": "Memuat...",
+    "error_load": "Tidak dapat memuat peringkat",
+    "you": "ANDA",
+    "referrals": "Jaringan",
+    "your_level": "Tingkat Anda:",
+    "points_to_reach": "poin untuk dicapai",
+    "max_level": "Tingkat Maksimum",
+    "your_rank": "PERINGKAT ANDA",
+    "elite": "ELIT",
+    "rank_2": "PERINGKAT 2",
+    "rank_3": "PERINGKAT 3",
+    "referrals_label": "JARINGAN",
+    "global_list": "Daftar Jaringan Global"
+  },
+  "explore": {
+    "title": "Jelajah",
+    "beta_phase": "Fase Beta • Segera Hadir",
+    "beta_desc": "Saluran ini eksklusif untuk admin selama kalibrasi.",
+    "for_you": "Untukmu",
+    "following": "Mengikuti",
+    "hydrating": "Memuat...",
+    "no_signals": "Belum ada sinyal",
+    "no_signals_desc": "Masih kosong. Sambungkan saluran Anda.",
+    "no_following": "Tidak ada Postingan",
+    "no_following_desc": "Ikuti saluran manusia terverifikasi lainnya untuk melihat postingan mereka.",
+    "acknowledge": "Akui",
+    "acknowledged": "Diakui",
+    "not_interested": "Tidak tertarik",
+    "open": "Buka",
+    "follow_channel": "Ikuti Saluran",
+    "channel_desc": "Saluran distribusi terverifikasi.",
+    "bw_id_label": "ID BW",
+    "new_posts_pill": "↑ Postingan Baru",
+    "new_post_title": "Postingan Baru",
+    "post_placeholder": "Apa yang ada di pikiran Anda?...",
+    "post_error_channel": "Gagal memposting. Pastikan Anda memiliki saluran yang terhubung.",
+    "post_error_network": "Kesalahan jaringan. Silakan coba lagi.",
+    "posting_btn": "Memposting...",
+    "post_btn": "Posting",
+    "post_success_popup": "Siaran Berhasil",
+    "tabs": {
+      "foryou": "Untuk Anda",
+      "following": "Mengikuti",
+      "notifications": "Notifikasi",
+      "leaderboard": "Papan Peringkat"
+    },
+    "connect_prompt": "Hubungkan Agen Blu ke saluran Anda dari profil"
+  },
+  "menu": {
+    "whitepaper": "Buku Putih v1.0",
+    "ecosystem_roles": "Peran Ekosistem",
+    "presence_ledger": "BwaveScan"
+  },
+  "stats": {
+    "back": "Kembali",
+    "metrics_label": "Metrik Protokol",
+    "title": "Statistik Jaringan",
+    "upgrade_status": "Peningkatan Protokol",
+    "coming_soon": "Segera Hadir",
+    "recalibrating": "Kami sedang melakukan rekalibrasi. Data waktu nyata segera hadir.",
+    "snapshot": "Snapshot Protokol v1.1.0"
+  },
+  "presence": {
+    "title": "Misi Kehadiran",
+    "commit": "Komitmen",
+    "activate": "Aktifkan",
+    "waiting": "Menunggu...",
+    "claim_reward": "Klaim {{amount}} $BWAVE",
+    "accumulating": "Mendapatkan\nSinyal Kehadiran",
+    "unlock_info": "Skor Anda akan terbuka di Fase III",
+    "active_recording": "Rekaman Kehadiran Aktif",
+    "system_offline": "Sistem Offline",
+    "sync_error_desc": "Gagal sinkron. Periksa jaringan Anda.",
+    "retry_sync": "⚡ ULANGI",
+    "error_activate": "Gagal mengaktifkan misi"
+  },
+  "onboarding": {
+    "title": "Mulai Bluewave",
+    "hero_title": "Aktifkan Kehadiran Anda",
+    "hero_desc": "Ini akan menautkan akun Telegram Anda ke ekosistem.",
+    "username_label": "Nama Pengguna Telegram",
+    "loading": "Memuat...",
+    "btn_requesting": "Meminta...",
+    "btn_request": "Minta Kode",
+    "bot_hint": "Pastikan Anda telah mengetik /start di bot Bluewave.",
+    "code_sent": "Kode 6 digit telah dikirim ke Telegram Anda",
+    "code_label": "Kode Verifikasi",
+    "btn_verifying": "Memverifikasi...",
+    "btn_verify": "Verifikasi Kode",
+    "step3_title": "Langkah Terakhir — pilih dari mana asal Anda.",
+    "country_label": "Negara",
+    "search_placeholder": "Cari negara...",
+    "all_countries": "Semua Negara",
+    "btn_activating": "Mengaktifkan...",
+    "btn_activate": "Aktifkan",
+    "footer_note": "Kami tidak pernah meminta kata sandi Anda.",
+    "error_username": "Masukkan nama Telegram Anda.",
+    "error_request_code": "Tidak dapat meminta kode. Coba lagi.",
+    "error_rate_limit": "Terlalu banyak permintaan. Tunggu 15 menit.",
+    "error_delivery_failed": "Gagal mengirim ke Telegram. Pastikan bot terbuka.",
+    "error_network": "Kesalahan jaringan. Coba lagi.",
+    "error_invalid_code": "Kode tidak valid.",
+    "error_expired_code": "Kode kadaluwarsa. Minta baru.",
+    "error_verify_failed": "Verifikasi gagal. Coba lagi.",
+    "error_select_country": "Pilih negara Anda.",
+    "error_save_profile": "Gagal menyimpan profil.",
+    "error_id_missing": "Verifikasi sukses tapi ID Telegram hilang.",
+    "error_restart": "Ada yang salah. Silakan mulai ulang.",
+    "contact_support": "Hubungi Dukungan",
+    "lost_account": "Kehilangan akun Anda?"
+  },
+  "notifications": {
+    "title": "Sinyal Terbaru",
+    "subtitle": "Distribusi Terverifikasi",
+    "empty": "Tidak ada pemberitahuan",
+    "empty_desc": "Pembaruan jaringan Anda akan muncul di sini.",
+    "distribution_success": "Distribusi Sukses",
+    "acknowledgment": "Pengakuan",
+    "verified_milestone_title": "Pengakuan Terverifikasi",
+    "notification_type": "Pemberitahuan",
+    "broadcast_msg": "Postingan saluran Anda disiarkan.",
+    "acknowledged_msg": "{{name}} mengakui Anda.",
+    "verified_milestone_msg": "{{count}} manusia terverifikasi mengakui postingan Anda",
+    "update_msg": "Pembaruan baru diterima.",
+    "view_post": "Lihat Pos",
+    "understood": "Dimengerti"
+  },
+  "marketplace": {
+    "beta_phase": "DALAM FASE BETA"
+  },
+  "common": {
+    "back": "Kembali",
+    "close": "Tutup",
+    "loading": "Memuat...",
+    "verify": "Verifikasi",
+    "verifying": "Memverifikasi...",
+    "done": "Selesai",
+    "error": "Kesalahan"
+  },
+  "connect_blu": {
+    "title": "Sambungkan Blu",
+    "subtitle": "Agen Intelijen Bluewave",
+    "connect_tg": "Sambungkan Saluran Telegram",
+    "connect_tg_desc": "Tautkan saluran Anda ke Agen Blu",
+    "connect_x": "Sambungkan X",
+    "social_verification": "Verifikasi sosial",
+    "coming_soon": "Segera Hadir",
+    "back": "← Kembali",
+    "requirements": "Persyaratan",
+    "req_1": "Tambahkan @blu_presencebot sebagai admin di saluran Anda.",
+    "req_2": "Berikan izin: Posting Pesan & Hapus Pesan.",
+    "req_3": "Masukkan nama pengguna saluran Anda di bawah dan ketuk Verifikasi.",
+    "benefits": "Manfaat Agen",
+    "ben_1": "• Distribusi Terverifikasi",
+    "ben_2": "• Analisis saluran lanjutan",
+    "ben_3": "• Pelacakan sentimen & wawasan AI",
+    "placeholder": "@salurananda",
+    "verify_btn": "Verifikasi Saluran",
+    "verifying": "Memverifikasi...",
+    "connected_btn": "TERSAMBUNG",
+    "verified_humans_only": "Hanya Manusia Terverifikasi",
+    "verified_desc": "Penyambungan saluran Telegram khusus untuk <span className=\"text-cyan-400 font-bold\">Manusia Terverifikasi</span>.",
+    "verified_footer": "Selesaikan misi → Terverifikasi → Sambungkan Saluran",
+    "copied": "TERSALIN!",
+    "copy": "SALIN",
+    "connected_fallback": "Tersambung",
+    "error_verify_admin": "Verifikasi gagal. Pastikan bot Blu adalah admin.",
+    "error_connection": "Kesalahan koneksi. Silakan coba lagi.",
+    "req_1_prefix": "Tambahkan",
+    "req_1_suffix": "sebagai admin di saluran Anda.",
+    "req_1_bot": "@blu_presencebot",
+    "disconnect": "Putuskan Saluran",
+    "disconnect_desc": "Hapus saluran ini dari protokol Bluewave.",
+    "disconnecting": "Memutuskan..."
+  },
+  "roles_overlay": {
+    "title": "Peran Ekosistem",
+    "desc_1": "Kredensial peran adalah atribut tingkat protokol yang terikat secara permanen ke BW ID Anda. Setiap peran membawa pengganda hasil yang diterapkan secara otomatis.",
+    "desc_2": "Pengganda menumpuk saat klaim di Misi Presence dan Referensi. Tidak ada batasan — setiap kredensial meningkatkan tingkat hasil dasar Anda secara permanen.",
+    "dist_label": "Distribusi",
+    "dist_val": "Tertimbang kontribusi",
+    "assign_label": "Penugasan",
+    "assign_val": "Diperoleh, bukan dibeli",
+    "yield_boost": "PENINGKATAN HASIL",
+    "credential": "Kredensial",
+    "protocol_access": "Akses Protokol"
+  },
+  "roles_list": {
+    "Bluewave Core": {
+      "name": "Inti Bluewave",
+      "desc": "Anggota tim resmi Bluewave.",
+      "benefit": "Otoritas, pengumuman, keputusan ekosistem."
+    },
+    "Community Moderator": {
+      "name": "Moderator Komunitas",
+      "desc": "Menjaga ruang tetap manusiawi, bersih, dan aman.",
+      "benefit": "Kekuatan moderasi, akses langsung ke tim inti."
+    },
+    "Verified Partner": {
+      "name": "Mitra Terverifikasi",
+      "desc": "Proyek atau komunitas yang berkolaborasi.",
+      "benefit": "Visibilitas + lencana tepercaya."
+    },
+    "Verified Human": {
+      "name": "Manusia Terverifikasi",
+      "desc": "Lulus verifikasi manusia Bluewave.",
+      "benefit": "Akses ke obrolan, misi, dan drop eksklusif."
+    },
+    "Presence Holder": {
+      "name": "Pemegang Presence",
+      "desc": "Mempertahankan kehadiran on-chain/off-chain yang konsisten.",
+      "benefit": "Skor reputasi lebih tinggi."
+    },
+    "TON Explorer": {
+      "name": "Penjelajah TON",
+      "desc": "Menghubungkan dompet ekosistem TON.",
+      "benefit": "Memenuhi syarat untuk drop on-chain. Hasil: +5%"
+    },
+    "Genesis Member": {
+      "name": "Anggota Genesis",
+      "desc": "Pendukung awal Bluewave.",
+      "benefit": "Akses prioritas ke fitur dan fasilitas."
+    },
+    "Beta Explorer": {
+      "name": "Penjelajah Beta",
+      "desc": "Aktif menguji fitur Bluewave.",
+      "benefit": "Alat awal, pengaruh umpan balik."
+    },
+    "New Wave": {
+      "name": "Gelombang Baru",
+      "desc": "Baru saja tiba. Selamat datang!",
+      "benefit": "Tujuan: Belajar, mengamati, berinteraksi secara bermakna."
+    },
+    "Active Human": {
+      "name": "Manusia Aktif",
+      "desc": "Partisipasi konsisten tanpa spam.",
+      "benefit": "Visibilitas lebih tinggi, kelayakan untuk peran lanjutan."
+    },
+    "Network Builder": {
+      "name": "Pembangun Jaringan",
+      "desc": "Mengundang 10+ manusia aktif ke jaringan.",
+      "benefit": "Hasil referensi lebih tinggi dan pengaruh jaringan."
+    },
+    "Contributor": {
+      "name": "Kontributor",
+      "desc": "Menambah nilai melalui ide atau bantuan.",
+      "benefit": "Peningkatan reputasi, obrolan kontributor pribadi."
+    },
+    "OG": {
+      "name": "OG",
+      "desc": "Anggota jangka panjang, konsisten, dan berorientasi nilai.",
+      "benefit": "Akses prioritas, drop khusus, status."
+    },
+    "Super OG": {
+      "name": "Super OG",
+      "desc": "Kontributor elit yang membentuk komunitas lebih awal.",
+      "benefit": "Bobot tata kelola, fasilitas eksklusif."
+    },
+    "Content Creator": {
+      "name": "Pembuat Konten",
+      "desc": "Membuat konten Bluewave berkualitas tinggi.",
+      "benefit": "Amplifikasi, hadiah, sorotan khusus."
+    },
+    "Best Commentator": {
+      "name": "Komentator Terbaik",
+      "desc": "Konsisten menambah wawasan dalam diskusi.",
+      "benefit": "Peningkatan reputasi + kepercayaan komunitas."
+    },
+    "Meme Architect": {
+      "name": "Arsitek Meme",
+      "desc": "Membuat meme berkualitas tinggi yang mendefinisikan budaya.",
+      "benefit": "Amplifikasi viral, hadiah menyenangkan."
+    },
+    "X Supporter": {
+      "name": "Pendukung X",
+      "desc": "Berinteraksi dengan postingan secara autentik.",
+      "benefit": "Akses ke misi berbasis X."
+    },
+    "X Raider": {
+      "name": "Raider X",
+      "desc": "Mengoordinasikan penyerbuan bermakna (tanpa bot).",
+      "benefit": "Hadiah khusus raider & papan peringkat."
+    },
+    "X Ambassador": {
+      "name": "Duta X",
+      "desc": "Mewakili Bluewave secara publik dengan utas berkualitas.",
+      "benefit": "Hadiah duta, pengumuman awal."
+    },
+    "Signal Guardian": {
+      "name": "Penjaga Sinyal",
+      "desc": "Melindungi komunitas dari bot dan kebisingan.",
+      "benefit": "Lencana kepercayaan + perhatian moderator."
+    },
+    "Human Legend": {
+      "name": "Legenda Manusia",
+      "desc": "Peran langka untuk dampak jangka panjang yang luar biasa.",
+      "benefit": "Kehormatan abadi + hak istimewa ekosistem di masa depan."
+    },
+    "LEVEL 1": {
+      "name": "LEVEL 1",
+      "desc": "'Gelombang Baru'. Perjalanan Anda dimulai di sini.",
+      "benefit": "Akses ke misi dasar. Hasil: +1%"
+    },
+    "LEVEL 2": {
+      "name": "LEVEL 2",
+      "desc": "Pramuka Pulsa. Pembangun kehadiran yang konsisten.",
+      "benefit": "Hasil referensi yang ditingkatkan. Hasil: +5%"
+    },
+    "LEVEL 3": {
+      "name": "LEVEL 3",
+      "desc": "Arsitek Sinyal. Membangun struktur jaringan.",
+      "benefit": "Akses misi lanjutan. Hasil: +10%"
+    },
+    "LEVEL 4": {
+      "name": "LEVEL 4",
+      "desc": "Komandan Gelombang. Pilar ekosistem.",
+      "benefit": "Dukungan prioritas & fasilitas. Hasil: +20%"
+    },
+    "LEVEL 5": {
+      "name": "LEVEL 5",
+      "desc": "Legenda Blu. Ahli Ekonomi Presence.",
+      "benefit": "Bobot tata kelola alfa. Hasil: +50%"
+    }
+  },
+  "roles_cats": {
+    "Core Team Roles": {
+      "title": "Peran Tim Inti",
+      "desc": "Tim resmi dan mitra tepercaya."
+    },
+    "Identity & Presence Roles": {
+      "title": "Peran Identitas & Presence",
+      "desc": "Sinyal reputasi yang dapat diverifikasi."
+    },
+    "Community Progression Roles": {
+      "title": "Peran Kemajuan Komunitas",
+      "desc": "Diperoleh melalui partisipasi organik yang konsisten."
+    },
+    "Creator & Signal Roles": {
+      "title": "Peran Kreator & Sinyal",
+      "desc": "Amplifier budaya Bluewave."
+    },
+    "X (Twitter) Roles": {
+      "title": "Peran X (Twitter)",
+      "desc": "Komandan kehadiran sosial."
+    },
+    "Special Recognition Roles": {
+      "title": "Peran Pengakuan Khusus",
+      "desc": "Anggota ekosistem yang luar biasa."
+    },
+    "Ecosystem Levels": {
+      "title": "Level Ekosistem",
+      "desc": "Perjalanan Anda melalui Ekonomi Presence Bluewave."
+    }
+  },
+  "referral": {
+    "share_desc": "BAGIKAN KODE INI UNTUK MENUMBUHKAN JARINGAN MANUSIA ANDA",
+    "share_btn": "Bagikan Kode",
+    "preparing": "Menyiapkan...",
+    "copy_link": "Salin Tautan",
+    "copied_link": "Tautan Tersalin",
+    "share_caption": "Pindai saya untuk bergabung dengan Bluewave 🌊",
+    "share_title": "Bluewave — Lapisan Kehadiran Manusia",
+    "canvas_header": "BLUEWAVE",
+    "canvas_subheader": "Lapisan Kehadiran Manusia",
+    "canvas_scan_1": "Pindai saya untuk",
+    "canvas_scan_2": "bergabung sekarang"
+  },
+  "level_popup": {
+    "title": "Level",
+    "subtitle": "Perjalanan Kehadiran Anda",
+    "level": "LEVEL",
+    "active": "AKTIF",
+    "verified": "TERVERIFIKASI",
+    "not_yet": "BELUM",
+    "benefit": "Manfaat:",
+    "protocol_entry": "Entri Protokol",
+    "presence_commits": "Presence Commits",
+    "bwave_points": "Poin $BWAVE",
+    "human_networks": "Jejaring Manusia Terverifikasi",
+    "streak_days": "Hari Berurutan",
+    "role_badge": "Pemegang Lencana Peran",
+    "level_verified": "Manusia Terverifikasi",
+    "default_desc": "Lengkapi semua kriteria untuk membuka level ini.",
+    "default_benefit": "Status lebih tinggi terbuka."
+  },
+  "claim_boost_popup": {
+    "title": "Mengklaim Hadiah Kehadiran",
+    "calculating": "Menghitung...",
+    "roles_boost": "Peningkatan Peran:",
+    "no_boost": "Tidak ada peningkatan peran aktif.",
+    "no_boost_hint": "Dapatkan peran untuk melipatgandakan hasil!",
+    "collect": "Kumpulkan Hadiah"
+  },
+  "level_up_modal": {
+    "title": "Naik Level!",
+    "reached": "Anda mencapai Level",
+    "default_desc": "Anda telah membuka tingkatan baru dalam ekonomi kehadiran. Kekuatan sinyal Anda meningkat.",
+    "continue": "Lanjutkan Kehadiran"
+  },
+  "streak_celebration": {
+    "title": "STREAK TERBUKA!",
+    "continuum": "HARI KONTINUUM",
+    "reward_granted": "HADIAH DIBERIKAN",
+    "claim_continue": "Klaim & Lanjutkan",
+    "footer": "Terus gerakkan gelombang"
+  },
+  "role_celebration": {
+    "title": "Peran Terbuka",
+    "desc": "Anda telah diakui atas dampak Anda. Anda sekarang adalah **{{role}}** dalam Protokol Bluewave.",
+    "yield_multiplier": "Pengganda Hasil",
+    "boost": "PENINGKATAN",
+    "collect": "Kumpulkan Peningkatan",
+    "dismiss": "Abaikan"
+  },
+  "verified_human_modal": {
+    "title": "Identitas Terverifikasi",
+    "badge": "Manusia Terverifikasi",
+    "desc": "Kehadiran Anda telah dikonfirmasi secara kriptografis. Anda sekarang diakui sebagai **Manusia Terverifikasi** dalam Protokol Bluewave.",
+    "benefit_1": "Cincin Manusia Terverifikasi Eksklusif",
+    "benefit_2": "Pemrosesan Sinyal Jaringan Prioritas",
+    "benefit_3": "Hak Tata Kelola Protokol (Fase III)",
+    "acknowledge": "Akui Protokol",
+    "close": "Tutup"
+  },
+  "daily_ai_popup": {
+    "title": "Zaman Selesai",
+    "desc": "Sinyal komunitas Anda dari kemarin telah diverifikasi oleh lapisan intelijen.",
+    "reward_generated": "Hadiah Dihasilkan",
+    "acknowledge": "Akui"
+  }
 }
