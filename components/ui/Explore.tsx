@@ -269,7 +269,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* New Posts Pill */}
       <AnimatePresence>
-        {newPostsAvailable && activeTab !== "leaderboard" && (
+        {newPostsAvailable && activeTab !== "leaderboard" && activeTab !== "notifications" && (
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -818,27 +818,33 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
 // ----------------------------------------------------------------------------
 function AutoPlayVideo({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let playTimeout: NodeJS.Timeout;
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        playTimeout = setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.play().catch(() => { });
-          }
-        }, 1500); // Wait 1.5s before autoplay
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
+        if (!playTimeoutRef.current) {
+          playTimeoutRef.current = setTimeout(() => {
+            if (videoRef.current && videoRef.current.paused) {
+              videoRef.current.play().catch(() => { });
+            }
+            playTimeoutRef.current = null;
+          }, 1500);
+        }
       } else {
-        clearTimeout(playTimeout);
+        if (playTimeoutRef.current) {
+          clearTimeout(playTimeoutRef.current);
+          playTimeoutRef.current = null;
+        }
         if (videoRef.current && !videoRef.current.paused) {
           videoRef.current.pause();
         }
       }
-    }, { threshold: 0.6 });
+    }, { threshold: [0, 0.4, 0.5, 0.6, 1.0] });
 
     if (videoRef.current) observer.observe(videoRef.current);
     return () => {
-      clearTimeout(playTimeout);
+      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
       observer.disconnect();
     };
   }, []);
