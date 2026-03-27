@@ -27,7 +27,8 @@ const ADMIN_IDS = [5023869471];
 const BETA_TESTER_IDS: number[] = [
   8531164706,
   2008138868,
-  769579042
+  769579042,
+  5511825370
 ];
 
 interface ExploreProps {
@@ -58,8 +59,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
 
 
-  // Status Popups
+  // Status Popups & Background Action
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isPostingBackground, setIsPostingBackground] = useState(false);
+
+  // Pull to refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const touchStartY = useRef<number | null>(null);
 
   // Fetch Notifications
   const { data: notifications, mutate: mutateNotifications } = useApi(
@@ -87,12 +94,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Poll for new posts every 15s
   useEffect(() => {
-    if (!isOpen || !telegramUser?.id) return;
+    if (!isOpen || !telegramUser?.id || activeTab === "notifications" || activeTab === "leaderboard") return;
     const interval = setInterval(async () => {
       if (!latestKnownPostId) return;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       try {
-        const res = await fetch(`${apiUrl}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0`);
+        const res = await fetch(`${apiUrl}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0&quiet=true`);
         const data = await res.json();
         if (data && data.length > 0 && data[0]?.id !== latestKnownPostId) {
           setNewPostsAvailable(true);
@@ -113,22 +120,47 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     lastScrollY.current = currentY;
   }, []);
 
-  // Swipe tab switch
-  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.targetTouches[0].clientX; };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart.current === null) return;
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    const tabs: ("foryou" | "following" | "leaderboard" | "notifications")[] = ["foryou", "following", "leaderboard", "notifications"];
-    const currentIndex = tabs.indexOf(activeTab);
+  // Swipe tab switch & Pull to refresh
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.targetTouches[0].clientX;
+    touchStartY.current = e.targetTouches[0].clientY;
+  };
 
-    if (Math.abs(diff) > 80) {
-      if (diff > 0 && currentIndex < tabs.length - 1) {
-        setActiveTab(tabs[currentIndex + 1]);
-      } else if (diff < 0 && currentIndex > 0) {
-        setActiveTab(tabs[currentIndex - 1]);
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current !== null && scrollContainerRef.current?.scrollTop === 0) {
+      const diffY = e.targetTouches[0].clientY - touchStartY.current;
+      if (diffY > 0 && diffY < 150) {
+        setPullY(diffY * 0.6);
       }
     }
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    // Horizontal swipe logic
+    if (touchStart.current !== null) {
+      const diff = touchStart.current - e.changedTouches[0].clientX;
+      const tabs: ("foryou" | "following" | "leaderboard" | "notifications")[] = ["foryou", "following", "leaderboard", "notifications"];
+      const currentIndex = tabs.indexOf(activeTab);
+
+      if (Math.abs(diff) > 80 && Math.abs(diff) > pullY) {
+        if (diff > 0 && currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
+        else if (diff < 0 && currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
+      }
+    }
+
+    // Pull to refresh logic
+    if (pullY > 50 && !isRefreshing) {
+      setIsRefreshing(true);
+      mutate().then(() => {
+        setIsRefreshing(false);
+        setPullY(0);
+      });
+    } else {
+      setPullY(0);
+    }
+
     touchStart.current = null;
+    touchStartY.current = null;
   };
 
   // Scroll to top + refresh
@@ -254,12 +286,38 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
+      {/* Background Posting Floating Loader */}
+      <AnimatePresence>
+        {isPostingBackground && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            className="fixed top-32 left-1/2 -translate-x-1/2 z-[135] bg-cyan-950/90 border border-cyan-500/30 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(0,230,255,0.2)] pointer-events-none"
+          >
+            <Loader2 size={12} className="text-cyan-400 animate-spin" />
+            <span className="text-[9px] text-cyan-200 font-black uppercase tracking-widest">{t("explore.posting_btn") || "Transmitting"}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pull to Refresh Indicator */}
+      <div
+        className="absolute top-24 left-0 right-0 flex justify-center items-end overflow-hidden pointer-events-none z-[110]"
+        style={{ height: `${Math.max(0, pullY)}px`, transition: pullY === 0 ? 'height 0.2s' : 'none' }}
+      >
+        <div className="mb-4">
+          <Loader2 className={`text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullY * 2}deg)` }} size={24} />
+        </div>
+      </div>
+
       {/* ─── Main Content Area ─── */}
       <div ref={feedTopRef} />
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         className="flex-1 overflow-y-auto custom-scrollbar mt-6"
       >
@@ -362,13 +420,17 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             onClose={() => setIsPostModalOpen(false)}
             onPosted={(requestArgs) => {
               setIsPostModalOpen(false);
-              postApi("/explore/post", requestArgs).then(res => {
+              setIsPostingBackground(true);
+              Promise.all([
+                postApi("/explore/post", requestArgs),
+                new Promise(resolve => setTimeout(resolve, 2000)) // Enforce min 2s display
+              ]).then(([res]) => {
                 if (res?.success) {
                   mutate();
                   setSuccessMessage(t("explore.post_success_popup"));
                   setTimeout(() => setSuccessMessage(null), 3000);
                 }
-              }).catch(() => { });
+              }).catch(() => { }).finally(() => setIsPostingBackground(false));
             }}
           />
         )}
@@ -381,12 +443,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             initial={{ opacity: 0, y: -20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-cyan-500 text-black px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(0,230,255,0.4)] border border-white/20"
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-cyan-500 text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(0,230,255,0.4)] border border-white/20"
           >
-            <div className="w-6 h-6 bg-black/10 rounded-full flex items-center justify-center">
-              <Rocket size={14} className="animate-pulse" />
+            <div className="w-5 h-5 bg-black/10 rounded-full flex items-center justify-center">
+              <Rocket size={12} className="animate-pulse" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{successMessage}</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em]">{successMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -633,7 +695,8 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
     }
 
     const twa = (window as any).Telegram?.WebApp;
-    if (twa?.openTelegramLink) twa.openTelegramLink(link);
+    if (twa?.openLink) twa.openLink(link, { try_instant_view: true });
+    else if (twa?.openTelegramLink) twa.openTelegramLink(link);
     else window.open(link, "_blank");
   };
 
@@ -646,7 +709,8 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
   };
 
   return (
-    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start">
+    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start relative">
+      <TrueViewTracker postId={post.id} />
       {/* Avatar → direct channel link */}
       <button onClick={openChannel} className="shrink-0">
         <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
@@ -692,7 +756,6 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
 
         <p className="text-sm text-cyan-100/70 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
 
-        {/* Media */}
         {post.media_urls && post.media_urls.length > 0 ? (
           <MediaCollage items={post.media_urls} />
         ) : post.media_url ? (
@@ -700,7 +763,7 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
             {post.media_type === "photo" ? (
               <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
             ) : post.media_type === "video" ? (
-              <video src={post.media_url} controls className="w-full h-auto max-h-[400px]" playsInline />
+              <AutoPlayVideo src={post.media_url} />
             ) : null}
           </div>
         ) : null}
@@ -751,7 +814,73 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
 }
 
 // ----------------------------------------------------------------------------
-// 🔔 Notifications View (Inline)
+// �️ AutoPlayVideo Component (Scroll aware)
+// ----------------------------------------------------------------------------
+function AutoPlayVideo({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    let playTimeout: NodeJS.Timeout;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        playTimeout = setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(() => { });
+          }
+        }, 1500); // Wait 1.5s before autoplay
+      } else {
+        clearTimeout(playTimeout);
+        if (videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      }
+    }, { threshold: 0.6 });
+
+    if (videoRef.current) observer.observe(videoRef.current);
+    return () => {
+      clearTimeout(playTimeout);
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      controls
+      muted
+      playsInline
+      className="w-full h-auto max-h-[400px] object-contain"
+    />
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 👀 TrueViewTracker Component (Scroll aware)
+// ----------------------------------------------------------------------------
+function TrueViewTracker({ postId }: { postId: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const viewed = useRef(false);
+
+  useEffect(() => {
+    if (viewed.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !viewed.current) {
+        viewed.current = true;
+        postApi("/explore/view", { post_id: postId }).catch(() => { });
+        observer.disconnect();
+      }
+    }, { threshold: 0.5 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [postId]);
+
+  return <div ref={ref} className="absolute top-1/2 left-0 w-full h-px pointer-events-none" />;
+}
+
+// ----------------------------------------------------------------------------
+// �🔔 Notifications View (Inline)
 // ----------------------------------------------------------------------------
 function NotificationsView({ notifications, onClear }: { notifications: any[], onClear: () => void }) {
   const { t } = useLanguage();

@@ -98,9 +98,19 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
         >
           <div className={`${isInline ? 'w-full px-6 pb-60 custom-scrollbar' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
             {loading && !data && (
-              <div className="flex flex-col items-center justify-center h-full space-y-4 animate-pulse">
-                <div className="w-20 h-20 bg-cyan-900/20 rounded-full border border-cyan-900/40"></div>
-                <div className="h-4 w-32 bg-cyan-900/20 rounded"></div>
+              <div className="flex flex-col items-center justify-center h-full pt-16 animate-pulse">
+                {/* Podium Skeleton */}
+                <div className="flex items-end justify-center gap-4 mb-8">
+                  <div className="w-24 h-32 bg-cyan-900/10 rounded-t-3xl border border-cyan-500/10"></div>
+                  <div className="w-28 h-48 bg-cyan-900/20 rounded-t-3xl border border-cyan-500/20"></div>
+                  <div className="w-24 h-28 bg-cyan-900/10 rounded-t-3xl border border-cyan-500/10"></div>
+                </div>
+                {/* List Skeleton */}
+                <div className="w-full max-w-md space-y-3 px-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="w-full h-16 bg-cyan-900/5 rounded-2xl border border-cyan-500/5"></div>
+                  ))}
+                </div>
               </div>
             )}
 
