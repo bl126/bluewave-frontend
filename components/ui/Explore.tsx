@@ -377,6 +377,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 <PostCard
                   key={post.id}
                   post={post}
+                  currentUserId={telegramUser?.id}
                   onHide={() => mutate()}
                 />
               ))}
@@ -678,7 +679,7 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
-function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
+function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: number, onHide: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
@@ -701,12 +702,12 @@ function PostCard({ post, onHide }: { post: any, onHide: () => void }) {
     setShowSpaceDust(true);
     setTimeout(() => setShowSpaceDust(false), 1500);
     setIsAcknowledged(true);
-    await postApi("/explore/acknowledge", { user_id: post.tg_id, post_id: post.id });
+    await postApi("/explore/acknowledge", { user_id: currentUserId, post_id: post.id });
   };
 
   const handleHide = async () => {
     setIsMenuOpen(false);
-    await postApi("/explore/hide_post", { user_id: post.tg_id, post_id: post.id });
+    await postApi("/explore/hide_post", { user_id: currentUserId, post_id: post.id });
     onHide();
   };
 
@@ -888,6 +889,8 @@ function AutoPlayVideo({ src }: { src: string }) {
       controls
       muted
       playsInline
+      loop
+      autoPlay={false}
       className="w-full h-auto max-h-[400px] object-contain"
     />
   );

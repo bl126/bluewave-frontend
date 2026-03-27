@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bot, Send, Check, Loader2, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { postApi } from "@/lib/useApi";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -36,7 +37,12 @@ export default function ConnectBluModal({
     });
     const [error, setError] = useState("");
     const [imgError, setImgError] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const { t } = useLanguage();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Sync state with props when modal opens or props change
     useEffect(() => {
@@ -104,7 +110,9 @@ export default function ConnectBluModal({
         onClose();
     };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -325,6 +333,7 @@ export default function ConnectBluModal({
                     </motion.div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
