@@ -209,12 +209,12 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                             const done = current >= target;
 
                                                             return (
-                                                                <div key={cri.id} className="flex flex-col gap-1.5">
-                                                                    <div className="flex justify-between items-end">
-                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/60">
+                                                                <div key={cri.id} className="flex flex-col gap-2">
+                                                                    <div className="flex flex-row items-start justify-between gap-3">
+                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/60 flex-1 min-w-0 leading-tight">
                                                                             {cri.label.includes('.') ? t(cri.label) : cri.label}
                                                                         </span>
-                                                                        <div className="flex items-center gap-1.5">
+                                                                        <div className="flex items-center gap-1.5 shrink-0">
                                                                             {done ? (
                                                                                 <Check size={10} className="text-[#00E6FF]" />
                                                                             ) : null}
