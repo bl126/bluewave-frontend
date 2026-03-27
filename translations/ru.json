@@ -154,6 +154,7 @@
         "post_error_network": "Сетевая ошибка. Пожалуйста, попробуйте еще раз.",
         "posting_btn": "Публикация...",
         "post_btn": "Опубликовать",
+        "post_success_popup": "Трансляция успешна",
         "tabs": {
             "foryou": "Для вас",
             "following": "Подписки",
@@ -231,10 +232,12 @@
         "empty_desc": "Здесь будут ваши обновления.",
         "distribution_success": "Дистрибуция Успешна",
         "acknowledgment": "Подтверждение",
+        "verified_milestone_title": "Подтверждено",
         "notification_type": "Уведомление",
-        "broadcast_msg": "Ваш пост транслирован.",
-        "acknowledged_msg": "{{name}} подтвердил просмотр.",
-        "update_msg": "Получено обновление.",
+        "broadcast_msg": "Ваш пост в канале транслируется.",
+        "acknowledged_msg": "{{name}} подтвердил вас.",
+        "verified_milestone_msg": "{{count}} верифицированных пользователей подтвердили ваш пост",
+        "update_msg": "Получено новое обновление.",
         "view_post": "Смотреть Пост",
         "understood": "Понятно"
     },

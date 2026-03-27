@@ -154,6 +154,7 @@
         "post_error_network": "Kesalahan jaringan. Silakan coba lagi.",
         "posting_btn": "Memposting...",
         "post_btn": "Posting",
+        "post_success_popup": "Siaran Berhasil",
         "tabs": {
             "foryou": "Untuk Anda",
             "following": "Mengikuti",
@@ -231,10 +232,12 @@
         "empty_desc": "Pembaruan jaringan Anda akan muncul di sini.",
         "distribution_success": "Distribusi Sukses",
         "acknowledgment": "Pengakuan",
+        "verified_milestone_title": "Pengakuan Terverifikasi",
         "notification_type": "Pemberitahuan",
-        "broadcast_msg": "Postingan Anda telah disiarkan.",
-        "acknowledged_msg": "{{name}} mengenali Anda.",
-        "update_msg": "Pembaruan baru.",
+        "broadcast_msg": "Postingan saluran Anda disiarkan.",
+        "acknowledged_msg": "{{name}} mengakui Anda.",
+        "verified_milestone_msg": "{{count}} manusia terverifikasi mengakui postingan Anda",
+        "update_msg": "Pembaruan baru diterima.",
         "view_post": "Lihat Pos",
         "understood": "Dimengerti"
     },

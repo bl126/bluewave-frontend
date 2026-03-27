@@ -217,6 +217,7 @@
         "post_error_network": "Error de red. Por favor, inténtalo de nuevo.",
         "posting_btn": "Publicando...",
         "post_btn": "Publicar",
+        "post_success_popup": "Difusión exitosa",
         "tabs": {
             "foryou": "Para Ti",
             "following": "Siguiendo",
@@ -231,10 +232,12 @@
         "empty_desc": "Tu actividad de protocolo y las actualizaciones de la red aparecerán aquí.",
         "distribution_success": "Distribución Exitosa",
         "acknowledgment": "Reconocimiento",
+        "verified_milestone_title": "Reconocimiento Verificado",
         "notification_type": "Notificación",
-        "broadcast_msg": "Tu publicación ha sido transmitida.",
+        "broadcast_msg": "Tu publicación en el canal ha sido difundida.",
         "acknowledged_msg": "{{name}} te reconoció.",
-        "update_msg": "Nueva actualización recibida.",
+        "verified_milestone_msg": "{{count}} humanos verificados reconocieron tu publicación",
+        "update_msg": "Nuevo mensaje de actualización recibido.",
         "view_post": "Ver Publicación",
         "understood": "Entendido"
     },

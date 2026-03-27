@@ -217,6 +217,7 @@
         "post_error_network": "नेटवर्क त्रुटि। कृपया पुन: प्रयास करें।",
         "posting_btn": "पोस्ट किया जा रहा है...",
         "post_btn": "पोस्ट करें",
+        "post_success_popup": "सफल प्रसारण",
         "tabs": {
             "foryou": "आपके लिए",
             "following": "फ़ॉलो किया जा रहा है",
@@ -231,9 +232,11 @@
         "empty_desc": "आपकी गतिविधि यहाँ दिखाई देगी।",
         "distribution_success": "वितरण सफ़ल",
         "acknowledgment": "स्वीकृति",
+        "verified_milestone_title": "सत्यापित स्वीकृति",
         "notification_type": "सूचना",
         "broadcast_msg": "आपकी पोस्ट प्रसारित की गई है।",
         "acknowledged_msg": "{{name}} ने आपको स्वीकार किया।",
+        "verified_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट को स्वीकार किया",
         "update_msg": "नया अद्यतन प्राप्त हुआ।",
         "view_post": "पोस्ट देखें",
         "understood": "समझ गया"

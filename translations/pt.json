@@ -217,6 +217,7 @@
         "post_error_network": "Erro de rede. Por favor, tente novamente.",
         "posting_btn": "Postando...",
         "post_btn": "Postar",
+        "post_success_popup": "Transmissão bem-sucedida",
         "tabs": {
             "foryou": "Para Você",
             "following": "Seguindo",
@@ -231,9 +232,11 @@
         "empty_desc": "Sua atividade de protocolo e atualizações da rede aparecerão aqui.",
         "distribution_success": "Distribuição Concluída",
         "acknowledgment": "Reconhecimento",
+        "verified_milestone_title": "Reconhecimento Verificado",
         "notification_type": "Notificação",
-        "broadcast_msg": "Seu post foi transmitido.",
+        "broadcast_msg": "Sua postagem no canal foi transmitida.",
         "acknowledged_msg": "{{name}} reconheceu você.",
+        "verified_milestone_msg": "{{count}} humanos verificados reconheceram sua postagem",
         "update_msg": "Nova atualização recebida.",
         "view_post": "Ver Post",
         "understood": "Entendido"

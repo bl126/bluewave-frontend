@@ -15,7 +15,8 @@ import {
   X,
   Image,
   Video,
-  Send
+  Send,
+  UserCheck
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -23,6 +24,11 @@ import { useApi, postApi } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 
 const ADMIN_IDS = [5023869471];
+const BETA_TESTER_IDS: number[] = [
+  8531164706,
+  2008138868,
+  769579042
+];
 
 interface ExploreProps {
   isOpen: boolean;
@@ -51,6 +57,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
 
+
+  // Status Popups
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch Notifications
   const { data: notifications, mutate: mutateNotifications } = useApi(
@@ -124,6 +133,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Scroll to top + refresh
   const handleNewPostsPill = () => {
+    setActiveTab("foryou");
     setNewPostsAvailable(false);
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     mutate();
@@ -140,9 +150,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   if (!isOpen) return null;
 
-  const isAdmin = telegramUser?.id ? ADMIN_IDS.includes(Number(telegramUser.id)) : false;
+  const hasAccess = telegramUser?.id ?
+    (ADMIN_IDS.includes(Number(telegramUser.id)) || BETA_TESTER_IDS.includes(Number(telegramUser.id)))
+    : false;
 
-  if (!isAdmin) {
+  if (!hasAccess) {
     return (
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -225,7 +237,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* New Posts Pill */}
       <AnimatePresence>
-        {newPostsAvailable && (
+        {newPostsAvailable && activeTab !== "leaderboard" && (
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -348,8 +360,34 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           <PostModal
             telegramUser={telegramUser}
             onClose={() => setIsPostModalOpen(false)}
-            onPosted={() => { mutate(); setIsPostModalOpen(false); }}
+            onPosted={(requestArgs) => {
+              setIsPostModalOpen(false);
+              postApi("/explore/post", requestArgs).then(res => {
+                if (res?.success) {
+                  mutate();
+                  setSuccessMessage(t("explore.post_success_popup"));
+                  setTimeout(() => setSuccessMessage(null), 3000);
+                }
+              }).catch(() => { });
+            }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* ─── Success Notification Popup ─── */}
+      <AnimatePresence>
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-cyan-500 text-black px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_0_30px_rgba(0,230,255,0.4)] border border-white/20"
+          >
+            <div className="w-6 h-6 bg-black/10 rounded-full flex items-center justify-center">
+              <Rocket size={14} className="animate-pulse" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{successMessage}</span>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -360,7 +398,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 // ----------------------------------------------------------------------------
 // 📤 Post Modal (X-style)
 // ----------------------------------------------------------------------------
-function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onClose: () => void, onPosted: () => void }) {
+function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onClose: () => void, onPosted: (args: any) => void }) {
   const { t } = useLanguage();
   const [content, setContent] = useState("");
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -386,29 +424,17 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
     reader.readAsDataURL(file);
   };
 
-  const handlePost = async () => {
+  const handlePost = () => {
     if (!content.trim() && !mediaBase64) return;
     setPosting(true);
     setError(null);
-    try {
-      const res = await postApi("/explore/post", {
-        tg_id: telegramUser.id,
-        content: content.trim(),
-        media_base64: mediaBase64,
-        media_type: mediaBase64 ? mediaType : "text",
-        media_ext: mediaExt,
-      });
-      if (res?.success) {
-        onPosted();
-      } else {
-        const errDetail = res?.detail || res?.error;
-        setError(errDetail === "AUTH_EXPIRED" || errDetail === "AUTH_REQUIRED" ? t("missions.session_expired") : (errDetail || t("explore.post_error_channel")));
-      }
-    } catch {
-      setError(t("explore.post_error_network"));
-    } finally {
-      setPosting(false);
-    }
+    onPosted({
+      tg_id: telegramUser.id,
+      content: content.trim(),
+      media_base64: mediaBase64,
+      media_type: mediaBase64 ? mediaType : "text",
+      media_ext: mediaExt,
+    });
   };
 
   return (
@@ -734,6 +760,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <ShieldCheck size={18} className="text-cyan-400" />;
+      case "verified_acknowledgment_milestone": return <UserCheck size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
   };
@@ -741,12 +768,17 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
   const getTitle = (n: any) => {
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
+    if (n.type === "verified_acknowledgment_milestone") return t("notifications.verified_milestone_title");
     return t("notifications.notification_type");
   };
 
   const getMessage = (n: any) => {
     if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
     if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
+    if (n.type === "verified_acknowledgment_milestone") {
+      const count = n.action_data?.count || 1;
+      return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
+    }
     return t("notifications.update_msg");
   };
 

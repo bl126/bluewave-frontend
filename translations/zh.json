@@ -216,6 +216,7 @@
         "post_error_network": "网络错误。请重试。",
         "posting_btn": "发布中...",
         "post_btn": "发布",
+        "post_success_popup": "广播成功",
         "tabs": {
             "foryou": "推荐",
             "following": "关注",
@@ -229,10 +230,12 @@
         "empty": "暂无警报",
         "empty_desc": "一旦分发周期开始，您的协议活动和网络更新将在此处显示。",
         "distribution_success": "分发成功",
-        "acknowledgment": "确认收悉",
+        "acknowledgment": "确认",
+        "verified_milestone_title": "验证确认",
         "notification_type": "通知",
-        "broadcast_msg": "您的频道贴文已播报。",
-        "acknowledged_msg": "{{name}} 确认已读您的贴文。",
+        "broadcast_msg": "您的频道帖子已广播。",
+        "acknowledged_msg": "{{name}} 确认了您。",
+        "verified_milestone_msg": "{{count}} 位已验证的人类确认了您的帖子",
         "update_msg": "收到新更新。",
         "view_post": "查看贴文",
         "understood": "知晓"
