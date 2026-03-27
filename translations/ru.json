@@ -236,11 +236,12 @@
     "verified_milestone_title": "Подтверждено",
     "notification_type": "Уведомление",
     "broadcast_msg": "Ваш пост в канале транслируется.",
-    "acknowledged_msg": "{{name}} подтвердил вас.",
-    "verified_milestone_msg": "{{count}} верифицированных пользователей подтвердили ваш пост",
+    "acknowledged_msg": "{{name}} подтвердил ваш пост.",
+    "verified_milestone_msg": "{{count}} проверенных людей подтвердили ваш пост",
     "update_msg": "Получено новое обновление.",
     "view_post": "Смотреть Пост",
-    "understood": "Понятно"
+    "understood": "Понятно",
+    "follower_milestone_msg": "{{count}} проверенных людей присоединились к вашему каналу"
   },
   "marketplace": {
     "beta_phase": "ФАЗА БЕТА"

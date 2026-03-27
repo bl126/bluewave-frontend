@@ -236,11 +236,12 @@
     "verified_milestone_title": "การยอมรับที่รับรองแล้ว",
     "notification_type": "การแจ้งเตือน",
     "broadcast_msg": "โพสต์ช่องของคุณกำลังออกอากาศ",
-    "acknowledged_msg": "{{name}} ยอมรับคุณ",
-    "verified_milestone_msg": "มนุษย์ที่ได้รับการรับรอง {{count}} คนยอมรับโพสต์ของคุณ",
+    "acknowledged_msg": "{{name}} ยอมรับโพสต์ของคุณ",
+    "verified_milestone_msg": "มนุษย์ที่ได้รับการยืนยัน {{count}} คนยอมรับโพสต์ของคุณ",
     "update_msg": "ได้รับการอัปเดตใหม่",
     "view_post": "ดูโพสต์",
-    "understood": "เข้าใจแล้ว"
+    "understood": "เข้าใจแล้ว",
+    "follower_milestone_msg": "มนุษย์ที่ได้รับการยืนยัน {{count}} คนเข้าร่วมช่องของคุณ"
   },
   "marketplace": {
     "beta_phase": "อยู่ในรุ่นทดลอง"

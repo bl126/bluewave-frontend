@@ -235,11 +235,12 @@
     "verified_milestone_title": "验证确认",
     "notification_type": "通知",
     "broadcast_msg": "您的频道帖子已广播。",
-    "acknowledged_msg": "{{name}} 确认了您。",
-    "verified_milestone_msg": "{{count}} 位已验证的人类确认了您的帖子",
+    "acknowledged_msg": "{{name}} 确认了你的帖子。",
+    "verified_milestone_msg": "{{count}} 个已验证的人类认同了你的帖子",
     "update_msg": "收到新更新。",
     "view_post": "查看贴文",
-    "understood": "知晓"
+    "understood": "知晓",
+    "follower_milestone_msg": "{{count}} 个已验证的人类加入了你的频道"
   },
   "marketplace": {
     "beta_phase": "测试阶段"

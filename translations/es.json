@@ -236,11 +236,12 @@
     "verified_milestone_title": "Reconocimiento Verificado",
     "notification_type": "Notificación",
     "broadcast_msg": "Tu publicación en el canal ha sido difundida.",
-    "acknowledged_msg": "{{name}} te reconoció.",
+    "acknowledged_msg": "{{name}} reconoció tu publicación.",
     "verified_milestone_msg": "{{count}} humanos verificados reconocieron tu publicación",
     "update_msg": "Nuevo mensaje de actualización recibido.",
     "view_post": "Ver Publicación",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "follower_milestone_msg": "{{count}} humanos verificados se unieron a tu canal"
   },
   "marketplace": {
     "beta_phase": "EN FASE BETA"

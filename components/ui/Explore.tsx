@@ -855,29 +855,19 @@ function AutoPlayVideo({ src }: { src: string }) {
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
-        if (!playTimeoutRef.current) {
-          playTimeoutRef.current = setTimeout(() => {
-            if (videoRef.current && videoRef.current.paused) {
-              videoRef.current.play().catch(() => { });
-            }
-            playTimeoutRef.current = null;
-          }, 1500);
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
+        if (videoRef.current && videoRef.current.paused) {
+          videoRef.current.play().catch(() => { });
         }
       } else {
-        if (playTimeoutRef.current) {
-          clearTimeout(playTimeoutRef.current);
-          playTimeoutRef.current = null;
-        }
         if (videoRef.current && !videoRef.current.paused) {
           videoRef.current.pause();
         }
       }
-    }, { threshold: [0, 0.4, 0.5, 0.6, 1.0] });
+    }, { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] });
 
     if (videoRef.current) observer.observe(videoRef.current);
     return () => {
-      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
       observer.disconnect();
     };
   }, []);
@@ -928,6 +918,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
 
   const getIcon = (type: string) => {
     if (type.startsWith("verified_acknowledgment_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
+    if (type.startsWith("new_follower_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <ShieldCheck size={18} className="text-cyan-400" />;
@@ -938,6 +929,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
 
   const getTitle = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) return t("notifications.verified_milestone_title");
+    if (n.type.startsWith("new_follower_milestone")) return t("notifications.follower_milestone_title");
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
     if (n.type === "new_follower") return "New Verified Distributor";
@@ -948,6 +940,10 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     if (n.type.startsWith("verified_acknowledgment_milestone")) {
       const count = n.type.split("_").pop() || "1";
       return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
+    }
+    if (n.type.startsWith("new_follower_milestone")) {
+      const count = n.type.split("_").pop() || "1";
+      return t("notifications.follower_milestone_msg").replace("{{count}}", count.toString());
     }
     if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
     if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");

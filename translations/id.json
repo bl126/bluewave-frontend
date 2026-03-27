@@ -236,11 +236,12 @@
     "verified_milestone_title": "Pengakuan Terverifikasi",
     "notification_type": "Pemberitahuan",
     "broadcast_msg": "Postingan saluran Anda disiarkan.",
-    "acknowledged_msg": "{{name}} mengakui Anda.",
+    "acknowledged_msg": "{{name}} mengakui postingan Anda.",
     "verified_milestone_msg": "{{count}} manusia terverifikasi mengakui postingan Anda",
     "update_msg": "Pembaruan baru diterima.",
     "view_post": "Lihat Pos",
-    "understood": "Dimengerti"
+    "understood": "Dimengerti",
+    "follower_milestone_msg": "{{count}} manusia terverifikasi bergabung dengan saluran Anda"
   },
   "marketplace": {
     "beta_phase": "DALAM FASE BETA"

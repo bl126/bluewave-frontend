@@ -236,11 +236,12 @@
     "verified_milestone_title": "Verified Acknowledgment",
     "notification_type": "Notification",
     "broadcast_msg": "Your channel post is broadcasted.",
-    "acknowledged_msg": "{{name}} acknowledged you.",
+    "acknowledged_msg": "{{name}} acknowledged your post.",
     "verified_milestone_msg": "{{count}} verified humans acknowledged your post",
     "update_msg": "New update received.",
     "view_post": "View Post",
-    "understood": "Understood"
+    "understood": "Understood",
+    "follower_milestone_msg": "{{count}} verified humans joined your channel"
   },
   "marketplace": {
     "beta_phase": "IN BETA PHASE"

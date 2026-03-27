@@ -236,11 +236,12 @@
     "verified_milestone_title": "सत्यापित स्वीकृति",
     "notification_type": "सूचना",
     "broadcast_msg": "आपकी पोस्ट प्रसारित की गई है।",
-    "acknowledged_msg": "{{name}} ने आपको स्वीकार किया।",
-    "verified_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट को स्वीकार किया",
+    "acknowledged_msg": "{{name}} ने आपकी पोस्ट को स्वीकार किया।",
+    "verified_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट स्वीकार की",
     "update_msg": "नया अद्यतन प्राप्त हुआ।",
     "view_post": "पोस्ट देखें",
-    "understood": "समझ गया"
+    "understood": "समझ गया",
+    "follower_milestone_msg": "{{count}} सत्यापित मनुष्य आपके चैनल में शामिल हुए"
   },
   "marketplace": {
     "beta_phase": "बीटा चरण में"
