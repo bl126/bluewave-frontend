@@ -240,7 +240,9 @@
     "update_msg": "收到新更新。",
     "view_post": "查看贴文",
     "understood": "知晓",
-    "follower_milestone_msg": "{{count}} 个已验证的人类加入了你的频道"
+    "follower_milestone_msg": "{{count}} 个已验证的人类加入了你的频道",
+    "repost_milestone_title": "转发里程碑",
+    "repost_milestone_msg": "{{count}} 个已验证的人类转发了你的帖子"
   },
   "marketplace": {
     "beta_phase": "测试阶段"

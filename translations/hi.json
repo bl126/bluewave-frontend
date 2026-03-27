@@ -241,7 +241,9 @@
     "update_msg": "नया अद्यतन प्राप्त हुआ।",
     "view_post": "पोस्ट देखें",
     "understood": "समझ गया",
-    "follower_milestone_msg": "{{count}} सत्यापित मनुष्य आपके चैनल में शामिल हुए"
+    "follower_milestone_msg": "{{count}} सत्यापित मनुष्य आपके चैनल में शामिल हुए",
+    "repost_milestone_title": "रीपोस्ट मील के पत्थर",
+    "repost_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट को रीपोस्ट किया"
   },
   "marketplace": {
     "beta_phase": "बीटा चरण में"

@@ -241,7 +241,9 @@
     "update_msg": "Получено новое обновление.",
     "view_post": "Смотреть Пост",
     "understood": "Понятно",
-    "follower_milestone_msg": "{{count}} проверенных людей присоединились к вашему каналу"
+    "follower_milestone_msg": "{{count}} проверенных людей присоединились к вашему каналу",
+    "repost_milestone_title": "Этапы Репостов",
+    "repost_milestone_msg": "{{count}} проверенных людей сделали репост вашего поста"
   },
   "marketplace": {
     "beta_phase": "ФАЗА БЕТА"

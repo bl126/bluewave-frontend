@@ -8,6 +8,8 @@ import {
   ChevronDown,
   MoreHorizontal,
   Eye,
+  Heart,
+  Repeat2,
   CheckCircle2,
   ShieldCheck,
   Rocket,
@@ -43,6 +45,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  
+  // Pagination State
+  const [offset, setOffset] = useState(0);
+  const [pagedPosts, setPagedPosts] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const feedTopRef = useRef<HTMLDivElement>(null);
@@ -53,11 +65,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Touch/Swipe
   const touchStart = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   // New posts pill
-
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
-
 
   // Status Popups & Background Action
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -68,11 +79,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const { data: swrUser } = useApi(isOpen && telegramUser?.id ? `/user/${telegramUser.id}` : null);
   const isConnected = !!swrUser?.telegram_channel;
 
-  // Pull to refresh state
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pullY, setPullY] = useState(0);
-  const touchStartY = useRef<number | null>(null);
-
   // Fetch Notifications
   const { data: notifications, mutate: mutateNotifications } = useApi(
     isOpen && telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null,
@@ -81,21 +87,59 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
 
   // Fetch Feed
-  const { data: posts, loading, mutate } = useApi(
-    isOpen && telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}` : null
+  const { data: initialPosts, loading, mutate } = useApi(
+    isOpen && telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0` : null
   );
+
+  useEffect(() => {
+    if (initialPosts) {
+      setPagedPosts(initialPosts);
+      setOffset(initialPosts.length);
+      setHasMore(initialPosts.length >= 10);
+    }
+  }, [initialPosts]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !isOpen || !telegramUser?.id) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}`);
+      const newData = await res.json();
+      if (newData && newData.length > 0) {
+        setPagedPosts(prev => [...prev, ...newData]);
+        setOffset(prev => prev + newData.length);
+        if (newData.length < 10) setHasMore(false);
+      } else {
+        setHasMore(false);
+      }
+    } catch {
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, offset, activeTab, isOpen, telegramUser?.id]);
+
+  // Infinite Scroll Observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) loadMore();
+    }, { threshold: 0.1 });
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore]);
 
   // Track latest post ID for new-posts pill
   useEffect(() => {
-    if (posts && posts.length > 0) {
-      const topId = posts[0]?.id;
+    if (initialPosts && initialPosts.length > 0) {
+      const topId = initialPosts[0]?.id;
       if (!latestKnownPostId) {
         setLatestKnownPostId(topId);
       } else if (topId !== latestKnownPostId) {
         setNewPostsAvailable(true);
       }
     }
-  }, [posts]);
+  }, [initialPosts, latestKnownPostId]);
 
   // Poll for new posts every 15s
   useEffect(() => {
@@ -174,7 +218,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     setNewPostsAvailable(false);
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     mutate();
-    if (posts && posts.length > 0) setLatestKnownPostId(posts[0]?.id);
+    if (initialPosts && initialPosts.length > 0) setLatestKnownPostId(initialPosts[0]?.id);
   };
 
   // Handle tab switch
@@ -366,14 +410,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               transition={{ duration: 0.2 }}
               className="divide-y divide-white/[0.05]"
             >
-              {loading && !posts && (
+              {loading && !initialPosts && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
                   <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
                   <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
                 </div>
               )}
 
-              {posts?.map((post: any) => (
+              {pagedPosts?.map((post: any) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -382,7 +426,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 />
               ))}
 
-              {!loading && posts?.length === 0 && (
+              {/* Load More Trigger */}
+              <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+                {loadingMore && <Loader2 className="animate-spin text-cyan-400/40" size={20} />}
+                {!hasMore && pagedPosts.length > 0 && (
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-20">{t("explore.no_more_signals") || "No more signals found"}</span>
+                )}
+              </div>
+
+              {!loading && pagedPosts?.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
                   <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
                   <div className="space-y-1">
@@ -633,17 +685,17 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
         {item.type === "photo" ? (
           <img src={item.url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
         ) : (
-          <video src={item.url} controls className="w-full h-auto max-h-[400px]" playsInline />
+          <AutoPlayVideo src={item.url} />
         )}
       </div>
     );
   }
   if (count === 2) {
     return (
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[200px]">
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[280px]">
         {validItems.map((item, i) => (
-          <div key={i} className="relative w-full h-full">
-            {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <video src={item.url} className="w-full h-full object-cover" />}
+          <div key={i} className="relative w-full h-full overflow-hidden">
+            {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
           </div>
         ))}
       </div>
@@ -651,11 +703,23 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
   }
   if (count === 3) {
     return (
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[250px]">
-        <div className="h-full"><img src={validItems[0].url} className="w-full h-full object-cover" /></div>
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
+        <div className="h-full border-r border-white/5">
+          {validItems[0].type === "photo"
+            ? <img src={validItems[0].url} className="w-full h-full object-cover" />
+            : <AutoPlayVideo src={validItems[0].url} />}
+        </div>
         <div className="grid grid-rows-2 gap-1 h-full">
-          <img src={validItems[1].url} className="w-full h-full object-cover" />
-          <img src={validItems[2].url} className="w-full h-full object-cover" />
+          <div className="h-full">
+            {validItems[1].type === "photo"
+              ? <img src={validItems[1].url} className="w-full h-full object-cover" />
+              : <AutoPlayVideo src={validItems[1].url} />}
+          </div>
+          <div className="h-full">
+            {validItems[2].type === "photo"
+              ? <img src={validItems[2].url} className="w-full h-full object-cover" />
+              : <AutoPlayVideo src={validItems[2].url} />}
+          </div>
         </div>
       </div>
     );
@@ -663,8 +727,8 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
   return (
     <div className="mb-4 grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
       {validItems.slice(0, 4).map((item, i) => (
-        <div key={i} className="relative w-full h-full">
-          <img src={item.url} className="w-full h-full object-cover" />
+        <div key={i} className="relative w-full h-full overflow-hidden">
+          {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
           {i === 3 && count > 4 && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
               <span className="text-white font-black text-xl">+{count - 4}</span>
@@ -682,9 +746,11 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: number, onHide: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
+  const [isReposted, setIsReposted] = useState(false);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [showConnectTip, setShowConnectTip] = useState(false);
   const rowMenuRef = useRef<HTMLDivElement>(null);
   const ackBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -705,6 +771,23 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
     await postApi("/explore/acknowledge", { user_id: currentUserId, post_id: post.id });
   };
 
+  const handleRepost = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res = await postApi("/explore/repost", { user_id: currentUserId, post_id: post.id });
+      if (res.error === "NO_CHANNEL_CONNECTED") {
+        setShowConnectTip(true);
+        setTimeout(() => setShowConnectTip(false), 3000);
+        return;
+      }
+      if (res.success) {
+        setIsReposted(true);
+      }
+    } catch (err) {
+      console.error("Repost failed", err);
+    }
+  };
+
   const handleHide = async () => {
     setIsMenuOpen(false);
     await postApi("/explore/hide_post", { user_id: currentUserId, post_id: post.id });
@@ -715,7 +798,6 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
   const openChannel = () => {
     const handle = post.channel?.handle || post.channel?.title;
     if (!handle) return;
-
     let link = "";
     if (handle.startsWith("http")) {
       link = handle;
@@ -723,10 +805,8 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
       const clean = handle.replace(/^@/, "");
       link = `https://t.me/${clean}`;
     }
-
     const twa = (window as any).Telegram?.WebApp;
     if (twa?.openTelegramLink) {
-      // openTelegramLink specifically handles t.me natively, allowing re-clicks
       twa.openTelegramLink(link);
     } else {
       window.open(link, "_blank");
@@ -742,7 +822,7 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
   };
 
   return (
-    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start relative">
+    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start">
       <TrueViewTracker postId={post.id} />
       {/* Avatar → direct channel link */}
       <button onClick={openChannel} className="shrink-0">
@@ -760,16 +840,14 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
       {/* Content */}
       <div className="flex-1 min-w-0 pt-0.5">
         <div className="flex items-center justify-between gap-2 mb-1">
-          {/* Channel name → direct link */}
           <button onClick={openChannel} className="flex items-center gap-1.5 truncate">
             <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
           </button>
-
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
             <div className="relative" ref={rowMenuRef}>
               <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/30 hover:text-white">
-                <MoreHorizontal size={14} />
+                < MoreHorizontal size={14} />
               </button>
               <AnimatePresence>
                 {isMenuOpen && (
@@ -801,44 +879,72 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
           </div>
         ) : null}
 
-        {/* Bottom row: Acknowledge + Views */}
-        <div className="flex items-center justify-between">
-          <div className="relative">
-            {/* Space Dust — anchored to the acknowledge button */}
-            <AnimatePresence>
-              {showSpaceDust && (
-                <motion.div
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"
-                >
-                  {[...Array(14)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                      animate={{ x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, scale: 0, opacity: 0 }}
-                      transition={{ duration: 1.0, ease: "easeOut" }}
-                      className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button
-              ref={ackBtnRef}
-              onClick={handleAcknowledge}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isAcknowledged
-                ? "bg-cyan-500 text-black shadow-[0_0_10px_#00e6ff80]"
-                : "bg-white/[0.03] text-cyan-400/50 hover:bg-white/10"
-                }`}
-            >
-              <CheckCircle2 size={12} />
-              {isAcknowledged ? t("explore.acknowledged") : t("explore.acknowledge")}
-            </button>
-          </div>
+        {/* Bottom row: Acknowledge (Heart) + Repost + Views */}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <AnimatePresence>
+                {showSpaceDust && (
+                  <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"
+                  >
+                    {[...Array(14)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                        animate={{ x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, scale: 0, opacity: 0 }}
+                        transition={{ duration: 1.0, ease: "easeOut" }}
+                        className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                ref={ackBtnRef}
+                onClick={handleAcknowledge}
+                className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/20 hover:text-cyan-400/60"}`}
+              >
+                <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/40"}`}>
+                  <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
+                </div>
+                {post.acknowledgments_count > 0 && (
+                  <span className="text-[10px] font-bold font-mono">
+                    {post.acknowledgments_count}
+                  </span>
+                )}
+              </button>
+            </div>
 
-          <div className="flex items-center gap-1 opacity-40 pr-1">
-            <Eye size={10} />
-            <span className="text-[9px] font-mono font-bold">{post.views || 0}</span>
+            <div className="relative">
+              <button
+                onClick={handleRepost}
+                className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : "text-white/20 hover:text-cyan-400/60"}`}
+              >
+                <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/40"}`}>
+                  <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
+                </div>
+                {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono">{post.reposts_count}</span>}
+              </button>
+              <AnimatePresence>
+                {showConnectTip && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                    className="absolute bottom-full left-0 mb-2 whitespace-nowrap bg-cyan-500 text-black px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest z-50 shadow-2xl"
+                  >
+                    {t("explore.connect_to_post") || "Connect Blu Agent to your channel from profile"}
+                    <div className="absolute top-full left-4 w-2 h-2 bg-cyan-500 rotate-45 -translate-y-1" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-white/20 px-2 py-1">
+            <Eye size={14} className="text-cyan-400/40" />
+            <span className="text-[10px] font-mono font-bold">{post.views || 0}</span>
           </div>
         </div>
       </div>
@@ -846,53 +952,27 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
   );
 }
 
-// ----------------------------------------------------------------------------
-// �️ AutoPlayVideo Component (Scroll aware)
-// ----------------------------------------------------------------------------
 function AutoPlayVideo({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
-        if (videoRef.current && videoRef.current.paused) {
-          videoRef.current.play().catch(() => { });
-        }
+        if (videoRef.current && videoRef.current.paused) videoRef.current.play().catch(() => { });
       } else {
-        if (videoRef.current && !videoRef.current.paused) {
-          videoRef.current.pause();
-        }
+        if (videoRef.current && !videoRef.current.paused) videoRef.current.pause();
       }
     }, { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] });
-
     if (videoRef.current) observer.observe(videoRef.current);
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
-
   return (
-    <video
-      ref={videoRef}
-      src={src}
-      controls
-      muted
-      playsInline
-      loop
-      autoPlay={false}
-      className="w-full h-auto max-h-[400px] object-contain"
-    />
+    <video ref={videoRef} src={src} controls muted playsInline loop autoPlay={false} className="w-full h-auto max-h-[400px] object-contain" />
   );
 }
 
-// ----------------------------------------------------------------------------
-// 👀 TrueViewTracker Component (Scroll aware)
-// ----------------------------------------------------------------------------
 function TrueViewTracker({ postId }: { postId: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const viewed = useRef(false);
-
   useEffect(() => {
     if (viewed.current) return;
     const observer = new IntersectionObserver(([entry]) => {
@@ -902,23 +982,18 @@ function TrueViewTracker({ postId }: { postId: number }) {
         observer.disconnect();
       }
     }, { threshold: 0.5 });
-
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [postId]);
-
   return <div ref={ref} className="absolute top-1/2 left-0 w-full h-px pointer-events-none" />;
 }
 
-// ----------------------------------------------------------------------------
-// �🔔 Notifications View (Inline)
-// ----------------------------------------------------------------------------
 function NotificationsView({ notifications, onClear }: { notifications: any[], onClear: () => void }) {
   const { t } = useLanguage();
-
   const getIcon = (type: string) => {
     if (type.startsWith("verified_acknowledgment_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
     if (type.startsWith("new_follower_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
+    if (type.startsWith("verified_repost_milestone")) return <Repeat2 size={18} className="text-cyan-400" />;
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <ShieldCheck size={18} className="text-cyan-400" />;
@@ -926,16 +1001,15 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
       default: return <Bell size={18} className="text-cyan-400" />;
     }
   };
-
   const getTitle = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) return t("notifications.verified_milestone_title");
     if (n.type.startsWith("new_follower_milestone")) return t("notifications.follower_milestone_title");
+    if (n.type.startsWith("verified_repost_milestone")) return t("notifications.repost_milestone_title") || "Repost Milestones";
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
     if (n.type === "new_follower") return "New Verified Distributor";
     return t("notifications.notification_type");
   };
-
   const getMessage = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) {
       const count = n.type.split("_").pop() || "1";
@@ -945,45 +1019,31 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
       const count = n.type.split("_").pop() || "1";
       return t("notifications.follower_milestone_msg").replace("{{count}}", count.toString());
     }
+    if (n.type.startsWith("verified_repost_milestone")) {
+      const count = n.type.split("_").pop() || "1";
+      return (t("notifications.repost_milestone_msg") || "{{count}} verified humans reposted your post").replace("{{count}}", count.toString());
+    }
     if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
     if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
     if (n.type === "new_follower") return "A Verified Human has started distributing your signals";
     return t("notifications.update_msg");
   };
-
   return (
     <div className="space-y-3">
       {notifications.length === 0 ? (
         <div className="py-20 text-center opacity-20 flex flex-col items-center gap-3">
-          <div className="p-4 rounded-full bg-white/5">
-            <Bell size={32} />
-          </div>
+          <div className="p-4 rounded-full bg-white/5"><Bell size={32} /></div>
           <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
         </div>
       ) : (
         notifications.map((n: any) => (
-          <div
-            key={n.id}
-            className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${n.is_read
-              ? "bg-white/[0.01] border border-white/[0.03] opacity-50"
-              : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"
-              }`}
-          >
-            <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"
-              }`}>
-              {getIcon(n.type)}
-            </div>
+          <div key={n.id} className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${n.is_read ? "bg-white/[0.01] border border-white/[0.03] opacity-50" : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"}`}>
+            <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>{getIcon(n.type)}</div>
             <div className="flex-1 min-w-0">
-              <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>
-                {getTitle(n)}
-              </p>
-              <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>
-                {getMessage(n)}
-              </p>
+              <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>{getTitle(n)}</p>
+              <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>{getMessage(n)}</p>
             </div>
-            {!n.is_read && (
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />
-            )}
+            {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
           </div>
         ))
       )}

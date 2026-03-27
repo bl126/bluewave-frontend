@@ -241,7 +241,9 @@
     "update_msg": "Nova atualização recebida.",
     "view_post": "Ver Post",
     "understood": "Entendido",
-    "follower_milestone_msg": "{{count}} humanos verificados entraram no seu canal"
+    "follower_milestone_msg": "{{count}} humanos verificados entraram no seu canal",
+    "repost_milestone_title": "Marcos de Repostagem",
+    "repost_milestone_msg": "{{count}} humanos verificados repostaram sua postagem"
   },
   "marketplace": {
     "beta_phase": "EM FASE BETA"

@@ -241,7 +241,9 @@
     "update_msg": "Pembaruan baru diterima.",
     "view_post": "Lihat Pos",
     "understood": "Dimengerti",
-    "follower_milestone_msg": "{{count}} manusia terverifikasi bergabung dengan saluran Anda"
+    "follower_milestone_msg": "{{count}} manusia terverifikasi bergabung dengan saluran Anda",
+    "repost_milestone_title": "Pencapaian Repost",
+    "repost_milestone_msg": "{{count}} manusia terverifikasi me-repost postingan Anda"
   },
   "marketplace": {
     "beta_phase": "DALAM FASE BETA"
