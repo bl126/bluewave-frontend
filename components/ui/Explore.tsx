@@ -298,7 +298,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               {tab === "following" && <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>}
               {tab === "notifications" && (
                 <div className="relative">
-                  <Bell size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/30"} />
+                  <Bell size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
                   {unreadCount > 0 && (
                     <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
                       {unreadCount > 9 ? "!" : unreadCount}
@@ -306,7 +306,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   )}
                 </div>
               )}
-              {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/30"} />}
+              {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />}
 
               {activeTab === tab && (
                 <motion.div
@@ -427,6 +427,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   currentUserId={telegramUser?.id}
                   onHide={() => mutate()}
                   onRepost={() => mutate()}
+                  onConnectRequired={() => {
+                    setConnectPrompt(true);
+                    setTimeout(() => setConnectPrompt(false), 3000);
+                  }}
                 />
               ))}
 
@@ -746,14 +750,14 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
-function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, currentUserId: number, onHide: () => void, onRepost: () => void }) {
+function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: { post: any, currentUserId: number, onHide: () => void, onRepost: () => void, onConnectRequired: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
+  const [isReposting, setIsReposting] = useState(false);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const [showConnectTip, setShowConnectTip] = useState(false);
   const rowMenuRef = useRef<HTMLDivElement>(null);
   const ackBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -776,11 +780,12 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isReposting || isReposted) return;
+    setIsReposting(true);
     try {
       const res = await postApi("/explore/repost", { user_id: currentUserId, post_id: post.id });
       if (res.error === "NO_CHANNEL_CONNECTED") {
-        setShowConnectTip(true);
-        setTimeout(() => setShowConnectTip(false), 3000);
+        onConnectRequired();
         return;
       }
       if (res.success) {
@@ -789,6 +794,8 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
       }
     } catch (err) {
       console.error("Repost failed", err);
+    } finally {
+      setIsReposting(false);
     }
   };
 
@@ -832,8 +839,8 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
       {/* Repost Header */}
       {(isReposted || post.reposted_by_name) && (
         <div className="flex items-center gap-2 mb-1 ml-10">
-          <Repeat2 size={12} className="text-cyan-400/60" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+          <Repeat2 size={12} className="text-cyan-400/80" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
             {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : "You Reposted"}
           </span>
         </div>
@@ -860,9 +867,9 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
               <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
             </button>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
+              <span className="text-[10px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/30 hover:text-white">
+                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/50 hover:text-white">
                   < MoreHorizontal size={14} />
                 </button>
                 <AnimatePresence>
@@ -881,7 +888,7 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
             </div>
           </div>
 
-          <p className="text-sm text-cyan-100/70 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
+          <p className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
 
           {post.media_urls && post.media_urls.length > 0 ? (
             <MediaCollage items={post.media_urls} />
@@ -926,7 +933,7 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
                     <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
                   </div>
                   {post.acknowledgments_count > 0 && (
-                    <span className="text-[10px] font-bold font-mono text-white/60">
+                    <span className="text-[10px] font-bold font-mono text-white/80">
                       {post.acknowledgments_count}
                     </span>
                   )}
@@ -936,37 +943,27 @@ function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, curren
               <div className="relative">
                 <button
                   onClick={handleRepost}
-                  disabled={isReposted}
-                  className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
+                  disabled={isReposted || isReposting}
+                  className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/60" : "text-white/40 hover:text-cyan-400/60"}`}
                 >
-                  <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
-                    <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
+                  <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : isReposting ? "bg-cyan-500/5" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
+                    {isReposting
+                      ? <Loader2 size={16} className="animate-spin text-cyan-400" />
+                      : <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
+                    }
                   </div>
                   {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono text-white/60">{post.reposts_count}</span>}
                 </button>
-                <AnimatePresence>
-                  {showConnectTip && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                      className="absolute bottom-full left-0 mb-2 whitespace-nowrap bg-cyan-500 text-black px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest z-50 shadow-2xl"
-                    >
-                      {t("explore.connect_to_post") || "Connect Blu Agent to your channel from profile"}
-                      <div className="absolute top-full left-4 w-2 h-2 bg-cyan-500 rotate-45 -translate-y-1" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-white/40 px-2 py-1">
-              <Eye size={14} className="text-cyan-400/60" />
-              <span className="text-[10px] font-mono font-bold text-white/60">{post.views || 0}</span>
+            <div className="flex items-center gap-1.5 text-white/60 px-2 py-1">
+              <Eye size={14} className="text-cyan-400/80" />
+              <span className="text-[10px] font-mono font-bold text-white/80">{post.views || 0}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -1058,6 +1055,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
+      case "reposted": return <Repeat2 size={18} className="text-cyan-400" />;
       case "new_follower": return <Plus size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
@@ -1068,6 +1066,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     if (n.type.startsWith("verified_repost_milestone")) return t("notifications.repost_milestone_title") || "Reposts Milestone";
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
+    if (n.type === "reposted") return t("notifications.repost") || "Reposted your post";
     if (n.type === "new_follower") return "New Follower";
     return t("notifications.notification_type");
   };
@@ -1089,9 +1088,13 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
       return t("notifications.acknowledged_msg").replace("{{name}}", firstName);
     }
+    if (n.type === "reposted") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return (t("notifications.reposted_msg") || "{{name}} reposted your post.").replace("{{name}}", firstName);
+    }
     if (n.type === "new_follower") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} followed your channel`;
+      return (t("notifications.new_follower_msg") || "{{name}} followed your channel.").replace("{{name}}", firstName);
     }
     return t("notifications.update_msg");
   };
@@ -1116,8 +1119,8 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
                 onClick={() => handleToggle(n)}
                 className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
               >
-                {/* Avatar for acknowledged + new_follower + repost milestone types — clickable to open channel */}
-                {(n.type === "acknowledged" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone")) && n.from_user ? (
+                {/* Avatar for acknowledged + new_follower + repost types — clickable to open channel */}
+                {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone")) && n.from_user ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

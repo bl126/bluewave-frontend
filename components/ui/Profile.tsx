@@ -254,7 +254,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               {loading && !user && (
                 <div className="flex flex-col items-center justify-center pt-20 gap-4">
                   <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                  <span className="text-cyan-500/50 text-xs font-bold uppercase tracking-widest">{t("profile.loading_protocol")}</span>
+                  <span className="text-cyan-400/80 text-xs font-bold uppercase tracking-widest">{t("profile.loading_protocol")}</span>
                 </div>
               )}
 
@@ -282,15 +282,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           {user.name || user.username}
                         </h2>
                         <div className="flex items-center gap-2 py-0.5">
-                          <div className="flex items-center gap-1 bg-cyan-500/5 px-2 py-1 rounded-lg border border-cyan-500/10">
-                            <span className="text-cyan-500/60 font-mono text-[9px] uppercase tracking-tighter">
+                          <div className="flex items-center gap-1 bg-cyan-500/10 px-2 py-1 rounded-lg border border-cyan-500/20">
+                            <span className="text-cyan-400/80 font-mono text-[9px] uppercase tracking-tighter">
                               {t("explore.bw_id_label")}: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
                             </span>
-                            <button onClick={() => setShowId(!showId)} className="text-cyan-500/30 hover:text-cyan-400">
+                            <button onClick={() => setShowId(!showId)} className="text-cyan-400/50 hover:text-cyan-400">
                               {showId ? <EyeOff size={10} /> : <Eye size={10} />}
                             </button>
                           </div>
-                          <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/5 border border-cyan-500/10 text-cyan-500/40 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all">
+                          <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all">
                             {copied ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
                           </button>
                         </div>
@@ -300,7 +300,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                       <button
                         ref={menuButtonRef}
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="p-1.5 rounded-full text-cyan-500/40 hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                        className="p-1.5 rounded-full text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-colors"
                       >
                         <MoreVertical size={16} />
                       </button>
@@ -328,7 +328,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
                   <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-1 shrink-0">
                     {(["bio", "roles", "drops"] as TabId[]).map((tab) => (
-                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "text-cyan-500/40 hover:text-cyan-500/60 hover:bg-white/5"}`}>
+                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "text-cyan-400/70 hover:text-cyan-400/90 hover:bg-white/10"}`}>
                         {tab === "bio" && t("profile.bio")} {tab === "roles" && t("profile.roles")} {tab === "drops" && t("profile.drops")}
                       </button>
                     ))}
@@ -338,17 +338,17 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "bio" && (
                       <>
                         <div className="grid grid-cols-3 gap-3">
-                          <button onClick={() => setIsLevelPopupOpen(true)} className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all">
+                          <button onClick={() => setIsLevelPopupOpen(true)} className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all">
                             <span className="text-white text-lg font-black">{level}</span>
-                            <span className="text-cyan-500/50 text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
+                            <span className="text-cyan-400/80 text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
                           </button>
                           <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
                             <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
                             <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak_label")}</span>
                           </div>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
                             <span className="text-white text-xl font-black">{user.total_referrals || 0}</span>
-                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
+                            <span className="text-cyan-400/80 text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
                           </div>
                         </div>
 
@@ -370,7 +370,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center justify-between">
-                              <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
+                              <span className="text-cyan-400/80 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
                               <button onClick={() => setShowEarnings(!showEarnings)} className="text-cyan-500/30 hover:text-cyan-400 transition-colors">
                                 {showEarnings ? <EyeOff size={12} /> : <Eye size={12} />}
                               </button>
@@ -390,13 +390,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
-                              <span className="text-cyan-500/50 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
-                              <p className="text-cyan-500/30 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
+                              <span className="text-cyan-400/80 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
+                              <p className="text-cyan-400/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
                             </div>
                             <button onClick={() => setIsReferralModalOpen(true)} className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all">{t("profile.get_link")}</button>
                           </div>
                           <button onClick={() => setIsConnectBluOpen(true)} className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all">{t("profile.connect_blu")}</button>
-                          <p className="text-cyan-500/40 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
+                          <p className="text-cyan-400/70 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
                             {t("profile.joined_at")}: {(() => {
                               const raw = user.joined_at || user.created_at;
                               if (!raw) return t("profile.protocol_active");
@@ -412,7 +412,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "roles" && (
                       <div className="py-4">
                         {!user.roles || user.roles.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center gap-3 py-10 opacity-30"><ShieldCheck size={40} /><span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles_unlocked")}</span></div>
+                          <div className="flex flex-col items-center justify-center gap-3 py-10 opacity-70"><ShieldCheck size={40} /><span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles_unlocked")}</span></div>
                         ) : (
                           <div className="grid grid-cols-3 gap-3">
                             {user.roles.map((role: string) => {
