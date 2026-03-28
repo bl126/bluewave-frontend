@@ -423,6 +423,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   post={post}
                   currentUserId={telegramUser?.id}
                   onHide={() => mutate()}
+                  onRepost={() => mutate()}
                 />
               ))}
 
@@ -743,7 +744,7 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
-function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: number, onHide: () => void }) {
+function PostCard({ post, currentUserId, onHide, onRepost }: { post: any, currentUserId: number, onHide: () => void, onRepost: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
@@ -782,6 +783,7 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
       }
       if (res.success) {
         setIsReposted(true);
+        onRepost(); // Refresh feed to show the new repost
       }
     } catch (err) {
       console.error("Repost failed", err);
@@ -830,12 +832,12 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
         <div className="flex items-center gap-2 mb-1 ml-10">
           <Repeat2 size={12} className="text-cyan-400/60" />
           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-            {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : (t("repost.you_reposted") || "You Reposted")}
+            {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : "You Reposted"}
           </span>
         </div>
       )}
 
-      <div className="flex gap-4 w-full">
+      <div className="flex gap-4 w-full items-start">
         {/* Avatar → direct channel link */}
         <button onClick={openChannel} className="shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
@@ -1053,7 +1055,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     if (type.startsWith("verified_repost_milestone")) return <Repeat2 size={18} className="text-cyan-400" />;
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
-      case "acknowledged": return <ShieldCheck size={18} className="text-cyan-400" />;
+      case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "new_follower": return <UserCheck size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
@@ -1104,7 +1106,7 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
             <div key={n.id} className="flex flex-col gap-1">
               <div
                 onClick={() => handleToggle(n)}
-                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.01] border border-white/[0.03] opacity-50" : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"}`}
+                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.03] border border-white/[0.06] opacity-70" : "bg-cyan-500/[0.06] border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.08)]"}`}
               >
                 <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>
                   {getIcon(n.type)}

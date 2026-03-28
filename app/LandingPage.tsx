@@ -363,6 +363,12 @@ export default function LandingPage() {
         mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
         mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
 
+        // 🚀 Pre-fetch Explore Feed
+        getApi(`/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`)
+          .then(posts => {
+            if (posts) mutate(`${apiUrl}/api/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`, posts, false);
+          }).catch(() => { });
+
         // All ready
         setIsLoading(false);
       } catch (err) {
