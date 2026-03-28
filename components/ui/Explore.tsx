@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useApi, postApi } from "@/lib/useApi";
+import { useApi, postApi, getApi } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 
 const ADMIN_IDS = [5023869471];
@@ -47,7 +47,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
-  
+
   // Pagination State
   const [offset, setOffset] = useState(0);
   const [pagedPosts, setPagedPosts] = useState<any[]>([]);
@@ -410,7 +410,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               transition={{ duration: 0.2 }}
               className="divide-y divide-white/[0.05]"
             >
-              {loading && !initialPosts && (
+              {loading && pagedPosts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
                   <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
                   <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
@@ -428,7 +428,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
               {/* Load More Trigger */}
               <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-                {loadingMore && <Loader2 className="animate-spin text-cyan-400/40" size={20} />}
+                {loadingMore && !loading && <Loader2 className="animate-spin text-cyan-400/40" size={20} />}
                 {!hasMore && pagedPosts.length > 0 && (
                   <span className="text-[8px] font-black uppercase tracking-widest opacity-20">{t("explore.no_more_signals") || "No more signals found"}</span>
                 )}
@@ -746,7 +746,7 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: number, onHide: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
-  const [isReposted, setIsReposted] = useState(false);
+  const [isReposted, setIsReposted] = useState(post.is_reposted);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -822,129 +822,143 @@ function PostCard({ post, currentUserId, onHide }: { post: any, currentUserId: n
   };
 
   return (
-    <div className="p-4 flex gap-4 relative hover:bg-white/[0.01] transition-all items-start">
+    <div className="p-4 flex flex-col gap-1 relative hover:bg-white/[0.01] transition-all items-start">
       <TrueViewTracker postId={post.id} />
-      {/* Avatar → direct channel link */}
-      <button onClick={openChannel} className="shrink-0">
-        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
-          {post.channel?.photo && !imgError ? (
-            <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
-              {post.channel?.title?.[0] || "B"}
-            </div>
-          )}
+
+      {/* Repost Header */}
+      {(isReposted || post.reposted_by_name) && (
+        <div className="flex items-center gap-2 mb-1 ml-10">
+          <Repeat2 size={12} className="text-cyan-400/60" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+            {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : (t("repost.you_reposted") || "You Reposted")}
+          </span>
         </div>
-      </button>
+      )}
 
-      {/* Content */}
-      <div className="flex-1 min-w-0 pt-0.5">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <button onClick={openChannel} className="flex items-center gap-1.5 truncate">
-            <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
-          </button>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
-            <div className="relative" ref={rowMenuRef}>
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/30 hover:text-white">
-                < MoreHorizontal size={14} />
-              </button>
-              <AnimatePresence>
-                {isMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
-                    className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
-                  >
-                    <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
-                      {t("explore.not_interested")}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+      <div className="flex gap-4 w-full">
+        {/* Avatar → direct channel link */}
+        <button onClick={openChannel} className="shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
+            {post.channel?.photo && !imgError ? (
+              <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
+                {post.channel?.title?.[0] || "B"}
+              </div>
+            )}
+          </div>
+        </button>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 pt-0.5">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <button onClick={openChannel} className="flex items-center gap-1.5 truncate">
+              <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
+            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
+              <div className="relative" ref={rowMenuRef}>
+                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/30 hover:text-white">
+                  < MoreHorizontal size={14} />
+                </button>
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
+                      className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
+                    >
+                      <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
+                        {t("explore.not_interested")}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
 
-        <p className="text-sm text-cyan-100/70 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
+          <p className="text-sm text-cyan-100/70 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
 
-        {post.media_urls && post.media_urls.length > 0 ? (
-          <MediaCollage items={post.media_urls} />
-        ) : post.media_url ? (
-          <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
-            {post.media_type === "photo" ? (
-              <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
-            ) : post.media_type === "video" ? (
-              <AutoPlayVideo src={post.media_url} />
-            ) : null}
-          </div>
-        ) : null}
-
-        {/* Bottom row: Acknowledge (Heart) + Repost + Views */}
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <AnimatePresence>
-                {showSpaceDust && (
-                  <motion.div
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"
-                  >
-                    {[...Array(14)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                        animate={{ x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, scale: 0, opacity: 0 }}
-                        transition={{ duration: 1.0, ease: "easeOut" }}
-                        className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
-                      />
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <button
-                ref={ackBtnRef}
-                onClick={handleAcknowledge}
-                className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/20 hover:text-cyan-400/60"}`}
-              >
-                <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/40"}`}>
-                  <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
-                </div>
-                {post.acknowledgments_count > 0 && (
-                  <span className="text-[10px] font-bold font-mono">
-                    {post.acknowledgments_count}
-                  </span>
-                )}
-              </button>
+          {post.media_urls && post.media_urls.length > 0 ? (
+            <MediaCollage items={post.media_urls} />
+          ) : post.media_url ? (
+            <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
+              {post.media_type === "photo" ? (
+                <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
+              ) : post.media_type === "video" ? (
+                <AutoPlayVideo src={post.media_url} />
+              ) : null}
             </div>
+          ) : null}
 
-            <div className="relative">
-              <button
-                onClick={handleRepost}
-                className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : "text-white/20 hover:text-cyan-400/60"}`}
-              >
-                <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/40"}`}>
-                  <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
-                </div>
-                {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono">{post.reposts_count}</span>}
-              </button>
-              <AnimatePresence>
-                {showConnectTip && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                    className="absolute bottom-full left-0 mb-2 whitespace-nowrap bg-cyan-500 text-black px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest z-50 shadow-2xl"
-                  >
-                    {t("explore.connect_to_post") || "Connect Blu Agent to your channel from profile"}
-                    <div className="absolute top-full left-4 w-2 h-2 bg-cyan-500 rotate-45 -translate-y-1" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* Bottom row: Acknowledge (Heart) + Repost + Views */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-8">
+              <div className="relative">
+                <AnimatePresence>
+                  {showSpaceDust && (
+                    <motion.div
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"
+                    >
+                      {[...Array(14)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                          animate={{ x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, scale: 0, opacity: 0 }}
+                          transition={{ duration: 1.0, ease: "easeOut" }}
+                          className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <button
+                  ref={ackBtnRef}
+                  onClick={handleAcknowledge}
+                  className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
+                >
+                  <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
+                    <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
+                  </div>
+                  {post.acknowledgments_count > 0 && (
+                    <span className="text-[10px] font-bold font-mono text-white/60">
+                      {post.acknowledgments_count}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={handleRepost}
+                  disabled={isReposted}
+                  className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
+                >
+                  <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
+                    <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
+                  </div>
+                  {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono text-white/60">{post.reposts_count}</span>}
+                </button>
+                <AnimatePresence>
+                  {showConnectTip && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                      className="absolute bottom-full left-0 mb-2 whitespace-nowrap bg-cyan-500 text-black px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest z-50 shadow-2xl"
+                    >
+                      {t("explore.connect_to_post") || "Connect Blu Agent to your channel from profile"}
+                      <div className="absolute top-full left-4 w-2 h-2 bg-cyan-500 rotate-45 -translate-y-1" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-white/20 px-2 py-1">
-            <Eye size={14} className="text-cyan-400/40" />
-            <span className="text-[10px] font-mono font-bold">{post.views || 0}</span>
+            <div className="flex items-center gap-1.5 text-white/40 px-2 py-1">
+              <Eye size={14} className="text-cyan-400/60" />
+              <span className="text-[10px] font-mono font-bold text-white/60">{post.views || 0}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -990,6 +1004,49 @@ function TrueViewTracker({ postId }: { postId: number }) {
 
 function NotificationsView({ notifications, onClear }: { notifications: any[], onClear: () => void }) {
   const { t } = useLanguage();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [interactionData, setInteractionData] = useState<Record<number, any[]>>({});
+  const [loadingIds, setLoadingIds] = useState<Set<number>>(new Set());
+
+  const handleToggle = async (n: any) => {
+    const isMilestone = n.type.includes("milestone");
+    if (!isMilestone || !n.post_id) return;
+
+    if (expandedId === n.id) {
+      setExpandedId(null);
+      return;
+    }
+
+    setExpandedId(n.id);
+    if (!interactionData[n.id] && !loadingIds.has(n.id)) {
+      setLoadingIds(prev => new Set(prev).add(n.id));
+      try {
+        const data = await getApi(`/explore/post/${n.post_id}/interactions`);
+        setInteractionData(prev => ({ ...prev, [n.id]: data }));
+      } catch (err) {
+        console.error("Failed to fetch interactions", err);
+      } finally {
+        setLoadingIds(prev => {
+          const next = new Set(prev);
+          next.delete(n.id);
+          return next;
+        });
+      }
+    }
+  };
+
+  const openChannel = (handle: string) => {
+    if (!handle) return;
+    const clean = handle.replace(/^@/, "");
+    const link = `https://t.me/${clean}`;
+    const twa = (window as any).Telegram?.WebApp;
+    if (twa?.openTelegramLink) {
+      twa.openTelegramLink(link);
+    } else {
+      window.open(link, "_blank");
+    }
+  };
+
   const getIcon = (type: string) => {
     if (type.startsWith("verified_acknowledgment_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
     if (type.startsWith("new_follower_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
@@ -1013,21 +1070,22 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
   const getMessage = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
+      return t("notifications.verified_milestone_msg").replace("{{ count }}", count.toString());
     }
     if (n.type.startsWith("new_follower_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return t("notifications.follower_milestone_msg").replace("{{count}}", count.toString());
+      return t("notifications.follower_milestone_msg").replace("{{ count }}", count.toString());
     }
     if (n.type.startsWith("verified_repost_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return (t("notifications.repost_milestone_msg") || "{{count}} verified humans reposted your post").replace("{{count}}", count.toString());
+      return (t("notifications.repost_milestone_msg") || "{{ count }} verified humans reposted your post").replace("{{ count }}", count.toString());
     }
     if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
-    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{name}}", n.from_user?.name || "Verified human");
+    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{ name }}", n.from_user?.name || "Verified human");
     if (n.type === "new_follower") return "A Verified Human has started distributing your signals";
     return t("notifications.update_msg");
   };
+
   return (
     <div className="space-y-3">
       {notifications.length === 0 ? (
@@ -1036,16 +1094,74 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
           <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
         </div>
       ) : (
-        notifications.map((n: any) => (
-          <div key={n.id} className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${n.is_read ? "bg-white/[0.01] border border-white/[0.03] opacity-50" : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"}`}>
-            <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>{getIcon(n.type)}</div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>{getTitle(n)}</p>
-              <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>{getMessage(n)}</p>
+        notifications.map((n: any) => {
+          const isExpanded = expandedId === n.id;
+          const interactions = interactionData[n.id] || [];
+          const isLoading = loadingIds.has(n.id);
+          const isMilestone = n.type.includes("milestone");
+
+          return (
+            <div key={n.id} className="flex flex-col gap-1">
+              <div
+                onClick={() => handleToggle(n)}
+                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.01] border border-white/[0.03] opacity-50" : "bg-cyan-500/[0.03] border border-cyan-500/20 shadow-[0_0_15px_rgba(0,230,255,0.05)]"}`}
+              >
+                <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>
+                  {getIcon(n.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>{getTitle(n)}</p>
+                  <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>{getMessage(n)}</p>
+                </div>
+                {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
+                {isMilestone && (
+                  <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                )}
+              </div>
+
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mx-4 p-4 bg-white/[0.02] border-x border-b border-white/5 rounded-b-2xl flex flex-wrap gap-3 items-center">
+                      {isLoading ? (
+                        <div className="flex items-center gap-2 py-1">
+                          <Loader2 size={12} className="animate-spin text-cyan-400" />
+                          <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Analyzing interactions</span>
+                        </div>
+                      ) : interactions.length > 0 ? (
+                        interactions.map((human: any, idx: number) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => { e.stopPropagation(); openChannel(human.channel); }}
+                            className="group flex flex-col items-center gap-1 active:scale-90 transition-all"
+                          >
+                            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 bg-black group-hover:border-cyan-500/50 transition-colors">
+                              {human.photo ? (
+                                <img src={human.photo} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 text-[8px] font-black">
+                                  {human.name?.[0] || "H"}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[7px] font-bold text-white/30 truncate max-w-[40px] uppercase">{human.name?.split(" ")[0]}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <span className="text-[8px] font-black uppercase tracking-widest text-white/20">No data found</span>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
