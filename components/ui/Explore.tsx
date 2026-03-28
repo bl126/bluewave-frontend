@@ -1105,7 +1105,7 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
     if (n.type === "reposted") return t("notifications.repost") || "Reposted your post";
-    if (n.type === "new_follower") return "New Follower";
+    if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
     return t("notifications.notification_type");
   };
   const getMessage = (n: any) => {

@@ -242,8 +242,12 @@
     "view_post": "Смотреть Пост",
     "understood": "Понятно",
     "follower_milestone_msg": "{{count}} проверенных людей присоединились к вашему каналу",
-    "repost_milestone_title": "Этапы Репостов",
-    "repost_milestone_msg": "{{count}} проверенных людей сделали репост вашего поста"
+    "repost_milestone_title": "Достижение: Репосты",
+    "repost_milestone_msg": "{{count}} верифицированных людей репостнули ваш пост",
+    "repost": "Репост",
+    "reposted_msg": "{{name}} репостнул(а) ваш пост.",
+    "new_follower": "Новый подписчик",
+    "new_follower_msg": "{{name}} подписался на ваш канал."
   },
   "marketplace": {
     "beta_phase": "ФАЗА БЕТА"

@@ -242,7 +242,11 @@
     "understood": "知晓",
     "follower_milestone_msg": "{{count}} 个已验证的人类加入了你的频道",
     "repost_milestone_title": "转发里程碑",
-    "repost_milestone_msg": "{{count}} 个已验证的人类转发了你的帖子"
+    "repost_milestone_msg": "{{count}} 名已验证人类转发了您的帖子",
+    "repost": "转发",
+    "reposted_msg": "{{name}} 转发了您的帖子。",
+    "new_follower": "新关注者",
+    "new_follower_msg": "{{name}} 关注了您的频道。"
   },
   "marketplace": {
     "beta_phase": "测试阶段"

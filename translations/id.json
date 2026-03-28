@@ -243,7 +243,11 @@
     "understood": "Dimengerti",
     "follower_milestone_msg": "{{count}} manusia terverifikasi bergabung dengan saluran Anda",
     "repost_milestone_title": "Pencapaian Repost",
-    "repost_milestone_msg": "{{count}} manusia terverifikasi me-repost postingan Anda"
+    "repost_milestone_msg": "{{count}} manusia terverifikasi membagikan ulang postingan Anda",
+    "repost": "Bagikan Ulang",
+    "reposted_msg": "{{name}} membagikan ulang postingan Anda.",
+    "new_follower": "Pengikut Baru",
+    "new_follower_msg": "{{name}} mengikuti saluran Anda."
   },
   "marketplace": {
     "beta_phase": "DALAM FASE BETA"

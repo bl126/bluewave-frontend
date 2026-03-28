@@ -242,8 +242,12 @@
     "view_post": "पोस्ट देखें",
     "understood": "समझ गया",
     "follower_milestone_msg": "{{count}} सत्यापित मनुष्य आपके चैनल में शामिल हुए",
-    "repost_milestone_title": "रीपोस्ट मील के पत्थर",
-    "repost_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट को रीपोस्ट किया"
+    "repost_milestone_title": "रीपोस्ट माइलस्टोन",
+    "repost_milestone_msg": "{{count}} सत्यापित मनुष्यों ने आपकी पोस्ट रीपोस्ट की",
+    "repost": "रीपोस्ट",
+    "reposted_msg": "{{name}} ने आपकी पोस्ट रीपोस्ट की।",
+    "new_follower": "नया फॉलोअर",
+    "new_follower_msg": "{{name}} ने आपके चैनल को फॉलो किया।"
   },
   "marketplace": {
     "beta_phase": "बीटा चरण में"

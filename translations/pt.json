@@ -242,8 +242,12 @@
     "view_post": "Ver Post",
     "understood": "Entendido",
     "follower_milestone_msg": "{{count}} humanos verificados entraram no seu canal",
-    "repost_milestone_title": "Marcos de Repostagem",
-    "repost_milestone_msg": "{{count}} humanos verificados repostaram sua postagem"
+    "repost_milestone_title": "Marco de Repostagens",
+    "repost_milestone_msg": "{{count}} humanos verificados repostaram sua postagem",
+    "repost": "Repostar",
+    "reposted_msg": "{{name}} repostou sua postagem.",
+    "new_follower": "Novo Seguidor",
+    "new_follower_msg": "{{name}} seguiu seu canal."
   },
   "marketplace": {
     "beta_phase": "EM FASE BETA"

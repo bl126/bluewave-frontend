@@ -242,8 +242,12 @@
     "view_post": "ดูโพสต์",
     "understood": "เข้าใจแล้ว",
     "follower_milestone_msg": "มนุษย์ที่ได้รับการยืนยัน {{count}} คนเข้าร่วมช่องของคุณ",
-    "repost_milestone_title": "เป้าหมายการรีโพสต์",
-    "repost_milestone_msg": "มนุษย์ที่ได้รับการยืนยัน {{count}} คนรีโพสต์ของคุณ"
+    "repost_milestone_title": "ความสำเร็จ: รีโพสต์",
+    "repost_milestone_msg": "มนุษย์ที่ยืนยันแล้ว {{count}} คนรีโพสต์โพสต์ของคุณ",
+    "repost": "รีโพสต์",
+    "reposted_msg": "{{name}} รีโพสต์โพสต์ของคุณ.",
+    "new_follower": "ผู้ติดตามใหม่",
+    "new_follower_msg": "{{name}} ติดตามช่องของคุณ."
   },
   "marketplace": {
     "beta_phase": "อยู่ในรุ่นทดลอง"

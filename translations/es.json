@@ -242,8 +242,12 @@
     "view_post": "Ver Publicación",
     "understood": "Entendido",
     "follower_milestone_msg": "{{count}} humanos verificados se unieron a tu canal",
-    "repost_milestone_title": "Hitos de Reposteo",
-    "repost_milestone_msg": "{{count}} humanos verificados repostearon tu publicación"
+    "repost_milestone_title": "Hito de Compartidos",
+    "repost_milestone_msg": "{{count}} humanos verificados compartieron tu post",
+    "repost": "Compartir",
+    "reposted_msg": "{{name}} compartió tu post.",
+    "new_follower": "Nuevo Seguidor",
+    "new_follower_msg": "{{name}} siguió tu canal."
   },
   "marketplace": {
     "beta_phase": "EN FASE BETA"
