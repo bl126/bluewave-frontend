@@ -30,7 +30,8 @@ const BETA_TESTER_IDS: number[] = [
   8531164706,
   2008138868,
   769579042,
-  5511825370
+  5511825370,
+  1504247376
 ];
 
 interface ExploreProps {
