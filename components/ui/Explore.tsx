@@ -495,10 +495,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             onPosted={(requestArgs) => {
               setIsPostModalOpen(false);
               setIsPostingBackground(true);
-              Promise.all([
-                postApi("/explore/post", requestArgs),
-                new Promise(resolve => setTimeout(resolve, 2000)) // Enforce min 2s display
-              ]).then(([res]) => {
+              postApi("/explore/post", requestArgs).then((res) => {
                 if (res?.success) {
                   mutate();
                   setSuccessMessage(t("explore.post_success_popup"));
@@ -562,12 +559,15 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const isVideo = file.type.startsWith("video/");
     setMediaType(isVideo ? "video" : "photo");
     setMediaExt(file.name.split(".").pop() || (isVideo ? "mp4" : "jpg"));
+    setMediaFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
@@ -577,17 +577,53 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
     reader.readAsDataURL(file);
   };
 
-  const handlePost = () => {
-    if (!content.trim() && !mediaBase64) return;
+  const handlePost = async () => {
+    if (!content.trim() && !mediaFile && !mediaBase64) return;
     setPosting(true);
     setError(null);
-    onPosted({
-      tg_id: telegramUser.id,
-      content: content.trim(),
-      media_base64: mediaBase64,
-      media_type: mediaBase64 ? mediaType : "text",
-      media_ext: mediaExt,
-    });
+    try {
+      let finalMediaUrl = "";
+
+      if (mediaFile) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const urlRes = await fetch(`${apiUrl}/api/explore/get_upload_url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tg_id: telegramUser.id, media_ext: mediaExt })
+        });
+        const urlData = await urlRes.json();
+
+        if (urlData.signed_url) {
+          const putRes = await fetch(urlData.signed_url, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bearer ${urlData.token}`,
+              "Content-Type": mediaFile.type
+            },
+            body: mediaFile
+          });
+
+          if (putRes.ok) {
+            finalMediaUrl = urlData.public_url;
+          } else {
+            console.error("Direct upload failed, code:", putRes.status);
+          }
+        }
+      }
+
+      onPosted({
+        tg_id: telegramUser.id,
+        content: content.trim(),
+        media_url: finalMediaUrl,
+        media_base64: finalMediaUrl ? "" : mediaBase64,
+        media_type: (finalMediaUrl || mediaBase64) ? mediaType : "text",
+        media_ext: mediaExt,
+      });
+    } catch (err: any) {
+      console.error(err);
+      setError("Upload failed.");
+      setPosting(false);
+    }
   };
 
   return (
@@ -633,7 +669,7 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
               <video src={mediaPreview} className="w-full max-h-[180px]" controls playsInline />
             )}
             <button
-              onClick={() => { setMediaPreview(null); setMediaBase64(""); setMediaType("text"); }}
+              onClick={() => { setMediaPreview(null); setMediaBase64(""); setMediaFile(null); setMediaType("text"); }}
               className="absolute top-2 right-2 w-7 h-7 bg-black/80 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
             >
               <X size={14} />
