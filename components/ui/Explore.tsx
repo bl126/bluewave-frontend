@@ -76,20 +76,23 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [connectPrompt, setConnectPrompt] = useState(false);
 
   // Fetch Current User (for channel connection status)
-  const { data: swrUser } = useApi(isOpen && telegramUser?.id ? `/user/${telegramUser.id}` : null);
+  const { data: swrUser } = useApi(telegramUser?.id ? `/user/${telegramUser.id}` : null);
   const isConnected = !!swrUser?.telegram_channel;
 
-  // Fetch Notifications
+  // Fetch Notifications (pre-load on mount)
   const { data: notifications, mutate: mutateNotifications } = useApi(
-    isOpen && telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null,
+    telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null,
     { refreshInterval: 30000 }
   );
   const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
 
-  // Fetch Feed
+  // Fetch Feed — all tabs pre-loaded on mount for instant switching
   const { data: initialPosts, loading, mutate } = useApi(
-    isOpen && telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0` : null
+    telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0` : null
   );
+
+  // Pre-warm following tab
+  useApi(telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=following&offset=0` : null);
 
   useEffect(() => {
     if (initialPosts) {
@@ -411,7 +414,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               className="divide-y divide-white/[0.05]"
             >
               {loading && pagedPosts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-30">
+                <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-70">
                   <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
                   <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
                 </div>
@@ -429,20 +432,19 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
               {/* Load More Trigger */}
               <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-                {loadingMore && !loading && <Loader2 className="animate-spin text-cyan-400/40" size={20} />}
+                {loadingMore && !loading && <Loader2 className="animate-spin text-cyan-400/60" size={20} />}
                 {!hasMore && pagedPosts.length > 0 && (
-                  <span className="text-[8px] font-black uppercase tracking-widest opacity-20">{t("explore.no_more_signals") || "No more signals found"}</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest opacity-60">{t("explore.no_more_signals") || "No more signals found"}</span>
                 )}
               </div>
 
               {!loading && pagedPosts?.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-40 px-6">
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl">🕳️</div>
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-2 opacity-80 px-6">
                   <div className="space-y-1">
                     <p className="font-black uppercase tracking-widest text-xs">
                       {activeTab === "following" ? t("explore.no_following") : t("explore.no_signals")}
                     </p>
-                    <p className="text-[10px] text-white/50 max-w-[200px]">
+                    <p className="text-[10px] text-white/60 max-w-[200px]">
                       {activeTab === "following" ? t("explore.no_following_desc") : t("explore.no_signals_desc")}
                     </p>
                   </div>
@@ -1056,42 +1058,48 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
-      case "new_follower": return <UserCheck size={18} className="text-cyan-400" />;
+      case "new_follower": return <Plus size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
   };
   const getTitle = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) return t("notifications.verified_milestone_title");
     if (n.type.startsWith("new_follower_milestone")) return t("notifications.follower_milestone_title");
-    if (n.type.startsWith("verified_repost_milestone")) return t("notifications.repost_milestone_title") || "Repost Milestones";
+    if (n.type.startsWith("verified_repost_milestone")) return t("notifications.repost_milestone_title") || "Reposts Milestone";
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
-    if (n.type === "new_follower") return "New Verified Distributor";
+    if (n.type === "new_follower") return "New Follower";
     return t("notifications.notification_type");
   };
   const getMessage = (n: any) => {
     if (n.type.startsWith("verified_acknowledgment_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return t("notifications.verified_milestone_msg").replace("{{ count }}", count.toString());
+      return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
     }
     if (n.type.startsWith("new_follower_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return t("notifications.follower_milestone_msg").replace("{{ count }}", count.toString());
+      return t("notifications.follower_milestone_msg").replace("{{count}}", count.toString());
     }
     if (n.type.startsWith("verified_repost_milestone")) {
       const count = n.type.split("_").pop() || "1";
-      return (t("notifications.repost_milestone_msg") || "{{ count }} verified humans reposted your post").replace("{{ count }}", count.toString());
+      return (t("notifications.repost_milestone_msg") || "{{count}} verified humans reposted your post").replace("{{count}}", count.toString());
     }
     if (n.type === "post_uploaded") return t("notifications.broadcast_msg");
-    if (n.type === "acknowledged") return t("notifications.acknowledged_msg").replace("{{ name }}", n.from_user?.name || "Verified human");
-    if (n.type === "new_follower") return "A Verified Human has started distributing your signals";
+    if (n.type === "acknowledged") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return t("notifications.acknowledged_msg").replace("{{name}}", firstName);
+    }
+    if (n.type === "new_follower") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} followed your channel`;
+    }
     return t("notifications.update_msg");
   };
 
   return (
     <div className="space-y-3">
       {notifications.length === 0 ? (
-        <div className="py-20 text-center opacity-20 flex flex-col items-center gap-3">
+        <div className="py-20 text-center opacity-50 flex flex-col items-center gap-3">
           <div className="p-4 rounded-full bg-white/5"><Bell size={32} /></div>
           <p className="text-[10px] font-black uppercase tracking-widest">{t("notifications.empty")}</p>
         </div>
@@ -1106,18 +1114,66 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
             <div key={n.id} className="flex flex-col gap-1">
               <div
                 onClick={() => handleToggle(n)}
-                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.03] border border-white/[0.06] opacity-70" : "bg-cyan-500/[0.06] border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.08)]"}`}
+                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
               >
-                <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>
-                  {getIcon(n.type)}
-                </div>
+                {/* Avatar for acknowledged + new_follower + repost milestone types — clickable to open channel */}
+                {(n.type === "acknowledged" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone")) && n.from_user ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const handle = n.from_user.telegram_channel;
+                      if (!handle) return;
+                      const clean = handle.replace(/^@/, "");
+                      const link = `https://t.me/${clean}`;
+                      const twa = (window as any).Telegram?.WebApp;
+                      if (twa?.openTelegramLink) twa.openTelegramLink(link);
+                      else window.open(link, "_blank");
+                    }}
+                    className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-white/10 bg-black/40 active:scale-90 transition-transform"
+                  >
+                    {n.from_user.photo_url ? (
+                      <img src={n.from_user.photo_url} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-sm">
+                        {(n.from_user.first_name || n.from_user.name || "?")[0].toUpperCase()}
+                      </div>
+                    )}
+                  </button>
+                ) : (
+                  <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>
+                    {getIcon(n.type)}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/60" : "text-white"}`}>{getTitle(n)}</p>
-                  <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/30" : "text-white/50"}`}>{getMessage(n)}</p>
+                  <p className={`text-[10px] font-black uppercase tracking-tight truncate ${n.is_read ? "text-white/80" : "text-white"}`}>{getTitle(n)}</p>
+                  {(n.type === "acknowledged" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone")) && n.from_user && (
+                    <p className="text-[10px] font-bold text-cyan-400 truncate">
+                      {n.from_user.first_name || n.from_user.name?.split(" ")[0] || ""}
+                    </p>
+                  )}
+                  <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/50" : "text-white/70"}`}>{getMessage(n)}</p>
+                  {/* Follow-back button for new_follower */}
+                  {n.type === "new_follower" && n.from_user?.telegram_channel && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const handle = n.from_user.telegram_channel;
+                        const clean = handle.replace(/^@/, "");
+                        const link = `https://t.me/${clean}`;
+                        const twa = (window as any).Telegram?.WebApp;
+                        if (twa?.openTelegramLink) twa.openTelegramLink(link);
+                        else window.open(link, "_blank");
+                      }}
+                      className="mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-black uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition-all"
+                    >
+                      <Plus size={10} />
+                      Follow Back
+                    </button>
+                  )}
                 </div>
                 {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
                 {isMilestone && (
-                  <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                  <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                 )}
               </div>
 
