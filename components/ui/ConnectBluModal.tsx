@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { postApi } from "@/lib/useApi";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { mutate } from "swr";
 
 interface ConnectBluModalProps {
     isOpen: boolean;
@@ -72,6 +73,7 @@ export default function ConnectBluModal({
                     photo: res.channel_photo || "",
                     username: res.channel || ""
                 });
+                mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegramId}`);
             } else {
                 setError(res.error || t("connect_blu.error_verify_admin"));
             }
@@ -94,6 +96,7 @@ export default function ConnectBluModal({
                 setVerified(false);
                 setConnectedInfo({ title: "", photo: "", username: "" });
                 setChannelInput("");
+                mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegramId}`);
             } else {
                 setError(res.error || "Disconnect failed");
             }
