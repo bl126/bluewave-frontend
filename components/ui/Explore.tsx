@@ -387,6 +387,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               <NotificationsView
                 notifications={notifications || []}
                 onClear={() => mutateNotifications()}
+                currentUserId={telegramUser?.id}
               />
             </motion.div>
           ) : activeTab === "leaderboard" ? (
@@ -1004,7 +1005,7 @@ function TrueViewTracker({ postId }: { postId: number }) {
   return <div ref={ref} className="absolute top-1/2 left-0 w-full h-px pointer-events-none" />;
 }
 
-function NotificationsView({ notifications, onClear }: { notifications: any[], onClear: () => void }) {
+function NotificationsView({ notifications, onClear, currentUserId }: { notifications: any[], onClear: () => void, currentUserId?: number }) {
   const { t } = useLanguage();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [interactionData, setInteractionData] = useState<Record<number, any[]>>({});
@@ -1159,19 +1160,40 @@ function NotificationsView({ notifications, onClear }: { notifications: any[], o
                   {/* Follow-back button for new_follower */}
                   {n.type === "new_follower" && n.from_user?.telegram_channel && (
                     <button
-                      onClick={(e) => {
+                      disabled={n.is_followed}
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        const handle = n.from_user.telegram_channel;
-                        const clean = handle.replace(/^@/, "");
-                        const link = `https://t.me/${clean}`;
-                        const twa = (window as any).Telegram?.WebApp;
-                        if (twa?.openTelegramLink) twa.openTelegramLink(link);
-                        else window.open(link, "_blank");
+                        if (currentUserId && n.from_user_id) {
+                          try {
+                            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                            const res = await fetch(`${apiUrl}/api/user/follow`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ follower_id: currentUserId, followed_id: n.from_user_id })
+                            });
+                            const data = await res.json();
+                            if (data.requires_join) {
+                              const handle = n.from_user.telegram_channel;
+                              const clean = handle.replace(/^@/, "");
+                              const link = `https://t.me/${clean}`;
+                              const twa = (window as any).Telegram?.WebApp;
+                              if (twa?.openTelegramLink) twa.openTelegramLink(link);
+                              else window.open(link, "_blank");
+                            } else if (data.success) {
+                              onClear(); // mutate notifications to see 'is_followed' as true
+                            }
+                          } catch (err) {
+                            console.error("Follow error:", err);
+                          }
+                        }
                       }}
-                      className="mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-black uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition-all"
+                      className={n.is_followed
+                        ? "mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[9px] font-black uppercase tracking-widest text-white/50 cursor-default"
+                        : "mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-black uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition-all"
+                      }
                     >
-                      <Plus size={10} />
-                      Follow Back
+                      {n.is_followed ? <CheckCircle2 size={10} /> : <Plus size={10} />}
+                      {n.is_followed ? "Following" : "Follow Back"}
                     </button>
                   )}
                 </div>
