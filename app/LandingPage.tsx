@@ -24,7 +24,7 @@ import NetworkBuilderModal from "@/components/ui/NetworkBuilderModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
-import { getApi, postApi } from "@/lib/useApi";
+import { getApi, postApi, useSync } from "@/lib/useApi";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
@@ -206,6 +206,42 @@ export default function LandingPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // ── 🚀 INSTANT HYDRATION ──────────────────────────────────────────────
+    // Load last session's data from localStorage to skip LoadingScreen with a 1s delay
+    const startupTime = Date.now();
+    try {
+      const cached = window.localStorage.getItem("bw_init_cache");
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.profile) {
+          const u = data.profile;
+          setTelegramUser({
+            id: Number(u.tg_id),
+            tg_id: Number(u.tg_id),
+            username: u.username,
+            first_name: u.name,
+            photo_url: u.photo_url || null,
+            points_balance: u.points_balance ?? 0,
+            referral_earnings_pending: u.referral_earnings_pending ?? 0,
+            total_referrals: u.total_referrals ?? 0,
+          });
+          setBalance(u.points_balance ?? 0);
+          setUnreadExploreCount(data.unread_explore_notifications || 0);
+
+          // 🕒 Enforce 1 second branding delay even with cache
+          const elapsed = Date.now() - startupTime;
+          const delay = Math.max(0, 1000 - elapsed);
+          setTimeout(() => {
+            setIsLoading(false);
+            console.log("🚀 INSTANT_STARTUP: Transitioned from cache after branding delay.");
+          }, delay);
+        }
+      }
+    } catch (e) {
+      console.warn("Hydration failed (stale cache?):", e);
+    }
+    // ──────────────────────────────────────────────────────────────────────
+
     (async () => {
       try {
         const tg = (window as any).Telegram?.WebApp;
@@ -248,8 +284,9 @@ export default function LandingPage() {
           }
 
           if (data.error === "AUTH_REQUIRED" || data.error === "IDENTITY_MISMATCH") {
-            console.warn("Auth error. Clearing stale ID and showing onboarding...", data.error);
+            console.warn("Auth error. Clearing stale cache and showing onboarding...", data.error);
             window.localStorage.removeItem("bw_tg_id");
+            window.localStorage.removeItem("bw_init_cache");
           }
 
           // User not found or auth error -> show onboarding
@@ -271,6 +308,7 @@ export default function LandingPage() {
         // Using explicit !== true check to handle potential nulls safely
         if (user.first_login_completed !== true) {
           console.log("Onboarding not completed for user:", savedTgId);
+          window.localStorage.removeItem("bw_init_cache"); // Ensure fresh start
           setInitialProfile(user);
           setOnboardingOpen(true);
           setIsLoading(false);
@@ -289,7 +327,7 @@ export default function LandingPage() {
         }
 
         // Populate global state
-        setTelegramUser({
+        const finalUser = {
           id: tgIdNum,
           tg_id: tgIdNum,
           username: user.username,
@@ -307,9 +345,16 @@ export default function LandingPage() {
           ton_explorer_pending: user.ton_explorer_pending || false,
           is_human_verified: !!user.is_human_verified,
           unread_explore_notifications: data.unread_explore_notifications || 0,
-        });
+        };
 
+        setTelegramUser(finalUser);
+        setBalance(user.points_balance ?? 0);
         setUnreadExploreCount(data.unread_explore_notifications || 0);
+        setInitialProfile(user);
+
+        // Update local cache for next "Instant Startup"
+        window.localStorage.setItem("bw_init_cache", JSON.stringify(data));
+        window.localStorage.setItem("bw_tg_id", savedTgId);
 
         // 🔥 Initial check for pending rewards from init data
         if (user.streak_reward_pending) {
@@ -369,8 +414,15 @@ export default function LandingPage() {
             if (posts) mutate(`${apiUrl}/api/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`, posts, false);
           }).catch(() => { });
 
+        // Enforce a minimum 1s branding delay for non-cached loads
+        const elapsed = Date.now() - startupTime;
+        const delay = Math.max(0, 1000 - elapsed);
+
         // All ready
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+          console.log("Initialization complete after delay.");
+        }, delay);
       } catch (err) {
         console.error("Initialization error:", err);
         setOnboardingOpen(true);
@@ -551,26 +603,37 @@ export default function LandingPage() {
   }, []);
   */
 
-  // 🔄 Refresh balance every 60s (unchanged)
-  useEffect(() => {
-    if (!telegramUser?.id) return;
-    const interval = setInterval(() => fetchBalance(telegramUser.id), 60000);
-    return () => clearInterval(interval);
-  }, [telegramUser]);
+  // 🔄 Consolidated Synchronization (Heartbeat)
+  // Instead of multiple separate polls, we use a single lightweight endpoint.
+  const { data: syncData } = useSync(telegramUser?.id || null);
 
-  // 🔔 Poll Explore Notifications every 45s
   useEffect(() => {
-    if (!telegramUser?.id) return;
-    const fetchUnread = async () => {
-      try {
-        const data = await getApi(`/explore/notifications/${telegramUser.id}`);
-        const count = data?.filter((n: any) => !n.is_read).length || 0;
-        setUnreadExploreCount(count);
-      } catch (e) { console.error("Error polling explore notifs:", e); }
-    };
-    const interval = setInterval(fetchUnread, 45000);
-    return () => clearInterval(interval);
-  }, [telegramUser]);
+    if (!syncData || syncData.error) return;
+
+    if (syncData.points_balance !== undefined) {
+      setBalance(syncData.points_balance);
+    }
+    if (syncData.unread_explore_notifications !== undefined) {
+      setUnreadExploreCount(syncData.unread_explore_notifications);
+    }
+    
+    // Sync SWR Cache Atomicly
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (telegramUser?.id) {
+      if (syncData.presence) {
+        mutate(`${apiUrl}/api/presence/list/${telegramUser.id}`, syncData.presence, false);
+      }
+      // Update basic profile fields in cache
+      mutate(`${apiUrl}/api/user/${telegramUser.id}`, (prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          points_balance: syncData.points_balance ?? prev.points_balance,
+          streak_days: syncData.streak_days ?? prev.streak_days,
+        };
+      }, false);
+    }
+  }, [syncData, telegramUser?.id]);
 
   // 🔥 Called when onboarding completes successfully
   const handleOnboardingComplete = async (user: any) => {

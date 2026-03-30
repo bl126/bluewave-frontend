@@ -121,7 +121,12 @@ export function useApi(path: string | null, options: any = {}) {
   const { data, error, isLoading, mutate } = useSWR(
     path && apiUrl ? `${apiUrl}/api${path}` : null,
     fetcher,
-    { ...swrConfig, ...options }
+    { 
+      ...swrConfig, 
+      dedupingInterval: 10000, // 10 seconds deduping
+      revalidateOnFocus: false, // Don't revalidate when switching back to Telegram
+      ...options 
+    }
   );
 
   return {
@@ -130,4 +135,11 @@ export function useApi(path: string | null, options: any = {}) {
     loading: isLoading,
     mutate,
   };
+}
+
+// ⭐ NEW: Consolidated Sync Hook
+export function useSync(tg_id: number | null) {
+  return useApi(tg_id ? `/sync/${tg_id}` : null, {
+    refreshInterval: 45000, // Heartbeat every 45s
+  });
 }

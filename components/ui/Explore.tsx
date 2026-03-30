@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useApi, postApi, getApi } from "@/lib/useApi";
+import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 
 const ADMIN_IDS = [5023869471];
@@ -82,8 +82,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Fetch Notifications (pre-load on mount)
   const { data: notifications, mutate: mutateNotifications } = useApi(
-    telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null,
-    { refreshInterval: 30000 }
+    telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null
   );
   const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
 
@@ -145,22 +144,23 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     }
   }, [initialPosts, latestKnownPostId]);
 
-  // Poll for new posts every 15s
+  // 🔄 Consolidated Synchronization (Heartbeat)
+  // Instead of multiple separate polls, we use the global sync cache.
+  const { data: syncData } = useSync(telegramUser?.id || null);
+
   useEffect(() => {
-    if (!isOpen || !telegramUser?.id || activeTab === "notifications" || activeTab === "leaderboard") return;
-    const interval = setInterval(async () => {
-      if (!latestKnownPostId) return;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      try {
-        const res = await fetch(`${apiUrl}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0&quiet=true`);
-        const data = await res.json();
-        if (data && data.length > 0 && data[0]?.id !== latestKnownPostId) {
-          setNewPostsAvailable(true);
-        }
-      } catch { /* silent */ }
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [isOpen, telegramUser?.id, activeTab, latestKnownPostId]);
+    if (!syncData || syncData.error || !isOpen) return;
+
+    // Check for new posts using latest_post_id from syncData
+    if (syncData.latest_post_id && latestKnownPostId && syncData.latest_post_id !== latestKnownPostId) {
+      if (activeTab !== "leaderboard" && activeTab !== "notifications") {
+        setNewPostsAvailable(true);
+      }
+    }
+
+    // If notifications were cleared globally or count changed, refresh the list
+    // (Optional: for even less traffic, only mutate if count > notification length)
+  }, [syncData, latestKnownPostId, activeTab, isOpen]);
 
   // Scroll handler — fast hide/show
   const handleScroll = useCallback(() => {

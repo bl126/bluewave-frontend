@@ -268,12 +268,19 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
         setPresenceLoadingId(null); // Unlock UI immediately
 
         // If it was a 1h mission and a bonus was awarded, update balance
-        if (data.streak_info?.bonus_awarded) {
-          const uData = await getApi(`/balance/${telegram_id}`);
+        if (data.new_balance !== undefined) {
           window.dispatchEvent(
-            new CustomEvent("updateBalance", { detail: uData.balance })
+            new CustomEvent("updateBalance", { detail: data.new_balance })
           );
         }
+
+        // Handle streak celebration if awarded
+        if (data.streak_info?.bonus_awarded) {
+          window.dispatchEvent(new CustomEvent("showStreakCelebration", {
+            detail: { days: data.streak_info.new_streak, reward: 200 }
+          }));
+        }
+
         // Refresh list to get new state (background)
         mutatePresence();
       } else {
