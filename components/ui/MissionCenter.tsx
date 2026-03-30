@@ -297,12 +297,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       if (data.success) {
         setPresenceLoadingId(null); // Unlock UI immediately
 
-        // Prepare Boost Popup if there was a base_reward (meaning it applied the math)
-        if (data.base_reward !== undefined) {
+        // Prepare Boost Popup — works with both old and new RPC response shapes.
+        // New RPC returns: total_reward, multiplier, bonus_points, new_balance, new_streak
+        // Old response returned: base_reward, total_reward, multiplier, applied_roles, new_balance
+        const totalReward = data.total_reward;
+        const multiplier = data.multiplier || 1.0;
+        if (totalReward !== undefined) {
+          // Derive base_reward: if new RPC, compute it from total_reward / multiplier
+          const baseReward = data.base_reward !== undefined
+            ? data.base_reward
+            : Math.round(totalReward / multiplier);
+
           setClaimBoostData({
-            base_claimed: data.base_reward,
-            multiplier: data.multiplier || 1.0,
-            total_claimed: data.total_reward,
+            base_claimed: baseReward,
+            multiplier: multiplier,
+            total_claimed: totalReward,
             applied_roles: data.applied_roles || []
           });
           setIsClaimBoostOpen(true);
@@ -317,10 +326,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
         }
 
         // 🔥 Capture Streak Info for sequential celebration
-        if (data.streak_info?.bonus_awarded) {
+        // New RPC returns streak_changed + new_streak; old returned streak_info object
+        const streakChanged = data.streak_changed ?? data.streak_info?.streak_changed;
+        const streakBonusAwarded = data.bonus_points > 0 || data.streak_info?.bonus_awarded;
+        if (streakChanged && streakBonusAwarded) {
           setPendingStreakData({
-            days: data.streak_days,
-            reward: 200 // Based on routes.py bonus
+            days: data.new_streak ?? data.streak_days,
+            reward: data.bonus_points || 200
           });
         }
 
@@ -332,6 +344,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
         });
 
         mutatePresence(); // Refresh UI in background
+
       } else {
         setPresenceLoadingId(null);
       }
