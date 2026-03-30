@@ -23,6 +23,7 @@ import {
   Share2
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
@@ -275,7 +276,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[200]"}`}
+      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -1446,7 +1447,9 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
       ));
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -1524,7 +1527,8 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 

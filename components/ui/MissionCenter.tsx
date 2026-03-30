@@ -175,7 +175,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
   // 2. Fetch Normal Missions
   const { data: missionsData, loading: missionsLoading, mutate: mutateMissions, error: missionsError } =
-    useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}?lang=${t("lang_code")}` : null);
+    useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}` : null);
 
   // 3. Derived Presence Missions
   const presenceMissions = useMemo(() => {

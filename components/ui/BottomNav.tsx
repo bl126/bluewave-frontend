@@ -45,7 +45,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
             }
 
             count += finalList.filter(
-                (m: any) => m.status === "open" || m.status === "claim"
+                (m: any) => m.status === "open" || m.status === "claim" || m.status === "waiting"
             ).length;
         }
 
