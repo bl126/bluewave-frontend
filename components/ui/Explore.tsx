@@ -18,7 +18,9 @@ import {
   Image,
   Video,
   Send,
-  UserCheck
+  UserCheck,
+  MessageSquare,
+  Share2
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -795,6 +797,7 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
   const [isReposting, setIsReposting] = useState(false);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const rowMenuRef = useRef<HTMLDivElement>(null);
   const ackBtnRef = useRef<HTMLButtonElement>(null);
@@ -845,6 +848,20 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
 
   // Direct link to Telegram channel
   const openChannel = () => {
+    // If live, prioritized joining the live video chat directly
+    if (post.user?.is_live_on_telegram && post.user?.telegram_channel) {
+      const handle = post.user.telegram_channel.replace(/^@/, "");
+      // Telegram Video Chat URL is usually join?video_chat=... but using chat link is safer for mobile redirect
+      const link = `https://t.me/${handle}`;
+      const twa = (window as any).Telegram?.WebApp;
+      if (twa?.openTelegramLink) {
+        twa.openTelegramLink(link);
+      } else {
+        window.open(link, "_blank");
+      }
+      return;
+    }
+
     const handle = post.channel?.handle || post.channel?.title;
     if (!handle) return;
     let link = "";
@@ -886,8 +903,8 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
 
       <div className="flex gap-4 w-full items-start">
         {/* Avatar → direct channel link */}
-        <button onClick={openChannel} className="shrink-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg">
+        <button onClick={openChannel} className="shrink-0 relative">
+          <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
             {post.channel?.photo && !imgError ? (
               <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
             ) : (
@@ -896,6 +913,11 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
               </div>
             )}
           </div>
+          {post.user?.is_live_on_telegram && (
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-cyan-500 text-black text-[7px] font-black px-1 rounded-sm border border-black z-10 shadow-[0_0_5px_#00e6ff]">
+              LIVE
+            </div>
+          )}
         </button>
 
         {/* Content */}
@@ -943,6 +965,21 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
           {/* Bottom row: Acknowledge (Heart) + Repost + Views */}
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-8">
+              {/* Comment Button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsCommentModalOpen(true); }}
+                className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
+              >
+                <div className="p-2 rounded-full group-hover:bg-cyan-500/5 transition-colors">
+                  <MessageSquare size={16} />
+                </div>
+                {post.comments_count > 0 && (
+                  <span className="text-[10px] font-bold font-mono text-white/80">
+                    {post.comments_count}
+                  </span>
+                )}
+              </button>
+
               <div className="relative">
                 <AnimatePresence>
                   {showSpaceDust && (
@@ -994,6 +1031,17 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
                 </button>
               </div>
             </div>
+
+            {/* Comment Thread Modal */}
+            <AnimatePresence>
+              {isCommentModalOpen && (
+                <CommentThreadModal
+                  post={post}
+                  telegramUser={{ id: currentUserId }}
+                  onClose={() => setIsCommentModalOpen(false)}
+                />
+              )}
+            </AnimatePresence>
             <div className="flex items-center gap-1.5 text-white/60 px-2 py-1">
               <Eye size={14} className="text-cyan-400/80" />
               <span className="text-[10px] font-mono font-bold text-white/80">{post.views || 0}</span>
@@ -1094,6 +1142,9 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "reposted": return <Repeat2 size={18} className="text-cyan-400" />;
+      case "commented": return <MessageSquare size={18} className="text-cyan-400" />;
+      case "comment_replied": return <MessageSquare size={18} className="text-cyan-400" />;
+      case "comment_liked": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "new_follower": return <Plus size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
@@ -1105,6 +1156,9 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
     if (n.type === "reposted") return t("notifications.repost") || "Reposted your post";
+    if (n.type === "commented") return "New Comment";
+    if (n.type === "comment_replied") return "Reply to your comment";
+    if (n.type === "comment_liked") return "Comment Liked";
     if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
     return t("notifications.notification_type");
   };
@@ -1129,6 +1183,18 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
     if (n.type === "reposted") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
       return (t("notifications.reposted_msg") || "{{name}} reposted your post.").replace("{{name}}", firstName);
+    }
+    if (n.type === "commented") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} commented on your signal.`;
+    }
+    if (n.type === "comment_replied") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} replied to your comment.`;
+    }
+    if (n.type === "comment_liked") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} liked your comment.`;
     }
     if (n.type === "new_follower") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
@@ -1157,8 +1223,8 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
                 onClick={() => handleToggle(n)}
                 className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
               >
-                {/* Avatar for acknowledged + new_follower + repost types — clickable to open channel */}
-                {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone")) && n.from_user ? (
+                {/* Avatar for acknowledged + new_follower + repost + comment types — clickable to open channel */}
+                {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone") || n.type === "commented" || n.type === "comment_replied" || n.type === "comment_liked") && n.from_user ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1238,7 +1304,6 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
                   <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                 )}
               </div>
-
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
@@ -1286,3 +1351,180 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
     </div>
   );
 }
+
+function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegramUser: any, onClose: () => void }) {
+  const { t } = useLanguage();
+  const [content, setContent] = useState("");
+  const [replyTo, setReplyTo] = useState<any>(null);
+  const [posting, setPosting] = useState(false);
+  const [localComments, setLocalComments] = useState<any[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch comments
+  const { data: comments, mutate } = useApi(`/explore/post/${post.id}/comments`);
+
+  useEffect(() => {
+    if (comments) setLocalComments(comments);
+  }, [comments]);
+
+  const handlePostComment = async () => {
+    if (!content.trim()) return;
+    setPosting(true);
+    try {
+      const res = await postApi(`/explore/post/${post.id}/comment`, {
+        user_id: telegramUser.id,
+        content: content.trim(),
+        parent_id: replyTo?.id || null
+      });
+
+      if (res.success) {
+        setContent("");
+        setReplyTo(null);
+        mutate(); // Refresh comments
+      }
+    } catch (err) {
+      console.error("Failed to post comment", err);
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleToggleLike = async (commentId: number) => {
+    try {
+      await postApi(`/explore/comment/${commentId}/like`, {
+        user_id: telegramUser.id,
+        comment_id: commentId
+      });
+      mutate();
+    } catch (err) {
+      console.error("Like failed", err);
+    }
+  };
+
+  // Nesting logic
+  const renderComments = (parentId: number | null = null, depth = 0) => {
+    return localComments
+      .filter(c => c.parent_id === parentId)
+      .map(comment => (
+        <div key={comment.id} className="flex flex-col">
+          <div className={`flex gap-3 py-3 ${depth > 0 ? "ml-8 border-l border-white/5 pl-4" : ""}`}>
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40">
+              {comment.user.photo ? (
+                <img src={comment.user.photo} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-[10px]">
+                  {comment.user.name?.[0]}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-white font-bold text-[11px] truncate">{comment.user.name}</span>
+                <span className="text-[9px] text-white/30">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              <p className="text-sm text-white/80 leading-relaxed mb-2">{comment.content}</p>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => handleToggleLike(comment.id)}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold tracking-tight transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/30 hover:text-white"}`}
+                >
+                  <Heart size={12} fill={comment.is_liked ? "currentColor" : "none"} />
+                  {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
+                </button>
+                <button
+                  onClick={() => setReplyTo(comment)}
+                  className="flex items-center gap-1.5 text-[10px] font-bold tracking-tight text-white/30 hover:text-white transition-colors"
+                >
+                  <MessageSquare size={12} />
+                  <span>Reply</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          {renderComments(comment.id, depth + 1)}
+        </div>
+      ));
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-end justify-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="w-full max-w-xl bg-[#0a0a0a] border-t border-white/10 rounded-t-[2.5rem] flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
+        </div>
+
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Comments</h3>
+          <button onClick={onClose} className="p-2 rounded-full bg-white/5 text-white/50 hover:text-white transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Comments List */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-2">
+          {localComments.length === 0 ? (
+            <div className="py-20 text-center opacity-30 flex flex-col items-center gap-4">
+              <MessageSquare size={40} />
+              <p className="text-[10px] font-black uppercase tracking-widest">No signals yet. Start the thread.</p>
+            </div>
+          ) : (
+            renderComments()
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 bg-black border-t border-white/10 pb-[env(safe-area-inset-bottom,20px)]">
+          {replyTo && (
+            <div className="flex items-center justify-between bg-cyan-500/5 px-4 py-2 rounded-t-xl border-x border-t border-cyan-500/20 mb-[-1px]">
+              <span className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest">
+                Replying to <span className="text-white">{replyTo.user.name}</span>
+              </span>
+              <button onClick={() => setReplyTo(null)} className="text-cyan-400 hover:text-white">
+                <X size={12} />
+              </button>
+            </div>
+          )}
+          <div className={`flex items-end gap-3 p-2 bg-white/5 border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-2xl'} focus-within:border-cyan-500/30 transition-all`}>
+            <textarea
+              autoFocus
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Post your reply"
+              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 px-2 resize-none max-h-32 min-h-[40px]"
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handlePostComment();
+                }
+              }}
+            />
+            <button
+              onClick={handlePostComment}
+              disabled={posting || !content.trim()}
+              className="w-10 h-10 rounded-xl bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30"
+            >
+              {posting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
