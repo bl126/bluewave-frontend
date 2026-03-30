@@ -275,7 +275,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[210]" : "z-[120]"}`}
+      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[200]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -1488,7 +1488,7 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-black border-t border-white/10 pb-[env(safe-area-inset-bottom,20px)]">
+        <div className="p-4 bg-black border-t border-white/10 pb-[calc(env(safe-area-inset-bottom,20px)+80px)]">
           {replyTo && (
             <div className="flex items-center justify-between bg-cyan-500/5 px-4 py-2 rounded-t-xl border-x border-t border-cyan-500/20 mb-[-1px]">
               <span className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest">
