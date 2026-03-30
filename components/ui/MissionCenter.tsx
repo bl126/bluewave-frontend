@@ -291,44 +291,52 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     if (presenceLoadingId) return;
     setPresenceLoadingId(type);
 
+    // ── INSTANT POPUP (Optimistic) ─────────────────────────────────────────
+    // Find the mission's base reward from the already-loaded presenceMissions list.
+    // We show the popup IMMEDIATELY with this value so users see feedback in <100ms.
+    // The actual multiplied reward from the backend will update the popup silently.
+    const missionData = presenceMissions.find((m: any) => m.type === type);
+    const baseReward = missionData?.reward || 0;
+    setClaimBoostData({
+      base_claimed: baseReward,
+      multiplier: 1.0,
+      total_claimed: baseReward,
+      applied_roles: []
+    });
+    setIsClaimBoostOpen(true);
+
+    // Optimistically mark the card as claimed so the button disappears immediately
+    setOptimisticPresence(prev => ({ ...prev, [type]: { status: "inactive" } }));
+
     try {
       const data = await postApi(`/presence/claim`, { tg_id: telegram_id, mission_type: type });
 
       if (data.success) {
-        setPresenceLoadingId(null); // Unlock UI immediately
+        setPresenceLoadingId(null);
 
-        // Prepare Boost Popup — works with both old and new RPC response shapes.
-        // New RPC returns: total_reward, multiplier, bonus_points, new_balance, new_streak
-        // Old response returned: base_reward, total_reward, multiplier, applied_roles, new_balance
+        // Silently update the already-open popup with exact values from the backend
         const totalReward = data.total_reward;
         const multiplier = data.multiplier || 1.0;
         if (totalReward !== undefined) {
-          // Derive base_reward: if new RPC, compute it from total_reward / multiplier
-          const baseReward = data.base_reward !== undefined
+          const derivedBase = data.base_reward !== undefined
             ? data.base_reward
             : Math.round(totalReward / multiplier);
-
           setClaimBoostData({
-            base_claimed: baseReward,
+            base_claimed: derivedBase,
             multiplier: multiplier,
             total_claimed: totalReward,
             applied_roles: data.applied_roles || []
           });
-          setIsClaimBoostOpen(true);
-          setPendingBalanceUpdate(data.new_balance); // Store balance to update after animation
-        } else {
-          // Fallback if backend hasn't deployed multiplier logic yet
-          window.dispatchEvent(
-            new CustomEvent("updateBalance", { detail: data.new_balance })
-          );
-          const tg = (window as any).Telegram?.WebApp;
-          if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         }
 
-        // 🔥 Capture Streak Info for sequential celebration
-        // New RPC returns streak_changed + new_streak; old returned streak_info object
+        // Update balance after popup animation completes
+        if (data.new_balance !== undefined) {
+          setPendingBalanceUpdate(data.new_balance);
+        }
+
+        // Streak celebration
         const streakChanged = data.streak_changed ?? data.streak_info?.streak_changed;
-        const streakBonusAwarded = data.bonus_points > 0 || data.streak_info?.bonus_awarded;
+        const streakBonusAwarded = (data.bonus_points > 0) || data.streak_info?.bonus_awarded;
         if (streakChanged && streakBonusAwarded) {
           setPendingStreakData({
             days: data.new_streak ?? data.streak_days,
@@ -336,23 +344,33 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
           });
         }
 
-        // Clear optimistic override once backend confirms
-        setOptimisticPresence(prev => {
-          const next = { ...prev };
-          delete next[type];
-          return next;
-        });
-
-        mutatePresence(); // Refresh UI in background
+        mutatePresence(); // Sync accurate state in background
 
       } else {
+        // ── Rollback on failure ──────────────────────────────────────────────
+        setIsClaimBoostOpen(false);
+        setClaimBoostData(null);
         setPresenceLoadingId(null);
+        // Restore card to its real state
+        setOptimisticPresence(prev => { const n = { ...prev }; delete n[type]; return n; });
+        const errMsg = data.error === "NOT_FINISHED"
+          ? "Mission not complete yet — timer still running."
+          : data.error === "NO_MISSION"
+            ? "No active mission found."
+            : "Claim failed. Please try again.";
+        setPopup(errMsg);
+        setTimeout(() => setPopup(null), 3000);
       }
     } catch (e) {
       console.error(e);
+      // ── Rollback on network error ────────────────────────────────────────
+      setIsClaimBoostOpen(false);
+      setClaimBoostData(null);
       setPresenceLoadingId(null);
+      setOptimisticPresence(prev => { const n = { ...prev }; delete n[type]; return n; });
     }
   };
+
 
 
   // [CODE: NORMAL_MISSION_HANDLERS] (Kept from previous version)
