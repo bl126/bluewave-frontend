@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Flame, Star, CheckCircle2, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -10,6 +10,7 @@ export interface ClaimBoostData {
   multiplier: number;
   total_claimed: number;
   applied_roles: string[];
+  is_loading?: boolean;
 }
 
 interface ClaimBoostPopupProps {
@@ -22,6 +23,8 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
   const { t } = useLanguage();
   const [step, setStep] = useState(0);
   const [displayValue, setDisplayValue] = useState(0);
+  const dataRef = useRef(data);
+  useEffect(() => { dataRef.current = data; }, [data]);
 
   // Animation Sequence
   useEffect(() => {
@@ -31,57 +34,70 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
       return;
     }
 
-    // Step 1: Base Amount
-    setDisplayValue(data.base_claimed);
+    // Step 1: Base Amount (Calculated or Optimistic)
+    setDisplayValue(dataRef.current?.base_claimed || 0);
     setStep(1);
 
-    // Step 2: Show Boost Multiplier
-    const t1 = setTimeout(() => {
-      setStep(2);
+    // Step 2 & 3 Controller
+    let isCancelled = false;
 
+    const runSequence = async () => {
+      // 1. Wait for "Calculating" duration (min 1.5s) AND for data to be ready
+      const start = Date.now();
+      
+      // Wait at least 1500ms
+      await new Promise(r => setTimeout(r, 1500));
+      if (isCancelled) return;
+
+      // If data is still loading, wait more (check every 100ms)
+      while (dataRef.current?.is_loading) {
+        await new Promise(r => setTimeout(r, 100));
+        if (isCancelled) return;
+      }
+
+      // 2. Show Boost Multiplier
+      setStep(2);
       const tg = (window as any).Telegram?.WebApp;
       if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-    }, 1500);
+      // 3. Wait for reveal duration
+      await new Promise(r => setTimeout(r, 2300));
+      if (isCancelled) return;
 
-    // Step 3: Spin to Final Amount
-    const t2 = setTimeout(() => {
+      // 4. Spin to Final Amount
       setStep(3);
-
-      // Animate the number counting up
+      
       const duration = 1000;
       const startTime = Date.now();
-      const startValue = data.base_claimed;
-      const endValue = data.total_claimed;
+      const startValue = dataRef.current?.base_claimed || 0;
+      const endValue = dataRef.current?.total_claimed || 0;
 
       const animateNumber = () => {
+        if (isCancelled) return;
         const now = Date.now();
         const progress = Math.min((now - startTime) / duration, 1);
-
-        // Easing out sine
         const easeProgress = Math.sin((progress * Math.PI) / 2);
-
         const currentValue = Math.floor(startValue + (endValue - startValue) * easeProgress);
+        
         setDisplayValue(currentValue);
 
         if (progress < 1) {
           requestAnimationFrame(animateNumber);
         } else {
           setStep(4); // Final State
-          const tg = (window as any).Telegram?.WebApp;
           if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         }
       };
 
       requestAnimationFrame(animateNumber);
+    };
 
-    }, 3800);
+    runSequence();
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      isCancelled = true;
     };
-  }, [isOpen, data]);
+  }, [isOpen]); // Only restart when opening/closing
 
   if (!data) return null;
 

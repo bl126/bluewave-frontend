@@ -301,7 +301,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       base_claimed: baseReward,
       multiplier: 1.0,
       total_claimed: baseReward,
-      applied_roles: []
+      applied_roles: [],
+      is_loading: true
     });
     setIsClaimBoostOpen(true);
 
@@ -325,7 +326,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             base_claimed: derivedBase,
             multiplier: multiplier,
             total_claimed: totalReward,
-            applied_roles: data.applied_roles || []
+            applied_roles: data.applied_roles || [],
+            is_loading: false
           });
         }
 
