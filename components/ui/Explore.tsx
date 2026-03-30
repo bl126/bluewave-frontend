@@ -19,7 +19,7 @@ import {
   Video,
   Send,
   UserCheck,
-  MessageSquare,
+  MessageCircle,
   Share2
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -971,7 +971,7 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
                 className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
               >
                 <div className="p-2 rounded-full group-hover:bg-cyan-500/5 transition-colors">
-                  <MessageSquare size={16} />
+                  <MessageCircle size={16} />
                 </div>
                 {post.comments_count > 0 && (
                   <span className="text-[10px] font-bold font-mono text-white/80">
@@ -1142,8 +1142,8 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "reposted": return <Repeat2 size={18} className="text-cyan-400" />;
-      case "commented": return <MessageSquare size={18} className="text-cyan-400" />;
-      case "comment_replied": return <MessageSquare size={18} className="text-cyan-400" />;
+      case "commented": return <MessageCircle size={18} className="text-cyan-400" />;
+      case "comment_replied": return <MessageCircle size={18} className="text-cyan-400" />;
       case "comment_liked": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "new_follower": return <Plus size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
@@ -1435,7 +1435,7 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
                   onClick={() => setReplyTo(comment)}
                   className="flex items-center gap-1.5 text-[10px] font-bold tracking-tight text-white/30 hover:text-white transition-colors"
                 >
-                  <MessageSquare size={12} />
+                  <MessageCircle size={12} />
                   <span>Reply</span>
                 </button>
               </div>
@@ -1451,7 +1451,7 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-end justify-center"
+      className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center"
       onClick={onClose}
     >
       <motion.div
@@ -1479,7 +1479,7 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
         <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-2">
           {localComments.length === 0 ? (
             <div className="py-20 text-center opacity-30 flex flex-col items-center gap-4">
-              <MessageSquare size={40} />
+              <MessageCircle size={40} />
               <p className="text-[10px] font-black uppercase tracking-widest">No signals yet. Start the thread.</p>
             </div>
           ) : (
