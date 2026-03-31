@@ -97,6 +97,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // Pre-warm following tab
   useApi(telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=following&offset=0` : null);
 
+  // Fetch Live Users globally
+  const { data: liveUsers } = useApi(isOpen ? "/explore/live_users" : null, { refreshInterval: 60000 });
+
   useEffect(() => {
     if (initialPosts) {
       setPagedPosts(initialPosts);
@@ -418,6 +421,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               transition={{ duration: 0.2 }}
               className="divide-y divide-white/[0.05]"
             >
+              {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
+                <LiveNowTray liveUsers={liveUsers} />
+              )}
               {loading && pagedPosts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-70">
                   <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
@@ -1532,3 +1538,56 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
   );
 }
 
+function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
+  if (!liveUsers || liveUsers.length === 0) return null;
+
+  return (
+    <div className="w-full border-b border-white/[0.05] bg-black/40 overflow-hidden shrink-0">
+      <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar px-4 pt-4 pb-3 hide-scrollbar">
+        {liveUsers.map((u, i) => (
+          <button 
+            key={i} 
+            onClick={() => {
+              const handle = u.telegram_channel;
+              if (!handle) return;
+              const clean = handle.replace(/^@/, "");
+              const link = `https://t.me/${clean}`;
+              const twa = (window as any).Telegram?.WebApp;
+              if (twa?.openTelegramLink) {
+                twa.openTelegramLink(link);
+              } else {
+                window.open(link, "_blank");
+              }
+            }}
+            className="flex flex-col items-center gap-2 shrink-0 group w-16"
+          >
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-[3px] border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
+                <div className="w-full h-full rounded-full overflow-hidden border border-white/10 bg-black/40 relative pointer-events-none">
+                  {u.photo_url || u.telegram_channel_photo ? (
+                    <img src={u.photo_url || u.telegram_channel_photo} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-lg">
+                      {u.name?.[0] || u.first_name?.[0] || u.telegram_channel_title?.[0] || "U"}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Pulse effect internal ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-cyan-500 animate-[pulse_2s_ease-out_infinite] opacity-50 z-0 pointer-events-none" />
+
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded-[4px] border border-cyan-300 shadow-[0_0_10px_rgba(0,230,255,1)] leading-none flex items-center gap-1 tracking-widest z-20 pointer-events-none">
+                <span className="w-1 h-1 rounded-full bg-white animate-[pulse_1s_infinite]" />
+                LIVE
+              </div>
+            </div>
+            <span className="text-[9px] font-bold text-white/80 truncate w-16 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight opacity-90">
+              {u.name || u.first_name || u.telegram_channel_title || "Unknown"}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
