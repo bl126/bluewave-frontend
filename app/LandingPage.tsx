@@ -207,14 +207,33 @@ export default function LandingPage() {
     if (typeof window === "undefined") return;
 
     // ── 🚀 INSTANT HYDRATION ──────────────────────────────────────────────
-    // Load last session's data from localStorage to skip LoadingScreen with a 1s delay
+    // Load last session's data from localStorage ONLY if it matches the current Telegram user
     const startupTime = Date.now();
     try {
+      const tg = (window as any).Telegram?.WebApp;
+      const liveTgId = tg?.initDataUnsafe?.user?.id;
+      const cachedTgId = window.localStorage.getItem("bw_tg_id");
+
+      // 🛡️ [IDENTITY_GUARD] If we have a live user and it's DIFFERENT from the cache, wipe the cache!
+      if (liveTgId && cachedTgId && String(liveTgId) !== String(cachedTgId)) {
+        console.warn("🛡️ [IDENTITY_GUARD] Account mismatch detected. Clearing stale cache.");
+        window.localStorage.removeItem("bw_init_cache");
+        window.localStorage.removeItem("bw_tg_id");
+        window.localStorage.removeItem("bw_presence_cache");
+        // We don't return here; we want to continue with the fresh data path
+      }
+
       const cached = window.localStorage.getItem("bw_init_cache");
       if (cached) {
         const data = JSON.parse(cached);
         if (data.profile) {
           const u = data.profile;
+          
+          // Additional safety: ensure the cached profile belongs to the live user
+          if (liveTgId && String(u.tg_id) !== String(liveTgId)) {
+             throw new Error("Cached profile belongs to a different user");
+          }
+
           setTelegramUser({
             id: Number(u.tg_id),
             tg_id: Number(u.tg_id),
@@ -238,31 +257,23 @@ export default function LandingPage() {
         }
       }
     } catch (e) {
-      console.warn("Hydration failed (stale cache?):", e);
+      console.warn("Hydration postponed or failed:", e);
     }
     // ──────────────────────────────────────────────────────────────────────
 
     (async () => {
       try {
         const tg = (window as any).Telegram?.WebApp;
-        const tgUser = tg?.initDataUnsafe?.user;
+        let tgUser = tg?.initDataUnsafe?.user;
 
-        // 1. Determine Telegram ID (Prioritize live WebApp data)
-        let effectiveTgId = tgUser?.id || window.localStorage.getItem("bw_tg_id");
-
-        if (!effectiveTgId) {
-          // In some cases (slow script load), wait a bit and try again once
-          await new Promise(resolve => setTimeout(resolve, 500));
-          const retryTg = (window as any).Telegram?.WebApp;
-          effectiveTgId = retryTg?.initDataUnsafe?.user?.id || window.localStorage.getItem("bw_tg_id");
+        // 1. Determine Telegram ID (STRICT prioritization)
+        // If we don't have a live tgUser yet, we MUST wait for it rather than guessing from localStorage
+        if (!tgUser?.id) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+          tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
         }
 
-        if (effectiveTgId) {
-          const retryTgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user || tgUser;
-          if (retryTgUser?.username) {
-            setFallbackUsername(retryTgUser.username);
-          }
-        }
+        const effectiveTgId = tgUser?.id;
 
         if (!effectiveTgId) {
           console.warn("No Telegram ID found. Redirecting to onboarding...");
@@ -272,6 +283,7 @@ export default function LandingPage() {
         }
 
         const savedTgId = String(effectiveTgId);
+        window.localStorage.setItem("bw_tg_id", savedTgId); // Keep cache in sync with reality
 
         // 2. Fetch unified initial state from backend
         // This endpoint returns { profile, missions, presence, leaderboard }

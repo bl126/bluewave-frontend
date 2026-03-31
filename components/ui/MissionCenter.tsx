@@ -213,14 +213,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   const loading = presenceLoading || missionsLoading;
 
   useEffect(() => {
-    if (presenceMissionsData && (presenceMissionsData as any).error) {
-      setError((presenceMissionsData as any).error);
-    } else if (missionsData && (missionsData as any).error) {
-      setError((missionsData as any).error);
-    } else if (presenceError || missionsError) {
+    // 1. Check for errors inside data objects (common for getApi results)
+    const pError = presenceMissionsData?.error;
+    const mError = missionsData?.error;
+
+    if (pError || mError) {
+      setError(pError || mError);
+    } 
+    // 2. Check for SWR level errors (network/status code errors)
+    else if (presenceError || missionsError) {
       const err = presenceError || missionsError;
-      setError(typeof err === "string" ? err : (err?.message || "Sync Error"));
-    } else {
+      const msg = typeof err === "string" ? err : (err?.message || "Sync Error");
+      setError(msg);
+    } 
+    // 3. Clear error if data is valid
+    else if (presenceMissionsData && missionsData) {
       setError("");
     }
   }, [presenceMissionsData, missionsData, presenceError, missionsError]);
