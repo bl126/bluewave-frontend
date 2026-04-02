@@ -169,13 +169,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   const storyDataRef = useRef<{ poster_url: string; caption: string; ref_link: string } | null>(null);
 
   // [CODE: FETCH_DATA]
-  // 1. Fetch Presence Missions
+  // 1. Fetch Presence Missions (Pre-fetched in background once telegram_id exists)
   const { data: presenceMissionsData, loading: presenceLoading, mutate: mutatePresence, error: presenceError } =
-    useApi(telegram_id && isOpen ? `/presence/list/${telegram_id}` : null);
+    useApi(telegram_id ? `/presence/list/${telegram_id}` : null);
 
-  // 2. Fetch Normal Missions
+  // 2. Fetch Normal Missions (Pre-fetched in background)
   const { data: missionsData, loading: missionsLoading, mutate: mutateMissions, error: missionsError } =
-    useApi(telegram_id && isOpen ? `/missions/all/${telegram_id}` : null);
+    useApi(telegram_id ? `/missions/all/${telegram_id}` : null);
 
   // 3. Derived Presence Missions
   const presenceMissions = useMemo(() => {
@@ -243,19 +243,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     }
   }, [missionsData, telegram_id]);
 
+  // Refresh data in background (no revalidate: true to keep it instant)
   const loadData = async () => {
-    mutatePresence(undefined, { revalidate: true });
-    mutateMissions(undefined, { revalidate: true });
+    mutatePresence();
+    mutateMissions();
   };
-
-  // Force fresh data fetch every time the MissionCenter is opened
-  // This bypasses SWR dedup so users always see current mission state
-  useEffect(() => {
-    if (isOpen && telegram_id) {
-      mutatePresence(undefined, { revalidate: true });
-      mutateMissions(undefined, { revalidate: true });
-    }
-  }, [isOpen, telegram_id]);
 
 
   // [CODE: PRESENCE_HANDLERS]
