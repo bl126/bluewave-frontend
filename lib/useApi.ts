@@ -123,8 +123,8 @@ export function useApi(path: string | null, options: any = {}) {
     fetcher,
     { 
       ...swrConfig, 
-      dedupingInterval: 10000, // 10 seconds deduping
-      revalidateOnFocus: false, // Don't revalidate when switching back to Telegram
+      dedupingInterval: 2000, // 2s deduping — allows mutate() to take effect immediately
+      revalidateOnFocus: true, // Refresh when user returns to the app tab
       ...options 
     }
   );
@@ -140,6 +140,8 @@ export function useApi(path: string | null, options: any = {}) {
 // ⭐ NEW: Consolidated Sync Hook
 export function useSync(tg_id: number | null) {
   return useApi(tg_id ? `/sync/${tg_id}` : null, {
-    refreshInterval: 45000, // Heartbeat every 45s
+    refreshInterval: 15000, // Heartbeat every 15s (was 45s) — near real-time balance/notifications
+    revalidateOnFocus: true, // Immediately sync when user returns to app
+    dedupingInterval: 5000,  // Allow sync even if called more frequently (focus re-enter)
   });
 }

@@ -10,10 +10,11 @@ export const fetcher = async (url: string) => {
     throw new Error("AUTH_EXPIRED");
   }
 
-  // ⭐ Try to get from localStorage cache first (for stable data)
+  // ⭐ Try to get from localStorage cache first (only for truly stable, rarely-changing data)
   const cacheKey = new URL(url).pathname + new URL(url).search;
 
-  if (url.includes("/countries") || url.includes("/leaderboard") || url.includes("/user/")) {
+  // Only cache countries and leaderboard — user profile should always be fresh from SWR in-memory
+  if (url.includes("/countries") || url.includes("/leaderboard")) {
     const cached = cacheManager.get(cacheKey);
     if (cached) {
       console.log("📦 Cache hit:", cacheKey);
@@ -41,13 +42,12 @@ export const fetcher = async (url: string) => {
 
   const data = await res.json();
 
-  // ⭐ Cache stable data in localStorage
+  // ⭐ Cache only stable, rarely-changing data in localStorage
+  // User profile is intentionally excluded — served fresh from SWR in-memory
   if (url.includes("/countries")) {
     cacheManager.set(cacheKey, data, CACHE_TTL.COUNTRIES);
   } else if (url.includes("/leaderboard")) {
     cacheManager.set(cacheKey, data, CACHE_TTL.LEADERBOARD);
-  } else if (url.includes("/user/")) {
-    cacheManager.set(cacheKey, data, CACHE_TTL.USER_PROFILE);
   }
 
   return data;
@@ -58,7 +58,7 @@ export const swrConfig = {
   revalidateOnFocus: false,
   revalidateOnReconnect: true,
   dedupingInterval: 2000,
-  focusThrottleInterval: 300000,
+  focusThrottleInterval: 15000, // Reduced from 5min — returning to app now triggers quick refresh
   errorRetryCount: 2,
   errorRetryInterval: 3000,
 } as const;

@@ -106,7 +106,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     useApi(telegramId ? `/user/${telegramId}` : null);
 
   useEffect(() => {
-    if (telegramId && isOpen) mutate();
+    // Force revalidation on open — bypasses SWR dedup window for instant fresh data
+    if (telegramId && isOpen) mutate(undefined, { revalidate: true });
   }, [telegramId, isOpen]);
 
   useEffect(() => {

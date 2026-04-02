@@ -244,9 +244,18 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   }, [missionsData, telegram_id]);
 
   const loadData = async () => {
-    mutatePresence();
-    mutateMissions();
+    mutatePresence(undefined, { revalidate: true });
+    mutateMissions(undefined, { revalidate: true });
   };
+
+  // Force fresh data fetch every time the MissionCenter is opened
+  // This bypasses SWR dedup so users always see current mission state
+  useEffect(() => {
+    if (isOpen && telegram_id) {
+      mutatePresence(undefined, { revalidate: true });
+      mutateMissions(undefined, { revalidate: true });
+    }
+  }, [isOpen, telegram_id]);
 
 
   // [CODE: PRESENCE_HANDLERS]
@@ -498,10 +507,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
       setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
 
-      // Simulate waiting time for "Syncing..." effect
+      // Reduced from 5000ms — 3s is enough for Telegram to process a join
       setTimeout(() => {
         setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-      }, 5000);
+      }, 3000);
       return;
     }
 
@@ -524,7 +533,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
       setTimeout(() => {
         setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-      }, 8000);
+      }, 5000); // 5s for normal missions (was 8s)
     } catch (e) { console.error(e); }
   };
 
