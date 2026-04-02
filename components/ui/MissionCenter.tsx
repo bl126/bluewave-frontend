@@ -402,7 +402,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
     // 🚀 1. INSTANT LINK OPEN (Prioritize user gesture context)
-    if (m?.url) {
+    // Story Post skips the standard link opener to call specialized shareToStory logic below
+    if (m?.url && id !== "story_post") {
       if (tg?.openTelegramLink && m.url.includes("t.me/")) {
         tg.openTelegramLink(m.url);
       } else {
@@ -421,26 +422,46 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     if (isStory) {
       // 🎭 Story Logic (Fetch fresh deeplink if needed)
       const cached = storyDataRef.current;
-      if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
-        try {
-          tg.shareToStory(cached.poster_url, { text: cached.caption });
-        } catch (e) {
-          console.error("STORY_SYNC_FAIL:", e);
+
+      const triggerStoryShare = (data: { poster_url: string; caption: string; deeplink?: string }) => {
+        if (!data.poster_url) return;
+        
+        // A. Primary: New WebApp Share to Story API
+        if (tg && typeof tg.shareToStory === 'function') {
+          try {
+            tg.shareToStory(data.poster_url, { text: data.caption });
+            setPopup(t("missions.story_hint")); // "Wait for the story to be posted..."
+          } catch (e) {
+            console.error("shareToStory Error:", e);
+            // Fallback to link if API fails
+            if (tg.openTelegramLink && data.deeplink) tg.openTelegramLink(data.deeplink);
+            else if (tg.openLink) tg.openLink(data.deeplink || data.poster_url);
+          }
+        } 
+        // B. Fallback: Standard Share Link (which Telegram handles)
+        else if (data.deeplink) {
+          if (tg?.openTelegramLink && data.deeplink.includes("t.me/")) {
+            tg.openTelegramLink(data.deeplink);
+          } else {
+            if (tg?.openLink) tg.openLink(data.deeplink);
+            else window.open(data.deeplink, "_blank");
+          }
         }
+        // C. Last Resort: Open Poster URL
+        else {
+          if (tg?.openLink) tg.openLink(data.poster_url);
+          else window.open(data.poster_url, "_blank");
+        }
+        
+        setTimeout(() => setPopup(null), 5000);
+      };
+
+      if (cached?.poster_url) {
+        triggerStoryShare(cached);
       } else {
         getApi(`/story/deeplink/${telegram_id}`).then(dlData => {
           storyDataRef.current = dlData;
-          if (dlData.poster_url) {
-            if (tg && typeof tg.shareToStory === 'function') {
-              try { tg.shareToStory(dlData.poster_url, { text: dlData.caption }); } catch(e){}
-            } else if (!m?.url) {
-              if (tg?.openLink) tg.openLink(dlData.poster_url);
-              else window.open(dlData.poster_url, "_blank");
-            }
-            // Restore Story-specific help popup
-            setPopup(t("missions.story_hint"));
-            setTimeout(() => setPopup(null), 5000);
-          }
+          triggerStoryShare(dlData);
         }).catch(e => {
             console.error("STORY_ASYNC_FAIL:", e);
             setPopup(t("missions.error_story"));
@@ -449,9 +470,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
         });
       }
 
+      // Verification delay (Wait for story to propagate)
       setTimeout(() => {
         setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-      }, 18000);
+      }, 15000);
       return;
     }
 
