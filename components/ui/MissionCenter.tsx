@@ -394,139 +394,83 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   const handleOpen = async (id: string) => {
     if (!telegram_id) return;
 
-    // ... [Logic for opening missions - same as before] ...
-    const isSpecial = id === "invite_daily" || id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan" || id === "story_post";
+    // 👤 Find mission for URL lookup
+    const m = (missions as Mission[]).find((mi: Mission) => mi.id === id);
+    const tg = (window as any).Telegram?.WebApp;
 
-    if (isSpecial) {
-      // Logic for special missions implementation
-      // Copied logic for brevity in this thought, will implement fully in file
+    // 📳 Haptic Feedback (Immediate response to touch)
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
-      if (id === "story_post") {
-        const tg = (window as any).Telegram?.WebApp;
-        const cached = storyDataRef.current;
-        const tgVersion = parseFloat(tg?.version || "0");
+    // 🚀 1. INSTANT LINK OPEN (Prioritize user gesture context)
+    if (m?.url) {
+      if (tg?.openTelegramLink && m.url.includes("t.me/")) {
+        tg.openTelegramLink(m.url);
+      } else {
+        if (tg?.openLink) tg.openLink(m.url);
+        else window.open(m.url, "_blank");
+      }
+    }
 
-        console.log("STORY_MISSION: Click detected. State:", {
-          hasCached: !!cached,
-          posterUrl: cached?.poster_url,
-          hasShareToStory: typeof tg?.shareToStory === 'function',
-          tgVersion,
-          platform: tg?.platform
-        });
+    // 2. UI STATE & BACKGROUND LOGGING
+    const isStory = id === "story_post";
+    const isOnboarding = id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan";
+    const isDaily = id === "invite_daily";
 
-        // Haptic feedback for interaction
-        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+    setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
 
-        // 1. SYNC PATH: Use cached data if available (Best for gesture context)
-        if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
-          console.log("STORY_MISSION: Running SYNC path (shareToStory) with caption:", cached.caption);
-          try {
-            tg.shareToStory(cached.poster_url, { text: cached.caption });
-            console.log("STORY_MISSION: SYNC path success");
-            setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
-            setTimeout(() => {
-              setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-            }, 18000);
-            return;
-          } catch (e) {
-            console.error("STORY_MISSION: SYNC path failed:", e);
-          }
-        }
-
-        // 2. ASYNC PATH / FALLBACK: Fetch fresh data and try shareToStory again
-        console.log("STORY_MISSION: Running ASYNC path");
-        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
-
+    if (isStory) {
+      // 🎭 Story Logic (Fetch fresh deeplink if needed)
+      const cached = storyDataRef.current;
+      if (cached?.poster_url && tg && typeof tg.shareToStory === 'function') {
         try {
-          const dlData = await getApi(`/story/deeplink/${telegram_id}`);
-          if (dlData.error) throw new Error(`Backend: ${dlData.error}`);
-          console.log("STORY_MISSION: ASYNC data fetched:", dlData.poster_url);
-
+          tg.shareToStory(cached.poster_url, { text: cached.caption });
+        } catch (e) {
+          console.error("STORY_SYNC_FAIL:", e);
+        }
+      } else {
+        getApi(`/story/deeplink/${telegram_id}`).then(dlData => {
           storyDataRef.current = dlData;
-
           if (dlData.poster_url) {
-            // Try shareToStory even in async path (often works if delay is small)
             if (tg && typeof tg.shareToStory === 'function') {
-              console.log("STORY_MISSION: Attempting shareToStory in ASYNC path with caption:", dlData.caption);
-              try {
-                tg.shareToStory(dlData.poster_url, { text: dlData.caption });
-                console.log("STORY_MISSION: ASYNC shareToStory success");
-                setTimeout(() => {
-                  setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-                }, 18000);
-                return;
-              } catch (e) {
-                console.error("STORY_MISSION: ASYNC shareToStory failed:", e);
-              }
+              try { tg.shareToStory(dlData.poster_url, { text: dlData.caption }); } catch(e){}
+            } else if (!m?.url) {
+              if (tg?.openLink) tg.openLink(dlData.poster_url);
+              else window.open(dlData.poster_url, "_blank");
             }
-
-            // Absolute Fallback: Open the link
-            console.log("STORY_MISSION: All shareToStory attempts failed. Opening raw link.");
-            if (tg?.openLink) tg.openLink(dlData.poster_url);
-            else window.open(dlData.poster_url, "_blank");
-
+            // Restore Story-specific help popup
             setPopup(t("missions.story_hint"));
             setTimeout(() => setPopup(null), 5000);
-          } else {
-            throw new Error("No poster URL in response");
           }
-        } catch (e) {
-          console.error("STORY_MISSION: Total failure:", e);
-          setPopup(t("missions.error_story"));
-          setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
-          setTimeout(() => setPopup(null), 3000);
-          return;
-        }
-
-        setTimeout(() => {
-          setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-        }, 18000);
-        return;
+        }).catch(e => {
+            console.error("STORY_ASYNC_FAIL:", e);
+            setPopup(t("missions.error_story"));
+            setTimeout(() => setPopup(null), 3000);
+            setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
+        });
       }
 
-      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") {
-        const m = (missions as Mission[]).find((m: Mission) => m.id === id);
-        const tg = (window as any).Telegram?.WebApp;
-        if (m?.url) {
-          if (tg?.openTelegramLink && m.url.includes("t.me/")) {
-            tg.openTelegramLink(m.url);
-          } else {
-            if (tg?.openLink) tg.openLink(m.url);
-            else window.open(m.url, "_blank");
-          }
-        }
-      }
+      setTimeout(() => {
+        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
+      }, 18000);
+      return;
+    }
 
-      setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
-
-      // Reduced from 5000ms — 3s is enough for Telegram to process a join
+    if (isOnboarding || isDaily) {
       setTimeout(() => {
         setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
       }, 3000);
       return;
     }
 
-    // Normal Mission
-    try {
-      await postApi(`/mission/open`, { telegram_id, mission_id: id });
+    // 📝 Normal Mission Logging (Fire and forget)
+    postApi(`/mission/open`, { telegram_id, mission_id: id }).catch(e => {
+        console.error("MISSION_LOG_FAIL:", e);
+        // We don't roll back the UI for simple logging failures to ensure the user can still claim later.
+    });
 
-      const mission = (missions as Mission[]).find((m: Mission) => m.id === id);
-
-      // 🚀 FORCE OPEN LINK LOGIC (Fixes "Open Again" not working)
-      if (mission?.url) {
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.openLink) {
-          tg.openLink(mission.url);
-        } else {
-          window.open(mission.url, "_blank");
-        }
-      }
-
-      setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
-      setTimeout(() => {
-        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
-      }, 5000); // 5s for normal missions (was 8s)
-    } catch (e) { console.error(e); }
+    setTimeout(() => {
+      setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
+    }, 5000);
   };
 
   const handleClaim = async (id: string) => {
