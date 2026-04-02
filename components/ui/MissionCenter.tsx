@@ -423,22 +423,31 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       // 🎭 Story Logic (Fetch fresh deeplink if needed)
       const cached = storyDataRef.current;
 
-      const triggerStoryShare = (data: { poster_url: string; caption: string; deeplink?: string }) => {
+      const triggerStoryShare = (data: { poster_url: string; caption: string; ref_link: string; deeplink?: string }) => {
         if (!data.poster_url) return;
         
-        // A. Primary: New WebApp Share to Story API
+        // A. Primary: Native Telegram Story Editor
+        // This opens the editor with the poster, caption, and a clickable referral widget
         if (tg && typeof tg.shareToStory === 'function') {
           try {
-            tg.shareToStory(data.poster_url, { text: data.caption });
-            setPopup(t("missions.story_hint")); // "Wait for the story to be posted..."
+            tg.shareToStory(data.poster_url, {
+              text: data.caption,
+              widget_link: {
+                url: data.ref_link,
+                name: "Bluewave Protocol"
+              }
+            });
+            setPopup(t("missions.story_hint")); // "Wait for story to be posted..."
           } catch (e) {
-            console.error("shareToStory Error:", e);
-            // Fallback to link if API fails
-            if (tg.openTelegramLink && data.deeplink) tg.openTelegramLink(data.deeplink);
-            else if (tg.openLink) tg.openLink(data.deeplink || data.poster_url);
+            console.error("STORY_EDITOR_FAIL:", e);
+            // Fallback to standard share link if editor fails
+            if (data.deeplink) {
+              if (tg.openTelegramLink) tg.openTelegramLink(data.deeplink);
+              else if (tg.openLink) tg.openLink(data.deeplink);
+            }
           }
         } 
-        // B. Fallback: Standard Share Link (which Telegram handles)
+        // B. Fallback: Standard Share Link
         else if (data.deeplink) {
           if (tg?.openTelegramLink && data.deeplink.includes("t.me/")) {
             tg.openTelegramLink(data.deeplink);
@@ -447,7 +456,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             else window.open(data.deeplink, "_blank");
           }
         }
-        // C. Last Resort: Open Poster URL
+        // C. Last Resort: Raw Poster Link
         else {
           if (tg?.openLink) tg.openLink(data.poster_url);
           else window.open(data.poster_url, "_blank");
