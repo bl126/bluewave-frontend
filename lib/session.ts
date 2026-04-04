@@ -24,6 +24,18 @@ export const setSessionExpired = () => {
 };
 
 /**
+ * Reset the session expiration state.
+ * Use with caution — only after manual re-authentication or automated recovery.
+ */
+export const resetSessionExpired = () => {
+    if (sessionExpired) {
+        sessionExpired = false;
+        console.info("🛡️ SECURITY: Session reset. Resuming API requests.");
+        listeners.forEach((cb) => cb(false));
+    }
+};
+
+/**
  * Subscribe to session expiry events.
  * Used by UI components to show the error screen.
  */

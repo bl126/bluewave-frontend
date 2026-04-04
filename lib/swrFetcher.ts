@@ -3,6 +3,30 @@
 import { cacheManager, CACHE_TTL } from "./cacheManager";
 import { isSessionExpired, setSessionExpired } from "./session";
 
+/**
+ * ⭐ SILENT RETRY: Wait for Telegram SDK to provide initData.
+ * Prevents 401 Unauthorized errors when the app reopens from the background.
+ */
+export async function waitForInitData(): Promise<string> {
+  if (typeof window === "undefined") return "";
+  
+  let initData = (window as any).Telegram?.WebApp?.initData || "";
+  if (initData) return initData;
+
+  console.log("🕒 SDK not ready, waiting for initData...");
+  for (let i = 0; i < 20; i++) { // 2 seconds max
+    await new Promise(r => setTimeout(r, 100));
+    initData = (window as any).Telegram?.WebApp?.initData || "";
+    if (initData) {
+      console.log("✅ initData ready after delay");
+      return initData;
+    }
+  }
+  
+  console.warn("⚠️ SDK failed to provide initData after timeout.");
+  return "";
+}
+
 export const fetcher = async (url: string) => {
   // 🛡️ Guard to prevent "burning" the API
   if (isSessionExpired()) {
@@ -23,7 +47,13 @@ export const fetcher = async (url: string) => {
   }
 
   // Fetch from network
-  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+  const initData = await waitForInitData();
+
+  // Final check - if STILL no initData, we must bail to avoid triggering a 401 lockdown
+  if (!initData && typeof window !== "undefined") {
+    console.warn("⚠️ Skipping sync: SDK_NOT_READY");
+    throw new Error("SDK_NOT_READY");
+  }
 
   const res = await fetch(url, {
     headers: {
@@ -33,6 +63,8 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     if (res.status === 401) {
+      // 🛡️ Only mark session as expired if we actually SENT a valid-looking header
+      // and STILL got a 401. This prevents false positives from empty headers.
       setSessionExpired();
     }
     const err: any = new Error("API error");

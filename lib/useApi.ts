@@ -3,7 +3,7 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, swrConfig } from "./swrFetcher";
+import { fetcher, swrConfig, waitForInitData } from "./swrFetcher";
 import { isSessionExpired, setSessionExpired } from "./session";
 
 // [CODE: FRONTEND_POST_API_HELPER]
@@ -12,7 +12,7 @@ export async function postApi(path: string, body: any = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api${path}`;
 
-  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+  const initData = await waitForInitData();
 
   // 🛡️ Guard to prevent "burning" the API
   if (isSessionExpired()) {
@@ -21,6 +21,12 @@ export async function postApi(path: string, body: any = {}) {
   }
 
   try {
+    // 🛡️ Guard to prevent 401 lockdown if SDK is missing
+    if (!initData && typeof window !== "undefined") {
+      console.warn(`⚠️ Skipping POST ${path}: SDK_NOT_READY`);
+      return { error: "SDK_NOT_READY" };
+    }
+
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -51,7 +57,7 @@ export async function getApi(path: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api${path}`;
 
-  const initData = typeof window !== "undefined" ? (window as any).Telegram?.WebApp?.initData : "";
+  const initData = await waitForInitData();
 
   // 🛡️ Guard to prevent "burning" the API
   if (isSessionExpired()) {
@@ -60,6 +66,12 @@ export async function getApi(path: string) {
   }
 
   try {
+    // 🛡️ Guard to prevent 401 lockdown if SDK is missing
+    if (!initData && typeof window !== "undefined") {
+      console.warn(`⚠️ Skipping GET ${path}: SDK_NOT_READY`);
+      return { error: "SDK_NOT_READY" };
+    }
+
     const res = await fetch(url, {
       headers: {
         "x-telegram-init-data": initData || "",
