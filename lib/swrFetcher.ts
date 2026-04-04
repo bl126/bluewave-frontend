@@ -63,9 +63,16 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     if (res.status === 401) {
-      // 🛡️ Only mark session as expired if we actually SENT a valid-looking header
-      // and STILL got a 401. This prevents false positives from empty headers.
-      setSessionExpired();
+      // 🛡️ [SEAMLESS_AUTH]
+      // Only lock the session for high-integrity manual actions (POST).
+      // Background syncs or informational GETs should fail SILENTLY to avoid UX stress.
+      const isCritical = !url.includes("/sync/") && !url.includes("/balance/") && !url.includes("/missions/");
+      
+      if (isCritical) {
+        setSessionExpired();
+      } else {
+        console.warn(`🔄 Background Auth Fail (Silent): ${url}`);
+      }
     }
     const err: any = new Error("API error");
     err.status = res.status;

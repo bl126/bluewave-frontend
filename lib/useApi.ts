@@ -40,6 +40,8 @@ export async function postApi(path: string, body: any = {}) {
 
     if (!res.ok) {
       if (res.status === 401) {
+        // 🔒 [CRITICAL_ACTION]
+        // Manual POST actions still trigger the lockout for high-integrity intent.
         setSessionExpired();
       }
       throw new Error(json.detail || json.message || "API_ERROR");
@@ -82,7 +84,10 @@ export async function getApi(path: string) {
 
     if (!res.ok) {
       if (res.status === 401) {
-        setSessionExpired();
+        // 🛡️ [SEAMLESS_AUTH]
+        // Manual GET fetches (profiles/missions) fail silenty.
+        // The app WON'T lock down.
+        console.warn(`🔄 GET Auth Fail (Silent): ${path}`);
       }
       throw new Error(json.detail || json.message || "API_ERROR");
     }
