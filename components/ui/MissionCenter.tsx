@@ -587,9 +587,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                 <Lock size={32} className="text-cyan-400 animate-pulse" />
               </div>
               
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Sector Encrypted</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">{t("ghost.sector_encrypted")}</h2>
               <p className="text-cyan-500/60 text-xs font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px]">
-                Connect your TON wallet to decrypt the reward ecosystem and activate your BW ID.
+                {t("ghost.connect_prompt")}
               </p>
 
               <button 
@@ -600,7 +600,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                 }}
                 className="px-8 py-4 bg-cyan-500 text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 transition-all"
               >
-                Connect TON Wallet
+                {t("ghost.connect_btn")}
               </button>
             </div>
           )}

@@ -10,7 +10,7 @@ import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
 import LanguageSelector from "@/components/ui/LanguageSelector";
-import EcosystemTour from "../components/ui/EcosystemTour";
+
 
 import LoadingScreen from "./LoadingScreen";
 import RolesOverlay from "@/components/ui/RolesOverlay";
@@ -785,13 +785,10 @@ export default function LandingPage() {
         onClose={() => setShowLanguageSelector(false)}
         onComplete={() => {
             setShowLanguageSelector(false);
-            setShowTour(true);
+            if (telegramUser?.id) {
+                window.localStorage.setItem(`bw_seen_onboarding_${telegramUser.id}`, "true");
+            }
         }}
-      />
-
-      <EcosystemTour
-        isOpen={showTour}
-        onComplete={handleTourComplete}
       />
 
       {/* 🛡️ Recovery Password LOCK SCREEN */}

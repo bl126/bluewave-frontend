@@ -551,5 +551,27 @@
     "desc": "Seu sinal comunitário de ontem foi verificado pela camada de inteligência.",
     "reward_generated": "Recompensa Gerada",
     "acknowledge": "Reconhecer"
+  },
+  "tour": {
+    "title_1": "The Global Pulse",
+    "desc_1": "Welcome, Ghost. This is the heart of the Protocol. Watch real-time human activity being processed into social signal across the globe.",
+    "title_2": "Social Intelligence",
+    "desc_2": "The Signal Feed. Engage with the ecosystem's most vital streams. As a guest, you can Like and Comment to shape the protocol's intelligence.",
+    "title_3": "Reward Ecosystem",
+    "desc_3": "Earn & Grow. Complete presence and social missions to build your $BWAVE balance. This sector remains encrypted until your wallet is linked.",
+    "title_4": "Digital Activation",
+    "desc_4": "Finalize your identity. Connect your TON wallet here to activate your permanent BW ID and unlock full protocol features.",
+    "init": "Protocol Initialization",
+    "next": "Next",
+    "finish": "Initialize"
+  },
+  "ghost": {
+    "sector_encrypted": "Sector Encrypted",
+    "connect_prompt": "Connect your TON wallet to decrypt the reward ecosystem and activate your BW ID.",
+    "connect_btn": "Connect TON Wallet"
+  },
+  "alerts": {
+    "connect_wallet_ref": "Please connect your wallet to generate a referral link.",
+    "connect_wallet_blu": "Please connect your wallet to access Blu configurations."
   }
 }

@@ -428,14 +428,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               <p className="text-cyan-400/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
                             </div>
                             <button 
-                              onClick={() => user.wallet_address ? setIsReferralModalOpen(true) : alert("Please connect your wallet to generate a referral link.")} 
+                              onClick={() => user.wallet_address ? setIsReferralModalOpen(true) : alert(t("alerts.connect_wallet_ref"))} 
                               className={`px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all ${!user.wallet_address ? 'opacity-50' : ''}`}
                             >
                               {t("profile.get_link")}
                             </button>
                           </div>
                           <button 
-                            onClick={() => user.wallet_address ? setIsConnectBluOpen(true) : alert("Please connect your wallet to access Blu configurations.")} 
+                            onClick={() => user.wallet_address ? setIsConnectBluOpen(true) : alert(t("alerts.connect_wallet_blu"))} 
                             className={`w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
                           >
                             {t("profile.connect_blu")}
