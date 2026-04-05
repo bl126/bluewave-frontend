@@ -100,44 +100,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // Fetch Live Users globally
   const { data: liveUsers } = useApi(isOpen ? "/explore/live_users" : null, { refreshInterval: 60000 });
 
-  useEffect(() => {
-    if (initialPosts) {
-      setPagedPosts(initialPosts);
-      setOffset(initialPosts.length);
-      setHasMore(initialPosts.length >= 10);
-    }
-  }, [initialPosts]);
-
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || !isOpen || !telegramUser?.id) return;
-    setLoadingMore(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}`);
-      const newData = await res.json();
-      if (newData && newData.length > 0) {
-        setPagedPosts(prev => [...prev, ...newData]);
-        setOffset(prev => prev + newData.length);
-        if (newData.length < 10) setHasMore(false);
-      } else {
-        setHasMore(false);
-      }
-    } catch {
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, offset, activeTab, isOpen, telegramUser?.id]);
-
-  // Infinite Scroll Observer
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasMore) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) loadMore();
-    }, { threshold: 0.1 });
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, loadMore]);
-
   // Track latest post ID for new-posts pill
   useEffect(() => {
     if (initialPosts && initialPosts.length > 0) {
@@ -149,6 +111,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       }
     }
   }, [initialPosts, latestKnownPostId]);
+
+  // Help Sync pagedPosts with initialPosts on tab change or refresh
+  useEffect(() => {
+    if (initialPosts) {
+      setPagedPosts(initialPosts);
+      setOffset(initialPosts.length);
+      setHasMore(initialPosts.length >= 10);
+    }
+  }, [initialPosts]);
 
   // 🔄 Consolidated Synchronization (Heartbeat)
   // Instead of multiple separate polls, we use the global sync cache.
@@ -436,6 +407,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   key={post.id}
                   post={post}
                   currentUserId={telegramUser?.id}
+                  isConnected={isConnected}
                   onHide={() => mutate()}
                   onRepost={() => mutate()}
                   onConnectRequired={() => {
@@ -503,10 +475,41 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             onClose={() => setIsPostModalOpen(false)}
             onPosted={(requestArgs) => {
               setIsPostModalOpen(false);
+              
+              // 🚀 [SPEED_BOOST] Optimistic UI: Prepend to the feed immediately while background posting
+              const optimisticPost = {
+                id: `temp-${Date.now()}`,
+                tg_id: telegramUser.id,
+                content: requestArgs.content,
+                media_url: requestArgs.media_url,
+                media_urls: requestArgs.media_url ? [{ url: requestArgs.media_url, type: requestArgs.media_type }] : [],
+                media_type: requestArgs.media_type,
+                views: 0,
+                acknowledgments_count: 0,
+                reposts_count: 0,
+                comments_count: 0,
+                created_at: new Date().toISOString(),
+                is_acknowledged: false,
+                is_reposted: false,
+                is_following: true,
+                channel: {
+                  title: swrUser?.telegram_channel_title || "My Channel",
+                  photo: swrUser?.telegram_channel_photo,
+                  handle: swrUser?.telegram_channel
+                },
+                user: {
+                  name: swrUser?.name || swrUser?.first_name || "Me",
+                  photo: swrUser?.photo_url,
+                  country: "",
+                  is_live_on_telegram: false
+                }
+              };
+              setPagedPosts(prev => [optimisticPost, ...prev]);
+
               setIsPostingBackground(true);
               postApi("/explore/post", requestArgs).then((res) => {
                 if (res?.success) {
-                  mutate();
+                  mutate(); // Refresh the list from the real source
                   setSuccessMessage(t("explore.post_success_popup"));
                   setTimeout(() => setSuccessMessage(null), 3000);
                 }
@@ -594,13 +597,9 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
       let finalMediaUrl = "";
 
       if (mediaFile) {
+        // 🔒 [SECURITY] Use postApi so the x-telegram-init-data auth header is sent
+        const urlData = await postApi(`/explore/get_upload_url`, { tg_id: telegramUser.id, media_ext: mediaExt });
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const urlRes = await fetch(`${apiUrl}/api/explore/get_upload_url`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tg_id: telegramUser.id, media_ext: mediaExt })
-        });
-        const urlData = await urlRes.json();
 
         if (urlData.signed_url) {
           const putRes = await fetch(urlData.signed_url, {
@@ -797,10 +796,16 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
-function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: { post: any, currentUserId: number, onHide: () => void, onRepost: () => void, onConnectRequired: () => void }) {
+function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnectRequired }: { post: any, currentUserId: number, isConnected: boolean, onHide: () => void, onRepost: () => void, onConnectRequired: () => void }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
+  const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
+
+  // Sync local count if post data updates from background revalidation
+  useEffect(() => {
+    setLocalAckCount(post.acknowledgments_count || 0);
+  }, [post.acknowledgments_count]);
   const [isReposting, setIsReposting] = useState(false);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -823,6 +828,7 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
     setShowSpaceDust(true);
     setTimeout(() => setShowSpaceDust(false), 1500);
     setIsAcknowledged(true);
+    setLocalAckCount((prev: number) => prev + 1); // 🚀 [SPEED_BOOST] Instant count update
     await postApi("/explore/acknowledge", { user_id: currentUserId, post_id: post.id });
   };
 
@@ -976,8 +982,7 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
               <button
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  const userWithWallet = (window as any).currentUserData || { id: currentUserId };
-                  if (!userWithWallet?.wallet_address) {
+                  if (!isConnected) {
                     onConnectRequired();
                     return;
                   }
@@ -1022,9 +1027,9 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
                   <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
                     <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
                   </div>
-                  {post.acknowledgments_count > 0 && (
+                  {localAckCount > 0 && (
                     <span className="text-[10px] font-bold font-mono text-white/80">
-                      {post.acknowledgments_count}
+                      {localAckCount}
                     </span>
                   )}
                 </button>
@@ -1282,13 +1287,8 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
                         e.stopPropagation();
                         if (currentUserId && n.from_user_id) {
                           try {
-                            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-                            const res = await fetch(`${apiUrl}/api/user/follow`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ follower_id: currentUserId, followed_id: n.from_user_id })
-                            });
-                            const data = await res.json();
+                            // 🔒 [SECURITY] postApi ensures auth header is sent
+                            const data = await postApi(`/user/follow`, { follower_id: currentUserId, followed_id: n.from_user_id });
                             if (data.requires_join) {
                               const handle = n.from_user.telegram_channel;
                               const clean = handle.replace(/^@/, "");
