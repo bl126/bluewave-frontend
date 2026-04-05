@@ -86,9 +86,16 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
             window.dispatchEvent(new CustomEvent('showTONExplorer'));
           }
           // ⭐ Trigger Recovery Password if not set
-          if (res && !res.recovery_password_hash) {
+          const user = res.user || res;
+          if (user && !user.recovery_password_hash) {
             window.dispatchEvent(new CustomEvent('showRecoveryPassword'));
           }
+          
+          // 🔥 Update Global State
+          if (res.user) {
+            window.dispatchEvent(new CustomEvent('updateUser', { detail: res.user }));
+          }
+
           mutate();
         }).catch(err => console.error("Wallet sync error:", err));
       }

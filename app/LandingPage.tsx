@@ -350,6 +350,8 @@ export default function LandingPage() {
           streak: user.streak_days ?? 0,
           bw_id: user.bw_id,
           joined_at: user.joined_at,
+          wallet_address: user.wallet_address,
+          recovery_password_hash: user.recovery_password_hash,
           human_verification_pending: user.human_verification_pending || false,
           network_builder_pending: user.network_builder_pending || false,
           ton_explorer_pending: user.ton_explorer_pending || false,
@@ -458,17 +460,37 @@ export default function LandingPage() {
       setShowRecoveryModal(true);
     };
 
+    const handleUpdateUser = (e: any) => {
+      const newUser = e.detail;
+      if (!newUser) return;
+      
+      setTelegramUser((prev: any) => ({
+        ...prev,
+        ...newUser,
+        // Ensure mapping consistency if the backend object differs slightly
+        id: newUser.tg_id || prev?.id,
+        wallet_address: newUser.wallet_address || prev?.wallet_address,
+        is_human_verified: !!newUser.is_human_verified,
+      }));
+      
+      if (newUser.points_balance !== undefined) {
+        setBalance(newUser.points_balance);
+      }
+    };
+
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
     window.addEventListener('showNetworkBuilder' as any, handleNetworkPop);
     window.addEventListener('showTONExplorer' as any, handleTONPop);
     window.addEventListener('showRecoveryPassword' as any, handleRecoveryPop);
+    window.addEventListener('updateUser' as any, handleUpdateUser);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
       window.removeEventListener('showHumanVerification' as any, handleHumanPop);
       window.removeEventListener('showNetworkBuilder' as any, handleNetworkPop);
       window.removeEventListener('showTONExplorer' as any, handleTONPop);
       window.removeEventListener('showRecoveryPassword' as any, handleRecoveryPop);
+      window.removeEventListener('updateUser' as any, handleUpdateUser);
     };
   }, []);
 
