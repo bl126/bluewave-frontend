@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface LanguageSelectorProps {
     isOpen: boolean;
     onClose: () => void;
+    onComplete?: () => void;
 }
 
 interface Language {
@@ -30,12 +31,15 @@ const languages: Language[] = [
     { code: "th", name: "Thai", nativeName: "ภาษาไทย", flag: "🇹🇭" },
 ];
 
-export default function LanguageSelector({ isOpen, onClose }: LanguageSelectorProps) {
+export default function LanguageSelector({ isOpen, onClose, onComplete }: LanguageSelectorProps) {
     const { language, setLanguage, t } = useLanguage();
 
     const handleSelectLanguage = (code: string) => {
         setLanguage(code);
-        setTimeout(onClose, 300); // Small delay for visual feedback
+        setTimeout(() => {
+            onClose();
+            if (onComplete) onComplete();
+        }, 300); // Small delay for visual feedback
     };
 
     return (

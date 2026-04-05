@@ -8,8 +8,9 @@ import MissionCenter from "@/components/ui/MissionCenter";
 import Explore from "@/components/ui/Explore";
 import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
-import OnboardingModal from "@/components/ui/OnboardingModal";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
+import LanguageSelector from "@/components/ui/LanguageSelector";
+import EcosystemTour from "../components/ui/EcosystemTour";
 
 import LoadingScreen from "./LoadingScreen";
 import RolesOverlay from "@/components/ui/RolesOverlay";
@@ -67,7 +68,8 @@ export default function LandingPage() {
   const [isMarketOpen, setMarketOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
   const [selectedRoleName, setSelectedRoleName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("home");
@@ -114,7 +116,7 @@ export default function LandingPage() {
   // 🧭 Navigation Visibility
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -212,27 +214,15 @@ export default function LandingPage() {
     try {
       const tg = (window as any).Telegram?.WebApp;
       const liveTgId = tg?.initDataUnsafe?.user?.id;
-      const cachedTgId = window.localStorage.getItem("bw_tg_id");
+      const cacheKey = liveTgId ? `bw_init_cache_${liveTgId}` : "bw_init_cache";
+      const cached = window.localStorage.getItem(cacheKey);
 
-      // 🛡️ [IDENTITY_GUARD] If we have a live user and it's DIFFERENT from the cache, wipe the cache!
-      if (liveTgId && cachedTgId && String(liveTgId) !== String(cachedTgId)) {
-        console.warn("🛡️ [IDENTITY_GUARD] Account mismatch detected. Clearing stale cache.");
-        window.localStorage.removeItem("bw_init_cache");
-        window.localStorage.removeItem("bw_tg_id");
-        window.localStorage.removeItem("bw_presence_cache");
-        // We don't return here; we want to continue with the fresh data path
-      }
-
-      const cached = window.localStorage.getItem("bw_init_cache");
       if (cached) {
         const data = JSON.parse(cached);
         if (data.profile) {
           const u = data.profile;
           
-          // Additional safety: ensure the cached profile belongs to the live user
-          if (liveTgId && String(u.tg_id) !== String(liveTgId)) {
-             throw new Error("Cached profile belongs to a different user");
-          }
+          // Cache identity is now guaranteed by keys.
 
           setTelegramUser({
             id: Number(u.tg_id),
@@ -276,18 +266,25 @@ export default function LandingPage() {
         const effectiveTgId = tgUser?.id;
 
         if (!effectiveTgId) {
-          console.warn("No Telegram ID found. Redirecting to onboarding...");
-          setOnboardingOpen(true);
-          setIsLoading(false);
+          console.warn("No Telegram ID found. Retrying...");
+          setTimeout(() => window.location.reload(), 2000);
           return;
+        }
+
+        // 🔗 Capture start_param (Referrer)
+        const startParam = tg?.initDataUnsafe?.start_param;
+        let referrerId = null;
+        if (startParam && startParam.startsWith("ref_")) {
+            referrerId = startParam.replace("ref_", "");
         }
 
         const savedTgId = String(effectiveTgId);
         window.localStorage.setItem("bw_tg_id", savedTgId); // Keep cache in sync with reality
 
-        // 2. Fetch unified initial state from backend
-        // This endpoint returns { profile, missions, presence, leaderboard }
-        const data = await getApi(`/init/${savedTgId}`);
+        // 2. Fetch unified initial state from backend (Now with Auto-Registration)
+        const initUrl = referrerId ? `/init/${savedTgId}?referrer_id=${referrerId}` : `/init/${savedTgId}`;
+        const data = await getApi(initUrl);
+
         if (data.error) {
           if (data.error === "TOO_FAST") {
             console.warn("Rate limited. Retrying in 1.2s...");
@@ -296,13 +293,13 @@ export default function LandingPage() {
           }
 
           if (data.error === "AUTH_REQUIRED" || data.error === "IDENTITY_MISMATCH") {
-            console.warn("Auth error. Clearing stale cache and showing onboarding...", data.error);
+            console.warn("Auth error. Clearing stale cache...", data.error);
             window.localStorage.removeItem("bw_tg_id");
             window.localStorage.removeItem("bw_init_cache");
+            setTimeout(() => window.location.reload(), 1000);
+            return;
           }
 
-          // User not found or auth error -> show onboarding
-          setOnboardingOpen(true);
           setIsLoading(false);
           return;
         }
@@ -316,15 +313,16 @@ export default function LandingPage() {
           return;
         }
 
-        // 4. If onboarding not completed in DB -> force onboarding
-        // Using explicit !== true check to handle potential nulls safely
-        if (user.first_login_completed !== true) {
-          console.log("Onboarding not completed for user:", savedTgId);
-          window.localStorage.removeItem("bw_init_cache"); // Ensure fresh start
-          setInitialProfile(user);
-          setOnboardingOpen(true);
-          setIsLoading(false);
-          return;
+        // 4. Check for Wallet Activation (The new Unified Gate)
+        const isGhost = !user.wallet_address;
+        
+        if (isGhost) {
+          console.log("Ghost user detected. Preparing onboarding sequence...");
+          // If they haven't seen the onboarding sequence yet, show it
+          const hasSeenSequence = window.localStorage.getItem(`bw_seen_onboarding_${savedTgId}`);
+          if (!hasSeenSequence) {
+            setShowLanguageSelector(true);
+          }
         }
 
         // 4. Success Logged In -> Prepare App State
@@ -364,8 +362,9 @@ export default function LandingPage() {
         setUnreadExploreCount(data.unread_explore_notifications || 0);
         setInitialProfile(user);
 
-        // Update local cache for next "Instant Startup"
-        window.localStorage.setItem("bw_init_cache", JSON.stringify(data));
+        // Update local cache for next "Instant Startup" (Per-User)
+        const cacheKey = savedTgId ? `bw_init_cache_${savedTgId}` : "bw_init_cache";
+        window.localStorage.setItem(cacheKey, JSON.stringify(data));
         window.localStorage.setItem("bw_tg_id", savedTgId);
 
         // 🔥 Initial check for pending rewards from init data
@@ -401,16 +400,7 @@ export default function LandingPage() {
 
         setBalance(user.points_balance ?? null);
 
-        // Invalidate cache for sub-queries
-        if (tgIdNum > 0) {
-          getApi(`/user/has_recovery_password/${tgIdNum}`)
-            .then(data => {
-              if (data.has_password === false && !data.error) {
-                setShowRecoveryModal(true);
-              }
-            })
-            .catch(err => console.error("Error checking recovery password:", err));
-        }
+        setBalance(user.points_balance ?? null);
 
         // ⭐ SEED SWR Cache
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -437,7 +427,6 @@ export default function LandingPage() {
         }, delay);
       } catch (err) {
         console.error("Initialization error:", err);
-        setOnboardingOpen(true);
         setIsLoading(false);
       }
     })();
@@ -465,15 +454,21 @@ export default function LandingPage() {
       setIsTONModalOpen(true);
     };
 
+    const handleRecoveryPop = () => {
+      setShowRecoveryModal(true);
+    };
+
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
     window.addEventListener('showNetworkBuilder' as any, handleNetworkPop);
     window.addEventListener('showTONExplorer' as any, handleTONPop);
+    window.addEventListener('showRecoveryPassword' as any, handleRecoveryPop);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
       window.removeEventListener('showHumanVerification' as any, handleHumanPop);
       window.removeEventListener('showNetworkBuilder' as any, handleNetworkPop);
       window.removeEventListener('showTONExplorer' as any, handleTONPop);
+      window.removeEventListener('showRecoveryPassword' as any, handleRecoveryPop);
     };
   }, []);
 
@@ -647,79 +642,12 @@ export default function LandingPage() {
     }
   }, [syncData, telegramUser?.id]);
 
-  // 🔥 Called when onboarding completes successfully
-  const handleOnboardingComplete = async (user: any) => {
-    const tgId = user.tg_id;
-
-    // Save for future auto-login
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("bw_tg_id", String(tgId));
+  // 🏁 Called when Ecosystem Tour completes
+  const handleTourComplete = () => {
+    setShowTour(false);
+    if (telegramUser?.id) {
+        window.localStorage.setItem(`bw_seen_onboarding_${telegramUser.id}`, "true");
     }
-
-    // Re-fetch full profile from backend to get all fields (bw_id, roles, balance, etc.)
-    try {
-      const data = await getApi(`/init/${tgId}`);
-      if (!data.error) {
-        const fullUser = data.profile;
-
-        // Seed SWR cache — same as initial load (fixes Bug #4)
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        mutate(`${apiUrl}/api/user/${tgId}`, fullUser, false);
-        mutate(`${apiUrl}/api/missions/all/${tgId}`, data.missions, false);
-        mutate(`${apiUrl}/api/presence/list/${tgId}`, data.presence, false);
-        mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
-
-        // Set full user into state (fixes Bug #3)
-        setTelegramUser({
-          id: tgId,
-          tg_id: tgId,
-          username: fullUser.username,
-          first_name: fullUser.name,
-          photo_url: fullUser.photo_url || null,
-          points_balance: fullUser.points_balance ?? 0,
-          referral_earnings_pending: fullUser.referral_earnings_pending ?? 0,
-          total_referrals: fullUser.total_referrals ?? 0,
-          inactive_referrals_cache: fullUser.inactive_referrals_cache ?? 0,
-          streak: fullUser.streak_days ?? 0,
-          bw_id: fullUser.bw_id,
-          joined_at: fullUser.joined_at,
-          human_verification_pending: fullUser.human_verification_pending || false,
-          network_builder_pending: fullUser.network_builder_pending || false,
-          ton_explorer_pending: fullUser.ton_explorer_pending || false,
-          is_human_verified: !!fullUser.is_human_verified,
-          roles: fullUser.roles || [],
-          unread_explore_notifications: data.unread_explore_notifications || 0,
-        });
-
-        setUnreadExploreCount(data.unread_explore_notifications || 0);
-        setBalance(fullUser.points_balance ?? null);
-      } else {
-        // Fallback: use partial user data if re-fetch fails
-        setTelegramUser({
-          id: tgId,
-          tg_id: tgId,
-          username: user.username,
-          first_name: user.first_name,
-          photo_url: user.photo_url || null,
-          points_balance: user.points_balance ?? null,
-        });
-        setBalance(user.points_balance ?? null);
-      }
-    } catch (e) {
-      console.error("Post-onboarding re-fetch error:", e);
-      // Fallback: use partial user data
-      setTelegramUser({
-        id: tgId,
-        tg_id: tgId,
-        username: user.username,
-        first_name: user.first_name,
-        photo_url: user.photo_url || null,
-        points_balance: user.points_balance ?? null,
-      });
-      setBalance(user.points_balance ?? null);
-    }
-
-    setOnboardingOpen(false);
   };
 
   return (
@@ -729,7 +657,7 @@ export default function LandingPage() {
         <BluewaveGlobe />
       </div>
       {/* 💰 Floating Balance Pill */}
-      {!onboardingOpen && !isLoading && (
+      {!isLoading && (
         <BalancePill
           balance={balance}
           isVisible={!isBwaveScanOpen}
@@ -737,7 +665,7 @@ export default function LandingPage() {
       )}
 
       {/* 🤖 BLU AI Assistant Button */}
-      {!onboardingOpen && !isLoading && !isMaintenanceMode && (
+      {!isLoading && !isMaintenanceMode && (
         <BluButton
           isExpanded={isBluExpanded}
           onToggleExpand={setIsBluExpanded}
@@ -745,7 +673,7 @@ export default function LandingPage() {
       )}
 
       {/* 🧭 Navigation Bar */}
-      {!onboardingOpen && !isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && (
+      {!isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && (
         <BottomNav
           activeTab={activeTab}
           telegramId={telegramUser?.id}
@@ -786,7 +714,7 @@ export default function LandingPage() {
           />
         )}
         {isMarketOpen && (
-          <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} />
+          <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
         )}
         {isProfileOpen && (
           <Profile
@@ -829,12 +757,19 @@ export default function LandingPage() {
         initialRoleName={selectedRoleName}
       />
 
-      {/* 🔐 Onboarding LOCK SCREEN */}
-      <OnboardingModal
-        isOpen={onboardingOpen}
-        onComplete={handleOnboardingComplete}
-        autoUsername={telegramUser?.username || fallbackUsername}
-        initialUser={initialProfile}
+      {/* 🧭 Onboarding Sequence */}
+      <LanguageSelector
+        isOpen={showLanguageSelector}
+        onClose={() => setShowLanguageSelector(false)}
+        onComplete={() => {
+            setShowLanguageSelector(false);
+            setShowTour(true);
+        }}
+      />
+
+      <EcosystemTour
+        isOpen={showTour}
+        onComplete={handleTourComplete}
       />
 
       {/* 🛡️ Recovery Password LOCK SCREEN */}

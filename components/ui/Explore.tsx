@@ -974,7 +974,15 @@ function PostCard({ post, currentUserId, onHide, onRepost, onConnectRequired }: 
             <div className="flex items-center gap-8">
               {/* Comment Button */}
               <button
-                onClick={(e) => { e.stopPropagation(); setIsCommentModalOpen(true); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const userWithWallet = (window as any).currentUserData || { id: currentUserId };
+                  if (!userWithWallet?.wallet_address) {
+                    onConnectRequired();
+                    return;
+                  }
+                  setIsCommentModalOpen(true); 
+                }}
                 className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
               >
                 <div className="p-2 rounded-full group-hover:bg-cyan-500/5 transition-colors">

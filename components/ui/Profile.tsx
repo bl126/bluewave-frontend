@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info, Lock } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
@@ -84,6 +84,10 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
         }).then((res) => {
           if (res?.ton_explorer_pending) {
             window.dispatchEvent(new CustomEvent('showTONExplorer'));
+          }
+          // ⭐ Trigger Recovery Password if not set
+          if (res && !res.recovery_password_hash) {
+            window.dispatchEvent(new CustomEvent('showRecoveryPassword'));
           }
           mutate();
         }).catch(err => console.error("Wallet sync error:", err));
@@ -285,15 +289,19 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         <div className="flex items-center gap-2 py-0.5">
                           <div className="flex items-center gap-1 bg-cyan-500/10 px-2 py-1 rounded-lg border border-cyan-500/20">
                             <span className="text-cyan-400/80 font-mono text-[9px] uppercase tracking-tighter">
-                              {t("explore.bw_id_label")}: {showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`}
+                              {t("explore.bw_id_label")}: {user.wallet_address ? (showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`) : "NOT ASSIGNED"}
                             </span>
-                            <button onClick={() => setShowId(!showId)} className="text-cyan-400/50 hover:text-cyan-400">
-                              {showId ? <EyeOff size={10} /> : <Eye size={10} />}
-                            </button>
+                            {user.wallet_address && (
+                              <button onClick={() => setShowId(!showId)} className="text-cyan-400/50 hover:text-cyan-400">
+                                {showId ? <EyeOff size={10} /> : <Eye size={10} />}
+                              </button>
+                            )}
                           </div>
-                          <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all">
-                            {copied ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
-                          </button>
+                          {user.wallet_address && (
+                            <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all">
+                              {copied ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -339,17 +347,35 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "bio" && (
                       <>
                         <div className="grid grid-cols-3 gap-3">
-                          <button onClick={() => setIsLevelPopupOpen(true)} className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all">
-                            <span className="text-white text-lg font-black">{level}</span>
-                            <span className="text-cyan-400/80 text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
+                          <button onClick={() => user.wallet_address && setIsLevelPopupOpen(true)} className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative">
+                            {user.wallet_address ? (
+                                <>
+                                    <span className="text-white text-lg font-black">{level}</span>
+                                    <span className="text-cyan-400/80 text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
+                                </>
+                            ) : (
+                                <Lock size={16} className="text-cyan-500/30" />
+                            )}
                           </button>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
-                            <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
-                            <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak_label")}</span>
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
+                            {user.wallet_address ? (
+                                <>
+                                    <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
+                                    <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak_label")}</span>
+                                </>
+                            ) : (
+                                <Lock size={16} className="text-cyan-500/30" />
+                            )}
                           </div>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1">
-                            <span className="text-white text-xl font-black">{user.total_referrals || 0}</span>
-                            <span className="text-cyan-400/80 text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
+                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
+                            {user.wallet_address ? (
+                                <>
+                                    <span className="text-white text-xl font-black">{user.total_referrals || 0}</span>
+                                    <span className="text-cyan-400/80 text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
+                                </>
+                            ) : (
+                                <Lock size={16} className="text-cyan-500/30" />
+                            )}
                           </div>
                         </div>
 
@@ -394,9 +420,19 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               <span className="text-cyan-400/80 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
                               <p className="text-cyan-400/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
                             </div>
-                            <button onClick={() => setIsReferralModalOpen(true)} className="px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all">{t("profile.get_link")}</button>
+                            <button 
+                              onClick={() => user.wallet_address ? setIsReferralModalOpen(true) : alert("Please connect your wallet to generate a referral link.")} 
+                              className={`px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all ${!user.wallet_address ? 'opacity-50' : ''}`}
+                            >
+                              {t("profile.get_link")}
+                            </button>
                           </div>
-                          <button onClick={() => setIsConnectBluOpen(true)} className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all">{t("profile.connect_blu")}</button>
+                          <button 
+                            onClick={() => user.wallet_address ? setIsConnectBluOpen(true) : alert("Please connect your wallet to access Blu configurations.")} 
+                            className={`w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
+                          >
+                            {t("profile.connect_blu")}
+                          </button>
                           <p className="text-cyan-400/70 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
                             {t("profile.joined_at")}: {(() => {
                               const raw = user.joined_at || user.created_at;

@@ -19,7 +19,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     const [copied, setCopied] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const qrRef = useRef<HTMLDivElement>(null);
-    const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot?start=ref_${telegramId}`;
+    const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot/app?startapp=ref_${telegramId}`;
     const { t } = useLanguage();
 
     const SHARE_CAPTION = `${t("referral.share_caption")}\n${link}`;

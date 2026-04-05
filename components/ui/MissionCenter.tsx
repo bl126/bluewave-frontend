@@ -580,6 +580,31 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
         >
 
 
+          {/* ── Ghost Mode Gate ── */}
+          {!telegramUser?.wallet_address && (
+            <div className="absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-2xl">
+              <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(6,182,212,0.2)]">
+                <Lock size={32} className="text-cyan-400 animate-pulse" />
+              </div>
+              
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Sector Encrypted</h2>
+              <p className="text-cyan-500/60 text-xs font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px]">
+                Connect your TON wallet to decrypt the reward ecosystem and activate your BW ID.
+              </p>
+
+              <button 
+                onClick={() => {
+                  onClose();
+                  // Dispatch event to open profile/wallet connect
+                  window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
+                }}
+                className="px-8 py-4 bg-cyan-500 text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 transition-all"
+              >
+                Connect TON Wallet
+              </button>
+            </div>
+          )}
+
           {/* ── Tab Bar ── */}
           <div className="flex items-center justify-between w-full px-3 pt-6 pb-4 shrink-0 gap-1">
             {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {

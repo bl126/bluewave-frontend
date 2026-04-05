@@ -7,9 +7,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface MarketplaceProps {
   isOpen: boolean;
   onClose: () => void;
+  telegramUser: any;
 }
 
-export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
+export default function Marketplace({ isOpen, onClose, telegramUser }: MarketplaceProps) {
   const { t } = useLanguage();
   return (
     <>
@@ -54,6 +55,30 @@ export default function Marketplace({ isOpen, onClose }: MarketplaceProps) {
                 {t("marketplace.beta_phase")}
               </motion.p>
             </div>
+
+            {/* ── Ghost Mode Gate ── */}
+            {!telegramUser?.wallet_address && (
+                <div className="absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-2xl">
+                    <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(6,182,212,0.2)]">
+                        <span className="text-3xl text-cyan-400">🔒</span>
+                    </div>
+                    
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Marketplace Locked</h2>
+                    <p className="text-cyan-500/60 text-xs font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px]">
+                        Link your TON wallet to access the exclusive asset distribution layer.
+                    </p>
+
+                    <button 
+                        onClick={() => {
+                            onClose();
+                            window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
+                        }}
+                        className="px-8 py-4 bg-cyan-500 text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 transition-all"
+                    >
+                        Connect TON Wallet
+                    </button>
+                </div>
+            )}
           </motion.div>
         </>
       )}
