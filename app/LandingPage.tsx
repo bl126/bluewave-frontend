@@ -621,6 +621,20 @@ export default function LandingPage() {
     // skip initial - already got it from user fetch
   }, [telegramUser]);
 
+  // 🔄 Listen for programmatic tab changes (e.g. from Ghost Mode gates requesting wallet connection)
+  useEffect(() => {
+    const handleSetTab = (event: any) => {
+      const tab = event.detail;
+      setActiveTab(tab);
+      setMissionOpen(tab === "missions");
+      setExploreOpen(tab === "explore");
+      setMarketOpen(tab === "market");
+      setProfileOpen(tab === "profile");
+    };
+    window.addEventListener("setActiveTab", handleSetTab);
+    return () => window.removeEventListener("setActiveTab", handleSetTab);
+  }, []);
+
   /* [BLU_FREEZE] Mark off Daily AI Reward logic
   // 🔁 Listen for global balance updates (unchanged)
   useEffect(() => {

@@ -594,8 +594,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
               <button 
                 onClick={() => {
-                  onClose();
-                  // Dispatch event to open profile/wallet connect
                   window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
                 }}
                 className="px-8 py-4 bg-cyan-500 text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 transition-all"

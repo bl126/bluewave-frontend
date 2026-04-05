@@ -566,12 +566,12 @@
     "finish": "Initialize"
   },
   "ghost": {
-    "sector_encrypted": "Sector Encrypted",
-    "connect_prompt": "Connect your TON wallet to decrypt the reward ecosystem and activate your BW ID.",
-    "connect_btn": "Connect TON Wallet"
+    "sector_encrypted": "เซกเตอร์ถูกเข้ารหัส",
+    "connect_prompt": "เชื่อมต่อกระเป๋าเงิน TON ของคุณเพื่อถอดรหัสระบบนิเวศผลตอบแทนและเปิดใช้งาน BW ID ของคุณ",
+    "connect_btn": "เชื่อมต่อกระเป๋าเงิน TON"
   },
   "alerts": {
-    "connect_wallet_ref": "Please connect your wallet to generate a referral link.",
-    "connect_wallet_blu": "Please connect your wallet to access Blu configurations."
+    "connect_wallet_ref": "โปรดเชื่อมต่อกระเป๋าเงินของคุณเพื่อรับลิงก์อ้างอิง",
+    "connect_wallet_blu": "โปรดเชื่อมต่อกระเป๋าเงินของคุณเพื่อเข้าถึงการตั้งค่า Blu"
   }
 }

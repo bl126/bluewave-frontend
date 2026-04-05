@@ -565,12 +565,12 @@
     "finish": "Initialize"
   },
   "ghost": {
-    "sector_encrypted": "Sector Encrypted",
-    "connect_prompt": "Connect your TON wallet to decrypt the reward ecosystem and activate your BW ID.",
-    "connect_btn": "Connect TON Wallet"
+    "sector_encrypted": "扇区已加密",
+    "connect_prompt": "连接您的 TON 钱包以解密奖励生态系统并激活您的 BW ID。",
+    "connect_btn": "连接 TON 钱包"
   },
   "alerts": {
-    "connect_wallet_ref": "Please connect your wallet to generate a referral link.",
-    "connect_wallet_blu": "Please connect your wallet to access Blu configurations."
+    "connect_wallet_ref": "请连接您的钱包以生成推荐链接。",
+    "connect_wallet_blu": "请连接您的钱包以访问 Blu 配置。"
   }
 }
