@@ -1692,16 +1692,17 @@ function PostDetailModal({
               <div 
                 className="flex items-center gap-3 mb-4 cursor-pointer active:scale-[0.98] transition-transform"
                 onClick={() => {
-                  if (post.channel?.handle) {
-                    const handle = post.channel.handle.replace(/^@/, "");
-                    const link = `https://t.me/${handle}`;
+                  const handle = post.channel?.handle || post.user?.handle;
+                  if (handle) {
+                    const clean = handle.replace(/^@/, "");
+                    const link = `https://t.me/${clean}`;
                     const twa = (window as any).Telegram?.WebApp;
                     if (twa?.openTelegramLink) twa.openTelegramLink(link);
                     else window.open(link, "_blank");
                   }
                 }}
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40 shrink-0">
                   {(post.channel?.photo || post.user?.photo) ? (
                     <img src={post.channel?.photo || post.user.photo} className="w-full h-full object-cover" />
                   ) : (
@@ -1711,11 +1712,8 @@ function PostDetailModal({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <h4 className="text-white font-black text-sm tracking-tight">{post.channel?.title || post.user?.name}</h4>
-                    {post.channel && <CheckCircle2 size={12} className="text-cyan-400" />}
-                  </div>
-                  <p className="text-xs text-white/30">@{post.channel?.handle || post.user?.handle || 'anon'}</p>
+                  <h4 className="text-white font-black text-sm tracking-tight truncate">{post.channel?.title || post.user?.name}</h4>
+                  <p className="text-xs text-white/30">@{(post.channel?.handle || post.user?.handle || 'anon').replace(/^@/, '')}</p>
                 </div>
               </div>
 
