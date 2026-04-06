@@ -23,11 +23,27 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     if (onSheetOpenChange) onSheetOpenChange(open);
   };
 
+  const [cachedData, setCachedData] = useState<any>(() => {
+    if (typeof window !== "undefined" && tg_id) {
+       const cached = window.localStorage.getItem(`bw_leaderboard_cache_${tg_id}`);
+       return cached ? JSON.parse(cached) : null;
+    }
+    return null;
+  });
+ 
   // Use useApi for caching and automatic revalidation
-  const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null);
-
+  const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null, { fallbackData: cachedData });
+ 
   const leaders = data?.leaders || [];
   const myRank = data?.myRank;
+ 
+  // Update cache when fresh data arrives
+  useEffect(() => {
+    if (data && !loading && tg_id) {
+       window.localStorage.setItem(`bw_leaderboard_cache_${tg_id}`, JSON.stringify(data));
+    }
+  }, [data, loading, tg_id]);
+ 
   const isUserInTop100 = leaders.some((u: any) => String(u.telegram_id) === String(tg_id));
 
   // Top 3 for the podium

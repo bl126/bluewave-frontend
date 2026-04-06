@@ -409,18 +409,26 @@ export default function LandingPage() {
 
         setBalance(user.points_balance ?? null);
 
-        // ⭐ SEED SWR Cache
+        // ⭐ SEED SWR Cache & Persistent Storage
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         mutate(`${apiUrl}/api/user/${tgIdNum}`, user, false);
         mutate(`${apiUrl}/api/missions/all/${tgIdNum}`, data.missions, false);
         mutate(`${apiUrl}/api/presence/list/${tgIdNum}`, data.presence, false);
-        mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
-        mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
-
-        // 🚀 Pre-fetch Explore Feed
+        
+        // 🏆 Persistent Leaderboard Cache
+        if (data.leaderboard) {
+          mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
+          mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
+          window.localStorage.setItem(`bw_leaderboard_cache_${tgIdNum}`, JSON.stringify(data.leaderboard));
+        }
+ 
+        // 🚀 Pre-fetch Explore Feed & Cache
         getApi(`/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`)
           .then(posts => {
-            if (posts) mutate(`${apiUrl}/api/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`, posts, false);
+            if (posts && Array.isArray(posts)) {
+              mutate(`${apiUrl}/api/explore/feed?tg_id=${tgIdNum}&tab=foryou&offset=0`, posts, false);
+              window.localStorage.setItem(`bw_feed_foryou_${tgIdNum}`, JSON.stringify(posts));
+            }
           }).catch(() => { });
 
         // Enforce a minimum 1s branding delay for non-cached loads

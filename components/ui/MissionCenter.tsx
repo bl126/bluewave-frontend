@@ -309,9 +309,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     // ── INSTANT POPUP (Optimistic) ─────────────────────────────────────────
     // Find the mission's base reward from the already-loaded presenceMissions list.
     // We show the popup IMMEDIATELY with this value so users see feedback in <100ms.
-    // The actual multiplied reward from the backend will update the popup silently.
     const missionData = presenceMissions.find((m: any) => m.type === type);
     const baseReward = missionData?.reward || 0;
+    
+    // Optimistically update the balance on the UI for immediate gratification
+    // We assume 1.0x for the instant update, later sync with real multiplier
+    const currentBalance = telegramUser?.points_balance || 0;
+    window.dispatchEvent(
+      new CustomEvent("updateBalance", { detail: currentBalance + baseReward })
+    );
+
     setClaimBoostData({
       base_claimed: baseReward,
       multiplier: 1.0,
@@ -321,7 +328,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     });
     setIsClaimBoostOpen(true);
 
-    // Optimistically mark the card as claimed so the button disappears immediately
+    // Optimistically mark the card as claimed immediately
     setOptimisticPresence(prev => ({ ...prev, [type]: { status: "inactive" } }));
 
     const MAX_RETRIES = 3;

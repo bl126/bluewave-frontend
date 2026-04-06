@@ -238,16 +238,22 @@
     "broadcast_msg": "Sua postagem no canal foi transmitida.",
     "acknowledged_msg": "{{name}} reconheceu sua postagem.",
     "verified_milestone_msg": "{{count}} humanos verificados reconheceram sua postagem",
-    "update_msg": "Nova atualização recebida.",
+"update_msg": "Nova atualização recebida.",
     "view_post": "Ver Post",
     "understood": "Entendido",
     "follower_milestone_msg": "{{count}} humanos verificados entraram no seu canal",
     "repost_milestone_title": "Marco de Repostagens",
-    "repost_milestone_msg": "{{count}} humanos verificados repostaram sua postagem",
-    "repost": "Repostar",
-    "reposted_msg": "{{name}} repostou sua postagem.",
+    "repost_milestone_msg": "{{count}} humanos verificados compartilharam seu post",
+    "repost": "Compartilhar",
+    "reposted_msg": "{{name}} compartilhou seu post.",
     "new_follower": "Novo Seguidor",
-    "new_follower_msg": "{{name}} seguiu seu canal."
+    "new_follower_msg": "{{name}} seguiu seu canal.",
+    "comment_title": "Novo Comentário",
+    "comment_reply_title": "Resposta ao seu comentário",
+    "comment_like_title": "Comentário Curtido",
+    "comment_msg": "{{name}} comentou no seu post.",
+    "comment_reply_msg": "{{name}} respondeu ao seu comentário.",
+    "comment_like_msg": "{{name}} curtiu o seu comentário."
   },
   "marketplace": {
     "beta_phase": "EM FASE BETA"

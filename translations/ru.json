@@ -247,7 +247,13 @@
     "repost": "Репост",
     "reposted_msg": "{{name}} репостнул(а) ваш пост.",
     "new_follower": "Новый подписчик",
-    "new_follower_msg": "{{name}} подписался на ваш канал."
+    "new_follower_msg": "{{name}} подписался на ваш канал.",
+    "comment_title": "Новый комментарий",
+    "comment_reply_title": "Ответ на ваш комментарий",
+    "comment_like_title": "Лайк к комментарию",
+    "comment_msg": "{{name}} прокомментировал(а) ваш пост.",
+    "comment_reply_msg": "{{name}} ответил(а) на ваш комментарий.",
+    "comment_like_msg": "{{name}} лайкнул(а) ваш комментарий."
   },
   "marketplace": {
     "beta_phase": "ФАЗА БЕТА"

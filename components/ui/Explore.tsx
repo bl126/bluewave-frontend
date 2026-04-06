@@ -58,7 +58,19 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Pagination State
   const [offset, setOffset] = useState(0);
-  const [pagedPosts, setPagedPosts] = useState<any[]>([]);
+  const [pagedPosts, setPagedPosts] = useState<any[]>(() => {
+    if (typeof window !== "undefined" && telegramUser?.id) {
+       const cached = window.localStorage.getItem(`bw_feed_foryou_${telegramUser.id}`);
+       if (cached) {
+         try {
+           return JSON.parse(cached);
+         } catch(e) {
+           console.error("Feed Cache Corrupt", e);
+         }
+       }
+    }
+    return [];
+  });
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -118,10 +130,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
   // Help Sync pagedPosts with initialPosts on tab change or refresh
   useEffect(() => {
-    if (initialPosts) {
+    if (initialPosts && Array.isArray(initialPosts)) {
       setPagedPosts(initialPosts);
       setOffset(initialPosts.length);
       setHasMore(initialPosts.length >= 10);
+      
+      // Keep cache fresh if on the main 'foryou' tab
+      if (activeTab === "foryou" && telegramUser?.id) {
+         window.localStorage.setItem(`bw_feed_foryou_${telegramUser.id}`, JSON.stringify(initialPosts));
+      }
     }
   }, [initialPosts]);
 
@@ -290,7 +307,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* ─── Tab Bar (fixed, solid, no floating) ─── */}
       <motion.div
-        animate={{ y: showChrome ? 0 : -80, opacity: showChrome ? 1 : 0 }}
+        animate={{ 
+          y: showChrome ? 0 : (activeTab === "foryou" || activeTab === "following") && (liveUsers?.length ?? 0) > 0 ? -200 : -80, 
+          opacity: showChrome ? 1 : 0 
+        }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed top-20 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
       >
@@ -438,7 +458,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               className="divide-y divide-white/[0.05]"
             >
               {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
-                <div className="h-[105px] w-full shrink-0" />
+                <div className="h-[95px] w-full shrink-0" />
               )}
               {loading && pagedPosts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-70">
@@ -1270,9 +1290,9 @@ function NotificationsView({
     if (n.type === "post_uploaded") return t("notifications.distribution_success");
     if (n.type === "acknowledged") return t("notifications.acknowledgment");
     if (n.type === "reposted") return t("notifications.repost") || "Reposted your post";
-    if (n.type === "commented") return "New Comment";
-    if (n.type === "comment_replied") return "Reply to your comment";
-    if (n.type === "comment_liked") return "Comment Liked";
+    if (n.type === "commented") return t("notifications.comment_title");
+    if (n.type === "comment_replied") return t("notifications.comment_reply_title");
+    if (n.type === "comment_liked") return t("notifications.comment_like_title");
     if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
     return t("notifications.notification_type");
   };
@@ -1300,15 +1320,15 @@ function NotificationsView({
     }
     if (n.type === "commented") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} commented on your signal.`;
+      return t("notifications.comment_msg").replace("{{name}}", firstName);
     }
     if (n.type === "comment_replied") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} replied to your comment.`;
+      return t("notifications.comment_reply_msg").replace("{{name}}", firstName);
     }
     if (n.type === "comment_liked") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} liked your comment.`;
+      return t("notifications.comment_like_msg").replace("{{name}}", firstName);
     }
     if (n.type === "new_follower") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
@@ -1761,12 +1781,14 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
             className="flex flex-col items-center gap-2 shrink-0 group w-16"
           >
             <div className="relative">
-              <div className="w-14 h-14 rounded-full overflow-hidden border-[3px] border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-[3px] border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
                 <div className="w-full h-full rounded-full overflow-hidden border border-white/10 bg-black/40 relative pointer-events-none">
-                  {u.telegram_channel_photo || u.photo_url ? (
-                    <img src={u.telegram_channel_photo || u.photo_url} className="w-full h-full object-cover" />
+                  {u.telegram_channel_photo ? (
+                    <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
+                  ) : u.photo_url ? (
+                    <img src={u.photo_url} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-lg">
+                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-sm">
                       {u.telegram_channel_title?.[0] || u.name?.[0] || u.first_name?.[0] || "U"}
                     </div>
                   )}
@@ -1775,12 +1797,12 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
               
               <div className="absolute inset-0 rounded-full border-2 border-cyan-500 animate-[pulse_2s_ease-out_infinite] opacity-50 z-0 pointer-events-none" />
 
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded-[4px] border border-cyan-300 shadow-[0_0_10px_rgba(0,230,255,1)] leading-none flex items-center gap-1 tracking-widest z-20 pointer-events-none">
+              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[8px] font-black px-1.5 py-0.5 rounded-[4px] border border-cyan-300 shadow-[0_0_10px_rgba(0,230,255,1)] leading-none flex items-center gap-1 tracking-widest z-20 pointer-events-none">
                 <span className="w-1 h-1 rounded-full bg-white animate-[pulse_1s_infinite]" />
                 LIVE
               </div>
             </div>
-            <span className="text-[9px] font-bold text-white/80 truncate w-16 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight opacity-90">
+            <span className="text-[8px] font-bold text-white/80 truncate w-14 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight opacity-90">
               {u.telegram_channel_title || u.name || u.first_name || "Unknown"}
             </span>
           </button>

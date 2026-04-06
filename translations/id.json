@@ -244,10 +244,15 @@
     "follower_milestone_msg": "{{count}} manusia terverifikasi bergabung dengan saluran Anda",
     "repost_milestone_title": "Pencapaian Repost",
     "repost_milestone_msg": "{{count}} manusia terverifikasi membagikan ulang postingan Anda",
-    "repost": "Bagikan Ulang",
     "reposted_msg": "{{name}} membagikan ulang postingan Anda.",
     "new_follower": "Pengikut Baru",
-    "new_follower_msg": "{{name}} mengikuti saluran Anda."
+    "new_follower_msg": "{{name}} mengikuti saluran Anda.",
+    "comment_title": "Komentar Baru",
+    "comment_reply_title": "Balasan untuk komentar Anda",
+    "comment_like_title": "Komentar Disukai",
+    "comment_msg": "{{name}} mengomentari postingan Anda.",
+    "comment_reply_msg": "{{name}} membalas komentar Anda.",
+    "comment_like_msg": "{{name}} menyukai komentar Anda."
   },
   "marketplace": {
     "beta_phase": "DALAM FASE BETA"

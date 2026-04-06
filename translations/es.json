@@ -243,11 +243,17 @@
     "understood": "Entendido",
     "follower_milestone_msg": "{{count}} humanos verificados se unieron a tu canal",
     "repost_milestone_title": "Hito de Compartidos",
-    "repost_milestone_msg": "{{count}} humanos verificados compartieron tu post",
+    "repost_milestone_msg": "{{count}} humanos verificados compartieron tu publicación",
     "repost": "Compartir",
-    "reposted_msg": "{{name}} compartió tu post.",
+    "reposted_msg": "{{name}} compartió tu publicación.",
     "new_follower": "Nuevo Seguidor",
-    "new_follower_msg": "{{name}} siguió tu canal."
+    "new_follower_msg": "{{name}} siguió tu canal.",
+    "comment_title": "Nuevo Comentario",
+    "comment_reply_title": "Respuesta a tu comentario",
+    "comment_like_title": "Comentario Gustado",
+    "comment_msg": "{{name}} comentó en tu publicación.",
+    "comment_reply_msg": "{{name}} respondió a tu comentario.",
+    "comment_like_msg": "{{name}} le gustó tu comentario."
   },
   "marketplace": {
     "beta_phase": "EN FASE BETA"

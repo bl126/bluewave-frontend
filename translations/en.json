@@ -247,7 +247,13 @@
     "follower_milestone_msg": "{{count}} verified humans joined your channel",
     "repost_milestone_title": "Reposts Milestone",
     "repost_milestone_msg": "{{count}} verified humans reposted your post",
-    "new_follower": "New Follower"
+    "new_follower": "New Follower",
+    "comment_title": "New Comment",
+    "comment_reply_title": "Reply to your comment",
+    "comment_like_title": "Comment Liked",
+    "comment_msg": "{{name}} commented on your post.",
+    "comment_reply_msg": "{{name}} replied to your comment.",
+    "comment_like_msg": "{{name}} liked your comment."
   },
   "marketplace": {
     "beta_phase": "IN BETA PHASE"

@@ -247,7 +247,13 @@
     "repost": "รีโพสต์",
     "reposted_msg": "{{name}} รีโพสต์โพสต์ของคุณ.",
     "new_follower": "ผู้ติดตามใหม่",
-    "new_follower_msg": "{{name}} ติดตามช่องของคุณ."
+    "new_follower_msg": "{{name}} ติดตามช่องของคุณ.",
+    "comment_title": "ความคิดเห็นใหม่",
+    "comment_reply_title": "ตอบกลับความคิดเห็นของคุณ",
+    "comment_like_title": "ถูกใจความคิดเห็น",
+    "comment_msg": "{{name}} แสดงความคิดเห็นในโพสต์ของคุณ",
+    "comment_reply_msg": "{{name}} ตอบกลับความคิดเห็นของคุณ",
+    "comment_like_msg": "{{name}} ถูกใจความคิดเห็นของคุณ"
   },
   "marketplace": {
     "beta_phase": "อยู่ในรุ่นทดลอง"

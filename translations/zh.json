@@ -246,7 +246,13 @@
     "repost": "转发",
     "reposted_msg": "{{name}} 转发了您的帖子。",
     "new_follower": "新关注者",
-    "new_follower_msg": "{{name}} 关注了您的频道。"
+    "new_follower_msg": "{{name}} 关注了您的频道。",
+    "comment_title": "新评论",
+    "comment_reply_title": "回复了你的评论",
+    "comment_like_title": "赞了评论",
+    "comment_msg": "{{name}} 评论了你的帖子。",
+    "comment_reply_msg": "{{name}} 回复了你的评论。",
+    "comment_like_msg": "{{name}} 赞了你的评论。"
   },
   "marketplace": {
     "beta_phase": "测试阶段"

@@ -42,26 +42,17 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     let isCancelled = false;
 
     const runSequence = async () => {
-      // 1. Wait for "Calculating" duration (min 1.5s) AND for data to be ready
-      const start = Date.now();
-      
-      // Wait at least 1500ms
-      await new Promise(r => setTimeout(r, 1500));
+      // 1. Initial Quick delay for 'Calculating' feel (much shorter)
+      await new Promise(r => setTimeout(r, 400));
       if (isCancelled) return;
 
-      // If data is still loading, wait more (check every 100ms)
-      while (dataRef.current?.is_loading) {
-        await new Promise(r => setTimeout(r, 100));
-        if (isCancelled) return;
-      }
-
-      // 2. Show Boost Multiplier
+      // 2. Show Boost Multiplier immediately based on optimistic data
       setStep(2);
       const tg = (window as any).Telegram?.WebApp;
       if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      // 3. Wait for reveal duration
-      await new Promise(r => setTimeout(r, 2300));
+      // 3. Short reveal duration before final spin
+      await new Promise(r => setTimeout(r, 800));
       if (isCancelled) return;
 
       // 4. Spin to Final Amount

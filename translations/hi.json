@@ -247,7 +247,13 @@
     "repost": "रीपोस्ट",
     "reposted_msg": "{{name}} ने आपकी पोस्ट रीपोस्ट की।",
     "new_follower": "नया फॉलोअर",
-    "new_follower_msg": "{{name}} ने आपके चैनल को फॉलो किया।"
+    "new_follower_msg": "{{name}} ने आपके चैनल को फॉलो किया।",
+    "comment_title": "नई टिप्पणी",
+    "comment_reply_title": "आपकी टिप्पणी का उत्तर",
+    "comment_like_title": "टिप्पणी पसंद की गई",
+    "comment_msg": "{{name}} ने आपकी पोस्ट पर टिप्पणी की।",
+    "comment_reply_msg": "{{name}} ने आपकी टिप्पणी का उत्तर दिया।",
+    "comment_like_msg": "{{name}} ने आपकी टिप्पणी को पसंद किया।"
   },
   "marketplace": {
     "beta_phase": "बीटा चरण में"
