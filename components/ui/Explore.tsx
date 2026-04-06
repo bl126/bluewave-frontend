@@ -102,7 +102,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   useApi(telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=following&offset=0` : null);
 
   // Fetch Live Users globally
-  const { data: liveUsers } = useApi(isOpen ? "/explore/live_users" : null, { refreshInterval: 60000 });
+  const { data: liveUsers } = useApi(isOpen ? `/explore/live_users${telegramUser?.id ? `?tg_id=${telegramUser.id}` : ''}` : null, { refreshInterval: 60000 });
 
   // Track latest post ID for new-posts pill
   useEffect(() => {
@@ -324,6 +324,18 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             </button>
           ))}
         </div>
+        <AnimatePresence>
+          {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
+            <motion.div 
+               initial={{ height: 0, opacity: 0 }}
+               animate={{ height: 'auto', opacity: 1 }}
+               exit={{ height: 0, opacity: 0 }}
+               className="w-full shrink-0 overflow-hidden"
+            >
+              <LiveNowTray liveUsers={liveUsers} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* New Posts Pill */}
@@ -426,7 +438,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               className="divide-y divide-white/[0.05]"
             >
               {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
-                <LiveNowTray liveUsers={liveUsers} />
+                <div className="h-[105px] w-full shrink-0" />
               )}
               {loading && pagedPosts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-70">
@@ -1045,43 +1057,7 @@ function PostCard({
           <p className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
 
           {/* Signal Content */}
-          {post.post_type === 'live_scheduled' ? (
-            <div className="mt-2 mb-2 w-[220px] rounded-[18px] overflow-hidden border border-white/5 bg-gradient-to-b from-black/60 to-black/90 shadow-lg relative group/live flex flex-col mx-auto">
-              {/* Header area - sleek and minimal */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.03] bg-white/[0.01]">
-                <div className="flex items-center gap-1.5 text-cyan-400 font-bold uppercase text-[9px] tracking-[0.15em]">
-                  <Calendar size={11} className="opacity-80" />
-                  <span>Scheduled Live</span>
-                </div>
-              </div>
-
-              {/* Main content area */}
-              <div className="p-4 flex flex-col items-center justify-center min-h-[90px] text-center px-6">
-                <h3 className="text-white font-heavy text-sm uppercase tracking-tighter line-clamp-2 leading-snug">
-                  {post.content || "Live Stream Signal"}
-                </h3>
-              </div>
-
-              {/* Date & Time display */}
-              <div className="px-4 pb-2 text-center text-[10px] text-white/50 font-mono font-medium tracking-tight">
-                 {new Date(post.live_scheduled_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • {new Date(post.live_scheduled_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })}
-              </div>
-              
-              {/* Reminder Action */}
-              <div className="p-3 mt-auto">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openChannel();
-                    }}
-                    className="w-full h-9 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-cyan-500/30 group-hover/live:border-cyan-500/60 group-hover/live:bg-cyan-500 text-black group-hover/live:shadow-[0_0_15px_rgba(0,230,255,0.4)]"
-                  >
-                    <Bell size={12} className="group-hover/live:animate-pulse" />
-                    Set Reminder
-                  </button>
-              </div>
-            </div>
-          ) : post.media_urls && post.media_urls.length > 0 ? (
+          {post.post_type === 'live_scheduled' ? null : post.media_urls && post.media_urls.length > 0 ? (
             <MediaCollage items={post.media_urls} />
           ) : post.media_url ? (
             <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
@@ -1787,11 +1763,11 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
             <div className="relative">
               <div className="w-14 h-14 rounded-full overflow-hidden border-[3px] border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
                 <div className="w-full h-full rounded-full overflow-hidden border border-white/10 bg-black/40 relative pointer-events-none">
-                  {u.photo_url || u.telegram_channel_photo ? (
-                    <img src={u.photo_url || u.telegram_channel_photo} className="w-full h-full object-cover" />
+                  {u.telegram_channel_photo || u.photo_url ? (
+                    <img src={u.telegram_channel_photo || u.photo_url} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-lg">
-                      {u.name?.[0] || u.first_name?.[0] || u.telegram_channel_title?.[0] || "U"}
+                      {u.telegram_channel_title?.[0] || u.name?.[0] || u.first_name?.[0] || "U"}
                     </div>
                   )}
                 </div>
@@ -1805,7 +1781,7 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
               </div>
             </div>
             <span className="text-[9px] font-bold text-white/80 truncate w-16 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight opacity-90">
-              {u.name || u.first_name || u.telegram_channel_title || "Unknown"}
+              {u.telegram_channel_title || u.name || u.first_name || "Unknown"}
             </span>
           </button>
         ))}
