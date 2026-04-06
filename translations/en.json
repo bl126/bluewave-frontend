@@ -203,8 +203,8 @@
     "no_signals_desc": "The distribution feed is currently empty. Connect your channel to start broadcasting.",
     "no_following": "No Following Posts",
     "no_following_desc": "Follow other verified humans' channels to see their posts.",
-    "acknowledge": "Acknowledge",
-    "acknowledged": "Acknowledged",
+    "acknowledge": "Like",
+    "acknowledged": "Liked",
     "not_interested": "Not interested",
     "open": "Open",
     "follow_channel": "Follow Channel",
@@ -227,7 +227,7 @@
     "connect_prompt": "Connect Blu Agent to your channel from the profile"
   },
   "notifications": {
-    "title": "Recent Signals",
+    "title": "Recent Activities",
     "subtitle": "Verified Distribution",
     "empty": "No alerts",
     "empty_desc": "Your protocol activity and network updates will appear here once the distribution cycle begins.",
@@ -508,7 +508,7 @@
     }
   },
   "claim_boost_popup": {
-    "title": "Claiming Presence Reward",
+    "title": "Claiming Reward",
     "calculating": "Calculating...",
     "roles_boost": "Roles Boost:",
     "no_boost": "No active roles boost.",
@@ -543,20 +543,20 @@
     "benefit_1": "Exclusive Verified Human Ring",
     "benefit_2": "Priority Network Signal Processing",
     "benefit_3": "Protocol Governance Rights (Phase III)",
-    "acknowledge": "Acknowledge Protocol",
+    "acknowledgment": "Like",
     "close": "Close"
   },
   "daily_ai_popup": {
     "title": "Epoch Finalized",
     "desc": "Your community signal from yesterday has been verified by the intelligence layer.",
     "reward_generated": "Reward Generated",
-    "acknowledge": "Acknowledge"
+    "acknowledge": "Like"
   },
   "tour": {
     "title_1": "The Global Pulse",
     "desc_1": "Welcome, Ghost. This is the heart of the Protocol. Watch real-time human activity being processed into social signal across the globe.",
     "title_2": "Social Intelligence",
-    "desc_2": "The Signal Feed. Engage with the ecosystem's most vital streams. As a guest, you can Like and Comment to shape the protocol's intelligence.",
+    "desc_2": "The Post Feed. Engage with the ecosystem's most vital streams. As a guest, you can Like and Comment to shape the protocol's intelligence.",
     "title_3": "Reward Ecosystem",
     "desc_3": "Earn & Grow. Complete presence and social missions to build your $BWAVE balance. This sector remains encrypted until your wallet is linked.",
     "title_4": "Digital Activation",

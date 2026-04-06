@@ -484,8 +484,20 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* ─── FAB Post Button (Speed Dial) ─── */}
       <AnimatePresence>
+        {isSpeedDialOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[180] bg-black/40 backdrop-blur-md"
+            onClick={() => setIsSpeedDialOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && (
-          <div className="fixed right-5 bottom-28 z-[160] flex flex-col items-center gap-3">
+          <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
             {/* Speed Dial Options */}
             <AnimatePresence>
               {isSpeedDialOpen && (
@@ -497,13 +509,13 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 >
                   {/* Live Stream Option */}
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-[7px] font-black uppercase text-cyan-400 bg-black/40 px-2 py-0.5 rounded-full border border-cyan-500/20 backdrop-blur-md">Live</span>
+                    <span className="text-[7px] font-black uppercase text-red-400 bg-black/60 px-2 py-0.5 rounded-full border border-red-500/20 backdrop-blur-md">Live</span>
                     <button
                       onClick={() => {
                         setIsSpeedDialOpen(false);
                         setIsLiveModalOpen(true);
                       }}
-                      className="w-10 h-10 bg-black border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,230,255,0.2)] active:scale-95 transition-all"
+                      className="w-10 h-10 bg-black border border-red-500/30 rounded-full flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)] active:scale-95 transition-all"
                     >
                       <Video size={18} />
                     </button>
@@ -511,7 +523,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
                   {/* Normal Post Option */}
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-[7px] font-black uppercase text-white/50 bg-black/40 px-2 py-0.5 rounded-full border border-white/10 backdrop-blur-md">Signal</span>
+                    <span className="text-[7px] font-black uppercase text-cyan-400 bg-black/60 px-2 py-0.5 rounded-full border border-cyan-500/20 backdrop-blur-md">Post</span>
                     <button
                       onClick={() => {
                         setIsSpeedDialOpen(false);
@@ -522,9 +534,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                           setIsPostModalOpen(true);
                         }
                       }}
-                      className="w-10 h-10 bg-black border border-white/10 rounded-full flex items-center justify-center text-white/70 shadow-lg active:scale-95 transition-all"
+                      className="w-10 h-10 bg-black border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,230,255,0.2)] active:scale-95 transition-all"
                     >
-                      <Plus size={18} />
+                      <Rocket size={18} />
                     </button>
                   </div>
                 </motion.div>
@@ -539,7 +551,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               transition={{ duration: 0.12, ease: "easeInOut" }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
-              className={`w-12 h-12 ${isSpeedDialOpen ? 'bg-white text-black' : (isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none')} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all`}
+              className={`w-12 h-12 ${isSpeedDialOpen ? 'bg-white text-black' : (isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none')} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210]`}
             >
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Plus size={22} strokeWidth={3} className={`transition-transform duration-300 ${isSpeedDialOpen ? 'rotate-45' : ''}`} />
@@ -622,10 +634,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           <ScheduleLiveModal
             telegramUser={telegramUser}
             connectedChannel={swrUser?.telegram_channel}
+            channelId={swrUser?.telegram_channel_id}
             onClose={() => setIsLiveModalOpen(false)}
             onScheduled={(live: any) => {
               setIsLiveModalOpen(false);
-              setSuccessMessage(t("explore.live_scheduled_popup") || "Live stream scheduled");
+              setSuccessMessage(t("explore.live_scheduled_popup") || "Live stream scheduled!");
               setTimeout(() => setSuccessMessage(null), 3000);
             }}
           />
@@ -1153,7 +1166,7 @@ function PostCard({
                   onClick={handleAcknowledge}
                   className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
                 >
-                  <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
+                  <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
                     <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
                   </div>
                   {localAckCount > 0 && (
@@ -1676,19 +1689,33 @@ function PostDetailModal({
             </div>
           ) : (
             <div className="py-2">
-              <div className="flex items-center gap-3 mb-4">
+              <div 
+                className="flex items-center gap-3 mb-4 cursor-pointer active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  if (post.channel?.handle) {
+                    const handle = post.channel.handle.replace(/^@/, "");
+                    const link = `https://t.me/${handle}`;
+                    const twa = (window as any).Telegram?.WebApp;
+                    if (twa?.openTelegramLink) twa.openTelegramLink(link);
+                    else window.open(link, "_blank");
+                  }
+                }}
+              >
                 <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40">
-                  {post.user?.photo ? (
-                    <img src={post.user.photo} className="w-full h-full object-cover" />
+                  {(post.channel?.photo || post.user?.photo) ? (
+                    <img src={post.channel?.photo || post.user.photo} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-lg">
-                      {post.user?.name?.[0] || 'U'}
+                      {(post.channel?.title || post.user?.name || 'U')[0]}
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-white font-black text-sm tracking-tight">{post.user?.name}</h4>
-                  <p className="text-xs text-white/30">@{post.user?.handle || 'anon'}</p>
+                  <div className="flex items-center gap-1">
+                    <h4 className="text-white font-black text-sm tracking-tight">{post.channel?.title || post.user?.name}</h4>
+                    {post.channel && <CheckCircle2 size={12} className="text-cyan-400" />}
+                  </div>
+                  <p className="text-xs text-white/30">@{post.channel?.handle || post.user?.handle || 'anon'}</p>
                 </div>
               </div>
 
@@ -1701,9 +1728,9 @@ function PostDetailModal({
               )}
 
               <div className="py-4 border-y border-white/5 flex items-center gap-6 mb-6">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-black text-white">{post.acks_count || 0}</span>
-                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Acks</span>
+                <div className="flex items-center gap-1.5 font-mono">
+                  <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Likes</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
@@ -1816,11 +1843,13 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
 function ScheduleLiveModal({
   telegramUser,
   connectedChannel,
+  channelId,
   onClose,
   onScheduled
 }: {
   telegramUser: any,
   connectedChannel?: string,
+  channelId?: number | string | null,
   onClose: () => void,
   onScheduled: (live: any) => void
 }) {
@@ -1831,25 +1860,30 @@ function ScheduleLiveModal({
   const [scheduling, setScheduling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // The channel_id must be the Telegram BIGINT channel ID (e.g. -1001234567890)
+  // NOT the user's personal telegram ID. We get this from swrUser.telegram_channel_id
+  // which is populated by sync_channel_metadata calling getChat on the channel handle.
+  const resolvedChannelId = channelId || connectedChannel;
+
   const handleSchedule = async () => {
-    if (!title.trim() || !connectedChannel) return;
+    if (!title.trim() || !resolvedChannelId) return;
     setScheduling(true);
     setError(null);
     try {
       const scheduledAt = new Date(`${date}T${time}`).toISOString();
       const res = await postApi("/explore/schedule_live", {
-        channel_id: telegramUser.id,
-        admin_id: telegramUser.id,
+        channel_id: resolvedChannelId,   // ✅ Real Telegram channel ID (BIGINT)
+        admin_id: telegramUser.id,        // ✅ User's personal ID (who is scheduling)
         title: title.trim(),
         scheduled_at: scheduledAt
       });
       if (res.success) {
         onScheduled(res.live);
       } else {
-        setError(res.detail || "Failed to schedule");
+        setError(res.detail || "Failed to schedule. Check your channel connection.");
       }
     } catch (err) {
-      setError("Critical system error");
+      setError("Network error. Please try again.");
     } finally {
       setScheduling(false);
     }

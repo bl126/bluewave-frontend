@@ -324,67 +324,83 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     // Optimistically mark the card as claimed so the button disappears immediately
     setOptimisticPresence(prev => ({ ...prev, [type]: { status: "inactive" } }));
 
-    try {
-      const data = await postApi(`/presence/claim`, { tg_id: telegram_id, mission_type: type });
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    let success = false;
+    let lastError = null;
 
-      if (data.success) {
-        setPresenceLoadingId(null);
+    while (attempt < MAX_RETRIES && !success) {
+      try {
+        const data = await postApi(`/presence/claim`, { tg_id: telegram_id, mission_type: type });
 
-        // Silently update the already-open popup with exact values from the backend
-        const totalReward = data.total_reward;
-        const multiplier = data.multiplier || 1.0;
-        if (totalReward !== undefined) {
-          const derivedBase = data.base_reward !== undefined
-            ? data.base_reward
-            : Math.round(totalReward / multiplier);
-          setClaimBoostData({
-            base_claimed: derivedBase,
-            multiplier: multiplier,
-            total_claimed: totalReward,
-            applied_roles: data.applied_roles || [],
-            is_loading: false
-          });
+        if (data.success) {
+          success = true;
+          setPresenceLoadingId(null);
+
+          // Silently update the already-open popup with exact values from the backend
+          const totalReward = data.total_reward;
+          const multiplier = data.multiplier || 1.0;
+          if (totalReward !== undefined) {
+            const derivedBase = data.base_reward !== undefined
+              ? data.base_reward
+              : Math.round(totalReward / multiplier);
+            setClaimBoostData({
+              base_claimed: derivedBase,
+              multiplier: multiplier,
+              total_claimed: totalReward,
+              applied_roles: data.applied_roles || [],
+              is_loading: false
+            });
+          }
+
+          // Update balance after popup animation completes
+          if (data.new_balance !== undefined) {
+            setPendingBalanceUpdate(data.new_balance);
+          }
+
+          // Streak celebration
+          const streakChanged = data.streak_changed ?? data.streak_info?.streak_changed;
+          const streakBonusAwarded = (data.bonus_points > 0) || data.streak_info?.bonus_awarded;
+          if (streakChanged && streakBonusAwarded) {
+            setPendingStreakData({
+              days: data.new_streak ?? data.streak_days,
+              reward: data.bonus_points || 200
+            });
+          }
+
+          mutatePresence(); // Sync accurate state in background
+        } else {
+          // Logic error (e.g. NOT_FINISHED) shouldn't retry
+          throw new Error(data.error || "CLAIM_FAILED");
         }
-
-        // Update balance after popup animation completes
-        if (data.new_balance !== undefined) {
-          setPendingBalanceUpdate(data.new_balance);
+      } catch (e: any) {
+        lastError = e;
+        if (e.message === "NOT_FINISHED" || e.message === "NO_MISSION" || e.message === "ALREADY_CLAIMED") {
+          break; // Don't retry logic errors
         }
-
-        // Streak celebration
-        const streakChanged = data.streak_changed ?? data.streak_info?.streak_changed;
-        const streakBonusAwarded = (data.bonus_points > 0) || data.streak_info?.bonus_awarded;
-        if (streakChanged && streakBonusAwarded) {
-          setPendingStreakData({
-            days: data.new_streak ?? data.streak_days,
-            reward: data.bonus_points || 200
-          });
+        attempt++;
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // simple exponential-ish backoff
         }
-
-        mutatePresence(); // Sync accurate state in background
-
-      } else {
-        // ── Rollback on failure ──────────────────────────────────────────────
-        setIsClaimBoostOpen(false);
-        setClaimBoostData(null);
-        setPresenceLoadingId(null);
-        // Restore card to its real state
-        setOptimisticPresence(prev => { const n = { ...prev }; delete n[type]; return n; });
-        const errMsg = data.error === "NOT_FINISHED"
-          ? "Mission not complete yet — timer still running."
-          : data.error === "NO_MISSION"
-            ? "No active mission found."
-            : "Claim failed. Please try again.";
-        setPopup(errMsg);
-        setTimeout(() => setPopup(null), 3000);
       }
-    } catch (e) {
-      console.error(e);
-      // ── Rollback on network error ────────────────────────────────────────
+    }
+
+    if (!success) {
+      console.error("Final claim failure after retries:", lastError);
+      // ── Rollback on definitive failure ──────────────────────────────────
       setIsClaimBoostOpen(false);
       setClaimBoostData(null);
       setPresenceLoadingId(null);
+      // Restore card to its real state
       setOptimisticPresence(prev => { const n = { ...prev }; delete n[type]; return n; });
+      
+      const errMsg = lastError?.message === "NOT_FINISHED"
+        ? "Mission not complete yet — timer still running."
+        : lastError?.message === "NO_MISSION"
+          ? "No active mission found."
+          : "Claim failed after multiple attempts. Please try again.";
+      setPopup(errMsg);
+      setTimeout(() => setPopup(null), 3000);
     }
   };
 
@@ -509,46 +525,65 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     setClaimingMissionId(id);
     setClaimCooldown(true);
 
-    try {
-      let endpoint = "/claim_mission";
-      let payload: any = { telegram_id, mission_id: id };
+    // ── INSTANT SUCCESS (Optimistic) ─────────────────────────────────────────
+    setOptimisticSocial(prev => ({ ...prev, [id]: { status: "done" } }));
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") endpoint = "/claim/onboarding";
-      else if (id === "invite_daily") { endpoint = "/claim/daily"; payload = { telegram_id }; }
-      else if (id === "story_post") { endpoint = "/claim/story_post"; payload = { telegram_id }; }
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    let success = false;
+    let lastError = null;
 
-      const result = await postApi(endpoint, payload);
+    while (attempt < MAX_RETRIES && !success) {
+      try {
+        let endpoint = "/claim_mission";
+        let payload: any = { telegram_id, mission_id: id };
 
-      if (result.claimed) {
-        window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        if (id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan") endpoint = "/claim/onboarding";
+        else if (id === "invite_daily") { endpoint = "/claim/daily"; payload = { telegram_id }; }
+        else if (id === "story_post") { endpoint = "/claim/story_post"; payload = { telegram_id }; }
 
-        // ✅ Mark as done optimistically — do NOT delete override, SWR cache still has "open"
-        setOptimisticSocial(prev => ({ ...prev, [id]: { status: "done" } }));
-        // Sync from server in background to confirm
-        mutateMissions();
+        const result = await postApi(endpoint, payload);
 
-        // 🔥 Trigger Streak Celebration immediately for non-boost missions
-        if (result.streak_info?.bonus_awarded) {
-          window.dispatchEvent(new CustomEvent("showStreakCelebration", {
-            detail: { days: result.streak_days, reward: 200 }
-          }));
+        if (result.claimed) {
+          success = true;
+          window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
+
+          // Sync from server in background to confirm
+          mutateMissions();
+
+          if (result.streak_info?.bonus_awarded) {
+            window.dispatchEvent(new CustomEvent("showStreakCelebration", {
+              detail: { days: result.streak_days, reward: 200 }
+            }));
+          }
+        } else {
+          throw new Error(result.error || "NOT_COMPLETED");
         }
-      } else {
-        setPopup(t("missions.popup_complete") || "Not completed");
-        // Clear optimistic override on failed claim
-        setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
-        setTimeout(() => setPopup(null), 2500);
+      } catch (e: any) {
+        lastError = e;
+        // Logic errors (not completed, invalid story, etc) shouldn't retry
+        if (e.message === "NOT_COMPLETED" || e.message === "INVALID_STORY" || e.message === "ALREADY_CLAIMED") {
+          break;
+        }
+        attempt++;
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, 800 * attempt));
+        }
       }
-    } catch (e) {
-      console.error(e);
-      // Clear optimistic override on error
-      setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
-    } finally {
-      setClaimingMissionId(null);
-      setTimeout(() => setClaimCooldown(false), 1000);
     }
+
+    if (!success) {
+      console.error("Final social claim failure:", lastError);
+      // ── Rollback on failure ──────────────────────────────────────────────
+      setOptimisticSocial(prev => { const n = { ...prev }; delete n[id]; return n; });
+      setPopup(t("missions.popup_complete") || "Not completed");
+      setTimeout(() => setPopup(null), 2500);
+    }
+
+    setClaimingMissionId(null);
+    setTimeout(() => setClaimCooldown(false), 1000);
   };
 
 
