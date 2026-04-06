@@ -510,7 +510,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               className={`w-12 h-12 ${isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none'} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210]`}
             >
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Rocket size={22} strokeWidth={3} />
+              <Plus size={26} strokeWidth={3} />
             </motion.button>
           </div>
         )}
@@ -1046,44 +1046,39 @@ function PostCard({
 
           {/* Signal Content */}
           {post.post_type === 'live_scheduled' ? (
-            <div className="w-full mt-2 rounded-2xl overflow-hidden border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent p-6 relative group/live">
-              <div className="absolute top-0 right-0 p-4">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-cyan-500 text-black text-[8px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(0,230,255,0.4)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-                  Upcoming Live
+            <div className="mt-2 mb-2 w-[220px] rounded-[18px] overflow-hidden border border-white/5 bg-gradient-to-b from-black/60 to-black/90 shadow-lg relative group/live flex flex-col mx-auto">
+              {/* Header area - sleek and minimal */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.03] bg-white/[0.01]">
+                <div className="flex items-center gap-1.5 text-cyan-400 font-bold uppercase text-[9px] tracking-[0.15em]">
+                  <Calendar size={11} className="opacity-80" />
+                  <span>Scheduled Live</span>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-white font-black text-xl uppercase tracking-tighter line-clamp-2 leading-tight">
-                    {post.content || "Live Stream Signal"}
-                  </h3>
-                  <div className="flex items-center gap-2 text-cyan-400/60 font-black uppercase text-[10px] tracking-widest">
-                    <Calendar size={12} />
-                    <span>Signal Transmission Scheduled</span>
-                  </div>
-                </div>
+              {/* Main content area */}
+              <div className="p-4 flex flex-col items-center justify-center min-h-[90px] text-center px-6">
+                <h3 className="text-white font-heavy text-sm uppercase tracking-tighter line-clamp-2 leading-snug">
+                  {post.content || "Live Stream Signal"}
+                </h3>
+              </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/5 space-y-0.5">
-                    <p className="text-[8px] text-white/40 font-black uppercase tracking-widest">Scheduled Time</p>
-                    <p className="text-sm text-cyan-400 font-black uppercase tracking-tight">
-                      {new Date(post.live_scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at {new Date(post.live_scheduled_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  
+              {/* Date & Time display */}
+              <div className="px-4 pb-2 text-center text-[10px] text-white/50 font-mono font-medium tracking-tight">
+                 {new Date(post.live_scheduled_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • {new Date(post.live_scheduled_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true })}
+              </div>
+              
+              {/* Reminder Action */}
+              <div className="p-3 mt-auto">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       openChannel();
                     }}
-                    className="h-12 px-6 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(0,230,255,0.3)] active:scale-95 transition-all flex items-center gap-2"
+                    className="w-full h-9 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-cyan-500/30 group-hover/live:border-cyan-500/60 group-hover/live:bg-cyan-500 text-black group-hover/live:shadow-[0_0_15px_rgba(0,230,255,0.4)]"
                   >
-                    <Bell size={14} />
+                    <Bell size={12} className="group-hover/live:animate-pulse" />
                     Set Reminder
                   </button>
-                </div>
               </div>
             </div>
           ) : post.media_urls && post.media_urls.length > 0 ? (
