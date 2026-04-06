@@ -1806,8 +1806,8 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
   if (!liveUsers || liveUsers.length === 0) return null;
 
   return (
-    <div className="w-full border-b border-white/[0.05] bg-black/40 overflow-hidden shrink-0">
-      <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar px-4 pt-4 pb-3 hide-scrollbar">
+    <div className="w-full border-b border-white/5 bg-black/20 overflow-hidden shrink-0">
+      <div className="flex items-center gap-3 overflow-x-auto custom-scrollbar px-4 pt-3 pb-2 hide-scrollbar">
         {liveUsers.map((u, i) => (
           <button 
             key={i} 
@@ -1823,32 +1823,35 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
                 window.open(link, "_blank");
               }
             }}
-            className="flex flex-col items-center gap-2 shrink-0 group w-16"
+            className="flex flex-col items-center gap-1.5 shrink-0 group w-14"
           >
             <div className="relative">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-[3px] border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
+              {/* Outer Ring Animation (Simplified) */}
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
                 <div className="w-full h-full rounded-full overflow-hidden border border-white/10 bg-black/40 relative pointer-events-none">
                   {u.telegram_channel_photo ? (
                     <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
                   ) : u.photo_url ? (
                     <img src={u.photo_url} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-sm">
+                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-[10px]">
                       {u.telegram_channel_title?.[0] || u.name?.[0] || u.first_name?.[0] || "U"}
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="absolute inset-0 rounded-full border-2 border-cyan-500 animate-[pulse_2s_ease-out_infinite] opacity-50 z-0 pointer-events-none" />
+              {/* Pulse Shadow */}
+              <div className="absolute inset-0 rounded-full border border-cyan-500/50 animate-[pulse_2s_ease-out_infinite] z-0 pointer-events-none" />
 
-              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[8px] font-black px-1.5 py-0.5 rounded-[4px] border border-cyan-300 shadow-[0_0_10px_rgba(0,230,255,1)] leading-none flex items-center gap-1 tracking-widest z-20 pointer-events-none">
-                <span className="w-1 h-1 rounded-full bg-white animate-[pulse_1s_infinite]" />
+              {/* Minimalist LIVE Badge */}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[7px] font-black px-1 py-0.5 rounded-[3px] border border-cyan-300 shadow-[0_0_8px_rgba(0,230,255,0.8)] leading-none flex items-center gap-0.5 tracking-tight z-20 pointer-events-none">
+                <span className="w-0.5 h-0.5 rounded-full bg-white animate-pulse" />
                 LIVE
               </div>
             </div>
-            <span className="text-[8px] font-bold text-white/80 truncate w-14 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight opacity-90">
-              {u.telegram_channel_title || u.name || u.first_name || "Unknown"}
+            <span className="text-[7px] font-black text-white/60 truncate w-12 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight">
+              {u.telegram_channel_title || u.name || u.first_name || "User"}
             </span>
           </button>
         ))}
