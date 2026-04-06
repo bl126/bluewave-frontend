@@ -35,7 +35,8 @@ const BETA_TESTER_IDS: number[] = [
   2008138868,
   769579042,
   5511825370,
-  1504247376
+  1504247376,
+  5364551821
 ];
 
 interface ExploreProps {
@@ -128,7 +129,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     }
   }, [initialPosts, latestKnownPostId]);
 
-  // Help Sync pagedPosts with initialPosts on tab change or refresh
+  // 🔄 Help Sync pagedPosts with initialPosts on tab change or refresh
   useEffect(() => {
     if (initialPosts && Array.isArray(initialPosts)) {
       setPagedPosts(initialPosts);
@@ -140,7 +141,51 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
          window.localStorage.setItem(`bw_feed_foryou_${telegramUser.id}`, JSON.stringify(initialPosts));
       }
     }
-  }, [initialPosts]);
+  }, [initialPosts, activeTab]);
+
+  // 🚀 Load More Implementation (Infinite Scroll Logic)
+  const handleLoadMore = useCallback(async () => {
+    if (!hasMore || loadingMore || loading || !telegramUser?.id) return;
+    
+    setLoadingMore(true);
+    try {
+      // 🚄 Fetch the next batch from the API using current offset
+      const nextBatch = await getApi(`/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}`);
+      
+      if (nextBatch && Array.isArray(nextBatch) && nextBatch.length > 0) {
+        setPagedPosts(prev => [...prev, ...nextBatch]);
+        setOffset(prev => prev + nextBatch.length);
+        setHasMore(nextBatch.length >= 10); // Standard pagination limit is 10
+      } else {
+        setHasMore(false); // No more posts to load
+      }
+    } catch (err) {
+      console.error("Failed to load more posts:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loadingMore, loading, offset, activeTab, telegramUser?.id]);
+
+  // 👁️ Intersection Observer for triggering the load more action
+  useEffect(() => {
+    if (!hasMore || activeTab === "leaderboard" || activeTab === "notifications") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && !loading) {
+          handleLoadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" } // Load early for better UX
+    );
+
+    const currentTrigger = loadMoreRef.current;
+    if (currentTrigger) observer.observe(currentTrigger);
+
+    return () => {
+      if (currentTrigger) observer.unobserve(currentTrigger);
+    };
+  }, [hasMore, loadingMore, loading, handleLoadMore, activeTab]);
 
   // 🔄 Consolidated Synchronization (Heartbeat)
   // Instead of multiple separate polls, we use the global sync cache.

@@ -177,7 +177,38 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   const { data: missionsData, loading: missionsLoading, mutate: mutateMissions, error: missionsError } =
     useApi(telegram_id ? `/missions/all/${telegram_id}` : null);
 
-  // 3. Derived Presence Missions
+  // 3. Fetch User Profile for Roles (Multiplier Logic)
+  const { data: userProfile } = useApi(telegram_id ? `/user/${telegram_id}` : null);
+
+  // 4. Multiplier Utility (Matches Backend Logic)
+  const getOptimisticBoost = (roles: string[]) => {
+    let multiplier = 1.0;
+    const appliedRoles: string[] = [];
+    if (!roles || !Array.isArray(roles)) return { multiplier, appliedRoles };
+
+    const BOOST_MAP: Record<string, number> = {
+      "Bluewave Core": 1.00, "Community Moderator": 0.25, "Verified Partner": 0.20,
+      "Verified Human": 0.10, "Presence Holder": 0.10, "Genesis Member": 0.15,
+      "Beta Explorer": 0.10, "New Wave": 0.01, "Active Human": 0.05,
+      "Network Builder": 0.10, "Contributor": 0.08, "OG": 0.15,
+      "Super OG": 0.25, "Content Creator": 0.25, "Best Commentator": 0.10,
+      "Meme Architect": 0.25, "X Supporter": 0.05, "X Raider": 0.10,
+      "X Ambassador": 0.20, "TON Explorer": 0.05, "Signal Guardian": 0.15,
+      "Human Legend": 0.50, "LEVEL 1": 0.01, "LEVEL 2": 0.05,
+      "LEVEL 3": 0.10, "LEVEL 4": 0.20, "LEVEL 5": 0.50
+    };
+
+    roles.forEach(role => {
+      if (BOOST_MAP[role]) {
+        multiplier += BOOST_MAP[role];
+        appliedRoles.push(role);
+      }
+    });
+
+    return { multiplier, appliedRoles };
+  };
+
+  // 5. Derived Presence Missions
   const presenceMissions = useMemo(() => {
     if (!Array.isArray(presenceMissionsData)) return [];
     return presenceMissionsData.map((m: PresenceMission) => ({
@@ -312,18 +343,21 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     const missionData = presenceMissions.find((m: any) => m.type === type);
     const baseReward = missionData?.reward || 0;
     
+    // 🎭 [OPTIMISTIC_UPGRADE] Calculate real multiplier from known roles
+    const { multiplier: optMultiplier, appliedRoles: optRoles } = getOptimisticBoost(userProfile?.roles || []);
+    const optTotal = Math.floor(baseReward * optMultiplier);
+
     // Optimistically update the balance on the UI for immediate gratification
-    // We assume 1.0x for the instant update, later sync with real multiplier
     const currentBalance = telegramUser?.points_balance || 0;
     window.dispatchEvent(
-      new CustomEvent("updateBalance", { detail: currentBalance + baseReward })
+      new CustomEvent("updateBalance", { detail: currentBalance + optTotal })
     );
 
     setClaimBoostData({
       base_claimed: baseReward,
-      multiplier: 1.0,
-      total_claimed: baseReward,
-      applied_roles: [],
+      multiplier: optMultiplier,
+      total_claimed: optTotal,
+      applied_roles: optRoles,
       is_loading: true
     });
     setIsClaimBoostOpen(true);
