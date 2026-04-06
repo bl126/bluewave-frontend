@@ -36,7 +36,8 @@ const BETA_TESTER_IDS: number[] = [
   769579042,
   5511825370,
   1504247376,
-  5364551821
+  5364551821,
+  7834249676
 ];
 
 interface ExploreProps {
@@ -61,14 +62,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [offset, setOffset] = useState(0);
   const [pagedPosts, setPagedPosts] = useState<any[]>(() => {
     if (typeof window !== "undefined" && telegramUser?.id) {
-       const cached = window.localStorage.getItem(`bw_feed_foryou_${telegramUser.id}`);
-       if (cached) {
-         try {
-           return JSON.parse(cached);
-         } catch(e) {
-           console.error("Feed Cache Corrupt", e);
-         }
-       }
+      const cached = window.localStorage.getItem(`bw_feed_foryou_${telegramUser.id}`);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          console.error("Feed Cache Corrupt", e);
+        }
+      }
     }
     return [];
   });
@@ -135,10 +136,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       setPagedPosts(initialPosts);
       setOffset(initialPosts.length);
       setHasMore(initialPosts.length >= 10);
-      
+
       // Keep cache fresh if on the main 'foryou' tab
       if (activeTab === "foryou" && telegramUser?.id) {
-         window.localStorage.setItem(`bw_feed_foryou_${telegramUser.id}`, JSON.stringify(initialPosts));
+        window.localStorage.setItem(`bw_feed_foryou_${telegramUser.id}`, JSON.stringify(initialPosts));
       }
     }
   }, [initialPosts, activeTab]);
@@ -146,12 +147,12 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // 🚀 Load More Implementation (Infinite Scroll Logic)
   const handleLoadMore = useCallback(async () => {
     if (!hasMore || loadingMore || loading || !telegramUser?.id) return;
-    
+
     setLoadingMore(true);
     try {
       // 🚄 Fetch the next batch from the API using current offset
       const nextBatch = await getApi(`/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}`);
-      
+
       if (nextBatch && Array.isArray(nextBatch) && nextBatch.length > 0) {
         setPagedPosts(prev => [...prev, ...nextBatch]);
         setOffset(prev => prev + nextBatch.length);
@@ -352,9 +353,9 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 
       {/* ─── Tab Bar (fixed, solid, no floating) ─── */}
       <motion.div
-        animate={{ 
-          y: showChrome ? 0 : (activeTab === "foryou" || activeTab === "following") && (liveUsers?.length ?? 0) > 0 ? -200 : -80, 
-          opacity: showChrome ? 1 : 0 
+        animate={{
+          y: showChrome ? 0 : (activeTab === "foryou" || activeTab === "following") && (liveUsers?.length ?? 0) > 0 ? -200 : -80,
+          opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed top-20 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
@@ -391,11 +392,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         </div>
         <AnimatePresence>
           {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
-            <motion.div 
-               initial={{ height: 0, opacity: 0 }}
-               animate={{ height: 'auto', opacity: 1 }}
-               exit={{ height: 0, opacity: 0 }}
-               className="w-full shrink-0 overflow-hidden"
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="w-full shrink-0 overflow-hidden"
             >
               <LiveNowTray liveUsers={liveUsers} />
             </motion.div>
@@ -601,7 +602,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             onClose={() => setIsPostModalOpen(false)}
             onPosted={(requestArgs) => {
               setIsPostModalOpen(false);
-              
+
               // 🚀 [SPEED_BOOST] Optimistic UI: Prepend to the feed immediately while background posting
               const optimisticPost = {
                 id: `temp-${Date.now()}`,
@@ -1139,8 +1140,8 @@ function PostCard({
             <div className="flex items-center gap-8">
               {/* Comment Button */}
               <button
-                onClick={(e) => { 
-                  e.stopPropagation(); 
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (!isConnected) {
                     onConnectRequired();
                     return;
@@ -1706,7 +1707,7 @@ function PostDetailModal({
             </div>
           ) : (
             <div className="py-2">
-              <div 
+              <div
                 className="flex items-center gap-3 mb-4 cursor-pointer active:scale-[0.98] transition-transform"
                 onClick={() => {
                   const handle = post.channel?.handle || post.user?.handle;
@@ -1809,8 +1810,8 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
     <div className="w-full border-b border-white/5 bg-black/20 overflow-hidden shrink-0">
       <div className="flex items-center gap-3 overflow-x-auto custom-scrollbar px-4 pt-3 pb-2 hide-scrollbar">
         {liveUsers.map((u, i) => (
-          <button 
-            key={i} 
+          <button
+            key={i}
             onClick={() => {
               const handle = u.telegram_channel;
               if (!handle) return;
@@ -1840,7 +1841,7 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
                   )}
                 </div>
               </div>
-              
+
               {/* Pulse Shadow */}
               <div className="absolute inset-0 rounded-full border border-cyan-500/50 animate-[pulse_2s_ease-out_infinite] z-0 pointer-events-none" />
 
