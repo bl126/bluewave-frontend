@@ -20,7 +20,8 @@ import {
   Send,
   UserCheck,
   MessageCircle,
-  Share2
+  Share2,
+  Calendar
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -47,7 +48,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
@@ -148,16 +148,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         e.preventDefault();
         return;
       }
-      if (isLiveModalOpen) {
-        setIsLiveModalOpen(false);
-        e.preventDefault();
-        return;
-      }
     };
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, selectedPost, isPostModalOpen, isLiveModalOpen, isSpeedDialOpen]);
+  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -498,63 +493,24 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && (
           <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
-            {/* Speed Dial Options */}
-            <AnimatePresence>
-              {isSpeedDialOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                  className="flex flex-col items-center gap-3 mb-2"
-                >
-                  {/* Live Stream Option */}
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-[7px] font-black uppercase text-red-400 bg-black/60 px-2 py-0.5 rounded-full border border-red-500/20 backdrop-blur-md">Live</span>
-                    <button
-                      onClick={() => {
-                        setIsSpeedDialOpen(false);
-                        setIsLiveModalOpen(true);
-                      }}
-                      className="w-10 h-10 bg-black border border-red-500/30 rounded-full flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)] active:scale-95 transition-all"
-                    >
-                      <Video size={18} />
-                    </button>
-                  </div>
-
-                  {/* Normal Post Option */}
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-[7px] font-black uppercase text-cyan-400 bg-black/60 px-2 py-0.5 rounded-full border border-cyan-500/20 backdrop-blur-md">Post</span>
-                    <button
-                      onClick={() => {
-                        setIsSpeedDialOpen(false);
-                        if (swrUser && !isConnected) {
-                          setConnectPrompt(true);
-                          setTimeout(() => setConnectPrompt(false), 3000);
-                        } else {
-                          setIsPostModalOpen(true);
-                        }
-                      }}
-                      className="w-10 h-10 bg-black border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,230,255,0.2)] active:scale-95 transition-all"
-                    >
-                      <Rocket size={18} />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Main Toggle Button */}
             <motion.button
               initial={{ scale: 0, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0, opacity: 0, y: 20 }}
               transition={{ duration: 0.12, ease: "easeInOut" }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
-              className={`w-12 h-12 ${isSpeedDialOpen ? 'bg-white text-black' : (isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none')} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210]`}
+              onClick={() => {
+                if (swrUser && !isConnected) {
+                  setConnectPrompt(true);
+                  setTimeout(() => setConnectPrompt(false), 3000);
+                } else {
+                  setIsPostModalOpen(true);
+                }
+              }}
+              className={`w-12 h-12 ${isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none'} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210]`}
             >
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus size={22} strokeWidth={3} className={`transition-transform duration-300 ${isSpeedDialOpen ? 'rotate-45' : ''}`} />
+              <Rocket size={22} strokeWidth={3} />
             </motion.button>
           </div>
         )}
@@ -628,22 +584,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
-      {/* ─── Schedule Live Modal ─── */}
-      <AnimatePresence>
-        {isLiveModalOpen && (
-          <ScheduleLiveModal
-            telegramUser={telegramUser}
-            connectedChannel={swrUser?.telegram_channel}
-            channelId={swrUser?.telegram_channel_id}
-            onClose={() => setIsLiveModalOpen(false)}
-            onScheduled={(live: any) => {
-              setIsLiveModalOpen(false);
-              setSuccessMessage(t("explore.live_scheduled_popup") || "Live stream scheduled!");
-              setTimeout(() => setSuccessMessage(null), 3000);
-            }}
-          />
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {successMessage && (
           <motion.div
@@ -677,7 +617,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
-    </motion.div >
+    </motion.div>
   );
 }
 
@@ -951,7 +891,6 @@ function PostCard({
   const [isReposting, setIsReposting] = useState(false);
   const [showSpaceDust, setShowSpaceDust] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const rowMenuRef = useRef<HTMLDivElement>(null);
   const ackBtnRef = useRef<HTMLButtonElement>(null);
@@ -1105,7 +1044,49 @@ function PostCard({
 
           <p className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
 
-          {post.media_urls && post.media_urls.length > 0 ? (
+          {/* Signal Content */}
+          {post.post_type === 'live_scheduled' ? (
+            <div className="w-full mt-2 rounded-2xl overflow-hidden border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent p-6 relative group/live">
+              <div className="absolute top-0 right-0 p-4">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-cyan-500 text-black text-[8px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(0,230,255,0.4)]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                  Upcoming Live
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-white font-black text-xl uppercase tracking-tighter line-clamp-2 leading-tight">
+                    {post.content || "Live Stream Signal"}
+                  </h3>
+                  <div className="flex items-center gap-2 text-cyan-400/60 font-black uppercase text-[10px] tracking-widest">
+                    <Calendar size={12} />
+                    <span>Signal Transmission Scheduled</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/5 space-y-0.5">
+                    <p className="text-[8px] text-white/40 font-black uppercase tracking-widest">Scheduled Time</p>
+                    <p className="text-sm text-cyan-400 font-black uppercase tracking-tight">
+                      {new Date(post.live_scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at {new Date(post.live_scheduled_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openChannel();
+                    }}
+                    className="h-12 px-6 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(0,230,255,0.3)] active:scale-95 transition-all flex items-center gap-2"
+                  >
+                    <Bell size={14} />
+                    Set Reminder
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : post.media_urls && post.media_urls.length > 0 ? (
             <MediaCollage items={post.media_urls} />
           ) : post.media_url ? (
             <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
@@ -1299,7 +1280,7 @@ function NotificationsView({
   const getIcon = (type: string) => {
     if (type.startsWith("verified_acknowledgment_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
     if (type.startsWith("new_follower_milestone")) return <UserCheck size={18} className="text-cyan-400" />;
-    if (type.startsWith("verified_repost_milestone")) return <Repeat2 size={18} className="text-cyan-400" />;
+    if (type.startsWith("verified_repost_milestone")) return <Repeat2 size={18} className="text-cyan-40" />;
     switch (type) {
       case "post_uploaded": return <Rocket size={18} className="text-cyan-400" />;
       case "acknowledged": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
@@ -1835,138 +1816,5 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
         ))}
       </div>
     </div>
-  );
-}
-
-function ScheduleLiveModal({
-  telegramUser,
-  connectedChannel,
-  channelId,
-  onClose,
-  onScheduled
-}: {
-  telegramUser: any,
-  connectedChannel?: string,
-  channelId?: number | string | null,
-  onClose: () => void,
-  onScheduled: (live: any) => void
-}) {
-  const { t } = useLanguage();
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState(new Date(Date.now() + 3600000).toISOString().split('T')[0]);
-  const [time, setTime] = useState(new Date(Date.now() + 3600000).toTimeString().slice(0, 5));
-  const [scheduling, setScheduling] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // The channel_id must be the Telegram BIGINT channel ID (e.g. -1001234567890)
-  // NOT the user's personal telegram ID. We get this from swrUser.telegram_channel_id
-  // which is populated by sync_channel_metadata calling getChat on the channel handle.
-  const resolvedChannelId = channelId || connectedChannel;
-
-  const handleSchedule = async () => {
-    if (!title.trim() || !resolvedChannelId) return;
-    setScheduling(true);
-    setError(null);
-    try {
-      const scheduledAt = new Date(`${date}T${time}`).toISOString();
-      const res = await postApi("/explore/schedule_live", {
-        channel_id: resolvedChannelId,   // ✅ Real Telegram channel ID (BIGINT)
-        admin_id: telegramUser.id,        // ✅ User's personal ID (who is scheduling)
-        title: title.trim(),
-        scheduled_at: scheduledAt
-      });
-      if (res.success) {
-        onScheduled(res.live);
-      } else {
-        setError(res.detail || "Failed to schedule. Check your channel connection.");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
-      setScheduling(false);
-    }
-  };
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="w-full max-w-xl bg-zinc-950 border-t border-cyan-500/20 rounded-t-[3rem] p-8 space-y-6 shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-center -mt-4 mb-2">
-          <div className="w-12 h-1.5 rounded-full bg-white/10" />
-        </div>
-
-        <div className="space-y-1">
-          <h3 className="text-xl font-black uppercase tracking-tighter text-white">Schedule Live Broadcast</h3>
-          <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest opacity-60">Manage your presence signal</p>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Topic / Title</label>
-            <input
-              autoFocus
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="What are we broadcasting?"
-              className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all dark:[color-scheme:dark]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Time</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all dark:[color-scheme:dark]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {error && <p className="text-[10px] text-orange-400 font-bold uppercase text-center tracking-tight">{error}</p>}
-
-        <div className="pt-2">
-          <button
-            onClick={handleSchedule}
-            disabled={scheduling || !title.trim() || !connectedChannel}
-            className="w-full h-16 bg-cyan-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_30px_rgba(0,230,255,0.3)] active:scale-[0.98] transition-all disabled:opacity-30 disabled:shadow-none flex items-center justify-center gap-3"
-          >
-            {scheduling ? (
-              <Loader2 size={24} className="animate-spin" />
-            ) : (
-              <>
-                <Video size={20} strokeWidth={2.5} />
-                Confirm Live Schedule
-              </>
-            )}
-          </button>
-          {!connectedChannel && (
-            <p className="text-[8px] text-white/20 text-center mt-4 uppercase tracking-widest">Connect a channel to broadcast live</p>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>,
-    document.body
   );
 }
