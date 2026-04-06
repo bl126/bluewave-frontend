@@ -130,6 +130,11 @@ export default function LandingPage() {
         return;
       }
 
+      // 0. Dispatch Native Interceptor Event
+      const backEvent = new CustomEvent("bwNativeBack", { cancelable: true });
+      window.dispatchEvent(backEvent);
+      if (backEvent.defaultPrevented) return; // Signal intercepted (e.g. by Explore modal)
+
       // 1. Nested Overlays/Modals (Stack-aware early returns)
       if (selectedRoleData) {
         setSelectedRoleData(null);

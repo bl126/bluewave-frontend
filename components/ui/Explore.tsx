@@ -47,6 +47,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
   const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -124,6 +128,36 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // 🔄 Consolidated Synchronization (Heartbeat)
   // Instead of multiple separate polls, we use the global sync cache.
   const { data: syncData } = useSync(telegramUser?.id || null);
+
+  useEffect(() => {
+    const handleNativeBack = (e: Event) => {
+      if (!isOpen) return;
+      if (isSpeedDialOpen) {
+        setIsSpeedDialOpen(false);
+        e.preventDefault();
+        return;
+      }
+      if (selectedPost) {
+        setSelectedPost(null);
+        setSelectedCommentId(null);
+        e.preventDefault();
+        return;
+      }
+      if (isPostModalOpen) {
+        setIsPostModalOpen(false);
+        e.preventDefault();
+        return;
+      }
+      if (isLiveModalOpen) {
+        setIsLiveModalOpen(false);
+        e.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener("bwNativeBack", handleNativeBack);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+  }, [isOpen, selectedPost, isPostModalOpen, isLiveModalOpen, isSpeedDialOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -365,6 +399,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 notifications={notifications || []}
                 onClear={() => mutateNotifications()}
                 currentUserId={telegramUser?.id}
+                onPostClick={(postId, commentId) => {
+                  setSelectedPost({ id: postId });
+                  setSelectedCommentId(commentId || null);
+                }}
               />
             </motion.div>
           ) : activeTab === "leaderboard" ? (
@@ -414,6 +452,8 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                     setConnectPrompt(true);
                     setTimeout(() => setConnectPrompt(false), 3000);
                   }}
+                  onCommentClick={() => setSelectedPost(post)}
+                  onPostClick={() => setSelectedPost(post)}
                 />
               ))}
 
@@ -442,28 +482,69 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         </AnimatePresence>
       </div>
 
-      {/* ─── FAB Post Button ─── */}
+      {/* ─── FAB Post Button (Speed Dial) ─── */}
       <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0, opacity: 0, y: 20 }}
-            transition={{ duration: 0.12, ease: "easeInOut" }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              if (swrUser && !isConnected) {
-                setConnectPrompt(true);
-                setTimeout(() => setConnectPrompt(false), 3000);
-              } else {
-                setIsPostModalOpen(true);
-              }
-            }}
-            className={`fixed right-5 bottom-28 w-12 h-12 ${isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none'} rounded-full flex items-center justify-center z-[160] border-4 border-black/20 overflow-hidden group`}
-          >
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Plus size={22} strokeWidth={3} />
-          </motion.button>
+          <div className="fixed right-5 bottom-28 z-[160] flex flex-col items-center gap-3">
+            {/* Speed Dial Options */}
+            <AnimatePresence>
+              {isSpeedDialOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                  className="flex flex-col items-center gap-3 mb-2"
+                >
+                  {/* Live Stream Option */}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[7px] font-black uppercase text-cyan-400 bg-black/40 px-2 py-0.5 rounded-full border border-cyan-500/20 backdrop-blur-md">Live</span>
+                    <button
+                      onClick={() => {
+                        setIsSpeedDialOpen(false);
+                        setIsLiveModalOpen(true);
+                      }}
+                      className="w-10 h-10 bg-black border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,230,255,0.2)] active:scale-95 transition-all"
+                    >
+                      <Video size={18} />
+                    </button>
+                  </div>
+
+                  {/* Normal Post Option */}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[7px] font-black uppercase text-white/50 bg-black/40 px-2 py-0.5 rounded-full border border-white/10 backdrop-blur-md">Signal</span>
+                    <button
+                      onClick={() => {
+                        setIsSpeedDialOpen(false);
+                        if (swrUser && !isConnected) {
+                          setConnectPrompt(true);
+                          setTimeout(() => setConnectPrompt(false), 3000);
+                        } else {
+                          setIsPostModalOpen(true);
+                        }
+                      }}
+                      className="w-10 h-10 bg-black border border-white/10 rounded-full flex items-center justify-center text-white/70 shadow-lg active:scale-95 transition-all"
+                    >
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Main Toggle Button */}
+            <motion.button
+              initial={{ scale: 0, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0, opacity: 0, y: 20 }}
+              transition={{ duration: 0.12, ease: "easeInOut" }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
+              className={`w-12 h-12 ${isSpeedDialOpen ? 'bg-white text-black' : (isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none')} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all`}
+            >
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Plus size={22} strokeWidth={3} className={`transition-transform duration-300 ${isSpeedDialOpen ? 'rotate-45' : ''}`} />
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
 
@@ -519,7 +600,37 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         )}
       </AnimatePresence>
 
-      {/* ─── Success Notification Popup ─── */}
+      {/* ─── Detail Modal (X-style thread) ─── */}
+      <AnimatePresence>
+        {selectedPost && (
+          <PostDetailModal
+            post={selectedPost}
+            commentId={selectedCommentId}
+            telegramUser={telegramUser}
+            onClose={() => {
+              setSelectedPost(null);
+              setSelectedCommentId(null);
+            }}
+            onRefresh={() => mutate()}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ─── Schedule Live Modal ─── */}
+      <AnimatePresence>
+        {isLiveModalOpen && (
+          <ScheduleLiveModal
+            telegramUser={telegramUser}
+            connectedChannel={swrUser?.telegram_channel}
+            onClose={() => setIsLiveModalOpen(false)}
+            onScheduled={(live: any) => {
+              setIsLiveModalOpen(false);
+              setSuccessMessage(t("explore.live_scheduled_popup") || "Live stream scheduled");
+              setTimeout(() => setSuccessMessage(null), 3000);
+            }}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {successMessage && (
           <motion.div
@@ -796,7 +907,25 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
-function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnectRequired }: { post: any, currentUserId: number, isConnected: boolean, onHide: () => void, onRepost: () => void, onConnectRequired: () => void }) {
+function PostCard({
+  post,
+  currentUserId,
+  isConnected,
+  onHide,
+  onRepost,
+  onConnectRequired,
+  onCommentClick,
+  onPostClick
+}: {
+  post: any,
+  currentUserId: number,
+  isConnected: boolean,
+  onHide: () => void,
+  onRepost: () => void,
+  onConnectRequired: () => void,
+  onCommentClick: () => void,
+  onPostClick: () => void
+}) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
@@ -901,7 +1030,7 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
   };
 
   return (
-    <div className="p-4 flex flex-col gap-1 relative hover:bg-white/[0.01] transition-all items-start">
+    <div className="p-4 flex flex-col gap-1 relative hover:bg-white/[0.01] transition-all items-start cursor-pointer" onClick={onPostClick}>
       <TrueViewTracker postId={post.id} />
 
       {/* Repost Header */}
@@ -916,7 +1045,7 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
 
       <div className="flex gap-4 w-full items-start">
         {/* Avatar → direct channel link */}
-        <button onClick={openChannel} className="shrink-0 relative">
+        <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="shrink-0 relative">
           <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
             {post.channel?.photo && !imgError ? (
               <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
@@ -936,13 +1065,13 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
         {/* Content */}
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <button onClick={openChannel} className="flex items-center gap-1.5 truncate">
+            <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="flex items-center gap-1.5 truncate">
               <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
             </button>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-[10px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-1 text-white/50 hover:text-white">
+                <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/50 hover:text-white">
                   < MoreHorizontal size={14} />
                 </button>
                 <AnimatePresence>
@@ -951,7 +1080,7 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
                       initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
                       className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
                     >
-                      <button onClick={handleHide} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
+                      <button onClick={(e) => { e.stopPropagation(); handleHide(); }} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
                         {t("explore.not_interested")}
                       </button>
                     </motion.div>
@@ -986,7 +1115,7 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
                     onConnectRequired();
                     return;
                   }
-                  setIsCommentModalOpen(true); 
+                  onCommentClick();
                 }}
                 className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
               >
@@ -1052,16 +1181,6 @@ function PostCard({ post, currentUserId, isConnected, onHide, onRepost, onConnec
               </div>
             </div>
 
-            {/* Comment Thread Modal */}
-            <AnimatePresence>
-              {isCommentModalOpen && (
-                <CommentThreadModal
-                  post={post}
-                  telegramUser={{ id: currentUserId }}
-                  onClose={() => setIsCommentModalOpen(false)}
-                />
-              )}
-            </AnimatePresence>
             <div className="flex items-center gap-1.5 text-white/60 px-2 py-1">
               <Eye size={14} className="text-cyan-400/80" />
               <span className="text-[10px] font-mono font-bold text-white/80">{post.views || 0}</span>
@@ -1109,7 +1228,17 @@ function TrueViewTracker({ postId }: { postId: number }) {
   return <div ref={ref} className="absolute top-1/2 left-0 w-full h-px pointer-events-none" />;
 }
 
-function NotificationsView({ notifications, onClear, currentUserId }: { notifications: any[], onClear: () => void, currentUserId?: number }) {
+function NotificationsView({
+  notifications,
+  onClear,
+  currentUserId,
+  onPostClick
+}: {
+  notifications: any[],
+  onClear: () => void,
+  currentUserId: number,
+  onPostClick: (postId: number, commentId?: number) => void
+}) {
   const { t } = useLanguage();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [interactionData, setInteractionData] = useState<Record<number, any[]>>({});
@@ -1240,8 +1369,11 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
           return (
             <div key={n.id} className="flex flex-col gap-1">
               <div
-                onClick={() => handleToggle(n)}
-                className={`flex gap-4 p-4 rounded-2xl items-center transition-all ${isMilestone ? "cursor-pointer active:scale-[0.98]" : ""} ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
+                onClick={() => {
+                  if (isMilestone) handleToggle(n);
+                  else if (n.post_id) onPostClick(n.post_id, n.type.includes("comment") ? n.comment_id : undefined);
+                }}
+                className={`flex gap-4 p-4 rounded-2xl items-center transition-all cursor-pointer active:scale-[0.98] ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
               >
                 {/* Avatar for acknowledged + new_follower + repost + comment types — clickable to open channel */}
                 {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone") || n.type === "commented" || n.type === "comment_replied" || n.type === "comment_liked") && n.from_user ? (
@@ -1288,15 +1420,16 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
                         if (currentUserId && n.from_user_id) {
                           try {
                             // 🔒 [SECURITY] postApi ensures auth header is sent
+                            // 🚄 [SPEED_BOOST] Instantly open the channel
+                            const handle = n.from_user.telegram_channel;
+                            const clean = handle.replace(/^@/, "");
+                            const link = `https://t.me/${clean}`;
+                            const twa = (window as any).Telegram?.WebApp;
+                            if (twa?.openTelegramLink) twa.openTelegramLink(link);
+                            else window.open(link, "_blank");
+
                             const data = await postApi(`/user/follow`, { follower_id: currentUserId, followed_id: n.from_user_id });
-                            if (data.requires_join) {
-                              const handle = n.from_user.telegram_channel;
-                              const clean = handle.replace(/^@/, "");
-                              const link = `https://t.me/${clean}`;
-                              const twa = (window as any).Telegram?.WebApp;
-                              if (twa?.openTelegramLink) twa.openTelegramLink(link);
-                              else window.open(link, "_blank");
-                            } else if (data.success) {
+                            if (data.success) {
                               onClear(); // mutate notifications to see 'is_followed' as true
                             }
                           } catch (err) {
@@ -1367,63 +1500,115 @@ function NotificationsView({ notifications, onClear, currentUserId }: { notifica
   );
 }
 
-function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegramUser: any, onClose: () => void }) {
+function PostDetailModal({
+  post: initialPost,
+  commentId,
+  telegramUser,
+  onClose,
+  onRefresh
+}: {
+  post: any,
+  commentId?: number | null,
+  telegramUser: any,
+  onClose: () => void,
+  onRefresh: () => void
+}) {
   const { t } = useLanguage();
+  const [post, setPost] = useState<any>(initialPost);
   const [content, setContent] = useState("");
   const [replyTo, setReplyTo] = useState<any>(null);
   const [posting, setPosting] = useState(false);
   const [localComments, setLocalComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(!initialPost.content);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch comments
-  const { data: comments, mutate } = useApi(`/explore/post/${post.id}/comments`);
+  useEffect(() => {
+    if (!initialPost.content && initialPost.id) {
+      setLoading(true);
+      getApi(`/explore/post/${initialPost.id}?tg_id=${telegramUser?.id}`).then(data => {
+        setPost(data);
+        setLoading(false);
+      });
+    }
+  }, [initialPost.id, initialPost.content, telegramUser?.id]);
+
+  const { data: comments, mutate: mutateComments } = useApi(post?.id ? `/explore/post/${post.id}/comments` : null);
 
   useEffect(() => {
-    if (comments) setLocalComments(comments);
-  }, [comments]);
+    if (comments) {
+      setLocalComments(comments);
+      if (commentId) {
+        setTimeout(() => {
+          const el = document.getElementById(`comment-${commentId}`);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 500);
+      }
+    }
+  }, [comments, commentId]);
 
   const handlePostComment = async () => {
     if (!content.trim()) return;
     setPosting(true);
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment = {
+      id: tempId,
+      post_id: post.id,
+      user_id: telegramUser.id,
+      parent_id: replyTo?.id || null,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      likes_count: 0,
+      is_liked: false,
+      user: {
+        name: telegramUser.first_name || "Me",
+        photo: telegramUser.photo_url
+      }
+    };
+
+    setLocalComments(prev => [...prev, optimisticComment]);
+    setContent("");
+    const prevReplyTo = replyTo;
+    setReplyTo(null);
+
     try {
       const res = await postApi(`/explore/post/${post.id}/comment`, {
         user_id: telegramUser.id,
-        content: content.trim(),
-        parent_id: replyTo?.id || null
+        content: optimisticComment.content,
+        parent_id: optimisticComment.parent_id
       });
 
       if (res.success) {
-        setContent("");
-        setReplyTo(null);
-        mutate(); // Refresh comments
+        mutateComments();
+        onRefresh();
       }
     } catch (err) {
-      console.error("Failed to post comment", err);
+      setLocalComments(prev => prev.filter(c => c.id !== tempId));
+      setContent(optimisticComment.content);
+      setReplyTo(prevReplyTo);
     } finally {
       setPosting(false);
     }
   };
 
-  const handleToggleLike = async (commentId: number) => {
+  const handleToggleLike = async (cId: number) => {
+    setLocalComments(prev => prev.map(c =>
+      c.id === cId ? { ...c, is_liked: !c.is_liked, likes_count: c.is_liked ? c.likes_count - 1 : c.likes_count + 1 } : c
+    ));
     try {
-      await postApi(`/explore/comment/${commentId}/like`, {
-        user_id: telegramUser.id,
-        comment_id: commentId
-      });
-      mutate();
+      await postApi(`/explore/comment/${cId}/like`, { user_id: telegramUser.id, comment_id: cId });
+      mutateComments();
     } catch (err) {
-      console.error("Like failed", err);
+      mutateComments();
     }
   };
 
-  // Nesting logic
   const renderComments = (parentId: number | null = null, depth = 0) => {
     return localComments
       .filter(c => c.parent_id === parentId)
       .map(comment => (
-        <div key={comment.id} className="flex flex-col">
-          <div className={`flex gap-3 py-3 ${depth > 0 ? "ml-8 border-l border-white/5 pl-4" : ""}`}>
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40">
+        <div key={comment.id} id={`comment-${comment.id}`} className="flex flex-col">
+          <div className={`flex gap-3 py-4 ${depth > 0 ? "ml-6 border-l border-white/5 pl-4" : ""} ${comment.id === commentId ? "bg-cyan-500/5 rounded-xl px-2 -mx-2" : ""}`}>
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40 shadow-sm">
               {comment.user.photo ? (
                 <img src={comment.user.photo} className="w-full h-full object-cover" />
               ) : (
@@ -1434,23 +1619,27 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-white font-bold text-[11px] truncate">{comment.user.name}</span>
+                <span className="text-white font-bold text-[11px] truncate tracking-tight">{comment.user.name}</span>
                 <span className="text-[9px] text-white/30">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <p className="text-sm text-white/80 leading-relaxed mb-2">{comment.content}</p>
+              <p className="text-sm text-white/90 leading-relaxed mb-3 whitespace-pre-wrap">{comment.content}</p>
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => handleToggleLike(comment.id)}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold tracking-tight transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/30 hover:text-white"}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/30 hover:text-white"}`}
                 >
-                  <Heart size={12} fill={comment.is_liked ? "currentColor" : "none"} />
+                  <Heart size={12} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={2.5} />
                   {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
                 </button>
                 <button
-                  onClick={() => setReplyTo(comment)}
-                  className="flex items-center gap-1.5 text-[10px] font-bold tracking-tight text-white/30 hover:text-white transition-colors"
+                  onClick={() => {
+                    setReplyTo(comment);
+                    const input = document.getElementById('comment-input');
+                    input?.focus();
+                  }}
+                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-colors"
                 >
-                  <MessageCircle size={12} />
+                  <MessageCircle size={12} strokeWidth={2.5} />
                   <span>Reply</span>
                 </button>
               </div>
@@ -1465,78 +1654,103 @@ function CommentThreadModal({ post, telegramUser, onClose }: { post: any, telegr
 
   return createPortal(
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md flex items-end justify-center"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="w-full max-w-xl bg-[#0a0a0a] border-t border-white/10 rounded-t-[2.5rem] flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
+        className="w-full max-w-xl bg-zinc-950 border-t border-white/10 rounded-t-[3rem] flex flex-col max-h-[95vh] shadow-[0_-20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+        <div className="flex justify-center pt-4 pb-2" onClick={onClose} >
+          <div className="w-12 h-1.5 rounded-full bg-white/10 active:bg-white/30 transition-colors" />
         </div>
 
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400">Comments</h3>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/5 text-white/50 hover:text-white transition-colors">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Comments List */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-2">
-          {localComments.length === 0 ? (
-            <div className="py-20 text-center opacity-30 flex flex-col items-center gap-4">
-              <MessageCircle size={40} />
-              <p className="text-[10px] font-black uppercase tracking-widest">No signals yet. Start the thread.</p>
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
+          {loading ? (
+            <div className="py-20 flex flex-col items-center gap-4 opacity-50">
+              <Loader2 className="animate-spin text-cyan-400" size={32} />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Hydrating Signal</p>
             </div>
           ) : (
-            renderComments()
+            <div className="py-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40">
+                  {post.user?.photo ? (
+                    <img src={post.user.photo} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-lg">
+                      {post.user?.name?.[0] || 'U'}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-white font-black text-sm tracking-tight">{post.user?.name}</h4>
+                  <p className="text-xs text-white/30">@{post.user?.handle || 'anon'}</p>
+                </div>
+              </div>
+
+              <p className="text-lg text-white font-medium leading-relaxed tracking-tight mb-4 whitespace-pre-wrap">
+                {post.content}
+              </p>
+
+              {post.media_urls && post.media_urls.length > 0 && (
+                <MediaCollage items={post.media_urls} />
+              )}
+
+              <div className="py-4 border-y border-white/5 flex items-center gap-6 mb-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-black text-white">{post.acks_count || 0}</span>
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Acks</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Reposts</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pb-32">
+                {localComments.length === 0 ? (
+                  <div className="py-12 text-center opacity-20 flex flex-col items-center gap-4">
+                    <MessageCircle size={48} strokeWidth={1} />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Zero reverberations yet</p>
+                  </div>
+                ) : (
+                  renderComments()
+                )}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="p-4 bg-black border-t border-white/10 pb-[calc(env(safe-area-inset-bottom,20px)+80px)]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-xl border-t border-white/10 pb-[calc(env(safe-area-inset-bottom,20px)+20px)]">
           {replyTo && (
-            <div className="flex items-center justify-between bg-cyan-500/5 px-4 py-2 rounded-t-xl border-x border-t border-cyan-500/20 mb-[-1px]">
-              <span className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest">
+            <div className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20 rounded-t-2xl">
+              <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                 Replying to <span className="text-white">{replyTo.user.name}</span>
               </span>
-              <button onClick={() => setReplyTo(null)} className="text-cyan-400 hover:text-white">
-                <X size={12} />
+              <button onClick={() => setReplyTo(null)} className="text-cyan-400 p-1">
+                <X size={14} />
               </button>
             </div>
           )}
-          <div className={`flex items-end gap-3 p-2 bg-white/5 border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-2xl'} focus-within:border-cyan-500/30 transition-all`}>
+          <div className={`flex items-end gap-3 p-3 bg-white/5 border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-[2rem]'} focus-within:border-cyan-500/40 transition-all shadow-2xl`}>
             <textarea
-              autoFocus
+              id="comment-input"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Post your reply"
-              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 px-2 resize-none max-h-32 min-h-[40px]"
+              className="flex-1 bg-transparent border-none outline-none text-base text-white py-2 px-2 resize-none max-h-32 min-h-[44px] custom-scrollbar"
               rows={1}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handlePostComment();
-                }
-              }}
             />
             <button
               onClick={handlePostComment}
               disabled={posting || !content.trim()}
-              className="w-10 h-10 rounded-xl bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30"
+              className="w-11 h-11 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-90 transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(0,230,255,0.3)]"
             >
-              {posting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              {posting ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
             </button>
           </div>
         </div>
@@ -1582,7 +1796,6 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
                 </div>
               </div>
               
-              {/* Pulse effect internal ring */}
               <div className="absolute inset-0 rounded-full border-2 border-cyan-500 animate-[pulse_2s_ease-out_infinite] opacity-50 z-0 pointer-events-none" />
 
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded-[4px] border border-cyan-300 shadow-[0_0_10px_rgba(0,230,255,1)] leading-none flex items-center gap-1 tracking-widest z-20 pointer-events-none">
@@ -1597,5 +1810,131 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function ScheduleLiveModal({
+  telegramUser,
+  connectedChannel,
+  onClose,
+  onScheduled
+}: {
+  telegramUser: any,
+  connectedChannel?: string,
+  onClose: () => void,
+  onScheduled: (live: any) => void
+}) {
+  const { t } = useLanguage();
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(new Date(Date.now() + 3600000).toISOString().split('T')[0]);
+  const [time, setTime] = useState(new Date(Date.now() + 3600000).toTimeString().slice(0, 5));
+  const [scheduling, setScheduling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSchedule = async () => {
+    if (!title.trim() || !connectedChannel) return;
+    setScheduling(true);
+    setError(null);
+    try {
+      const scheduledAt = new Date(`${date}T${time}`).toISOString();
+      const res = await postApi("/explore/schedule_live", {
+        channel_id: telegramUser.id,
+        admin_id: telegramUser.id,
+        title: title.trim(),
+        scheduled_at: scheduledAt
+      });
+      if (res.success) {
+        onScheduled(res.live);
+      } else {
+        setError(res.detail || "Failed to schedule");
+      }
+    } catch (err) {
+      setError("Critical system error");
+    } finally {
+      setScheduling(false);
+    }
+  };
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-end justify-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="w-full max-w-xl bg-zinc-950 border-t border-cyan-500/20 rounded-t-[3rem] p-8 space-y-6 shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-center -mt-4 mb-2">
+          <div className="w-12 h-1.5 rounded-full bg-white/10" />
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="text-xl font-black uppercase tracking-tighter text-white">Schedule Live Broadcast</h3>
+          <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest opacity-60">Manage your presence signal</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Topic / Title</label>
+            <input
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What are we broadcasting?"
+              className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all dark:[color-scheme:dark]"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Time</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white outline-none focus:border-cyan-500/40 transition-all dark:[color-scheme:dark]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {error && <p className="text-[10px] text-orange-400 font-bold uppercase text-center tracking-tight">{error}</p>}
+
+        <div className="pt-2">
+          <button
+            onClick={handleSchedule}
+            disabled={scheduling || !title.trim() || !connectedChannel}
+            className="w-full h-16 bg-cyan-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_0_30px_rgba(0,230,255,0.3)] active:scale-[0.98] transition-all disabled:opacity-30 disabled:shadow-none flex items-center justify-center gap-3"
+          >
+            {scheduling ? (
+              <Loader2 size={24} className="animate-spin" />
+            ) : (
+              <>
+                <Video size={20} strokeWidth={2.5} />
+                Confirm Live Schedule
+              </>
+            )}
+          </button>
+          {!connectedChannel && (
+            <p className="text-[8px] text-white/20 text-center mt-4 uppercase tracking-widest">Connect a channel to broadcast live</p>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
   );
 }
