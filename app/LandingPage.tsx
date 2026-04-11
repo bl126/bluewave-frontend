@@ -238,6 +238,10 @@ export default function LandingPage() {
             points_balance: u.points_balance ?? 0,
             referral_earnings_pending: u.referral_earnings_pending ?? 0,
             total_referrals: u.total_referrals ?? 0,
+            wallet_address: u.wallet_address,
+            is_human_verified: !!u.is_human_verified,
+            bw_id: u.bw_id,
+            joined_at: u.joined_at,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
@@ -276,11 +280,16 @@ export default function LandingPage() {
           return;
         }
 
-        // 🔗 Capture start_param (Referrer)
+        // 🔗 Capture start_param (Referrer or Post Linking)
         const startParam = tg?.initDataUnsafe?.start_param;
         let referrerId = null;
-        if (startParam && startParam.startsWith("ref_")) {
-            referrerId = startParam.replace("ref_", "");
+        let actionPostId = null;
+        if (startParam) {
+            if (startParam.startsWith("ref_")) {
+                referrerId = startParam.replace("ref_", "");
+            } else if (startParam.startsWith("post_")) {
+                actionPostId = startParam.replace("post_", "");
+            }
         }
 
         const savedTgId = String(effectiveTgId);
@@ -439,6 +448,12 @@ export default function LandingPage() {
         setTimeout(() => {
           setIsLoading(false);
           console.log("Initialization complete after delay.");
+          // ⭐ If actionPostId is set, navigate user immediately to the explore feed
+          if (actionPostId) {
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "explore" }));
+            }, 300);
+          }
         }, delay);
       } catch (err) {
         console.error("Initialization error:", err);

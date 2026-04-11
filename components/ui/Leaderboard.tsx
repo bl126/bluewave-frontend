@@ -24,9 +24,13 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   };
 
   const [cachedData, setCachedData] = useState<any>(() => {
-    if (typeof window !== "undefined" && tg_id) {
-       const cached = window.localStorage.getItem(`bw_leaderboard_cache_${tg_id}`);
-       return cached ? JSON.parse(cached) : null;
+    if (typeof window !== "undefined") {
+      // Use live tg_id OR fall back to the saved id so returning users get instant data
+      const effectiveTgId = tg_id || window.localStorage.getItem("bw_tg_id");
+      if (effectiveTgId) {
+        const cached = window.localStorage.getItem(`bw_leaderboard_cache_${effectiveTgId}`);
+        return cached ? JSON.parse(cached) : null;
+      }
     }
     return null;
   });
@@ -100,6 +104,81 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     const v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
+
+  // 🔐 Wallet Gate — Ghost users (no wallet) see the lock screen
+  const isGhost = !telegramUser?.wallet_address;
+
+  if (isGhost) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className={`${
+              isInline
+                ? "relative w-full min-h-[70vh]"
+                : "fixed inset-0 bg-black/90 backdrop-blur-2xl z-[170]"
+            } flex flex-col items-center justify-center p-8 text-center`}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            {/* Ambient glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,230,255,0.06)_0%,_transparent_70%)] pointer-events-none" />
+
+            {/* Lock Icon */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.5, ease: "easeOut" }}
+              className="w-24 h-24 bg-cyan-500/10 rounded-3xl flex items-center justify-center mx-auto border border-cyan-500/20 shadow-[0_0_40px_rgba(0,230,255,0.12)] mb-8 relative"
+            >
+              <span className="text-5xl">🔒</span>
+              <motion.div
+                className="absolute inset-0 rounded-3xl border border-cyan-400/20"
+                animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.8, 0.4] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </motion.div>
+
+            {/* Text */}
+            <motion.div
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.25, duration: 0.5 }}
+              className="space-y-3 mb-8"
+            >
+              <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                Citizens Only
+              </h2>
+              <p className="text-[11px] text-cyan-400/80 font-black uppercase tracking-[0.25em]">
+                Leaderboard · Connect to Compete
+              </p>
+              <p className="text-xs text-white/30 max-w-[240px] leading-relaxed mx-auto pt-2">
+                Connect your TON wallet to enter the global ranks and compete for the top.
+              </p>
+            </motion.div>
+
+            {/* CTA */}
+            <motion.button
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("setActiveTab", { detail: "profile" })
+                )
+              }
+              className="h-14 px-10 bg-cyan-500 text-black text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-[0_0_25px_rgba(0,230,255,0.35)] active:scale-95 transition-all hover:bg-cyan-400"
+            >
+              Connect Wallet →
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
