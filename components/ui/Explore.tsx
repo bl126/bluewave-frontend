@@ -936,6 +936,60 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 }
 
 // ----------------------------------------------------------------------------
+// 🔗 Linked Text Component (X-style Clickable Links & Mentions)
+// ----------------------------------------------------------------------------
+function LinkedText({ text, className = "" }: { text: string, className?: string }) {
+  if (!text) return null;
+
+  const openChannel = (handle: string) => {
+    const clean = handle.replace(/^@/, "");
+    const link = `https://t.me/${clean}`;
+    const twa = (window as any).Telegram?.WebApp;
+    if (twa?.openTelegramLink) {
+      twa.openTelegramLink(link);
+    } else {
+      window.open(link, "_blank");
+    }
+  };
+
+  // Split by URL or Mention
+  const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,})/g);
+
+  return (
+    <p className={className}>
+      {parts.map((part, i) => {
+        if (part.startsWith('http')) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors"
+            >
+              {part}
+            </a>
+          );
+        }
+        if (part.startsWith('@')) {
+          return (
+            <span
+              key={i}
+              onClick={(e) => { e.stopPropagation(); openChannel(part); }}
+              className="text-cyan-400 font-bold hover:text-cyan-300 cursor-pointer transition-colors"
+            >
+              {part}
+            </span>
+          );
+        }
+        return part;
+      })}
+    </p>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // 📬 Post Card Component
 // ----------------------------------------------------------------------------
 function PostCard({
@@ -1120,7 +1174,7 @@ function PostCard({
             </div>
           </div>
 
-          <p className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3">{post.content}</p>
+          <LinkedText text={post.content} className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3" />
 
           {/* Signal Content */}
           {post.post_type === 'live_scheduled' ? null : post.media_urls && post.media_urls.length > 0 ? (
@@ -1326,6 +1380,8 @@ function NotificationsView({
       case "comment_replied": return <MessageCircle size={18} className="text-cyan-400" />;
       case "comment_liked": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "new_follower": return <Plus size={18} className="text-cyan-400" />;
+      case "mentioned_in_post":
+      case "mentioned_in_comment": return <UserCheck size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
     }
   };
@@ -1340,6 +1396,8 @@ function NotificationsView({
     if (n.type === "comment_replied") return t("notifications.comment_reply_title");
     if (n.type === "comment_liked") return t("notifications.comment_like_title");
     if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
+    if (n.type === "mentioned_in_post") return "Tagged in Signal";
+    if (n.type === "mentioned_in_comment") return "Tagged in Comment";
     return t("notifications.notification_type");
   };
   const getMessage = (n: any) => {
@@ -1379,6 +1437,14 @@ function NotificationsView({
     if (n.type === "new_follower") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
       return (t("notifications.new_follower_msg") || "{{name}} followed your channel.").replace("{{name}}", firstName);
+    }
+    if (n.type === "mentioned_in_post") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} tagged you in a new signal.`;
+    }
+    if (n.type === "mentioned_in_comment") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return `${firstName} tagged you in a comment.`;
     }
     return t("notifications.update_msg");
   };
@@ -1653,7 +1719,7 @@ function PostDetailModal({
                 <span className="text-white font-bold text-[11px] truncate tracking-tight">{comment.user.name}</span>
                 <span className="text-[9px] text-white/30">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <p className="text-sm text-white/90 leading-relaxed mb-3 whitespace-pre-wrap">{comment.content}</p>
+              <LinkedText text={comment.content} className="text-sm text-white/90 leading-relaxed mb-3 whitespace-pre-wrap" />
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => handleToggleLike(comment.id)}
@@ -1735,9 +1801,7 @@ function PostDetailModal({
                 </div>
               </div>
 
-              <p className="text-lg text-white font-medium leading-relaxed tracking-tight mb-4 whitespace-pre-wrap">
-                {post.content}
-              </p>
+              <LinkedText text={post.content} className="text-lg text-white font-medium leading-relaxed tracking-tight mb-4 whitespace-pre-wrap" />
 
               {post.media_urls && post.media_urls.length > 0 && (
                 <MediaCollage items={post.media_urls} />
