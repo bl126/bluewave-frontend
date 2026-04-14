@@ -952,13 +952,20 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
     }
   };
 
-  // Split by URL or Mention
-  const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,})/g);
+  // Split by URL (with or without http), or Mention
+  // Regex explanation:
+  // 1. https?:\/\/[^\s]+ -> Standard URL with protocol
+  // 2. (?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)? -> Domains without protocol
+  // 3. @\w{3,} -> Mentions
+  const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
 
   return (
     <p className={className}>
       {parts.map((part, i) => {
-        if (part.startsWith('http')) {
+        if (!part) return null;
+        
+        // Protocol-based links
+        if (/^https?:\/\//i.test(part)) {
           return (
             <a
               key={i}
@@ -972,6 +979,24 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
             </a>
           );
         }
+        
+        // Protocol-less links (com, xyz, etc.)
+        if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
+          return (
+            <a
+              key={i}
+              href={`https://${part}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors"
+            >
+              {part}
+            </a>
+          );
+        }
+
+        // Mentions
         if (part.startsWith('@')) {
           return (
             <span
@@ -983,6 +1008,8 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
             </span>
           );
         }
+        
+        // Plain text
         return part;
       })}
     </p>
