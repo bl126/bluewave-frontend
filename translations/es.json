@@ -253,7 +253,11 @@
     "comment_like_title": "Comentario Gustado",
     "comment_msg": "{{name}} comentó en tu publicación.",
     "comment_reply_msg": "{{name}} respondió a tu comentario.",
-    "comment_like_msg": "{{name}} le gustó tu comentario."
+    "comment_like_msg": "{{name}} le gustó tu comentario.",
+    "mentioned_in_post_title": "Etiquetado en Señal",
+    "mentioned_in_comment_title": "Etiquetado en Comentario",
+    "mentioned_in_post_msg": "{{name}} te etiquetó en una nueva señal.",
+    "mentioned_in_comment_msg": "{{name}} te etiquetó en un comentario."
   },
   "marketplace": {
     "beta_phase": "EN FASE BETA"

@@ -253,7 +253,11 @@
     "comment_like_title": "Лайк к комментарию",
     "comment_msg": "{{name}} прокомментировал(а) ваш пост.",
     "comment_reply_msg": "{{name}} ответил(а) на ваш комментарий.",
-    "comment_like_msg": "{{name}} лайкнул(а) ваш комментарий."
+    "comment_like_msg": "{{name}} лайкнул(а) ваш комментарий.",
+    "mentioned_in_post_title": "Отмечен в сигнале",
+    "mentioned_in_comment_title": "Отмечен в комментарии",
+    "mentioned_in_post_msg": "{{name}} отметил вас в новом сигнале.",
+    "mentioned_in_comment_msg": "{{name}} отметил вас в комментарии."
   },
   "marketplace": {
     "beta_phase": "ФАЗА БЕТА"

@@ -21,7 +21,14 @@ import {
   UserCheck,
   MessageCircle,
   Share2,
-  Calendar
+  Calendar,
+  Shield,
+  Zap,
+  ShoppingCart,
+  Vote,
+  Activity,
+  Fingerprint,
+  Bot
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -38,6 +45,19 @@ const BETA_TESTER_IDS: number[] = [
   1504247376,
   5364551821,
   7834249676
+];
+
+const MOCK_MINI_APPS = [
+  { id: "id-vault", name: "Identity Vault", icon: <Shield size={20} />, color: "from-cyan-500 to-blue-600" },
+  { id: "missions", name: "Missions", icon: <Rocket size={20} />, color: "from-purple-500 to-indigo-600" },
+  { id: "bwavescan", name: "BwaveScan", icon: <Eye size={20} />, color: "from-emerald-500 to-teal-600" },
+  { id: "burner", name: "Signal Burner", icon: <Zap size={20} />, color: "from-orange-500 to-red-600" },
+  { id: "market", name: "Marketplace", icon: <ShoppingCart size={20} />, color: "from-pink-500 to-rose-600" },
+  { id: "gov", name: "Governance", icon: <Vote size={20} />, color: "from-blue-400 to-cyan-500" },
+  { id: "stats", name: "Pulse Stats", icon: <BarChart2 size={20} />, color: "from-amber-400 to-orange-500" },
+  { id: "human", name: "Humanity Check", icon: <UserCheck size={20} />, color: "from-cyan-400 to-teal-500" },
+  { id: "bridge", name: "Wave Bridge", icon: <Share2 size={20} />, color: "from-indigo-400 to-purple-500" },
+  { id: "agent", name: "Blu Agent", icon: <Bot size={20} />, color: "from-zinc-400 to-zinc-600" },
 ];
 
 interface ExploreProps {
@@ -513,21 +533,27 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 </div>
               )}
 
-              {pagedPosts?.map((post: any) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUserId={telegramUser?.id}
-                  isConnected={isConnected}
-                  onHide={() => mutate()}
-                  onRepost={() => mutate()}
-                  onConnectRequired={() => {
-                    setConnectPrompt(true);
-                    setTimeout(() => setConnectPrompt(false), 3000);
-                  }}
-                  onCommentClick={() => setSelectedPost(post)}
-                  onPostClick={() => setSelectedPost(post)}
-                />
+              {pagedPosts?.map((post: any, index: number) => (
+                <div key={post.id || index}>
+                  <PostCard
+                    post={post}
+                    currentUserId={telegramUser?.id}
+                    isConnected={isConnected}
+                    onHide={() => mutate()}
+                    onRepost={() => mutate()}
+                    onConnectRequired={() => {
+                      setConnectPrompt(true);
+                      setTimeout(() => setConnectPrompt(false), 3000);
+                    }}
+                    onCommentClick={() => setSelectedPost(post)}
+                    onPostClick={() => setSelectedPost(post)}
+                  />
+                  {(index + 1) % 5 === 0 && (
+                    <div className="py-2">
+                       <MiniAppCarousel apps={MOCK_MINI_APPS} />
+                    </div>
+                  )}
+                </div>
               ))}
 
               {/* Load More Trigger */}
@@ -1423,8 +1449,8 @@ function NotificationsView({
     if (n.type === "comment_replied") return t("notifications.comment_reply_title");
     if (n.type === "comment_liked") return t("notifications.comment_like_title");
     if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
-    if (n.type === "mentioned_in_post") return "Tagged in Signal";
-    if (n.type === "mentioned_in_comment") return "Tagged in Comment";
+    if (n.type === "mentioned_in_post") return t("notifications.mentioned_in_post_title");
+    if (n.type === "mentioned_in_comment") return t("notifications.mentioned_in_comment_title");
     return t("notifications.notification_type");
   };
   const getMessage = (n: any) => {
@@ -1467,11 +1493,11 @@ function NotificationsView({
     }
     if (n.type === "mentioned_in_post") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} tagged you in a new signal.`;
+      return t("notifications.mentioned_in_post_msg").replace("{{name}}", firstName);
     }
     if (n.type === "mentioned_in_comment") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
-      return `${firstName} tagged you in a comment.`;
+      return t("notifications.mentioned_in_comment_msg").replace("{{name}}", firstName);
     }
     return t("notifications.update_msg");
   };
@@ -1500,7 +1526,7 @@ function NotificationsView({
                 className={`flex gap-4 p-4 rounded-2xl items-center transition-all cursor-pointer active:scale-[0.98] ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
               >
                 {/* Avatar for acknowledged + new_follower + repost + comment types — clickable to open channel */}
-                {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone") || n.type === "commented" || n.type === "comment_replied" || n.type === "comment_liked") && n.from_user ? (
+                {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone") || n.type === "commented" || n.type === "comment_replied" || n.type === "comment_liked" || n.type === "mentioned_in_post" || n.type === "mentioned_in_comment") && n.from_user ? (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1947,6 +1973,53 @@ function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
             </span>
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniAppCarousel({ apps }: { apps: any[] }) {
+  return (
+    <div className="w-full py-6 border-y border-white/5 bg-white/[0.01] overflow-hidden">
+      <div className="px-5 mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+           <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/80">Ecosystem Discovery</h3>
+        </div>
+        <div className="flex gap-1">
+          <div className="w-1 h-1 rounded-full bg-cyan-500/40" />
+          <div className="w-1 h-1 rounded-full bg-cyan-500/20" />
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-5 overflow-x-auto custom-scrollbar px-5 pb-2 hide-scrollbar snap-x no-scrollbar">
+        {apps.map((app) => (
+          <div 
+            key={app.id} 
+            className="flex flex-col items-center gap-3 shrink-0 snap-center group"
+          >
+            {/* Minimal App Icon with Gradient Ring */}
+            <div className={`w-16 h-16 rounded-full bg-active p-[1.5px] relative group-active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.4)]`}>
+              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${app.color} opacity-40 blur-[2px] transition-opacity group-hover:opacity-100`} />
+              <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+                {app.icon}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2.5">
+              <span className="text-[9px] font-black text-white/90 uppercase tracking-widest text-center w-20 truncate">
+                {app.name}
+              </span>
+              
+              <button className="px-3 py-1 bg-white/5 hover:bg-cyan-500 hover:text-black border border-white/10 hover:border-cyan-400 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all shadow-sm active:translate-y-0.5">
+                Open
+              </button>
+            </div>
+          </div>
+        ))}
+        {/* Spacer for end scroll */}
+        <div className="shrink-0 w-5" />
       </div>
     </div>
   );
