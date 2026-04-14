@@ -253,9 +253,9 @@
     "comment_msg": "{{name}} 评论了你的帖子。",
     "comment_reply_msg": "{{name}} 回复了你的评论。",
     "comment_like_msg": "{{name}} 赞了你的评论。",
-    "mentioned_in_post_title": "在信号中被标记",
+    "mentioned_in_post_title": "在帖子中被标记",
     "mentioned_in_comment_title": "在评论中被标记",
-    "mentioned_in_post_msg": "{{name}} 在新信号中标记了你。",
+    "mentioned_in_post_msg": "{{name}} 在新帖子中标记了你。",
     "mentioned_in_comment_msg": "{{name}} 在评论中标记了你。"
   },
   "marketplace": {

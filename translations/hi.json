@@ -254,9 +254,9 @@
     "comment_msg": "{{name}} ने आपकी पोस्ट पर टिप्पणी की।",
     "comment_reply_msg": "{{name}} ने आपकी टिप्पणी का उत्तर दिया।",
     "comment_like_msg": "{{name}} ने आपकी टिप्पणी को पसंद किया।",
-    "mentioned_in_post_title": "सिग्नल में टैग किया गया",
+    "mentioned_in_post_title": "पोस्ट में टैग किया गया",
     "mentioned_in_comment_title": "कमेंट में टैग किया गया",
-    "mentioned_in_post_msg": "{{name}} ने आपको एक नए सिग्नल में टैग किया है।",
+    "mentioned_in_post_msg": "{{name}} ने आपको एक नई पोस्ट में टैग किया है।",
     "mentioned_in_comment_msg": "{{name}} ने आपको एक कमेंट में टैग किया है।"
   },
   "marketplace": {

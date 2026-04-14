@@ -254,9 +254,9 @@
     "comment_msg": "{{name}} แสดงความคิดเห็นในโพสต์ของคุณ",
     "comment_reply_msg": "{{name}} ตอบกลับความคิดเห็นของคุณ",
     "comment_like_msg": "{{name}} ถูกใจความคิดเห็นของคุณ",
-    "mentioned_in_post_title": "ถูกแท็กในสัญญาณ",
+    "mentioned_in_post_title": "ถูกแท็กในโพสต์",
     "mentioned_in_comment_title": "ถูกแท็กในความคิดเห็น",
-    "mentioned_in_post_msg": "{{name}} แท็กคุณในสัญญาณใหม่",
+    "mentioned_in_post_msg": "{{name}} แท็กคุณในโพสต์ใหม่",
     "mentioned_in_comment_msg": "{{name}} แท็กคุณในความคิดเห็น"
   },
   "marketplace": {

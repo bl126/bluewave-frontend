@@ -253,9 +253,9 @@
     "comment_msg": "{{name}} mengomentari postingan Anda.",
     "comment_reply_msg": "{{name}} membalas komentar Anda.",
     "comment_like_msg": "{{name}} menyukai komentar Anda.",
-    "mentioned_in_post_title": "Ditandai di Sinyal",
+    "mentioned_in_post_title": "Ditandai di Postingan",
     "mentioned_in_comment_title": "Ditandai di Komentar",
-    "mentioned_in_post_msg": "{{name}} menandai Anda di sinyal baru.",
+    "mentioned_in_post_msg": "{{name}} menandai Anda di postingan baru.",
     "mentioned_in_comment_msg": "{{name}} menandai Anda di komentar."
   },
   "marketplace": {

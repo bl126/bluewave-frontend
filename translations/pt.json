@@ -254,9 +254,9 @@
     "comment_msg": "{{name}} comentou no seu post.",
     "comment_reply_msg": "{{name}} respondeu ao seu comentário.",
     "comment_like_msg": "{{name}} curtiu o seu comentário.",
-    "mentioned_in_post_title": "Marcado no Sinal",
+    "mentioned_in_post_title": "Marcado no Post",
     "mentioned_in_comment_title": "Marcado no Comentário",
-    "mentioned_in_post_msg": "{{name}} marcou você em um novo sinal.",
+    "mentioned_in_post_msg": "{{name}} marcou você em um novo post.",
     "mentioned_in_comment_msg": "{{name}} marcou você em um comentário."
   },
   "marketplace": {

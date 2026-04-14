@@ -1984,7 +1984,7 @@ function MiniAppCarousel({ apps }: { apps: any[] }) {
       <div className="px-5 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/80">Ecosystem Discovery</h3>
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/80">Mini Apps</h3>
         </div>
         <div className="flex gap-1">
           <div className="w-1 h-1 rounded-full bg-cyan-500/40" />
@@ -1992,7 +1992,12 @@ function MiniAppCarousel({ apps }: { apps: any[] }) {
         </div>
       </div>
       
-      <div className="flex items-center gap-5 overflow-x-auto custom-scrollbar px-5 pb-2 hide-scrollbar snap-x no-scrollbar">
+      <div 
+        className="flex items-center gap-5 overflow-x-auto custom-scrollbar px-5 pb-2 hide-scrollbar snap-x no-scrollbar"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         {apps.map((app) => (
           <div 
             key={app.id} 

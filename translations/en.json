@@ -254,9 +254,9 @@
     "comment_msg": "{{name}} commented on your post.",
     "comment_reply_msg": "{{name}} replied to your comment.",
     "comment_like_msg": "{{name}} liked your comment.",
-    "mentioned_in_post_title": "Tagged in Signal",
+    "mentioned_in_post_title": "Tagged in Post",
     "mentioned_in_comment_title": "Tagged in Comment",
-    "mentioned_in_post_msg": "{{name}} tagged you in a new signal.",
+    "mentioned_in_post_msg": "{{name}} tagged you in a new post.",
     "mentioned_in_comment_msg": "{{name}} tagged you in a comment."
   },
   "marketplace": {
