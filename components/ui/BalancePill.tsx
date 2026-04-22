@@ -133,7 +133,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                         exit={{ y: -50, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 25 }}
                         className="fixed left-1/2 -translate-x-1/2 z-[150] flex flex-col items-center gap-2"
-                        style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 2px)" }}
+                        style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) - 2px)" }}
                     >
                         {orderedTypes.map((type, idx) => {
                             if (!isExpanded && idx !== 0) return null;
@@ -149,47 +149,47 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                     onClick={() => handleSwitch(type)}
                                     whileTap={{ scale: 0.95 }}
                                     className={`flex items-center justify-between bg-black/40 backdrop-blur-xl border border-cyan-500/30 
-                                    text-cyan-400 font-bold shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden ${isExpanded ? "w-44 sm:w-52" : "w-auto min-w-fit px-4"}`}
+                                    text-cyan-400 font-bold shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden ${isExpanded ? "w-40 sm:w-48" : "w-auto min-w-fit px-3"}`}
                                     initial={!isPrimary ? { opacity: 0, scale: 0.8, y: -20 } : false}
                                     animate={{
                                         opacity: 1,
                                         scale: 1,
                                         y: 0,
-                                        borderRadius: isExpanded ? "14px" : "9999px",
-                                        padding: isExpanded ? "12px 16px" : "8px 16px",
+                                        borderRadius: isExpanded ? "12px" : "9999px",
+                                        padding: isExpanded ? "8px 12px" : "4px 10px",
                                     }}
                                     exit={{ opacity: 0, scale: 0.8, y: -20 }}
                                     transition={{ type: "spring", stiffness: 450, damping: 35 }}
                                 >
-                                    <div className={`flex items-center gap-3 flex-1 ${type === "points" ? "" : "pl-1"}`}>
-                                        <motion.span layout="position" className="tracking-tighter whitespace-nowrap text-[14px] font-black flex-1">
+                                    <div className={`flex items-center gap-2 flex-1 ${type === "points" ? "" : "pl-1"}`}>
+                                        <motion.span layout="position" className="tracking-tight whitespace-nowrap text-[11px] font-black flex-1">
                                             {type === "points" ? (
                                                 balance !== null ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="text-cyan-400 font-black shadow-[0_0_10px_#00e6ff40]">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-cyan-400 font-black">
                                                             {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}
                                                         </span>
-                                                        <span className="text-[10px] sm:text-[11px] tracking-widest text-cyan-400 font-black ml-1 uppercase">$BWAVE</span>
+                                                        <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-400 font-black ml-0.5 uppercase">$BWAVE</span>
                                                     </div>
                                                 ) : (
                                                     <span className="animate-pulse text-cyan-400">...</span>
                                                 )
                                             ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="opacity-60 font-mono">$</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="flex items-center gap-0.5">
+                                                        <span className="opacity-60 font-mono text-[10px]">$</span>
                                                         <span className="text-cyan-400 font-black">0</span>
                                                         <span className="opacity-40 mx-0.5">~</span>
                                                         <span className="text-cyan-400 font-black">0</span>
                                                     </div>
                                                     
                                                     {/* Currency Icon comes after number for TON/Stars */}
-                                                    <div className="w-5 h-5 flex items-center justify-center shrink-0 ml-1">
+                                                    <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
                                                         {type === "ton" && (
-                                                            <img src="/ton-transparent.png" alt="TON" className="w-4.5 h-4.5 object-contain" />
+                                                            <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                                                         )}
                                                         {type === "stars" && (
-                                                            <div className="text-cyan-400 flex items-center justify-center scale-110">
+                                                            <div className="text-cyan-400 flex items-center justify-center scale-90">
                                                                 <StarIcon />
                                                             </div>
                                                         )}
@@ -202,7 +202,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                     {/* Plus icon - Only visible when expanded for TON/Stars */}
                                     {isExpanded && type !== "points" ? (
                                         <div className="shrink-0 bg-cyan-500/10 p-0.5 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(0,230,255,0.1)]">
-                                            <Plus size={12} strokeWidth={4} className="text-cyan-400" />
+                                            <Plus size={10} strokeWidth={4} className="text-cyan-400" />
                                         </div>
                                     ) : (
                                         // Invisible spacer to maintain layout consistency ONLY when expanded
