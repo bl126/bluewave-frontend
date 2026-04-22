@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
+
+type BalanceType = "points" | "ton" | "stars";
 
 interface BalancePillProps {
     balance: number | null;
@@ -10,10 +13,15 @@ interface BalancePillProps {
 
 export default function BalancePill({ balance, isVisible }: BalancePillProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastScrollYRef = useRef(0);
     const pillRef = useRef<HTMLDivElement>(null);
+
+    // Static balances for now
+    const tonBalance = 0;
+    const starBalance = 0;
 
     // Formatting helpers
     const formatAbbreviated = (num: number) => {
@@ -39,6 +47,24 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
         }
         return () => document.removeEventListener("click", handleClickOutside);
     }, [isExpanded]);
+
+    const handleSwitch = (type: BalanceType) => {
+        if (type === primaryType) {
+            setIsExpanded(!isExpanded);
+        } else {
+            setPrimaryType(type);
+            setIsExpanded(false);
+        }
+    };
+
+    const StarIcon = () => (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" />
+        </svg>
+    );
+
+    const types: BalanceType[] = ["points", "ton", "stars"];
+    const orderedTypes = [primaryType, ...types.filter(t => t !== primaryType)];
 
     // Global scroll listener for auto-hide
     useEffect(() => {
@@ -85,43 +111,109 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
     const shouldRender = isVisible && !isScrollHidden;
 
     return (
-        <AnimatePresence>
-            {shouldRender && (
-                <motion.div
-                    ref={pillRef}
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -50, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="fixed left-1/2 -translate-x-1/2 z-[150]"
-                    style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 2px)" }}
-                >
-                    <motion.button
-                        onClick={() => setIsExpanded(true)}
-                        layout
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center justify-center bg-black/40 backdrop-blur-xl border border-cyan-500/30 
-                       text-cyan-400 font-black shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden"
-                        animate={{
-                            borderRadius: isExpanded ? "16px" : "9999px",
-                            padding: isExpanded ? "6px 16px" : "4px 12px",
-                            scale: isExpanded ? 1.05 : 1,
-                        }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        <>
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[140]"
+                        onClick={() => setIsExpanded(false)}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {shouldRender && (
+                    <motion.div
+                        ref={pillRef}
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -50, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        className="fixed left-1/2 -translate-x-1/2 z-[150] flex flex-col items-center gap-2"
+                        style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 2px)" }}
                     >
-                        <motion.span layout="position" className="tracking-wider whitespace-nowrap text-xs">
-                            {balance !== null ? (
-                                <>
-                                    {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}{" "}
-                                    <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-200/80">$BWAVE</span>
-                                </>
-                            ) : (
-                                <span className="animate-pulse">...</span>
-                            )}
-                        </motion.span>
-                    </motion.button>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                        {orderedTypes.map((type, idx) => {
+                            if (!isExpanded && idx !== 0) return null;
+
+                            const isPrimary = idx === 0;
+                            const displayBalance = type === "points" ? balance : (type === "ton" ? tonBalance : starBalance);
+                            const amount = displayBalance !== null ? displayBalance : 0;
+
+                            return (
+                                <motion.button
+                                    key={type}
+                                    layout
+                                    onClick={() => handleSwitch(type)}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`flex items-center justify-between bg-black/40 backdrop-blur-xl border border-cyan-500/30 
+                                    text-cyan-400 font-black shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden w-40 sm:w-44`}
+                                    initial={!isPrimary ? { opacity: 0, scale: 0.8, y: -20 } : false}
+                                    animate={{
+                                        opacity: 1,
+                                        y: 0,
+                                        borderRadius: isExpanded ? "14px" : "9999px",
+                                        padding: isExpanded ? "10px 14px" : "6px 14px",
+                                        scale: isExpanded && isPrimary ? 1.02 : 1,
+                                    }}
+                                    exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                                >
+                                    <div className={`flex items-center gap-3 flex-1 ${type === "points" ? "" : "pl-1"}`}>
+                                        <motion.span layout="position" className="tracking-tighter whitespace-nowrap text-[11px] font-black flex-1">
+                                            {type === "points" ? (
+                                                balance !== null ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className={isPrimary ? "text-white shadow-[0_0_8px_rgba(255,255,255,0.2)]" : "text-cyan-400/80"}>
+                                                            {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}
+                                                        </span>
+                                                        <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-200/80 ml-1 italic">$BWAVE</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="animate-pulse">...</span>
+                                                )
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="opacity-60 font-mono italic">$</span>
+                                                        <span>0</span>
+                                                        <span className="opacity-40 mx-0.5">~</span>
+                                                        <span className={isPrimary ? "text-white" : "text-cyan-400/80"}>0</span>
+                                                    </div>
+                                                    
+                                                    {/* Currency Icon comes after number for TON/Stars */}
+                                                    <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-1">
+                                                        {type === "ton" && (
+                                                            <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
+                                                        )}
+                                                        {type === "stars" && (
+                                                            <div className="text-cyan-400 flex items-center justify-center scale-90">
+                                                                <StarIcon />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </motion.span>
+                                    </div>
+
+                                    {/* Plus icon - Only visible when expanded for TON/Stars */}
+                                    {isExpanded && type !== "points" ? (
+                                        <div className="shrink-0 bg-cyan-500/10 p-0.5 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(0,230,255,0.1)]">
+                                            <Plus size={10} strokeWidth={4} className="text-cyan-400" />
+                                        </div>
+                                    ) : (
+                                        // Invisible spacer to maintain width parity when collapsed or if it's the Points pill
+                                        <div className="w-[18px] opacity-0" />
+                                    )}
+                                </motion.button>
+                            );
+                        })}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
