@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "Please connect your wallet to generate a referral link.",
     "connect_wallet_blu": "Please connect your wallet to access Blu configurations."
+  },
+  "streakRecovery": {
+    "streak_saved_title": "Streak Saved!",
+    "streak_saved_subtitle": "You are back on track.",
+    "streak_at_risk_title": "Streak At Risk",
+    "streak_at_risk_subtitle": "You lost your {days}-day streak. Recover it before time runs out.",
+    "processing": "Processing...",
+    "insufficient_balance": "Insufficient Balance",
+    "need_more_bp": "Need {amount} more $BWAVE points",
+    "pay_to_recover": "Pay {amount} $BWAVE points to Recover",
+    "dismiss": "Dismiss",
+    "hrs": "Hrs",
+    "min": "Min",
+    "sec": "Sec",
+    "network_error": "Network error. Please try again."
   }
 }

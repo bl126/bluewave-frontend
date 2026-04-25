@@ -136,8 +136,8 @@ export default function StreakRecoveryModal({
                   <div className="w-20 h-20 bg-green-500/10 border-2 border-green-500 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
                     <Flame size={40} className="text-green-400" />
                   </div>
-                  <h2 className="text-2xl font-black text-white uppercase tracking-wider mb-2">Streak Saved!</h2>
-                  <p className="text-green-400 font-bold tracking-widest text-sm uppercase">You are back on track.</p>
+                  <h2 className="text-2xl font-black text-white uppercase tracking-wider mb-2">{t("streakRecovery.streak_saved_title")}</h2>
+                  <p className="text-green-400 font-bold tracking-widest text-sm uppercase">{t("streakRecovery.streak_saved_subtitle")}</p>
                 </div>
               ) : (
                 <>
@@ -161,10 +161,10 @@ export default function StreakRecoveryModal({
                     </div>
 
                     <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">
-                      Streak At Risk
+                      {t("streakRecovery.streak_at_risk_title")}
                     </h2>
                     <p className="text-white/60 text-xs font-bold leading-relaxed mb-6 uppercase tracking-wider">
-                      You lost your <span className="text-red-400">{recoverableStreak}-day</span> streak. Recover it before time runs out.
+                      {t("streakRecovery.streak_at_risk_subtitle").replace("{days}", recoverableStreak.toString())}
                     </p>
 
                     {timeLeft && (
@@ -173,21 +173,21 @@ export default function StreakRecoveryModal({
                           <span className="text-red-400 font-black text-xl leading-none font-mono">
                             {formatTime(timeLeft.hours)}
                           </span>
-                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">Hrs</span>
+                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">{t("streakRecovery.hrs")}</span>
                         </div>
                         <div className="flex flex-col justify-center pb-4 text-red-500/30 font-bold">:</div>
                         <div className="bg-red-950/30 border border-red-500/20 rounded-xl p-3 flex flex-col items-center min-w-[60px]">
                           <span className="text-red-400 font-black text-xl leading-none font-mono">
                             {formatTime(timeLeft.minutes)}
                           </span>
-                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">Min</span>
+                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">{t("streakRecovery.min")}</span>
                         </div>
                         <div className="flex flex-col justify-center pb-4 text-red-500/30 font-bold">:</div>
                         <div className="bg-red-950/30 border border-red-500/20 rounded-xl p-3 flex flex-col items-center min-w-[60px]">
                           <span className="text-red-400 font-black text-xl leading-none font-mono">
                             {formatTime(timeLeft.seconds)}
                           </span>
-                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">Sec</span>
+                          <span className="text-red-500/50 text-[8px] font-black uppercase tracking-widest mt-1">{t("streakRecovery.sec")}</span>
                         </div>
                       </div>
                     )}
@@ -208,15 +208,15 @@ export default function StreakRecoveryModal({
                       }`}
                     >
                       {loading ? (
-                        <span className="animate-pulse">Processing...</span>
+                        <span className="animate-pulse">{t("streakRecovery.processing")}</span>
                       ) : !hasEnoughBalance ? (
                         <>
-                          <span>Insufficient Balance</span>
-                          <span className="text-[9px] text-white/30 font-bold tracking-widest">Need {RECOVERY_COST - pointsBalance} more $BWAVE points</span>
+                          <span>{t("streakRecovery.insufficient_balance")}</span>
+                          <span className="text-[9px] text-white/30 font-bold tracking-widest">{t("streakRecovery.need_more_bp").replace("{amount}", (RECOVERY_COST - pointsBalance).toString())}</span>
                         </>
                       ) : (
                         <>
-                          <span>Pay {RECOVERY_COST} $BWAVE points to Recover</span>
+                          <span>{t("streakRecovery.pay_to_recover").replace("{amount}", RECOVERY_COST.toString())}</span>
                         </>
                       )}
                     </button>
@@ -225,7 +225,7 @@ export default function StreakRecoveryModal({
                       onClick={onClose} 
                       className="mt-4 text-[10px] font-bold text-white/30 tracking-widest uppercase hover:text-white/50 transition-colors"
                     >
-                      Dismiss
+                      {t("streakRecovery.dismiss")}
                     </button>
                   </div>
                 </>

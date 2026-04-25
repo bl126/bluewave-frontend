@@ -238,7 +238,7 @@
     "broadcast_msg": "Sua postagem no canal foi transmitida.",
     "acknowledged_msg": "{{name}} reconheceu sua postagem.",
     "verified_milestone_msg": "{{count}} humanos verificados reconheceram sua postagem",
-"update_msg": "Nova atualização recebida.",
+    "update_msg": "Nova atualização recebida.",
     "view_post": "Ver Post",
     "understood": "Entendido",
     "follower_milestone_msg": "{{count}} humanos verificados entraram no seu canal",
@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "Por favor, conecte sua carteira para gerar um link de referência.",
     "connect_wallet_blu": "Por favor, conecte sua carteira para acessar as configurações do Blu."
+  },
+  "streakRecovery": {
+    "streak_saved_title": "Sequência Salva!",
+    "streak_saved_subtitle": "Você está de volta aos trilhos.",
+    "streak_at_risk_title": "Sequência Em Risco",
+    "streak_at_risk_subtitle": "Você perdeu sua sequência de {days} dias. Recupere-a antes que o tempo acabe.",
+    "processing": "Processando...",
+    "insufficient_balance": "Saldo Insuficiente",
+    "need_more_bp": "Precisa de mais {amount} pontos $BWAVE",
+    "pay_to_recover": "Pague {amount} pontos $BWAVE para Recuperar",
+    "dismiss": "Ignorar",
+    "hrs": "Hrs",
+    "min": "Min",
+    "sec": "Seg",
+    "network_error": "Erro de rede. Tente novamente."
   }
 }

@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "โปรดเชื่อมต่อกระเป๋าเงินของคุณเพื่อรับลิงก์อ้างอิง",
     "connect_wallet_blu": "โปรดเชื่อมต่อกระเป๋าเงินของคุณเพื่อเข้าถึงการตั้งค่า Blu"
+  },
+  "streakRecovery": {
+    "streak_saved_title": "รักษาสตรีคสำเร็จ!",
+    "streak_saved_subtitle": "คุณกลับมาอยู่ในเส้นทางแล้ว",
+    "streak_at_risk_title": "สตรีคกำลังมีความเสี่ยง",
+    "streak_at_risk_subtitle": "คุณสูญเสียสตรีค {days} วันของคุณ กู้คืนก่อนหมดเวลา",
+    "processing": "กำลังประมวลผล...",
+    "insufficient_balance": "ยอดเงินไม่เพียงพอ",
+    "need_more_bp": "ต้องการคะแนน $BWAVE อีก {amount}",
+    "pay_to_recover": "จ่ายคะแนน $BWAVE {amount} เพื่อกู้คืน",
+    "dismiss": "ปิดเนื้อหา",
+    "hrs": "ชม.",
+    "min": "นาที",
+    "sec": "วินาที",
+    "network_error": "ข้อผิดพลาดของเครือข่าย โปรดลองอีกครั้ง"
   }
 }

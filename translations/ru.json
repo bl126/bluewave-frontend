@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "Пожалуйста, подключите кошелек, чтобы сгенерировать реферальную ссылку.",
     "connect_wallet_blu": "Пожалуйста, подключите кошелек для доступа к настройкам Blu."
+  },
+  "streakRecovery": {
+    "streak_saved_title": "Серия Спасена!",
+    "streak_saved_subtitle": "Вы снова в строю.",
+    "streak_at_risk_title": "Серия Под Угрозой",
+    "streak_at_risk_subtitle": "Вы потеряли свою серию из {days} дней. Восстановите ее, пока не истекло время.",
+    "processing": "Обработка...",
+    "insufficient_balance": "Недостаточно Баланса",
+    "need_more_bp": "Нужно еще {amount} очков $BWAVE",
+    "pay_to_recover": "Заплатите {amount} очков $BWAVE для Восстановления",
+    "dismiss": "Закрыть",
+    "hrs": "Час",
+    "min": "Мин",
+    "sec": "Сек",
+    "network_error": "Ошибка сети. Пожалуйста, попробуйте еще раз."
   }
 }

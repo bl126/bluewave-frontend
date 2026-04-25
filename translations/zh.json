@@ -582,5 +582,20 @@
   "alerts": {
     "connect_wallet_ref": "请连接您的钱包以生成推荐链接。",
     "connect_wallet_blu": "请连接您的钱包以访问 Blu 配置。"
+  },
+  "streakRecovery": {
+    "streak_saved_title": "连续签到已保存!",
+    "streak_saved_subtitle": "你回到了正轨。",
+    "streak_at_risk_title": "连续签到面临风险",
+    "streak_at_risk_subtitle": "您失去了 {days} 天的连续签到。请在时间用完之前恢复它。",
+    "processing": "处理中...",
+    "insufficient_balance": "余额不足",
+    "need_more_bp": "还需要 {amount} 个 $BWAVE 积分",
+    "pay_to_recover": "支付 {amount} 个 $BWAVE 积分来恢复",
+    "dismiss": "关闭",
+    "hrs": "小时",
+    "min": "分钟",
+    "sec": "秒",
+    "network_error": "网络错误。请重试。"
   }
 }

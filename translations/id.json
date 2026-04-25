@@ -582,5 +582,20 @@
   "alerts": {
     "connect_wallet_ref": "Silakan hubungkan dompet Anda untuk membuat tautan rujukan.",
     "connect_wallet_blu": "Silakan hubungkan dompet Anda untuk mengakses konfigurasi Blu."
+  },
+  "streakRecovery": {
+    "streak_saved_title": "Streak Diselamatkan!",
+    "streak_saved_subtitle": "Anda kembali ke jalurnya.",
+    "streak_at_risk_title": "Streak Terancam",
+    "streak_at_risk_subtitle": "Anda kehilangan streak {days} hari. Pulihkan sebelum waktu habis.",
+    "processing": "Memproses...",
+    "insufficient_balance": "Saldo Kosong",
+    "need_more_bp": "Butuh {amount} poin $BWAVE lagi",
+    "pay_to_recover": "Bayar {amount} poin $BWAVE untuk Memulihkan",
+    "dismiss": "Tutup",
+    "hrs": "Jam",
+    "min": "Mnt",
+    "sec": "Dtk",
+    "network_error": "Kesalahan jaringan. Coba lagi."
   }
 }

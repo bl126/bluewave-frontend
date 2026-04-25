@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "रेफरल लिंक बनाने के लिए कृपया अपना वॉलेट कनेक्ट करें।",
     "connect_wallet_blu": "Blu कॉन्फ़िगरेशन एक्सेस करने के लिए कृपया अपना वॉलेट कनेक्ट करें।"
+  },
+  "streakRecovery": {
+    "streak_saved_title": "स्ट्रिक बच गई!",
+    "streak_saved_subtitle": "आप वापस ट्रैक पर हैं।",
+    "streak_at_risk_title": "स्ट्रिक खतरे में",
+    "streak_at_risk_subtitle": "आपने अपनी {days} दिन की स्ट्रिक खो दी है। समय समाप्त होने से पहले इसे पुनर्प्राप्त करें।",
+    "processing": "प्रसंस्करण...",
+    "insufficient_balance": "अपर्याप्त बैलेंस",
+    "need_more_bp": "{amount} अधिक $BWAVE पॉइंट्स की आवश्यकता है",
+    "pay_to_recover": "पुनर्प्राप्त करने के लिए {amount} $BWAVE पॉइंट्स का भुगतान करें",
+    "dismiss": "हटाएं",
+    "hrs": "घंटे",
+    "min": "मिनट",
+    "sec": "सेकंड",
+    "network_error": "नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।"
   }
 }

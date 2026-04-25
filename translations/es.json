@@ -583,5 +583,20 @@
   "alerts": {
     "connect_wallet_ref": "Por favor, conecta tu billetera para generar un enlace de referido.",
     "connect_wallet_blu": "Por favor, conecta tu billetera para acceder a las configuraciones de Blu."
+  },
+  "streakRecovery": {
+    "streak_saved_title": "¡Racha Guardada!",
+    "streak_saved_subtitle": "Estás de vuelta en el camino.",
+    "streak_at_risk_title": "Racha en Riesgo",
+    "streak_at_risk_subtitle": "Perdiste tu racha de {days} días. Recupérala antes de que acabe el tiempo.",
+    "processing": "Procesando...",
+    "insufficient_balance": "Saldo Insuficiente",
+    "need_more_bp": "Faltan {amount} puntos $BWAVE",
+    "pay_to_recover": "Paga {amount} puntos $BWAVE para Recuperar",
+    "dismiss": "Descartar",
+    "hrs": "Hrs",
+    "min": "Min",
+    "sec": "Seg",
+    "network_error": "Error de red. Inténtalo de nuevo."
   }
 }
