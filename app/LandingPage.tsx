@@ -16,6 +16,7 @@ import LoadingScreen from "./LoadingScreen";
 import RolesOverlay from "@/components/ui/RolesOverlay";
 import RecoveryPasswordModal from "@/components/ui/RecoveryPasswordModal";
 import StreakCelebrationModal from "@/components/ui/StreakCelebrationModal";
+import StreakRecoveryModal from "@/components/ui/StreakRecoveryModal";
 import VerifiedHumanModal from "@/components/ui/VerifiedHumanModal";
 import TONExplorerModal from "@/components/ui/TONExplorerModal";
 import BwaveScanOverlay from "@/components/ui/BwaveScanOverlay";
@@ -81,6 +82,9 @@ export default function LandingPage() {
   // 🔥 Streak Celebration State
   const [isStreakCelebrationOpen, setIsStreakCelebrationOpen] = useState(false);
   const [streakCelebrationData, setStreakCelebrationData] = useState({ days: 0, reward: 0 });
+
+  // 🧊 Streak Recovery State
+  const [isStreakRecoveryOpen, setIsStreakRecoveryOpen] = useState(false);
 
   // 🛡️ Human Verification State
   const [isHumanModalOpen, setIsHumanModalOpen] = useState(false);
@@ -150,6 +154,10 @@ export default function LandingPage() {
       }
       if (isBluExpanded) {
         setIsBluExpanded(false);
+        return;
+      }
+      if (isStreakRecoveryOpen) {
+        setIsStreakRecoveryOpen(false);
         return;
       }
       if (isStreakCelebrationOpen) {
@@ -384,6 +392,13 @@ export default function LandingPage() {
         window.localStorage.setItem("bw_tg_id", savedTgId);
 
         // 🔥 Initial check for pending rewards from init data
+        if (user.recoverable_streak > 0 && user.streak_recovery_expires_at) {
+          const expiresAt = new Date(user.streak_recovery_expires_at).getTime();
+          if (Date.now() < expiresAt) {
+            setTimeout(() => setIsStreakRecoveryOpen(true), 1500);
+          }
+        } 
+        
         if (user.streak_reward_pending) {
           setStreakCelebrationData({
             days: user.streak_days || 0,
@@ -488,6 +503,10 @@ export default function LandingPage() {
       setShowRecoveryModal(true);
     };
 
+    const handleStreakRecoveryPop = () => {
+      setIsStreakRecoveryOpen(true);
+    };
+
     const handleUpdateUser = (e: any) => {
       const newUser = e.detail;
       if (!newUser) return;
@@ -507,6 +526,7 @@ export default function LandingPage() {
     };
 
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
+    window.addEventListener('showStreakRecovery' as any, handleStreakRecoveryPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
     window.addEventListener('showNetworkBuilder' as any, handleNetworkPop);
     window.addEventListener('showTONExplorer' as any, handleTONPop);
@@ -514,6 +534,7 @@ export default function LandingPage() {
     window.addEventListener('updateUser' as any, handleUpdateUser);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
+      window.removeEventListener('showStreakRecovery' as any, handleStreakRecoveryPop);
       window.removeEventListener('showHumanVerification' as any, handleHumanPop);
       window.removeEventListener('showNetworkBuilder' as any, handleNetworkPop);
       window.removeEventListener('showTONExplorer' as any, handleTONPop);
@@ -838,6 +859,15 @@ export default function LandingPage() {
         isOpen={showRecoveryModal}
         onSuccess={() => setShowRecoveryModal(false)}
         telegramId={telegramUser?.tg_id || 0}
+      />
+
+      <StreakRecoveryModal
+        isOpen={isStreakRecoveryOpen}
+        onClose={() => setIsStreakRecoveryOpen(false)}
+        telegramId={telegramUser?.id}
+        recoverableStreak={telegramUser?.recoverable_streak || 0}
+        expiresAt={telegramUser?.streak_recovery_expires_at || ''}
+        pointsBalance={telegramUser?.points_balance || 0}
       />
 
       {/* 🔥 Streak Celebration Modal */}

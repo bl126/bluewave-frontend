@@ -364,16 +364,32 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                 <Lock size={16} className="text-cyan-500/30" />
                             )}
                           </button>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
+                          <button 
+                            onClick={() => {
+                              if (!user.wallet_address) return;
+                              if (user.recoverable_streak > 0 && user.streak_recovery_expires_at) {
+                                const expiresAt = new Date(user.streak_recovery_expires_at).getTime();
+                                if (Date.now() < expiresAt) {
+                                  window.dispatchEvent(new CustomEvent("showStreakRecovery"));
+                                }
+                              }
+                            }}
+                            className={`bg-black/30 backdrop-blur-md border ${user.recoverable_streak > 0 ? 'border-red-500/50 hover:border-red-500/80 cursor-pointer shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-cyan-500/10 cursor-default'} rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative transition-all active:scale-95`}
+                          >
                             {user.wallet_address ? (
                                 <>
-                                    <span className="text-white text-xl font-black">{user.streak_days || 0}</span>
-                                    <span className="text-cyan-500/50 text-[8px] font-black uppercase tracking-widest">{t("profile.streak_label")}</span>
+                                    {user.recoverable_streak > 0 && (
+                                        <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-1 shadow-lg animate-pulse">
+                                           <Flame size={12} className="text-white" />
+                                        </div>
+                                    )}
+                                    <span className={`text-xl font-black ${user.recoverable_streak > 0 ? 'text-red-400' : 'text-white'}`}>{user.streak_days || 0}</span>
+                                    <span className={`${user.recoverable_streak > 0 ? 'text-red-500/50' : 'text-cyan-500/50'} text-[8px] font-black uppercase tracking-widest`}>{t("profile.streak_label")}</span>
                                 </>
                             ) : (
                                 <Lock size={16} className="text-cyan-500/30" />
                             )}
-                          </div>
+                          </button>
                           <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
                             {user.wallet_address ? (
                                 <>
