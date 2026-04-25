@@ -379,6 +379,8 @@ export default function LandingPage() {
           ton_explorer_pending: user.ton_explorer_pending || false,
           is_human_verified: !!user.is_human_verified,
           unread_explore_notifications: data.unread_explore_notifications || 0,
+          recoverable_streak: user.recoverable_streak || 0,
+          streak_recovery_expires_at: user.streak_recovery_expires_at || null,
         };
 
         setTelegramUser(finalUser);
@@ -722,6 +724,8 @@ export default function LandingPage() {
           ...prev,
           points_balance: syncData.points_balance ?? prev.points_balance,
           streak_days: syncData.streak_days ?? prev.streak_days,
+          recoverable_streak: syncData.recoverable_streak ?? prev.recoverable_streak,
+          streak_recovery_expires_at: syncData.streak_recovery_expires_at ?? prev.streak_recovery_expires_at,
         };
       }, false);
     }

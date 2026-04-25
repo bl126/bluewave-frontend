@@ -68,25 +68,38 @@ export default function StreakRecoveryModal({
 
     try {
       const result = await postApi("/user/recover_streak", { telegram_id: telegramId });
-      if (result.success) {
-        // Trigger generic balance and streak update events for the app to sync
-        window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
-        window.dispatchEvent(
-          new CustomEvent("updateUser", {
-            detail: {
-              points_balance: result.new_balance,
-              streak_days: result.new_streak,
-              recoverable_streak: 0,
-              streak_recovery_expires_at: null
-            }
-          })
-        );
+      if (result.success || result.error === "ALREADY_RECOVERED") {
+        
+        if (result.success) {
+          // Trigger generic balance and streak update events for the app to sync
+          window.dispatchEvent(new CustomEvent("updateBalance", { detail: result.new_balance }));
+          window.dispatchEvent(
+            new CustomEvent("updateUser", {
+              detail: {
+                points_balance: result.new_balance,
+                streak_days: result.new_streak,
+                recoverable_streak: 0,
+                streak_recovery_expires_at: null
+              }
+            })
+          );
+        } else if (result.error === "ALREADY_RECOVERED") {
+          // Sync client down if already recovered
+          window.dispatchEvent(
+            new CustomEvent("updateUser", {
+              detail: {
+                recoverable_streak: 0,
+                streak_recovery_expires_at: null
+              }
+            })
+          );
+        }
         
         setSuccess(true);
         setTimeout(() => {
           onClose();
           setSuccess(false);
-        }, 3000);
+        }, 1500);
       } else {
         setError(result.error === "INSUFFICIENT_BALANCE" ? "Insufficient BP." : "Failed to recover streak. Try again.");
       }
@@ -199,11 +212,11 @@ export default function StreakRecoveryModal({
                       ) : !hasEnoughBalance ? (
                         <>
                           <span>Insufficient Balance</span>
-                          <span className="text-[9px] text-white/30 font-bold tracking-widest">Need {RECOVERY_COST - pointsBalance} more BP</span>
+                          <span className="text-[9px] text-white/30 font-bold tracking-widest">Need {RECOVERY_COST - pointsBalance} more $BWAVE points</span>
                         </>
                       ) : (
                         <>
-                          <span>Pay {RECOVERY_COST} BP to Recover</span>
+                          <span>Pay {RECOVERY_COST} $BWAVE points to Recover</span>
                         </>
                       )}
                     </button>
@@ -212,7 +225,7 @@ export default function StreakRecoveryModal({
                       onClick={onClose} 
                       className="mt-4 text-[10px] font-bold text-white/30 tracking-widest uppercase hover:text-white/50 transition-colors"
                     >
-                      Dismiss (Remains on profile)
+                      Dismiss
                     </button>
                   </div>
                 </>
