@@ -29,8 +29,16 @@ export default function StreakRecoveryModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Constants
-  const RECOVERY_COST = 1000;
+  // Dynamic burn cost — mirrors backend formula exactly
+  const calculateRecoveryCost = (streak: number): number => {
+    if (streak >= 100) return 20000;
+    if (streak >= 60)  return 10000;
+    if (streak >= 30)  return 5000;
+    if (streak >= 14)  return 2500;
+    if (streak >= 7)   return 1000;
+    return 500; // 3–6 days
+  };
+  const RECOVERY_COST = calculateRecoveryCost(recoverableStreak);
   const hasEnoughBalance = pointsBalance >= RECOVERY_COST;
 
   // Countdown timer logic
