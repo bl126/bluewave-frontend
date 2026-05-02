@@ -8,7 +8,7 @@ import { isSessionExpired, setSessionExpired } from "./session";
 
 // [CODE: FRONTEND_POST_API_HELPER]
 // ⭐ Safer POST helper (handles rate-limits + JSON errors)
-export async function postApi(path: string, body: any = {}) {
+export async function postApi(path: string, body: any = {}, options: { method?: string } = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api${path}`;
 
@@ -28,7 +28,7 @@ export async function postApi(path: string, body: any = {}) {
     }
 
     const res = await fetch(url, {
-      method: "POST",
+      method: options.method || "POST",
       headers: {
         "Content-Type": "application/json",
         "x-telegram-init-data": initData || "",

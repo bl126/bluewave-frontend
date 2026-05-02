@@ -15,7 +15,7 @@ import {
   Rocket,
   Plus,
   X,
-  Image,
+  Image as ImageIcon,
   Video,
   Send,
   UserCheck,
@@ -28,7 +28,12 @@ import {
   Vote,
   Activity,
   Fingerprint,
-  Bot
+  Bot,
+  Star,
+  Forward,
+  Copy,
+  ArrowLeft,
+  ArrowRight
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -635,7 +640,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 tg_id: telegramUser.id,
                 content: requestArgs.content,
                 media_url: requestArgs.media_url,
-                media_urls: requestArgs.media_url ? [{ url: requestArgs.media_url, type: requestArgs.media_type }] : [],
+                media_urls: requestArgs.media_urls || (requestArgs.media_url ? [{ url: requestArgs.media_url, type: requestArgs.media_type }] : []),
                 media_type: requestArgs.media_type,
                 views: 0,
                 acknowledgments_count: 0,
@@ -726,166 +731,434 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 }
 
 // ----------------------------------------------------------------------------
-// 📤 Post Modal (X-style)
+// 📤 Post Modal (X-style Full-Screen)
 // ----------------------------------------------------------------------------
 function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onClose: () => void, onPosted: (args: any) => void }) {
   const { t } = useLanguage();
   const [content, setContent] = useState("");
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaBase64, setMediaBase64] = useState<string>("");
-  const [mediaType, setMediaType] = useState<"photo" | "video" | "text">("text");
-  const [mediaExt, setMediaExt] = useState("jpg");
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
+  const [mediaTypes, setMediaTypes] = useState<("photo" | "video")[]>([]);
+  const [mediaExts, setMediaExts] = useState<string[]>([]);
+  const [uploadIndex, setUploadIndex] = useState<number | null>(null);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const generateVideoThumbnail = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      const url = URL.createObjectURL(file);
+      video.src = url;
+      video.load();
+      video.currentTime = 0.5;
+      video.muted = true;
+      video.playsInline = true;
+      video.onloadeddata = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d")?.drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        URL.revokeObjectURL(url);
+        resolve(dataUrl);
+      };
+      video.onerror = () => resolve("");
+    });
+  };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Helper to generate preview & type info for selected files
+  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    
+    for (const file of files) {
+      if (mediaFiles.length >= 4) break; 
+      const isVideo = file.type.startsWith("video/");
+      
+      const ext = file.name.split('.').pop() || (isVideo ? "mp4" : "jpg");
+      setMediaFiles(prev => [...prev, file]);
+      setMediaTypes(prev => [...prev, isVideo ? "video" : "photo"]);
+      setMediaExts(prev => [...prev, ext]);
+
+      if (isVideo) {
+        const thumb = await generateVideoThumbnail(file);
+        setMediaPreviews(prev => [...prev, thumb]);
+      } else {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          setMediaPreviews(prev => [...prev, ev.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const moveMedia = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= mediaFiles.length) return;
+    
+    setMediaFiles(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+    setMediaPreviews(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+    setMediaTypes(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+    setMediaExts(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  };
+
+  const removeMedia = (index: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+    setMediaPreviews(prev => prev.filter((_, i) => i !== index));
+    setMediaTypes(prev => prev.filter((_, i) => i !== index));
+    setMediaExts(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const [cropIndex, setCropIndex] = useState<number | null>(null);
+  const [cropRect, setCropRect] = useState({ x: 10, y: 10, w: 80, h: 80 }); 
+
+  const startCrop = (idx: number) => {
+    setCropIndex(idx);
+    setCropRect({ x: 10, y: 10, w: 80, h: 80 });
+  };
+
+  const applyCrop = async () => {
+    if (cropIndex === null) return;
+    const file = mediaFiles[cropIndex];
     if (!file) return;
-    const isVideo = file.type.startsWith("video/");
-    setMediaType(isVideo ? "video" : "photo");
-    setMediaExt(file.name.split(".").pop() || (isVideo ? "mp4" : "jpg"));
-    setMediaFile(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setMediaPreview(dataUrl);
-      setMediaBase64(dataUrl.split(",")[1] || "");
-    };
-    reader.readAsDataURL(file);
+    
+    const img = new Image();
+    img.src = mediaPreviews[cropIndex];
+    await new Promise(res => img.onload = () => res(null));
+    
+    const canvas = document.createElement("canvas");
+    const realX = (cropRect.x / 100) * img.width;
+    const realY = (cropRect.y / 100) * img.height;
+    const realW = (cropRect.w / 100) * img.width;
+    const realH = (cropRect.h / 100) * img.height;
+    
+    canvas.width = realW;
+    canvas.height = realH;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    
+    ctx.drawImage(img, realX, realY, realW, realH, 0, 0, realW, realH);
+    
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const newFile = new File([blob], file.name, { type: file.type });
+      const newFiles = [...mediaFiles];
+      newFiles[cropIndex] = newFile;
+      setMediaFiles(newFiles);
+      
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const dataUrl = ev.target?.result as string;
+        const newPreviews = [...mediaPreviews];
+        newPreviews[cropIndex] = dataUrl;
+        setMediaPreviews(newPreviews);
+      };
+      reader.readAsDataURL(newFile);
+    }, file.type);
+    setCropIndex(null);
   };
 
   const handlePost = async () => {
-    if (!content.trim() && !mediaFile && !mediaBase64) return;
+    if (!content.trim() && mediaFiles.length === 0) return;
     setPosting(true);
     setError(null);
     try {
-      let finalMediaUrl = "";
-
-      if (mediaFile) {
-        // 🔒 [SECURITY] Use postApi so the x-telegram-init-data auth header is sent
-        const urlData = await postApi(`/explore/get_upload_url`, { tg_id: telegramUser.id, media_ext: mediaExt });
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-
+      const uploadedUrls: { url: string; type: string }[] = [];
+      for (let i = 0; i < mediaFiles.length; i++) {
+        setUploadIndex(i + 1);
+        const file = mediaFiles[i];
+        const ext = mediaExts[i];
+        const urlData = await postApi(`/explore/get_upload_url`, { tg_id: telegramUser.id, media_ext: ext });
         if (urlData.signed_url) {
           const putRes = await fetch(urlData.signed_url, {
             method: "PUT",
             headers: {
               "Authorization": `Bearer ${urlData.token}`,
-              "Content-Type": mediaFile.type
+              "Content-Type": file.type,
             },
-            body: mediaFile
+            body: file,
           });
-
           if (putRes.ok) {
-            finalMediaUrl = urlData.public_url;
-          } else {
-            console.error("Direct upload failed, code:", putRes.status);
+            uploadedUrls.push({ url: urlData.public_url, type: file.type.startsWith("video") ? "video" : "photo" });
           }
         }
       }
-
-      onPosted({
+      
+      const payload: any = {
         tg_id: telegramUser.id,
         content: content.trim(),
-        media_url: finalMediaUrl,
-        media_base64: finalMediaUrl ? "" : mediaBase64,
-        media_type: (finalMediaUrl || mediaBase64) ? mediaType : "text",
-        media_ext: mediaExt,
-      });
+        media_url: uploadedUrls[0]?.url || "",
+        media_type: uploadedUrls[0]?.type || "text",
+        media_ext: mediaExts[0] || "",
+        media_urls: uploadedUrls.map(u => ({ url: u.url, type: u.type })),
+      };
+      onPosted(payload);
     } catch (err: any) {
       console.error(err);
       setError("Upload failed.");
+    } finally {
       setPosting(false);
+      setUploadIndex(null);
     }
   };
 
+  const charLimit = 250;
+  const progress = (content.length / charLimit) * 100;
+  const strokeDasharray = 2 * Math.PI * 8; 
+  const strokeDashoffset = strokeDasharray - (Math.min(progress, 100) / 100) * strokeDasharray;
+
   return (
     <motion.div
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", damping: 30, stiffness: 300 }}
+      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col md:max-w-md md:mx-auto md:relative md:inset-auto md:h-[90vh] md:rounded-[3rem] md:overflow-hidden"
+    >
+      <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <button onClick={onClose} className="p-2 -ml-2 text-white/70 hover:text-white transition-colors"><X size={20} /></button>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+           <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+           <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500">New Post</span>
+        </div>
+        <button 
+          onClick={handlePost}
+          disabled={posting || (!content.trim() && mediaFiles.length === 0)}
+          className="px-6 py-2 bg-cyan-500 text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all disabled:opacity-30"
+        >
+          {posting ? (
+            <div className="flex items-center gap-2">
+              <Loader2 size={12} className="animate-spin" />
+              <span>{uploadIndex ? `${t("explore.posting_btn")} ${uploadIndex}/${mediaFiles.length}` : t("explore.posting_btn")}</span>
+            </div>
+          ) : "Post"}
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex gap-4">
+           <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
+             {telegramUser.photo_url ? <img src={telegramUser.photo_url} className="w-full h-full object-cover" /> : <span className="text-cyan-500 font-bold">B</span>}
+           </div>
+           
+           <div className="flex-1 space-y-4">
+             <button className="flex items-center gap-1 px-3 py-0.5 rounded-full border border-cyan-500/30 text-cyan-500 text-[10px] font-bold w-fit bg-cyan-500/5">
+               Everyone <ChevronDown size={12} />
+             </button>
+
+             <textarea
+               autoFocus
+               value={content}
+               onChange={e => setContent(e.target.value)}
+               maxLength={charLimit}
+               placeholder={t("explore.post_placeholder")}
+               className="w-full bg-transparent text-lg text-white placeholder-white/20 resize-none outline-none min-h-[160px]"
+             />
+
+             {mediaPreviews.length > 0 && (
+               <div className={`grid gap-2 ${mediaPreviews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                 {mediaPreviews.map((src, i) => (
+                   <div key={i} className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/30 aspect-square group shadow-lg">
+                     {mediaTypes[i] === "photo" ? (
+                       <img src={src} className="w-full h-full object-cover" />
+                     ) : (
+                       <video src={src} className="w-full h-full object-cover" />
+                     )}
+                     <button onClick={() => removeMedia(i)} className="absolute top-2 right-2 w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors">
+                       <X size={16} />
+                     </button>
+                     {mediaTypes[i] === "photo" && (
+                       <button onClick={() => startCrop(i)} className="absolute bottom-2 left-2 w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-cyan-500 transition-colors">
+                         <Activity size={16} />
+                       </button>
+                     )}
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-white/5 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFilesChange} />
+          <button onClick={() => fileInputRef.current?.click()} className="text-cyan-500 hover:scale-110 transition-transform active:scale-90"><ImageIcon size={22} /></button>
+          <button className="text-cyan-500/40 cursor-not-allowed"><Plus size={22} /></button>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="relative w-8 h-8 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-white/5" />
+              <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" 
+                strokeDasharray={strokeDasharray} 
+                strokeDashoffset={strokeDashoffset}
+                className={content.length > charLimit - 20 ? "text-orange-500" : "text-cyan-500"} 
+              />
+            </svg>
+            {content.length > charLimit - 20 && (
+              <span className="absolute text-[8px] font-bold text-white/40">{charLimit - content.length}</span>
+            )}
+          </div>
+          <div className="h-4 w-px bg-white/10" />
+          <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/20 hover:text-white transition-colors"><Plus size={16} /></button>
+        </div>
+      </div>
+      
+      <AnimatePresence>
+        {cropIndex !== null && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 bg-black/95 z-[300] flex flex-col"
+          >
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <button onClick={() => setCropIndex(null)} className="text-white/60 text-sm font-bold px-4 py-2 hover:text-white transition-colors">Cancel</button>
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white">Refine Photo</h4>
+              <button onClick={applyCrop} className="px-6 py-2 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Apply</button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-8 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.1)_0%,transparent_70%)]">
+              <div className="relative w-full aspect-square border border-white/10 overflow-hidden bg-black/40 shadow-2xl">
+                 <img src={mediaPreviews[cropIndex]} className="w-full h-full object-contain opacity-40 grayscale" />
+                 <div className="absolute border-2 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.4)]" 
+                   style={{
+                     left: `${cropRect.x}%`,
+                     top: `${cropRect.y}%`,
+                     width: `${cropRect.w}%`,
+                     height: `${cropRect.h}%`,
+                   }}
+                 >
+                   <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+                     {[...Array(9)].map((_, i) => <div key={i} className="border border-white/10" />)}
+                   </div>
+                 </div>
+              </div>
+            </div>
+            <div className="p-8 bg-zinc-950 space-y-8 border-t border-white/5">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <span>Pan Offset</span>
+                  <span className="text-cyan-500">X: {cropRect.x}% Y: {cropRect.y}%</span>
+                </div>
+                <input type="range" min="0" max="100" value={cropRect.x} onChange={e => setCropRect(r => ({ ...r, x: Number(e.target.value) }))} className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                <input type="range" min="0" max="100" value={cropRect.y} onChange={e => setCropRect(r => ({ ...r, y: Number(e.target.value) }))} className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <span>Zoom Level</span>
+                  <span className="text-cyan-500">{cropRect.w}%</span>
+                </div>
+                <input type="range" min="10" max="100" value={cropRect.w} onChange={e => setCropRect(r => ({ ...r, w: Number(e.target.value), h: Number(e.target.value) }))} className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function AutoPlayVideo({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsIntersecting(entry.isIntersecting);
+    }, { threshold: 0.5 });
+    if (videoRef.current) observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isIntersecting) videoRef.current?.play().catch(() => {});
+    else videoRef.current?.pause();
+  }, [isIntersecting]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      muted
+      loop
+      playsInline
+      className="w-full h-full object-cover"
+    />
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 📸 Media Lightbox (Swipeable)
+// ----------------------------------------------------------------------------
+function Lightbox({ items, index, onClose }: { items: { url: string, type: string }[], index: number, onClose: () => void }) {
+  const [curr, setCurr] = useState(index);
+  const { t } = useLanguage();
+
+  return (
+    <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
+      className="fixed inset-0 z-[600] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-xl"
       onClick={onClose}
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="w-full max-w-sm bg-zinc-950 border border-white/10 rounded-[2.5rem] p-6 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90">{t("explore.new_post_title")}</h3>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-white/5 text-white/30 hover:text-white transition-all">
-            <X size={18} />
-          </button>
+      <div className="absolute top-10 right-6 z-[610]">
+        <button onClick={onClose} className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white active:scale-90 transition-all border border-white/10 hover:bg-white/20">
+          <X size={24} />
+        </button>
+      </div>
+
+      <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
+         <motion.div 
+           key={curr}
+           initial={{ x: 100, opacity: 0 }}
+           animate={{ x: 0, opacity: 1 }}
+           exit={{ x: -100, opacity: 0 }}
+           className="w-full h-full flex items-center justify-center p-4 touch-none"
+           drag="x"
+           dragConstraints={{ left: 0, right: 0 }}
+           onDragEnd={(_, info) => {
+             if (info.offset.x > 80 && curr > 0) setCurr(curr - 1);
+             else if (info.offset.x < -80 && curr < items.length - 1) setCurr(curr + 1);
+           }}
+         >
+           {items[curr].type === "photo" ? (
+             <img src={items[curr].url} className="max-w-full max-h-[85vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg" />
+           ) : (
+             <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[85vh] rounded-lg shadow-2xl" />
+           )}
+         </motion.div>
+      </div>
+
+      {items.length > 1 && (
+        <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-2.5">
+          {items.map((_, i) => (
+            <motion.div 
+              key={i} 
+              animate={{ width: i === curr ? 24 : 6, backgroundColor: i === curr ? "#06b6d4" : "rgba(255,255,255,0.2)" }}
+              className="h-1.5 rounded-full transition-all" 
+            />
+          ))}
         </div>
-
-        {/* Text Area */}
-        <textarea
-          autoFocus
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          maxLength={250}
-          placeholder={t("explore.post_placeholder")}
-          className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 text-sm text-white placeholder-white/10 resize-none outline-none focus:border-cyan-500/30 transition-all min-h-[140px] shadow-inner"
-        />
-        <div className="text-right text-[8px] text-white/20 font-mono tracking-widest">{content.length}/250</div>
-
-        {/* Media Preview */}
-        {mediaPreview && (
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/30 group">
-            {mediaType === "photo" ? (
-              <img src={mediaPreview} className="w-full max-h-[180px] object-contain" />
-            ) : (
-              <video src={mediaPreview} className="w-full max-h-[180px]" controls playsInline />
-            )}
-            <button
-              onClick={() => { setMediaPreview(null); setMediaBase64(""); setMediaFile(null); setMediaType("text"); }}
-              className="absolute top-2 right-2 w-7 h-7 bg-black/80 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {error && <p className="text-[10px] text-orange-400 font-bold uppercase tracking-tight text-center">{error}</p>}
-
-        {/* Bottom Row */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex gap-2">
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-            <button
-              onClick={() => { if (fileInputRef.current) { fileInputRef.current.accept = "image/*"; fileInputRef.current.click(); } }}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all"
-            >
-              <Image size={18} />
-            </button>
-            <button
-              onClick={() => { if (fileInputRef.current) { fileInputRef.current.accept = "video/*"; fileInputRef.current.click(); } }}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20 transition-all"
-            >
-              <Video size={18} />
-            </button>
-          </div>
-          <button
-            onClick={handlePost}
-            disabled={posting || (!content.trim() && !mediaBase64)}
-            className="flex items-center gap-2 px-6 h-12 bg-cyan-500 text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all disabled:opacity-30 disabled:shadow-none"
-          >
-            {posting ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Send size={14} />
-            )}
-            {posting ? t("explore.posting_btn") : t("explore.post_btn")}
-          </button>
-        </div>
-      </motion.div>
+      )}
     </motion.div>
   );
 }
@@ -894,70 +1167,75 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
 // 🖼️ Media Collage Component
 // ----------------------------------------------------------------------------
 function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
+  const [lbIndex, setLbIndex] = useState<number | null>(null);
   if (!items || items.length === 0) return null;
   const validItems = items.filter(item => item.url);
   const count = validItems.length;
   if (count === 0) return null;
 
-  if (count === 1) {
-    const item = validItems[0];
-    return (
-      <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
-        {item.type === "photo" ? (
-          <img src={item.url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
-        ) : (
-          <AutoPlayVideo src={item.url} />
+  const handleImageClick = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLbIndex(idx);
+  };
+
+  return (
+    <>
+      <div className="mb-4">
+        {count === 1 && (
+          <div className="rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner cursor-pointer" onClick={(e) => handleImageClick(0, e)}>
+            {validItems[0].type === "photo" ? (
+              <img src={validItems[0].url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
+            ) : (
+              <AutoPlayVideo src={validItems[0].url} />
+            )}
+          </div>
+        )}
+        {count === 2 && (
+          <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[280px]">
+            {validItems.map((item, i) => (
+              <div key={i} className="relative w-full h-full overflow-hidden cursor-pointer" onClick={(e) => handleImageClick(i, e)}>
+                {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
+              </div>
+            ))}
+          </div>
+        )}
+        {count === 3 && (
+          <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
+            <div className="h-full border-r border-white/5 cursor-pointer" onClick={(e) => handleImageClick(0, e)}>
+              {validItems[0].type === "photo" ? <img src={validItems[0].url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={validItems[0].url} />}
+            </div>
+            <div className="grid grid-rows-2 gap-1 h-full">
+              <div className="h-full cursor-pointer" onClick={(e) => handleImageClick(1, e)}>
+                {validItems[1].type === "photo" ? <img src={validItems[1].url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={validItems[1].url} />}
+              </div>
+              <div className="h-full cursor-pointer" onClick={(e) => handleImageClick(2, e)}>
+                {validItems[2].type === "photo" ? <img src={validItems[2].url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={validItems[2].url} />}
+              </div>
+            </div>
+          </div>
+        )}
+        {count >= 4 && (
+          <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
+            {validItems.slice(0, 4).map((item, i) => (
+              <div key={i} className="relative w-full h-full overflow-hidden cursor-pointer" onClick={(e) => handleImageClick(i, e)}>
+                {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
+                {i === 3 && count > 4 && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-white font-black text-xl">+{count - 4}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
-    );
-  }
-  if (count === 2) {
-    return (
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[280px]">
-        {validItems.map((item, i) => (
-          <div key={i} className="relative w-full h-full overflow-hidden">
-            {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (count === 3) {
-    return (
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
-        <div className="h-full border-r border-white/5">
-          {validItems[0].type === "photo"
-            ? <img src={validItems[0].url} className="w-full h-full object-cover" />
-            : <AutoPlayVideo src={validItems[0].url} />}
-        </div>
-        <div className="grid grid-rows-2 gap-1 h-full">
-          <div className="h-full">
-            {validItems[1].type === "photo"
-              ? <img src={validItems[1].url} className="w-full h-full object-cover" />
-              : <AutoPlayVideo src={validItems[1].url} />}
-          </div>
-          <div className="h-full">
-            {validItems[2].type === "photo"
-              ? <img src={validItems[2].url} className="w-full h-full object-cover" />
-              : <AutoPlayVideo src={validItems[2].url} />}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="mb-4 grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-white/5 h-[300px]">
-      {validItems.slice(0, 4).map((item, i) => (
-        <div key={i} className="relative w-full h-full overflow-hidden">
-          {item.type === "photo" ? <img src={item.url} className="w-full h-full object-cover" /> : <AutoPlayVideo src={item.url} />}
-          {i === 3 && count > 4 && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="text-white font-black text-xl">+{count - 4}</span>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+
+      <AnimatePresence>
+        {lbIndex !== null && (
+          <Lightbox items={validItems} index={lbIndex} onClose={() => setLbIndex(null)} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -1067,7 +1345,10 @@ function PostCard({
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
+  const [isStarred, setIsStarred] = useState(post.is_starred);
+  const [localStarCount, setLocalStarCount] = useState(post.stars_count || 0);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
+  const [isCopying, setIsCopying] = useState(false);
 
   // Sync local count if post data updates from background revalidation
   useEffect(() => {
@@ -1094,8 +1375,70 @@ function PostCard({
     setShowSpaceDust(true);
     setTimeout(() => setShowSpaceDust(false), 1500);
     setIsAcknowledged(true);
-    setLocalAckCount((prev: number) => prev + 1); // 🚀 [SPEED_BOOST] Instant count update
+    setLocalAckCount((prev: number) => prev + 1);
     await postApi("/explore/acknowledge", { user_id: currentUserId, post_id: post.id });
+  };
+
+  const handleStar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newStarred = !isStarred;
+    setIsStarred(newStarred);
+    setLocalStarCount((prev: number) => newStarred ? prev + 1 : Math.max(0, prev - 1));
+    await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
+  };
+
+  const postLink = `https://t.me/BluewaveAppBot/app?startapp=post_${post.id}`;
+
+  const handleForward = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    const forwardUrl = `https://t.me/share/url?url=${encodeURIComponent(postLink)}&text=${encodeURIComponent(post.content.slice(0, 100))}`;
+    const twa = (window as any).Telegram?.WebApp;
+    if (twa?.openTelegramLink) {
+      twa.openTelegramLink(forwardUrl);
+    } else {
+      window.open(forwardUrl, "_blank");
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Bluewave Post',
+          text: post.content.slice(0, 100) + '...',
+          url: postLink
+        });
+      } catch (err) { console.error("Share failed", err); }
+    } else {
+      handleCopyLink(e);
+    }
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isCopying) return;
+    setIsCopying(true);
+    navigator.clipboard.writeText(postLink).then(() => {
+      setTimeout(() => {
+        setIsCopying(false);
+        setIsMenuOpen(false);
+      }, 1000);
+    });
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    if (!window.confirm("Delete this post permanently?")) return;
+    onHide(); // Optimistic remove
+    try {
+      await postApi(`/explore/post/${post.id}`, {}, { method: "DELETE" });
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
   const handleRepost = async (e: React.MouseEvent) => {
@@ -1215,11 +1558,33 @@ function PostCard({
                   {isMenuOpen && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
-                      className="absolute right-0 top-6 w-36 bg-black border border-white/10 rounded-xl z-30 shadow-2xl overflow-hidden"
+                      className="absolute right-0 top-8 w-44 bg-zinc-950 border border-white/10 rounded-2xl z-30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] overflow-hidden p-1.5"
                     >
-                      <button onClick={(e) => { e.stopPropagation(); handleHide(); }} className="w-full text-left px-3 py-3 text-[9px] font-black uppercase tracking-widest text-orange-400 hover:bg-orange-500/10">
-                        {t("explore.not_interested")}
+                      <button onClick={handleForward} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                        <Forward size={14} className="text-cyan-400" />
+                        Forward
                       </button>
+                      <button onClick={handleShare} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                        <Share2 size={14} className="text-cyan-400" />
+                        Share Via...
+                      </button>
+                      <button onClick={handleCopyLink} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                        <Copy size={14} className={isCopying ? "text-green-400" : "text-cyan-400"} />
+                        {isCopying ? "Copied!" : "Copy Link"}
+                      </button>
+                      <div className="h-px bg-white/5 my-1 mx-2" />
+                      
+                      {post.tg_id === currentUserId ? (
+                        <button onClick={handleDelete} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all">
+                          <X size={14} />
+                          Delete Post
+                        </button>
+                      ) : (
+                        <button onClick={(e) => { e.stopPropagation(); handleHide(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-orange-400/70 hover:text-orange-400 hover:bg-orange-500/5 rounded-xl transition-all">
+                          <X size={14} />
+                          {t("explore.not_interested")}
+                        </button>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1304,6 +1669,22 @@ function PostCard({
 
               <div className="relative">
                 <button
+                  onClick={handleStar}
+                  className={`flex items-center gap-1.5 group transition-all ${isStarred ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
+                >
+                  <div className={`p-2 rounded-full transition-colors ${isStarred ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
+                    <Star size={16} fill={isStarred ? "currentColor" : "none"} className={isStarred ? "scale-110" : ""} />
+                  </div>
+                  {localStarCount > 0 && (
+                    <span className="text-[10px] font-bold font-mono text-white/80">
+                      {localStarCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className="relative">
+                <button
                   onClick={handleRepost}
                   disabled={isReposted || isReposting}
                   className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/60" : "text-white/40 hover:text-cyan-400/60"}`}
@@ -1330,23 +1711,7 @@ function PostCard({
   );
 }
 
-function AutoPlayVideo({ src }: { src: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
-        if (videoRef.current && videoRef.current.paused) videoRef.current.play().catch(() => { });
-      } else {
-        if (videoRef.current && !videoRef.current.paused) videoRef.current.pause();
-      }
-    }, { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] });
-    if (videoRef.current) observer.observe(videoRef.current);
-    return () => observer.disconnect();
-  }, []);
-  return (
-    <video ref={videoRef} src={src} controls muted playsInline loop autoPlay={false} className="w-full h-auto max-h-[400px] object-contain" />
-  );
-}
+
 
 function TrueViewTracker({ postId }: { postId: number }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -1768,17 +2133,17 @@ function PostDetailModal({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-white font-bold text-[11px] truncate tracking-tight">{comment.user.name}</span>
-                <span className="text-[9px] text-white/30">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-white font-bold text-[11px] truncate tracking-tight uppercase">{comment.user.name}</span>
+                <span className="text-[9px] text-white/20 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              <LinkedText text={comment.content} className="text-sm text-white/90 leading-relaxed mb-3 whitespace-pre-wrap" />
+              <LinkedText text={comment.content} className="text-[13px] text-white/80 leading-relaxed mb-3 whitespace-pre-wrap" />
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => handleToggleLike(comment.id)}
-                  className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/30 hover:text-white"}`}
+                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/20 hover:text-white"}`}
                 >
-                  <Heart size={12} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={2.5} />
+                  <Heart size={11} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={3} />
                   {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
                 </button>
                 <button
@@ -1787,9 +2152,9 @@ function PostDetailModal({
                     const input = document.getElementById('comment-input');
                     input?.focus();
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
                 >
-                  <MessageCircle size={12} strokeWidth={2.5} />
+                  <MessageCircle size={11} strokeWidth={3} />
                   <span>Reply</span>
                 </button>
               </div>
@@ -1805,29 +2170,33 @@ function PostDetailModal({
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md flex items-end justify-center"
+      className="fixed inset-0 z-[500] bg-black/95 flex flex-col items-center justify-center backdrop-blur-2xl"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
-        className="w-full max-w-xl bg-zinc-950 border-t border-white/10 rounded-t-[3rem] flex flex-col max-h-[95vh] shadow-[0_-20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+        initial={{ y: "100%", opacity: 0 }} 
+        animate={{ y: 0, opacity: 1 }} 
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", damping: 32, stiffness: 300, mass: 1 }}
+        className="w-full max-w-xl h-full bg-zinc-950 flex flex-col md:max-h-[95vh] md:rounded-t-[3rem] shadow-[0_-20px_100px_rgba(0,0,0,1)] overflow-hidden border-t border-white/5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-center pt-4 pb-2" onClick={onClose} >
-          <div className="w-12 h-1.5 rounded-full bg-white/10 active:bg-white/30 transition-colors" />
+        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
+           <button onClick={onClose} className="p-2 -ml-2 text-white/50 hover:text-white transition-colors"><ChevronDown size={24} /></button>
+           <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Post Thread</h4>
+           <div className="w-10" /> 
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-40">
           {loading ? (
-            <div className="py-20 flex flex-col items-center gap-4 opacity-50">
-              <Loader2 className="animate-spin text-cyan-400" size={32} />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Hydrating Signal</p>
+            <div className="py-32 flex flex-col items-center gap-4 opacity-50">
+              <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Loading</p>
             </div>
           ) : (
-            <div className="py-2">
+            <div className="py-6 space-y-8">
               <div
-                className="flex items-center gap-3 mb-4 cursor-pointer active:scale-[0.98] transition-transform"
+                className="flex items-center gap-4 cursor-pointer group"
                 onClick={() => {
                   const handle = post.channel?.handle || post.user?.handle;
                   if (handle) {
@@ -1839,7 +2208,7 @@ function PostDetailModal({
                   }
                 }}
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40 shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40 shrink-0 group-hover:border-cyan-500/50 transition-colors">
                   {(post.channel?.photo || post.user?.photo) ? (
                     <img src={post.channel?.photo || post.user.photo} className="w-full h-full object-cover" />
                   ) : (
@@ -1849,68 +2218,78 @@ function PostDetailModal({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-white font-black text-sm tracking-tight truncate">{post.channel?.title || post.user?.name}</h4>
-                  <p className="text-xs text-white/30">@{(post.channel?.handle || post.user?.handle || 'anon').replace(/^@/, '')}</p>
+                  <h4 className="text-white font-black text-[15px] tracking-tight truncate group-hover:text-cyan-400 transition-colors uppercase">{post.channel?.title || post.user?.name}</h4>
+                  <p className="text-[11px] text-white/30 font-mono">@{(post.channel?.handle || post.user?.handle || 'anon').replace(/^@/, '')}</p>
                 </div>
               </div>
 
-              <LinkedText text={post.content} className="text-lg text-white font-medium leading-relaxed tracking-tight mb-4 whitespace-pre-wrap" />
+              <LinkedText text={post.content} className="text-xl text-white font-medium leading-[1.6] tracking-tight mb-8 whitespace-pre-wrap selection:bg-cyan-500/30" />
 
               {post.media_urls && post.media_urls.length > 0 && (
                 <MediaCollage items={post.media_urls} />
               )}
 
-              <div className="py-4 border-y border-white/5 flex items-center gap-6 mb-6">
-                <div className="flex items-center gap-1.5 font-mono">
-                  <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
-                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Likes</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
-                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Reposts</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pb-32">
-                {localComments.length === 0 ? (
-                  <div className="py-12 text-center opacity-20 flex flex-col items-center gap-4">
-                    <MessageCircle size={48} strokeWidth={1} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em]">Zero reverberations yet</p>
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-8 py-4 border-y border-white/5">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Likes</span>
                   </div>
-                ) : (
-                  renderComments()
-                )}
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Reposts</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-black text-white">{post.views || 0}</span>
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Views</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {localComments.length === 0 ? (
+                    <div className="py-16 text-center opacity-20 flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-2">
+                        <MessageCircle size={32} strokeWidth={1.5} />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em]">No comments yet</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/[0.03]">
+                      {renderComments()}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-xl border-t border-white/10 pb-[calc(env(safe-area-inset-bottom,20px)+20px)]">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/90 backdrop-blur-2xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom,20px)+20px)] max-w-xl mx-auto">
           {replyTo && (
-            <div className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20 rounded-t-2xl">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20 rounded-t-2xl">
               <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                 Replying to <span className="text-white">{replyTo.user.name}</span>
               </span>
               <button onClick={() => setReplyTo(null)} className="text-cyan-400 p-1">
                 <X size={14} />
               </button>
-            </div>
+            </motion.div>
           )}
-          <div className={`flex items-end gap-3 p-3 bg-white/5 border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-[2rem]'} focus-within:border-cyan-500/40 transition-all shadow-2xl`}>
+          <div className={`flex items-end gap-3 p-3 bg-white/[0.03] border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-3xl'} focus-within:border-cyan-500/30 transition-all shadow-2xl`}>
             <textarea
               id="comment-input"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Post your reply"
-              className="flex-1 bg-transparent border-none outline-none text-base text-white py-2 px-2 resize-none max-h-32 min-h-[44px] custom-scrollbar"
+              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 px-2 resize-none max-h-32 min-h-[40px] custom-scrollbar"
               rows={1}
             />
             <button
               onClick={handlePostComment}
               disabled={posting || !content.trim()}
-              className="w-11 h-11 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-90 transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(0,230,255,0.3)]"
+              className="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30 shadow-[0_0_20px_rgba(0,230,255,0.2)]"
             >
-              {posting ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+              {posting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} strokeWidth={2.5} />}
             </button>
           </div>
         </div>
