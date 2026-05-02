@@ -630,6 +630,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         {isPostModalOpen && (
           <PostModal
             telegramUser={telegramUser}
+            swrUser={swrUser}
             onClose={() => setIsPostModalOpen(false)}
             onPosted={(requestArgs) => {
               setIsPostModalOpen(false);
@@ -733,7 +734,17 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
 // ----------------------------------------------------------------------------
 // 📤 Post Modal (X-style Full-Screen)
 // ----------------------------------------------------------------------------
-function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onClose: () => void, onPosted: (args: any) => void }) {
+function PostModal({ 
+  telegramUser, 
+  onClose, 
+  onPosted, 
+  swrUser 
+}: { 
+  telegramUser: any, 
+  onClose: () => void, 
+  onPosted: (args: any) => void, 
+  swrUser: any 
+}) {
   const { t } = useLanguage();
   const [content, setContent] = useState("");
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
@@ -933,36 +944,27 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
       className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col md:max-w-md md:mx-auto md:relative md:inset-auto md:h-[90vh] md:rounded-[3rem] md:overflow-hidden"
     >
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
-        <button onClick={onClose} className="p-2 -ml-2 text-white/70 hover:text-white transition-colors"><X size={20} /></button>
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-           <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-           <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500">New Post</span>
-        </div>
-        <button 
-          onClick={handlePost}
-          disabled={posting || (!content.trim() && mediaFiles.length === 0)}
-          className="px-6 py-2 bg-cyan-500 text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-full shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-95 transition-all disabled:opacity-30"
-        >
-          {posting ? (
-            <div className="flex items-center gap-2">
-              <Loader2 size={12} className="animate-spin" />
-              <span>{uploadIndex ? `${t("explore.posting_btn")} ${uploadIndex}/${mediaFiles.length}` : t("explore.posting_btn")}</span>
-            </div>
-          ) : "Post"}
-        </button>
-      </div>
+
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        <div className="flex gap-4">
-           <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
-             {telegramUser.photo_url ? <img src={telegramUser.photo_url} className="w-full h-full object-cover" /> : <span className="text-cyan-500 font-bold">B</span>}
-           </div>
-           
-           <div className="flex-1 space-y-4">
-             <button className="flex items-center gap-1 px-3 py-0.5 rounded-full border border-cyan-500/30 text-cyan-500 text-[10px] font-bold w-fit bg-cyan-500/5">
-               Everyone <ChevronDown size={12} />
-             </button>
+         <div className="flex gap-4">
+            <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
+              {swrUser?.telegram_channel_photo ? (
+                <img src={swrUser.telegram_channel_photo} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-cyan-500 font-black text-sm">{swrUser?.telegram_channel_title?.[0] || "B"}</span>
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-2">
+                <button className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-cyan-500/30 text-cyan-500 text-[9px] font-black uppercase tracking-widest w-fit bg-cyan-500/5">
+                  {swrUser?.telegram_channel_title ? (
+                    swrUser.telegram_channel_title.length > 18 ? swrUser.telegram_channel_title.slice(0, 15) + '...' : swrUser.telegram_channel_title
+                  ) : "Bluewave"} 
+                  <ChevronDown size={10} />
+                </button>
+              </div>
 
              <textarea
                autoFocus
@@ -998,29 +1000,41 @@ function PostModal({ telegramUser, onClose, onPosted }: { telegramUser: any, onC
         </div>
       </div>
 
-      <div className="p-4 border-t border-white/5 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFilesChange} />
-          <button onClick={() => fileInputRef.current?.click()} className="text-cyan-500 hover:scale-110 transition-transform active:scale-90"><ImageIcon size={22} /></button>
-          <button className="text-cyan-500/40 cursor-not-allowed"><Plus size={22} /></button>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="relative w-8 h-8 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-white/5" />
-              <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" 
-                strokeDasharray={strokeDasharray} 
-                strokeDashoffset={strokeDashoffset}
-                className={content.length > charLimit - 20 ? "text-orange-500" : "text-cyan-500"} 
-              />
-            </svg>
-            {content.length > charLimit - 20 && (
-              <span className="absolute text-[8px] font-bold text-white/40">{charLimit - content.length}</span>
-            )}
+      <div className="fixed bottom-12 left-0 right-0 px-5 z-20">
+        <div className="p-4 rounded-[2.5rem] bg-zinc-900/90 backdrop-blur-2xl border border-white/5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center">
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFilesChange} />
+            <button onClick={() => fileInputRef.current?.click()} className="text-cyan-500 hover:scale-110 transition-transform active:scale-90 p-2"><ImageIcon size={22} /></button>
           </div>
-          <div className="h-4 w-px bg-white/10" />
-          <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/20 hover:text-white transition-colors"><Plus size={16} /></button>
+          
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-white/5" />
+                <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="2" fill="transparent" 
+                  strokeDasharray={strokeDasharray} 
+                  strokeDashoffset={strokeDashoffset}
+                  className={content.length > charLimit - 20 ? "text-orange-500" : "text-cyan-500"} 
+                />
+              </svg>
+              {content.length > charLimit - 20 && (
+                <span className="absolute text-[8px] font-bold text-white/40">{charLimit - content.length}</span>
+              )}
+            </div>
+            
+            <button 
+              onClick={handlePost}
+              disabled={posting || (!content.trim() && mediaFiles.length === 0)}
+              className="px-6 py-2.5 bg-cyan-500 text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-full shadow-[0_10px_20px_rgba(6,182,212,0.2)] active:scale-95 transition-all disabled:opacity-30"
+            >
+              {posting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 size={12} className="animate-spin" />
+                  <span>{uploadIndex ? `${uploadIndex}/${mediaFiles.length}` : "..."}</span>
+                </div>
+              ) : "Post"}
+            </button>
+          </div>
         </div>
       </div>
       
@@ -1112,20 +1126,29 @@ function AutoPlayVideo({ src }: { src: string }) {
 // ----------------------------------------------------------------------------
 function Lightbox({ items, index, onClose }: { items: { url: string, type: string }[], index: number, onClose: () => void }) {
   const [curr, setCurr] = useState(index);
+  const [scale, setScale] = useState(1);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const twa = (window as any).Telegram?.WebApp;
+    if (twa?.BackButton) {
+      twa.BackButton.show();
+      twa.BackButton.onClick(onClose);
+    }
+    return () => {
+      if (twa?.BackButton) {
+        twa.BackButton.hide();
+        twa.BackButton.offClick(onClose);
+      }
+    };
+  }, [onClose]);
 
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[600] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-xl"
+      className="fixed inset-0 z-[600] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
     >
-      <div className="absolute top-10 right-6 z-[610]">
-        <button onClick={onClose} className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white active:scale-90 transition-all border border-white/10 hover:bg-white/20">
-          <X size={24} />
-        </button>
-      </div>
-
       <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
          <motion.div 
            key={curr}
@@ -1133,17 +1156,25 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
            animate={{ x: 0, opacity: 1 }}
            exit={{ x: -100, opacity: 0 }}
            className="w-full h-full flex items-center justify-center p-4 touch-none"
-           drag="x"
-           dragConstraints={{ left: 0, right: 0 }}
+           drag
+           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+           dragElastic={0.8}
            onDragEnd={(_, info) => {
-             if (info.offset.x > 80 && curr > 0) setCurr(curr - 1);
+             // Vertical dismiss
+             if (Math.abs(info.offset.y) > 150) {
+               onClose();
+             }
+             // Horizontal swiping
+             else if (info.offset.x > 80 && curr > 0) setCurr(curr - 1);
              else if (info.offset.x < -80 && curr < items.length - 1) setCurr(curr + 1);
            }}
+           style={{ scale }}
+           onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
          >
            {items[curr].type === "photo" ? (
-             <img src={items[curr].url} className="max-w-full max-h-[85vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg" />
+             <img src={items[curr].url} className="max-w-full max-h-[90vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg" />
            ) : (
-             <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[85vh] rounded-lg shadow-2xl" />
+             <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
            )}
          </motion.div>
       </div>
@@ -1560,14 +1591,7 @@ function PostCard({
                       initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
                       className="absolute right-0 top-8 w-44 bg-zinc-950 border border-white/10 rounded-2xl z-30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] overflow-hidden p-1.5"
                     >
-                      <button onClick={handleForward} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                        <Forward size={14} className="text-cyan-400" />
-                        Forward
-                      </button>
-                      <button onClick={handleShare} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                        <Share2 size={14} className="text-cyan-400" />
-                        Share Via...
-                      </button>
+
                       <button onClick={handleCopyLink} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                         <Copy size={14} className={isCopying ? "text-green-400" : "text-cyan-400"} />
                         {isCopying ? "Copied!" : "Copy Link"}
@@ -1622,8 +1646,8 @@ function PostCard({
                 }}
                 className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
               >
-                <div className="p-2 rounded-full group-hover:bg-cyan-500/5 transition-colors">
-                  <MessageCircle size={16} />
+                <div className="p-1.5 rounded-full group-hover:bg-cyan-500/5 transition-colors">
+                  <MessageCircle size={14} />
                 </div>
                 {post.comments_count > 0 && (
                   <span className="text-[10px] font-bold font-mono text-white/80">
@@ -1656,8 +1680,8 @@ function PostCard({
                   onClick={handleAcknowledge}
                   className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
                 >
-                  <div className={`p-2 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
-                    <Heart size={16} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
+                  <div className={`p-1.5 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
+                    <Heart size={14} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
                   </div>
                   {localAckCount > 0 && (
                     <span className="text-[10px] font-bold font-mono text-white/80">
@@ -1672,8 +1696,8 @@ function PostCard({
                   onClick={handleStar}
                   className={`flex items-center gap-1.5 group transition-all ${isStarred ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
                 >
-                  <div className={`p-2 rounded-full transition-colors ${isStarred ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
-                    <Star size={16} fill={isStarred ? "currentColor" : "none"} className={isStarred ? "scale-110" : ""} />
+                  <div className={`p-1.5 rounded-full transition-colors ${isStarred ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
+                    <Star size={14} fill={isStarred ? "currentColor" : "none"} className={isStarred ? "scale-110" : ""} />
                   </div>
                   {localStarCount > 0 && (
                     <span className="text-[10px] font-bold font-mono text-white/80">
@@ -1689,10 +1713,10 @@ function PostCard({
                   disabled={isReposted || isReposting}
                   className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/60" : "text-white/40 hover:text-cyan-400/60"}`}
                 >
-                  <div className={`p-2 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : isReposting ? "bg-cyan-500/5" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
+                  <div className={`p-1.5 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : isReposting ? "bg-cyan-500/5" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
                     {isReposting
-                      ? <Loader2 size={16} className="animate-spin text-cyan-400" />
-                      : <Repeat2 size={16} className={isReposted ? "rotate-180" : ""} />
+                      ? <Loader2 size={14} className="animate-spin text-cyan-400" />
+                      : <Repeat2 size={14} className={isReposted ? "rotate-180" : ""} />
                     }
                   </div>
                   {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono text-white/60">{post.reposts_count}</span>}
@@ -2181,11 +2205,7 @@ function PostDetailModal({
         className="w-full max-w-xl h-full bg-zinc-950 flex flex-col md:max-h-[95vh] md:rounded-t-[3rem] shadow-[0_-20px_100px_rgba(0,0,0,1)] overflow-hidden border-t border-white/5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
-           <button onClick={onClose} className="p-2 -ml-2 text-white/50 hover:text-white transition-colors"><ChevronDown size={24} /></button>
-           <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Post Thread</h4>
-           <div className="w-10" /> 
-        </div>
+
 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-40">
           {loading ? (
@@ -2230,18 +2250,23 @@ function PostDetailModal({
               )}
 
               <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-8 py-4 border-y border-white/5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
-                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Likes</span>
+                <div className="flex items-center justify-between py-4 border-y border-white/5">
+                  <div className="flex items-center gap-8">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
+                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Likes</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
+                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Reposts</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-black text-white">{post.views || 0}</span>
+                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Views</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
-                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Reposts</span>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-black text-white">{post.views || 0}</span>
-                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Views</span>
+                  <div className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-tighter">
+                    {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
 
