@@ -1,6 +1,6 @@
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { ArrowLeft, Trophy, User, SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
 
@@ -20,6 +20,19 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   const [builderNationsOpen, setBuilderNationsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"global" | "network">("global");
   const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    if (!filterOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [filterOpen]);
 
   const handleCountriesOpen = (open: boolean) => {
     setCountriesOpen(open);
@@ -317,13 +330,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                             <div className={`mt-auto mb-3 px-3 py-1 rounded-xl border border-cyan-500/10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
                               ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
                               {viewMode === "network" ? (
-                                <>
-                                  <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">Networks</span>
-                                  <span className="text-xs font-black text-cyan-100">{u.total_referrals}</span>
-                                  {u.verified_referrals > 0 && (
-                                    <span className="text-[7px] text-cyan-400 font-black">{u.verified_referrals} verified</span>
-                                  )}
-                                </>
+                                u.verified_referrals > 0 && (
+                                  <span className="text-[9px] text-cyan-400 font-black uppercase tracking-tighter">
+                                    {u.verified_referrals} verified
+                                  </span>
+                                )
                               ) : (
                                 <>
                                   <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">{t("leaderboard.referrals_label")}</span>
@@ -401,7 +412,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                       {viewMode === "global" ? "Global Leaderboard" : "Network Builders"}
                     </h3>
                     {/* Filter Toggle */}
-                    <div className="relative">
+                    <div className="relative" ref={filterRef}>
                       <button
                         onClick={() => setFilterOpen(v => !v)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
@@ -609,12 +620,30 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; onClose: () => void; leaders: any[] }) {
   const dragControls = useDragControls();
 
-  // Derive unique countries from the leaders array (already in memory — no API call)
+  // Fetch /countries for name lookup — already cached by useApi from ActiveCountriesSheet, so no extra cost
+  const { data: countriesData } = useApi(isOpen ? "/countries" : null);
+
+  // Build a code → name map from the API response
+  const nameMap: Record<string, string> = {};
+  if (countriesData) {
+    for (const c of countriesData) {
+      if (c.code) nameMap[c.code.toUpperCase()] = c.name;
+    }
+  }
+
+  // Derive unique nations from the leaders array (already in memory — no extra API call)
   const nations = Array.from(
     new Map(
       leaders
-        .filter((u: any) => u.country_flag && u.country_flag !== "🏳️")
-        .map((u: any) => [u.country_flag, { flag: u.country_flag, code: u.country_code || "" }])
+        .filter((u: any) => u.country_flag && u.country_flag !== "🏳️" && u.country_code)
+        .map((u: any) => [
+          u.country_code?.toUpperCase(),
+          {
+            flag: u.country_flag,
+            code: u.country_code?.toUpperCase() || "",
+            name: nameMap[u.country_code?.toUpperCase()] || u.country_code || "",
+          },
+        ])
     ).values()
   );
 
@@ -622,16 +651,16 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — above nav */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Sheet */}
+          {/* Sheet — above nav */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -645,7 +674,7 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 z-[201] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
+            className="fixed bottom-0 left-0 right-0 z-[401] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
           >
             {/* Drag Handle */}
             <div
@@ -671,12 +700,12 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
                 ) : (
                   nations.map((n: any) => (
                     <div
-                      key={n.flag}
+                      key={n.code}
                       className="flex items-center gap-3 p-3 rounded-2xl bg-cyan-950/20 border border-cyan-900/30 hover:border-cyan-500/30 transition-colors group"
                     >
                       <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{n.flag}</span>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{n.name || n.code}</p>
+                        <p className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{n.name}</p>
                         <p className="text-[9px] font-bold text-cyan-600 uppercase tracking-widest">{n.code}</p>
                       </div>
                     </div>
@@ -690,3 +719,4 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
     </AnimatePresence>
   );
 }
+
