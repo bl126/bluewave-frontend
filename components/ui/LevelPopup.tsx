@@ -121,7 +121,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                     onClick={onClose}
                 >
                     <motion.div
-                        className="relative w-full max-w-sm bg-[#050505] border border-cyan-500/20 rounded-[2.5rem] overflow-hidden flex flex-col max-h-[65vh] shadow-[0_0_50px_rgba(6,182,212,0.2)]"
+                        className="relative w-full max-w-sm bg-[#050505] border border-cyan-500/20 rounded-[2.5rem] overflow-hidden flex flex-col max-h-[70vh] shadow-[0_0_50px_rgba(6,182,212,0.2)]"
                         initial={{ scale: 0.9, y: 20, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -143,7 +143,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                         </div>
 
                         {/* Content - Scrollable Accordion */}
-                        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2 pb-24 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2 pb-6 custom-scrollbar">
                             {LEVELS.map((lvl) => {
                                 const isExpanded = expandedLevel === lvl.level;
                                 const isCompleted = isLevelCompleted(lvl.level);

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { ArrowLeft, Trophy, User } from "lucide-react";
+import { ArrowLeft, Trophy, User, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
@@ -17,6 +17,9 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   const tg_id = telegramUser?.id;
 
   const [countriesOpen, setCountriesOpen] = useState(false);
+  const [builderNationsOpen, setBuilderNationsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"global" | "network">("global");
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const handleCountriesOpen = (open: boolean) => {
     setCountriesOpen(open);
@@ -35,15 +38,22 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     return null;
   });
  
-  // Use useApi for caching and automatic revalidation
+  // Global leaderboard data
   const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null, {
     fallbackData: cachedData,
-    dedupingInterval: 30000,      // Don't refetch within 30s (init just pre-seeded it)
-    revalidateOnFocus: false,     // Leaderboard doesn't need focus revalidation
+    dedupingInterval: 30000,
+    revalidateOnFocus: false,
   });
- 
-  const leaders = data?.leaders || [];
-  const myRank = data?.myRank;
+
+  // Network builders data (only fetched when that mode is active)
+  const { data: networkData, loading: networkLoading } = useApi(
+    isOpen && tg_id && viewMode === "network" ? `/leaderboard/network-builders?tg_id=${tg_id}` : null,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
+
+  const activeData = viewMode === "global" ? data : networkData;
+  const leaders = activeData?.leaders || [];
+  const myRank = activeData?.myRank;
  
   // Update cache when fresh data arrives
   useEffect(() => {
@@ -51,6 +61,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
        window.localStorage.setItem(`bw_leaderboard_cache_${tg_id}`, JSON.stringify(data));
     }
   }, [data, loading, tg_id]);
+
+  const isLoading = viewMode === "global" ? (!data && !error) : networkLoading;
  
   const isUserInTop100 = leaders.some((u: any) => String(u.telegram_id) === String(tg_id));
 
@@ -197,7 +209,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
         >
           <div className={`${isInline ? 'w-full px-6 pb-60 custom-scrollbar' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
             {/* Skeleton: ONLY when there is truly zero data (first-ever load) */}
-            {!data && !error && (
+            {isLoading && (
               <div className="flex flex-col items-center justify-center h-full pt-16 animate-pulse w-full max-w-md mx-auto">
                 {/* Podium Skeleton */}
                 <div className="flex items-end justify-center gap-2 sm:gap-4 mb-10 w-full px-4">
@@ -221,14 +233,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
               </div>
             )}
 
-            {error && !data && (
+            {error && !data && viewMode === "global" && (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-red-400 font-bold">{t("leaderboard.error_load")}</p>
               </div>
             )}
 
             {/* Content: Show IMMEDIATELY when data exists — even if revalidating in background */}
-            {data && (
+            {activeData && (
               <div className="max-w-md mx-auto w-full space-y-10">
 
                 {/* PODIUM SECTION */}
@@ -294,18 +306,30 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
 
                             <div className="flex flex-col items-center gap-0.5 mb-2">
                               <p className={`${isFirst ? 'text-sm' : 'text-xs'} font-black tracking-tight ${textColor}`}>
-                                {u.balance.toLocaleString()}
+                                {viewMode === "network" ? u.total_referrals : u.balance.toLocaleString()}
                               </p>
                               <p className="text-[7px] font-black text-cyan-600 uppercase tracking-[0.2em] leading-none">
-                                $BWAVE
+                                {viewMode === "network" ? "Networks" : "$BWAVE"}
                               </p>
                             </div>
 
                             {/* Referral Chip */}
                             <div className={`mt-auto mb-3 px-3 py-1 rounded-xl border border-cyan-500/10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
                               ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
-                              <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">{t("leaderboard.referrals_label")}</span>
-                              <span className="text-xs font-black text-cyan-100">{u.referrals}</span>
+                              {viewMode === "network" ? (
+                                <>
+                                  <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">Networks</span>
+                                  <span className="text-xs font-black text-cyan-100">{u.total_referrals}</span>
+                                  {u.verified_referrals > 0 && (
+                                    <span className="text-[7px] text-cyan-400 font-black">{u.verified_referrals} verified</span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">{t("leaderboard.referrals_label")}</span>
+                                  <span className="text-xs font-black text-cyan-100">{u.referrals}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -314,17 +338,17 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                   })}
                 </div>
 
-                {/* ACTIVE COUNTRIES PILL - Fixed placement below top 3 */}
+                {/* COUNTRIES PILL - switches between Active Countries and Builder Nations */}
                 <div className="flex justify-center -mt-6">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCountriesOpen(true)}
+                    onClick={() => viewMode === "network" ? setBuilderNationsOpen(true) : handleCountriesOpen(true)}
                     className="flex items-center gap-2 px-6 py-2 rounded-full bg-cyan-950/40 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.1)] hover:border-cyan-400/60 transition-all group"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 group-hover:text-cyan-200">
-                      Active Countries
+                      {viewMode === "network" ? "Builder Nations" : "Active Countries"}
                     </span>
                     <Trophy size={12} className="text-cyan-600 group-hover:text-cyan-400" />
                   </motion.button>
@@ -353,12 +377,18 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                           <span className="text-base leading-none">{myRank.country_flag}</span>
                         </div>
                         <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
-                          {myRank.referrals} Networks
+                          {viewMode === "network"
+                            ? `${myRank.total_referrals} Networks · ${myRank.verified_referrals} Verified`
+                            : `${myRank.referrals} Networks`}
                         </p>
                       </div>
                       <div className="relative text-right flex flex-col items-end">
-                        <p className="text-lg font-black text-cyan-400 leading-none">{myRank.balance.toLocaleString()}</p>
-                        <p className="text-[9px] text-cyan-600 font-black uppercase tracking-widest mt-1">$BWAVE</p>
+                        <p className="text-lg font-black text-cyan-400 leading-none">
+                          {viewMode === "network" ? myRank.total_referrals : myRank.balance.toLocaleString()}
+                        </p>
+                        <p className="text-[9px] text-cyan-600 font-black uppercase tracking-widest mt-1">
+                          {viewMode === "network" ? "Networks" : "$BWAVE"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -366,10 +396,55 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
 
                 {/* LIST SECTION */}
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center px-2">
+                  <div className="flex justify-between items-center px-2 relative">
                     <h3 className="text-cyan-500/70 text-[10px] font-black uppercase tracking-[0.3em]">
-                      {t("leaderboard.global_list")}
+                      {viewMode === "global" ? "Global Leaderboard" : "Network Builders"}
                     </h3>
+                    {/* Filter Toggle */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setFilterOpen(v => !v)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                          viewMode === "network"
+                            ? "border-cyan-400/60 text-cyan-300 bg-cyan-400/10"
+                            : "border-cyan-900/50 text-cyan-700 hover:border-cyan-500/40 hover:text-cyan-500"
+                        }`}
+                      >
+                        <SlidersHorizontal size={10} />
+                        {viewMode === "global" ? "Global" : "Builders"}
+                      </button>
+                      <AnimatePresence>
+                        {filterOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 top-8 z-50 bg-black/95 border border-cyan-500/30 rounded-2xl shadow-[0_0_30px_rgba(0,230,255,0.15)] overflow-hidden min-w-[160px]"
+                          >
+                            <button
+                              onClick={() => { setViewMode("global"); setFilterOpen(false); }}
+                              className={`w-full flex items-center gap-2.5 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                                viewMode === "global" ? "text-cyan-300 bg-cyan-400/10" : "text-cyan-700 hover:text-cyan-400 hover:bg-cyan-400/5"
+                              }`}
+                            >
+                              <Trophy size={11} />
+                              Global Leaderboard
+                            </button>
+                            <div className="h-[1px] bg-cyan-900/40 mx-3" />
+                            <button
+                              onClick={() => { setViewMode("network"); setFilterOpen(false); }}
+                              className={`w-full flex items-center gap-2.5 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                                viewMode === "network" ? "text-cyan-300 bg-cyan-400/10" : "text-cyan-700 hover:text-cyan-400 hover:bg-cyan-400/5"
+                              }`}
+                            >
+                              <SlidersHorizontal size={11} />
+                              Network Builders
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
 
                   {restOfList.map((u: any, idx: number) => {
@@ -403,17 +478,25 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                             </span>
                             <span className="text-sm">{u.country_flag}</span>
                           </div>
-                          <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
-                            {u.referrals} Networks
-                          </p>
+                          {viewMode === "network" ? (
+                            u.verified_referrals > 0 && (
+                              <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.15em] mt-0.5">
+                                {u.verified_referrals} Verified
+                              </p>
+                            )
+                          ) : (
+                            <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
+                              {u.referrals} Networks
+                            </p>
+                          )}
                         </div>
 
                         <div className="text-right flex flex-col items-end">
                           <p className={`text-base font-black leading-none ${isMe ? 'text-cyan-400' : 'text-cyan-100'}`}>
-                            {u.balance.toLocaleString()}
+                            {viewMode === "network" ? u.total_referrals : u.balance.toLocaleString()}
                           </p>
                           <p className="text-[8px] text-cyan-700 font-black uppercase tracking-widest mt-1">
-                            $BWAVE
+                            {viewMode === "network" ? "Networks" : "$BWAVE"}
                           </p>
                         </div>
                       </motion.div>
@@ -427,6 +510,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
           <ActiveCountriesSheet
             isOpen={countriesOpen}
             onClose={() => handleCountriesOpen(false)}
+          />
+          <BuilderNationsSheet
+            isOpen={builderNationsOpen}
+            onClose={() => setBuilderNationsOpen(false)}
+            leaders={leaders}
           />
         </motion.div>
       )}
@@ -509,6 +597,92 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   ))}
                 </div>
               )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// [CODE: BUILDER_NATIONS_SHEET]
+function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; onClose: () => void; leaders: any[] }) {
+  const dragControls = useDragControls();
+
+  // Derive unique countries from the leaders array (already in memory — no API call)
+  const nations = Array.from(
+    new Map(
+      leaders
+        .filter((u: any) => u.country_flag && u.country_flag !== "🏳️")
+        .map((u: any) => [u.country_flag, { flag: u.country_flag, code: u.country_code || "" }])
+    ).values()
+  );
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+          />
+
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            drag="y"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100) onClose();
+            }}
+            className="fixed bottom-0 left-0 right-0 z-[201] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
+          >
+            {/* Drag Handle */}
+            <div
+              onPointerDown={(e) => dragControls.start(e)}
+              className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none"
+            >
+              <div className="w-12 h-1.5 bg-cyan-900/50 rounded-full" />
+            </div>
+
+            <div className="px-8 pb-4">
+              <h3 className="text-cyan-400 text-sm font-black uppercase tracking-[0.2em] mb-1">
+                Builder Nations
+              </h3>
+              <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest">
+                Where Network Builders Are From
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 pb-20 custom-scrollbar">
+              <div className="grid grid-cols-2 gap-3 pb-6">
+                {nations.length === 0 ? (
+                  <p className="col-span-2 text-center text-cyan-700 text-[10px] font-black uppercase tracking-widest py-8">No data</p>
+                ) : (
+                  nations.map((n: any) => (
+                    <div
+                      key={n.flag}
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-cyan-950/20 border border-cyan-900/30 hover:border-cyan-500/30 transition-colors group"
+                    >
+                      <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{n.flag}</span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{n.name || n.code}</p>
+                        <p className="text-[9px] font-bold text-cyan-600 uppercase tracking-widest">{n.code}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </motion.div>
         </>
