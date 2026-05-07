@@ -1,5 +1,5 @@
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { ArrowLeft, Trophy, User, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Trophy, User, SlidersHorizontal, X, Link2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
@@ -10,14 +10,16 @@ interface LeaderboardProps {
   telegramUser: any;
   isInline?: boolean;
   onSheetOpenChange?: (open: boolean) => void;
+  onGetRefLink?: () => void;
 }
 
-export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false, onSheetOpenChange }: LeaderboardProps) {
+export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = false, onSheetOpenChange, onGetRefLink }: LeaderboardProps) {
   const { t } = useLanguage();
   const tg_id = telegramUser?.id;
 
   const [countriesOpen, setCountriesOpen] = useState(false);
   const [builderNationsOpen, setBuilderNationsOpen] = useState(false);
+  const [joinBoardOpen, setJoinBoardOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"global" | "network">("global");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -349,18 +351,18 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                             </div>
 
                             {/* Referral Chip */}
-                            <div className={`mt-auto mb-3 px-3 py-1 rounded-xl border border-cyan-500/10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
-                              ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
+                            <div className={`mt-auto mb-3 px-3 py-1.5 rounded-xl border bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center 
+                              ${isFirst ? 'border-cyan-500/30' : 'border-cyan-500/15 opacity-90'}`}>
                               {viewMode === "network" ? (
                                 u.verified_referrals > 0 && (
-                                  <span className="text-[11px] text-cyan-400 font-black uppercase tracking-tight">
+                                  <span className={`${rank === 3 ? 'text-[12px]' : rank === 2 ? 'text-[11px]' : 'text-[10px]'} text-cyan-400 font-black uppercase tracking-tight`}>
                                     {u.verified_referrals} verified
                                   </span>
                                 )
                               ) : (
                                 <>
-                                  <span className="text-[9px] font-black text-cyan-500 uppercase tracking-tighter">{t("leaderboard.referrals_label")}</span>
-                                  <span className="text-xs font-black text-cyan-100">{u.referrals}</span>
+                                  <span className={`${rank === 3 ? 'text-[11px]' : rank === 2 ? 'text-[10px]' : 'text-[9px]'} font-black text-cyan-500 uppercase tracking-tighter`}>{t("leaderboard.referrals_label")}</span>
+                                  <span className={`${rank === 3 ? 'text-sm' : rank === 2 ? 'text-[13px]' : 'text-xs'} font-black text-cyan-100`}>{u.referrals}</span>
                                 </>
                               )}
                             </div>
@@ -387,8 +389,24 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                   </motion.button>
                 </div>
 
-                {/* YOUR RANK SECTION (If not in top 100) */}
-                {myRank && !isUserInTop100 && (
+                {/* NETWORK BUILDERS — JOIN PILL (user has 0 referrals) */}
+                {viewMode === "network" && (!myRank || myRank.total_referrals === 0) && (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-cyan-500/20" />
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setJoinBoardOpen(true)}
+                      className="px-5 py-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400/60 transition-all group flex items-center gap-2"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400">Join the Board</span>
+                    </motion.button>
+                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-cyan-500/20" />
+                  </div>
+                )}
+
+                {/* YOUR RANK CARD — only when user has referrals and is outside top 100 */}
+                {myRank && !isUserInTop100 && (viewMode === "global" || myRank.total_referrals > 0) && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-cyan-500/20"></div>
@@ -409,11 +427,17 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                           <p className="font-black text-cyan-50 truncate text-lg leading-none">{myRank.name}</p>
                           <span className="text-base leading-none">{myRank.country_flag}</span>
                         </div>
-                        <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
-                          {viewMode === "network"
-                            ? `${myRank.total_referrals} Networks · ${myRank.verified_referrals} Verified`
-                            : `${myRank.referrals} Networks`}
-                        </p>
+                        {viewMode === "network" ? (
+                          myRank.verified_referrals > 0 && (
+                            <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.15em] mt-0.5">
+                              {myRank.verified_referrals} Verified
+                            </p>
+                          )
+                        ) : (
+                          <p className="text-[10px] text-cyan-600 font-black uppercase tracking-[0.15em] mt-0.5">
+                            {myRank.referrals} Networks
+                          </p>
+                        )}
                       </div>
                       <div className="relative text-right flex flex-col items-end">
                         <p className="text-lg font-black text-cyan-400 leading-none">
@@ -548,6 +572,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
             isOpen={builderNationsOpen}
             onClose={() => handleBuilderNationsOpen(false)}
             leaders={leaders}
+          />
+          <JoinTheBoardModal
+            isOpen={joinBoardOpen}
+            onClose={() => setJoinBoardOpen(false)}
+            onGetRefLink={() => {
+              setJoinBoardOpen(false);
+              onGetRefLink?.();
+            }}
           />
         </motion.div>
       )}
@@ -762,3 +794,79 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
   );
 }
 
+// [CODE: JOIN_THE_BOARD_MODAL]
+function JoinTheBoardModal({ isOpen, onClose, onGetRefLink }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onGetRefLink: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Modal card */}
+          <motion.div
+            className="fixed inset-0 z-[201] flex items-center justify-center px-5"
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
+            <div className="w-full max-w-sm bg-[#050d12] border border-cyan-500/20 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,230,255,0.08)]">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-cyan-500/10">
+                <div>
+                  <p className="text-[11px] font-black text-white uppercase tracking-widest">How to rank here</p>
+                  <p className="text-[9px] text-cyan-600 font-bold uppercase tracking-wider mt-0.5">Network Builders Board</p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400/60 hover:text-cyan-400 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Steps */}
+              <div className="px-6 py-5 space-y-4">
+                {[
+                  { n: "1", text: "Share your referral link and onboard humans to your network" },
+                  { n: "2", text: "Each person who connects their TON wallet & activates their first presence counts as your Network" },
+                  { n: "3", text: "Verified Humans in your network count 3× — quality over quantity" }
+                ].map((step) => (
+                  <div key={step.n} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[9px] font-black text-cyan-400">{step.n}</span>
+                    </div>
+                    <p className="text-[11px] text-cyan-200/70 font-medium leading-relaxed">{step.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA button */}
+              <div className="px-6 pb-6">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={onGetRefLink}
+                  className="w-full h-12 rounded-2xl bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(0,230,255,0.2)] hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Link2 size={14} />
+                  Get Ref Link
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
