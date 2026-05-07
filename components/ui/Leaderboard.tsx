@@ -36,7 +36,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   });
  
   // Use useApi for caching and automatic revalidation
-  const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null, { fallbackData: cachedData });
+  const { data, loading, error } = useApi(isOpen && tg_id ? `/leaderboard?tg_id=${tg_id}` : null, {
+    fallbackData: cachedData,
+    dedupingInterval: 30000,      // Don't refetch within 30s (init just pre-seeded it)
+    revalidateOnFocus: false,     // Leaderboard doesn't need focus revalidation
+  });
  
   const leaders = data?.leaders || [];
   const myRank = data?.myRank;
@@ -192,7 +196,8 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <div className={`${isInline ? 'w-full px-6 pb-60 custom-scrollbar' : 'flex-1 overflow-y-auto px-6 pb-44 custom-scrollbar'}`}>
-            {loading && !data && (
+            {/* Skeleton: ONLY when there is truly zero data (first-ever load) */}
+            {!data && !error && (
               <div className="flex flex-col items-center justify-center h-full pt-16 animate-pulse w-full max-w-md mx-auto">
                 {/* Podium Skeleton */}
                 <div className="flex items-end justify-center gap-2 sm:gap-4 mb-10 w-full px-4">
@@ -216,13 +221,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
               </div>
             )}
 
-            {error && (
+            {error && !data && (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-red-400 font-bold">{t("leaderboard.error_load")}</p>
               </div>
             )}
 
-            {!loading && !error && (
+            {/* Content: Show IMMEDIATELY when data exists — even if revalidating in background */}
+            {data && (
               <div className="max-w-md mx-auto w-full space-y-10">
 
                 {/* PODIUM SECTION */}

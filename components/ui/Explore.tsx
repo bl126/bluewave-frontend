@@ -33,7 +33,10 @@ import {
   Forward,
   Copy,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Trophy,
+  User,
+  Lock
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -73,7 +76,7 @@ interface ExploreProps {
 
 export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
+  const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("leaderboard");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
@@ -333,35 +336,6 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     (ADMIN_IDS.includes(Number(telegramUser.id)) || BETA_TESTER_IDS.includes(Number(telegramUser.id)))
     : false;
 
-  if (!hasAccess) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[120] bg-black flex flex-col items-center justify-center p-6 text-center"
-      >
-        <div className="absolute inset-0 bg-cyan-500/5 blur-[100px] pointer-events-none" />
-        <div className="relative z-10 space-y-6">
-          <div className="w-24 h-24 bg-cyan-500/10 rounded-3xl flex items-center justify-center mx-auto border border-cyan-500/20 shadow-[0_0_30px_rgba(0,230,255,0.1)]">
-            <Rocket className="text-cyan-400" size={40} />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tight">{t("explore.title")}</h2>
-            <p className="text-[10px] text-cyan-400 font-black uppercase tracking-[0.2em]">{t("explore.beta_phase")}</p>
-          </div>
-          <p className="text-xs text-white/30 max-w-[260px] leading-relaxed mx-auto italic">
-            "{t("explore.beta_desc")}"
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-8 h-14 w-40 bg-white/5 border border-white/10 rounded-2xl text-white/50 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
-          >
-            {t("common.back")}
-          </button>
-        </div>
-      </motion.div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 1.02 }}
@@ -392,17 +366,33 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               onClick={() => handleTabClick(tab)}
               className={`relative pb-3 flex items-center justify-center transition-all ${activeTab === tab ? "text-cyan-400" : "text-white/30"}`}
             >
-              {tab === "foryou" && <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.foryou")}</span>}
-              {tab === "following" && <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>}
+              {tab === "foryou" && (
+                hasAccess ? (
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.foryou")}</span>
+                ) : (
+                  <Lock size={18} className="text-white/30" />
+                )
+              )}
+              {tab === "following" && (
+                hasAccess ? (
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>
+                ) : (
+                  <Lock size={18} className="text-white/30" />
+                )
+              )}
               {tab === "notifications" && (
-                <div className="relative">
-                  <Bell size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
-                  {unreadCount > 0 && (
-                    <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
-                      {unreadCount > 9 ? "!" : unreadCount}
-                    </div>
-                  )}
-                </div>
+                hasAccess ? (
+                  <div className="relative">
+                    <Bell size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
+                    {unreadCount > 0 && (
+                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
+                        {unreadCount > 9 ? "!" : unreadCount}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Lock size={18} className="text-white/30" />
+                )
               )}
               {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />}
 
@@ -483,107 +473,98 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         onTouchEnd={onTouchEnd}
         className="flex-1 overflow-y-auto custom-scrollbar mt-6"
       >
-        <AnimatePresence mode="wait">
-          {activeTab === "notifications" ? (
-            <motion.div
-              key="notifications"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="p-4 space-y-4"
-            >
-              <NotificationsView
-                notifications={notifications || []}
-                onClear={() => mutateNotifications()}
-                currentUserId={telegramUser?.id}
-                onPostClick={(postId, commentId) => {
-                  setSelectedPost({ id: postId });
-                  setSelectedCommentId(commentId || null);
-                }}
-              />
-            </motion.div>
-          ) : activeTab === "leaderboard" ? (
-            <motion.div
-              key="leaderboard"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Leaderboard
-                isOpen={true}
-                onClose={() => setActiveTab("foryou")}
-                telegramUser={telegramUser}
-                isInline={true}
-                onSheetOpenChange={setIsLeaderboardSheetOpen}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="feed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="divide-y divide-white/[0.05]"
-            >
-              {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
-                <div className="h-[95px] w-full shrink-0" />
-              )}
-              {loading && pagedPosts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-70">
-                  <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.hydrating")}</span>
-                </div>
-              )}
-
-              {pagedPosts?.map((post: any, index: number) => (
-                <div key={post.id || index}>
-                  <PostCard
-                    post={post}
-                    currentUserId={telegramUser?.id}
-                    isConnected={isConnected}
-                    onHide={() => mutate()}
-                    onRepost={() => mutate()}
-                    onConnectRequired={() => {
-                      setConnectPrompt(true);
-                      setTimeout(() => setConnectPrompt(false), 3000);
-                    }}
-                    onCommentClick={() => setSelectedPost(post)}
-                    onPostClick={() => setSelectedPost(post)}
-                  />
-                  {(index + 1) % 5 === 0 && (
-                    <div className="py-2">
-                       <MiniAppCarousel apps={MOCK_MINI_APPS} />
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {/* Load More Trigger */}
-              <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-                {loadingMore && !loading && <Loader2 className="animate-spin text-cyan-400/60" size={20} />}
-                {!hasMore && pagedPosts.length > 0 && (
-                  <span className="text-[8px] font-black uppercase tracking-widest opacity-60">{t("explore.no_more_signals") || "No more signals found"}</span>
-                )}
-              </div>
-
-              {!loading && pagedPosts?.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 text-center gap-2 opacity-80 px-6">
-                  <div className="space-y-1">
-                    <p className="font-black uppercase tracking-widest text-xs">
-                      {activeTab === "following" ? t("explore.no_following") : t("explore.no_signals")}
-                    </p>
-                    <p className="text-[10px] text-white/60 max-w-[200px]">
-                      {activeTab === "following" ? t("explore.no_following_desc") : t("explore.no_signals_desc")}
-                    </p>
+        {/* Main Content Area with Access Control */}
+        {(!hasAccess && activeTab !== "leaderboard") ? (
+          <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-40">
+            <div className="w-20 h-20 bg-cyan-500/5 rounded-3xl flex items-center justify-center mb-6 border border-cyan-500/10">
+              <Lock size={32} className="text-cyan-500/30" />
+            </div>
+            <h2 className="text-sm font-black text-white/50 uppercase tracking-[0.2em]">Beta Testing Phase</h2>
+            <p className="text-[10px] text-cyan-500/30 mt-2 uppercase tracking-widest italic">Authorized access only</p>
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {activeTab === "notifications" && (
+              <motion.div
+                key="notifications"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 space-y-4"
+              >
+                <NotificationsView
+                  notifications={notifications || []}
+                  onClear={() => mutateNotifications()}
+                  currentUserId={telegramUser?.id}
+                  onPostClick={(postId, commentId) => {
+                    setSelectedPost({ id: postId });
+                    setSelectedCommentId(commentId || null);
+                  }}
+                />
+              </motion.div>
+            )}
+            {activeTab === "leaderboard" && (
+              <motion.div
+                key="leaderboard"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Leaderboard
+                  isOpen={true}
+                  onClose={onClose}
+                  telegramUser={telegramUser}
+                  isInline={true}
+                  onSheetOpenChange={(open) => setIsLeaderboardSheetOpen(open)}
+                />
+              </motion.div>
+            )}
+            {(activeTab === "foryou" || activeTab === "following") && (
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {loading && pagedPosts.length === 0 ? (
+                  <div className="p-4 space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-32 bg-white/5 rounded-2xl animate-pulse border border-white/5" />
+                    ))}
                   </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                ) : pagedPosts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-center p-8">
+                    <p className="text-white/20 text-sm font-black uppercase tracking-widest">No posts yet</p>
+                  </div>
+                ) : (
+                  <div className="pb-32">
+                    {pagedPosts.map((post: any) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        currentUserId={telegramUser?.id}
+                        isConnected={isConnected}
+                        onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
+                        onRepost={() => mutate()}
+                        onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
+                        onCommentClick={() => setSelectedPost(post)}
+                        onPostClick={() => setSelectedPost(post)}
+                      />
+                    ))}
+                    {hasMore && (
+                      <div ref={loadMoreRef} className="flex justify-center py-6">
+                        {loadingMore && <Loader2 size={20} className="text-cyan-400 animate-spin" />}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* ─── FAB Post Button (Speed Dial) ─── */}
