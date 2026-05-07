@@ -39,6 +39,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     if (onSheetOpenChange) onSheetOpenChange(open);
   };
 
+  const handleBuilderNationsOpen = (open: boolean) => {
+    setBuilderNationsOpen(open);
+    if (onSheetOpenChange) onSheetOpenChange(open);
+  };
+
   const [cachedData, setCachedData] = useState<any>(() => {
     if (typeof window !== "undefined") {
       const effectiveTgId = tg_id || window.localStorage.getItem("bw_tg_id");
@@ -348,11 +353,9 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                               ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
                               {viewMode === "network" ? (
                                 u.verified_referrals > 0 && (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[10px] text-cyan-400 font-black uppercase tracking-tighter bg-cyan-400/10 px-3 py-1 rounded-lg border border-cyan-400/20">
-                                      {u.verified_referrals} verified
-                                    </span>
-                                  </div>
+                                  <span className="text-[11px] text-cyan-400 font-black uppercase tracking-tight">
+                                    {u.verified_referrals} verified
+                                  </span>
                                 )
                               ) : (
                                 <>
@@ -373,7 +376,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => viewMode === "network" ? setBuilderNationsOpen(true) : handleCountriesOpen(true)}
+                    onClick={() => viewMode === "network" ? handleBuilderNationsOpen(true) : handleCountriesOpen(true)}
                     className="flex items-center gap-2 px-6 py-2 rounded-full bg-cyan-950/40 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,230,255,0.1)] hover:border-cyan-400/60 transition-all group"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -543,7 +546,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
           />
           <BuilderNationsSheet
             isOpen={builderNationsOpen}
-            onClose={() => setBuilderNationsOpen(false)}
+            onClose={() => handleBuilderNationsOpen(false)}
             leaders={leaders}
           />
         </motion.div>
@@ -636,34 +639,53 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 }
 
 // [CODE: BUILDER_NATIONS_SHEET]
+// Static country code → name map so names show instantly regardless of API timing
+const COUNTRY_NAMES: Record<string, string> = {
+  AF:"Afghanistan",AL:"Albania",DZ:"Algeria",AO:"Angola",AR:"Argentina",AM:"Armenia",AU:"Australia",AT:"Austria",AZ:"Azerbaijan",
+  BS:"Bahamas",BH:"Bahrain",BD:"Bangladesh",BY:"Belarus",BE:"Belgium",BJ:"Benin",BT:"Bhutan",BO:"Bolivia",BA:"Bosnia",BW:"Botswana",BR:"Brazil",BN:"Brunei",BG:"Bulgaria",BF:"Burkina Faso",BI:"Burundi",
+  CV:"Cape Verde",KH:"Cambodia",CM:"Cameroon",CA:"Canada",CF:"Central African Rep.",TD:"Chad",CL:"Chile",CN:"China",CO:"Colombia",KM:"Comoros",CG:"Congo",CR:"Costa Rica",CI:"Côte d'Ivoire",HR:"Croatia",CU:"Cuba",CY:"Cyprus",CZ:"Czech Republic",
+  DK:"Denmark",DJ:"Djibouti",DO:"Dominican Republic",
+  EC:"Ecuador",EG:"Egypt",SV:"El Salvador",GQ:"Equatorial Guinea",ER:"Eritrea",EE:"Estonia",SZ:"Eswatini",ET:"Ethiopia",
+  FJ:"Fiji",FI:"Finland",FR:"France",
+  GA:"Gabon",GM:"Gambia",GE:"Georgia",DE:"Germany",GH:"Ghana",GR:"Greece",GT:"Guatemala",GN:"Guinea",GW:"Guinea-Bissau",GY:"Guyana",
+  HT:"Haiti",HN:"Honduras",HU:"Hungary",
+  IS:"Iceland",IN:"India",ID:"Indonesia",IR:"Iran",IQ:"Iraq",IE:"Ireland",IL:"Israel",IT:"Italy",
+  JM:"Jamaica",JP:"Japan",JO:"Jordan",
+  KZ:"Kazakhstan",KE:"Kenya",KW:"Kuwait",KG:"Kyrgyzstan",
+  LA:"Laos",LV:"Latvia",LB:"Lebanon",LS:"Lesotho",LR:"Liberia",LY:"Libya",LT:"Lithuania",LU:"Luxembourg",
+  MG:"Madagascar",MW:"Malawi",MY:"Malaysia",MV:"Maldives",ML:"Mali",MT:"Malta",MR:"Mauritania",MU:"Mauritius",MX:"Mexico",MD:"Moldova",MN:"Mongolia",ME:"Montenegro",MA:"Morocco",MZ:"Mozambique",MM:"Myanmar",
+  NA:"Namibia",NP:"Nepal",NL:"Netherlands",NZ:"New Zealand",NI:"Nicaragua",NE:"Niger",NG:"Nigeria",MK:"North Macedonia",NO:"Norway",
+  OM:"Oman",
+  PK:"Pakistan",PA:"Panama",PG:"Papua New Guinea",PY:"Paraguay",PE:"Peru",PH:"Philippines",PL:"Poland",PT:"Portugal",
+  QA:"Qatar",
+  RO:"Romania",RU:"Russia",RW:"Rwanda",
+  SA:"Saudi Arabia",SN:"Senegal",RS:"Serbia",SL:"Sierra Leone",SG:"Singapore",SK:"Slovakia",SI:"Slovenia",SO:"Somalia",ZA:"South Africa",SS:"South Sudan",ES:"Spain",LK:"Sri Lanka",SD:"Sudan",SR:"Suriname",SE:"Sweden",CH:"Switzerland",SY:"Syria",
+  TW:"Taiwan",TJ:"Tajikistan",TZ:"Tanzania",TH:"Thailand",TL:"Timor-Leste",TG:"Togo",TT:"Trinidad & Tobago",TN:"Tunisia",TR:"Turkey",TM:"Turkmenistan",
+  UG:"Uganda",UA:"Ukraine",AE:"UAE",GB:"United Kingdom",US:"United States",UY:"Uruguay",UZ:"Uzbekistan",
+  VE:"Venezuela",VN:"Vietnam",
+  YE:"Yemen",
+  ZM:"Zambia",ZW:"Zimbabwe"
+};
+
 function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; onClose: () => void; leaders: any[] }) {
   const dragControls = useDragControls();
 
-  // Always fetch /countries — SWR returns cached data instantly if previously loaded
-  // This ensures country names are available immediately when the sheet opens
-  const { data: countriesData } = useApi("/countries");
-
-  // Build a code → name map from the API response
-  const nameMap: Record<string, string> = {};
-  if (countriesData) {
-    for (const c of countriesData) {
-      if (c.code) nameMap[c.code.toUpperCase()] = c.name;
-    }
-  }
-
-  // Derive unique nations from the leaders array (already in memory — no extra API call)
+  // Derive unique nations — use static COUNTRY_NAMES map for instant name resolution
   const nations = Array.from(
     new Map(
       leaders
         .filter((u: any) => u.country_flag && u.country_flag !== "🏳️" && u.country_code)
-        .map((u: any) => [
-          u.country_code?.toUpperCase(),
-          {
-            flag: u.country_flag,
-            code: u.country_code?.toUpperCase() || "",
-            name: nameMap[u.country_code?.toUpperCase()] || u.country_code || "",
-          },
-        ])
+        .map((u: any) => {
+          const code = u.country_code?.toUpperCase() || "";
+          return [
+            code,
+            {
+              flag: u.country_flag,
+              code,
+              name: COUNTRY_NAMES[code] || code,
+            },
+          ];
+        })
     ).values()
   );
 
