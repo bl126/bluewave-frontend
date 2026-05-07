@@ -41,10 +41,20 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
 
   const [cachedData, setCachedData] = useState<any>(() => {
     if (typeof window !== "undefined") {
-      // Use live tg_id OR fall back to the saved id so returning users get instant data
       const effectiveTgId = tg_id || window.localStorage.getItem("bw_tg_id");
       if (effectiveTgId) {
         const cached = window.localStorage.getItem(`bw_leaderboard_cache_${effectiveTgId}`);
+        return cached ? JSON.parse(cached) : null;
+      }
+    }
+    return null;
+  });
+
+  const [cachedNetworkData, setCachedNetworkData] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      const effectiveTgId = tg_id || window.localStorage.getItem("bw_tg_id");
+      if (effectiveTgId) {
+        const cached = window.localStorage.getItem(`bw_network_leaderboard_cache_${effectiveTgId}`);
         return cached ? JSON.parse(cached) : null;
       }
     }
@@ -61,7 +71,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
   // Network builders data (only fetched when that mode is active)
   const { data: networkData, loading: networkLoading } = useApi(
     isOpen && tg_id && viewMode === "network" ? `/leaderboard/network-builders?tg_id=${tg_id}` : null,
-    { dedupingInterval: 60000, revalidateOnFocus: false }
+    { 
+      fallbackData: cachedNetworkData,
+      dedupingInterval: 60000, 
+      revalidateOnFocus: false 
+    }
   );
 
   const activeData = viewMode === "global" ? data : networkData;
@@ -73,7 +87,10 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     if (data && !loading && tg_id) {
        window.localStorage.setItem(`bw_leaderboard_cache_${tg_id}`, JSON.stringify(data));
     }
-  }, [data, loading, tg_id]);
+    if (networkData && !networkLoading && tg_id) {
+       window.localStorage.setItem(`bw_network_leaderboard_cache_${tg_id}`, JSON.stringify(networkData));
+    }
+  }, [data, loading, networkData, networkLoading, tg_id]);
 
   const isLoading = viewMode === "global" ? (!data && !error) : networkLoading;
  
@@ -331,9 +348,11 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                               ${isFirst ? 'scale-110 border-cyan-500/30' : rank === 3 ? 'scale-[0.65] border-cyan-500/20 translate-y-1' : 'scale-75 opacity-80 border-cyan-500/20'}`}>
                               {viewMode === "network" ? (
                                 u.verified_referrals > 0 && (
-                                  <span className="text-[9px] text-cyan-400 font-black uppercase tracking-tighter">
-                                    {u.verified_referrals} verified
-                                  </span>
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-[10px] text-cyan-400 font-black uppercase tracking-tighter bg-cyan-400/10 px-3 py-1 rounded-lg border border-cyan-400/20">
+                                      {u.verified_referrals} verified
+                                    </span>
+                                  </div>
                                 )
                               ) : (
                                 <>
@@ -543,16 +562,16 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — above nav */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[998] bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Sheet */}
+          {/* Sheet — above nav */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -566,7 +585,7 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 z-[201] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
           >
             {/* Drag Handle */}
             <div
@@ -620,8 +639,9 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; onClose: () => void; leaders: any[] }) {
   const dragControls = useDragControls();
 
-  // Fetch /countries for name lookup — already cached by useApi from ActiveCountriesSheet, so no extra cost
-  const { data: countriesData } = useApi(isOpen ? "/countries" : null);
+  // Always fetch /countries — SWR returns cached data instantly if previously loaded
+  // This ensures country names are available immediately when the sheet opens
+  const { data: countriesData } = useApi("/countries");
 
   // Build a code → name map from the API response
   const nameMap: Record<string, string> = {};
@@ -657,7 +677,7 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[998] bg-black/60 backdrop-blur-sm"
           />
 
           {/* Sheet — above nav */}
@@ -674,7 +694,7 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 z-[401] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-black/95 border-t border-cyan-500/30 rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-[0_-10px_40px_rgba(0,230,255,0.15)]"
           >
             {/* Drag Handle */}
             <div
