@@ -476,16 +476,17 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
         style={{ touchAction: "none" }}
         onCreated={({ camera }) => { cameraRef.current = camera; }}
       >
-        <Stars 
-          radius={120} 
-          depth={100} 
-          count={10000} 
-          factor={3} 
-          saturation={0} 
-          fade 
-          speed={0.15} 
-          opacity={theme === 'light' ? 0.05 : 1}
-        />
+        {theme !== 'light' && (
+          <Stars 
+            radius={120} 
+            depth={100} 
+            count={10000} 
+            factor={3} 
+            saturation={0} 
+            fade 
+            speed={0.15} 
+          />
+        )}
 
         <GlobeScene
           onLoaded={onLoaded}
