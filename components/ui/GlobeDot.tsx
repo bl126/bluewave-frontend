@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface GlobeDotProps {
   position: THREE.Vector3;
@@ -18,8 +19,38 @@ export default function GlobeDot({
   bwCount,
   onClick,
 }: GlobeDotProps) {
+  const { theme } = useTheme();
   const rippleRef = useRef<THREE.Mesh>(null);
   const grainsRef = useRef<THREE.Points>(null);
+
+  const colors = useMemo(() => {
+    switch (theme) {
+      case "light":
+        return {
+          base: "#000000",
+          emissive: "#000000",
+          ripple: "#000000",
+          particles: "#64748b",
+          intensity: 0.5
+        };
+      case "dim":
+        return {
+          base: "#00e6ff",
+          emissive: "#00e6ff",
+          ripple: "#00e6ff",
+          particles: "#00e6ff",
+          intensity: 2
+        };
+      default:
+        return {
+          base: "#00e6ff",
+          emissive: "#00e6ff",
+          ripple: "#00e6ff",
+          particles: "#00e6ff",
+          intensity: 3
+        };
+    }
+  }, [theme]);
 
   const particles = useMemo(() => {
     const arr = new Float32Array(10 * 3);
@@ -68,9 +99,9 @@ export default function GlobeDot({
       >
         <sphereGeometry args={[0.035, 16, 16]} />
         <meshStandardMaterial
-          color="#00e6ff"
-          emissive="#00e6ff"
-          emissiveIntensity={3}
+          color={colors.base}
+          emissive={colors.emissive}
+          emissiveIntensity={colors.intensity}
           toneMapped={false}
           transparent
           opacity={0}
@@ -81,9 +112,9 @@ export default function GlobeDot({
       <mesh>
         <sphereGeometry args={[0.02, 16, 16]} />
         <meshStandardMaterial
-          color="#00e6ff"
-          emissive="#00e6ff"
-          emissiveIntensity={3}
+          color={colors.base}
+          emissive={colors.emissive}
+          emissiveIntensity={colors.intensity}
           toneMapped={false}
         />
       </mesh>
@@ -91,7 +122,7 @@ export default function GlobeDot({
       <mesh ref={rippleRef}>
         <ringGeometry args={[0.04, 0.06, 32]} />
         <meshBasicMaterial
-          color="#00e6ff"
+          color={colors.ripple}
           transparent
           opacity={0.6}
           side={THREE.DoubleSide}
@@ -107,11 +138,11 @@ export default function GlobeDot({
         </bufferGeometry>
         <pointsMaterial
           size={0.008}
-          color="#00e6ff"
+          color={colors.particles}
           transparent
           opacity={0.8}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending}
         />
       </points>
     </group>

@@ -472,7 +472,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
     // 2. UI STATE & BACKGROUND LOGGING
     const isStory = id === "story_post";
     const isOnboarding = id === "join_channel" || id === "join_news" || id === "join_community" || id === "join_bwavescan";
-    const isDaily = id === "invite_daily";
+    const isDaily = id === "invite_daily"; // We keep the variable but remove it from the auto-claim logic
 
     setOptimisticSocial(prev => ({ ...prev, [id]: { status: "waiting" } }));
 
@@ -543,10 +543,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       return;
     }
 
-    if (isOnboarding || isDaily) {
+    if (isOnboarding) {
       setTimeout(() => {
         setOptimisticSocial(prev => ({ ...prev, [id]: { status: "claim" } }));
       }, 3000);
+      return;
+    }
+
+    if (isDaily) {
+      // For daily invite missions, we DO NOT set status to 'claim' optimistically.
+      // The user must actually invite people, and we wait for the backend to sync the 'claim' status.
       return;
     }
 
@@ -829,7 +835,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                             {t("missions.verifying").toUpperCase()}
                           </button>
                         )}
-                        {m.status === "open" && (
+                        {m.status === "open" && m.id !== "invite_daily" && (
                           <button
                             onClick={() => handleOpen(m.id)}
                             className="h-10 px-6 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-app-accent/20 hover:border-app-accent/40 transition-all flex items-center gap-1.5"

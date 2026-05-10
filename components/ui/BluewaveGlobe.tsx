@@ -8,10 +8,12 @@ import {
   useRef,
   useState,
   useCallback,
+  useMemo,
 } from "react";
 import GlobeDot from "./GlobeDot";
 import CountryCard from "./CountryCard";
 import { cacheManager, CACHE_TTL } from "@/lib/cacheManager";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // ─── Types ─────────────────────────────────────────────────
 interface CountryDot {
@@ -37,12 +39,13 @@ const AUTO_SPIN_SPEED = 0.05;   // rad/s
 const RESUME_DELAY_MS = 2000;   // ms after drag/close before resume
 const LERP_SPEED = 0.025;  // snap-back smoothness
 const DRAG_SENSITIVITY = 0.005;  // pointer delta → rotation delta
+const GLOBE_RADIUS = 1.2;
 
 // ─── Inner scene ────────────────────────────────────────────
 function GlobeScene({
   onLoaded,
   onDotClick,
-  isCardOpenRef,   // ← ref shared from parent; avoids closure staleness
+  isCardOpenRef,
   scheduleResumeRef,
 }: {
   onLoaded?: () => void;
@@ -51,11 +54,107 @@ function GlobeScene({
   scheduleResumeRef: React.MutableRefObject<(() => void) | null>;
 }) {
   const { gl } = useThree();
+  const { theme } = useTheme();
 
   const [borders, setBorders] = useState<THREE.Group | null>(null);
   const globeRef = useRef<THREE.Group>(null!);
   const logoRef = useRef<THREE.Mesh>(null!);
   const [countryDots, setCountryDots] = useState<CountryDot[]>([]);
+  
+  // Theme-aware colors
+  const colors = useMemo(() => {
+    switch (theme) {
+      case "light":
+        return {
+          ocean: "#F8F9FA",
+          land: "#CBD5E1",
+          border: "#000000",
+          glow: "#CBD5E1",
+          ambient: 1.5,
+          point: 1.0,
+          stars: 0.1
+        };
+      case "dim":
+        return {
+          ocean: "#050A15",
+          land: "#1E293B",
+          border: "#00F6FF",
+          glow: "#00F6FF",
+          ambient: 0.7,
+          point: 1.2,
+          stars: 0.6
+        };
+      default: // original
+        return {
+          ocean: "#000000",
+          land: "#0D0D0D",
+          border: "#00F6FF",
+          glow: "#00F6FF",
+          ambient: 0.4,
+          point: 1.5,
+          stars: 1.0
+        };
+    }
+  }, [theme]);
+
+  // ── Texture Generation (The "Coat") ──
+  const [worldTexture, setWorldTexture] = useState<THREE.CanvasTexture | null>(null);
+
+  useEffect(() => {
+    const loadAndDraw = async () => {
+      try {
+        const res = await fetch(`/data/countries.geojson`);
+        const geoData = await res.json();
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 4096;
+        canvas.height = 2048;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        // Fill Background (Oceans)
+        ctx.fillStyle = colors.ocean;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Countries (Land "Coat")
+        ctx.fillStyle = colors.land;
+        
+        const features = geoData.features as any[];
+        features.forEach((f: any) => {
+          const g = f.geometry;
+          if (!g) return;
+          
+          const drawRing = (ring: [number, number][]) => {
+            ctx.beginPath();
+            ring.forEach(([lng, lat], i) => {
+              const x = ((lng + 180) / 360) * canvas.width;
+              const y = ((90 - lat) / 180) * canvas.height;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fill();
+          };
+
+          if (g.type === "Polygon") {
+            g.coordinates.forEach((ring: any) => drawRing(ring));
+          } else if (g.type === "MultiPolygon") {
+            g.coordinates.forEach((poly: any) => {
+              poly.forEach((ring: any) => drawRing(ring));
+            });
+          }
+        });
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        setWorldTexture(tex);
+      } catch (e) {
+        console.error("Globe Texture Load Error:", e);
+      }
+    };
+
+    loadAndDraw();
+  }, [colors.ocean, colors.land]);
 
   // ── Rotation refs ──
   const isDragging = useRef(false);
@@ -74,7 +173,6 @@ function GlobeScene({
     }, RESUME_DELAY_MS);
   }, []);
 
-  // Expose to parent
   useEffect(() => {
     scheduleResumeRef.current = scheduleResume;
   }, [scheduleResume, scheduleResumeRef]);
@@ -117,66 +215,70 @@ function GlobeScene({
   useEffect(() => {
     let isMounted = true;
     const loadBorders = async () => {
-      const res = await fetch(`/data/countries.geojson`);
-      const geoData = await res.json();
-      const group = new THREE.Group();
+      try {
+        const res = await fetch(`/data/countries.geojson`);
+        const geoData = await res.json();
+        const group = new THREE.Group();
 
-      const lineMaterial = new THREE.LineBasicMaterial({
-        color: new THREE.Color("#00e6ff"), transparent: true, opacity: 2.0,
-      });
-      const glowMaterial = new THREE.LineBasicMaterial({
-        color: new THREE.Color("#00e6ff"), transparent: true, opacity: 0.5,
-      });
+        const lineMaterial = new THREE.LineBasicMaterial({
+          color: new THREE.Color(colors.border), transparent: true, opacity: 0.8,
+        });
+        const glowMaterial = new THREE.LineBasicMaterial({
+          color: new THREE.Color(colors.glow), transparent: true, opacity: 0.3,
+        });
 
-      const R = 1.2;
-      const toVec3 = ([lng, lat]: [number, number]) => {
-        const lambda = (lng * Math.PI) / 180;
-        const phi = (lat * Math.PI) / 180;
-        return new THREE.Vector3(
-          R * Math.cos(phi) * Math.cos(lambda),
-          R * Math.sin(phi),
-          -R * Math.cos(phi) * Math.sin(lambda)
-        );
-      };
+        const R = GLOBE_RADIUS + 0.005; // Slightly above surface
+        const toVec3 = ([lng, lat]: [number, number]) => {
+          const lambda = (lng * Math.PI) / 180;
+          const phi = (lat * Math.PI) / 180;
+          return new THREE.Vector3(
+            R * Math.cos(phi) * Math.cos(lambda),
+            R * Math.sin(phi),
+            -R * Math.cos(phi) * Math.sin(lambda)
+          );
+        };
 
-      const addRing = (coords: [number, number][]) => {
-        const pts = coords.map(toVec3);
-        if (pts.length < 2) return;
-        const geom = new THREE.BufferGeometry().setFromPoints(pts);
-        const line = new THREE.LineLoop(geom, lineMaterial);
-        const glowLine = line.clone();
-        glowLine.scale.multiplyScalar(1.01);
-        glowLine.material = glowMaterial;
-        group.add(glowLine);
-        group.add(line);
-      };
+        const addRing = (coords: [number, number][]) => {
+          const pts = coords.map(toVec3);
+          if (pts.length < 2) return;
+          const geom = new THREE.BufferGeometry().setFromPoints(pts);
+          const line = new THREE.LineLoop(geom, lineMaterial);
+          const glowLine = line.clone();
+          glowLine.scale.multiplyScalar(1.002);
+          glowLine.material = glowMaterial;
+          group.add(glowLine);
+          group.add(line);
+        };
 
-      const features = geoData.features as any[];
-      let index = 0;
-      const CHUNK = 12;
+        const features = geoData.features as any[];
+        let index = 0;
+        const CHUNK = 12;
 
-      const processChunks = () => {
-        if (!isMounted) return;
-        const end = Math.min(index + CHUNK, features.length);
-        for (; index < end; index++) {
-          const f = features[index];
-          const g = f.geometry;
-          if (!g) continue;
-          if (g.type === "Polygon")
-            for (const ring of g.coordinates as [number, number][][]) addRing(ring);
-          else if (g.type === "MultiPolygon")
-            for (const poly of g.coordinates as [number, number][][][])
-              for (const ring of poly) addRing(ring);
-        }
-        if (index < features.length) requestAnimationFrame(processChunks);
-        else { setBorders(group); onLoaded?.(); }
-      };
-      processChunks();
+        const processChunks = () => {
+          if (!isMounted) return;
+          const end = Math.min(index + CHUNK, features.length);
+          for (; index < end; index++) {
+            const f = features[index];
+            const g = f.geometry;
+            if (!g) continue;
+            if (g.type === "Polygon")
+              for (const ring of g.coordinates as [number, number][][]) addRing(ring);
+            else if (g.type === "MultiPolygon")
+              for (const poly of g.coordinates as [number, number][][][])
+                for (const ring of poly) addRing(ring);
+          }
+          if (index < features.length) requestAnimationFrame(processChunks);
+          else { setBorders(group); onLoaded?.(); }
+        };
+        processChunks();
+      } catch (e) {
+        console.error("Globe Borders Load Error:", e);
+      }
     };
 
     loadBorders();
     return () => { isMounted = false; };
-  }, []);
+  }, [colors.border, colors.glow]);
 
   // ── Static logo ──
   useEffect(() => {
@@ -196,7 +298,6 @@ function GlobeScene({
     const canvas = gl.domElement;
 
     const onDown = (e: PointerEvent) => {
-      // Block drag when card is open
       if (isCardOpenRef.current) return;
       isDragging.current = true;
       lastPointer.current = { x: e.clientX, y: e.clientY };
@@ -212,7 +313,6 @@ function GlobeScene({
 
       globeRef.current.rotation.y += dx * DRAG_SENSITIVITY;
       globeRef.current.rotation.x += dy * DRAG_SENSITIVITY;
-      // Clamp X so globe never flips upside-down
       globeRef.current.rotation.x = THREE.MathUtils.clamp(
         globeRef.current.rotation.x, -Math.PI * 0.45, Math.PI * 0.45
       );
@@ -221,7 +321,6 @@ function GlobeScene({
     const onUp = () => {
       if (!isDragging.current) return;
       isDragging.current = false;
-      // Only schedule resume if no card is open
       if (!isCardOpenRef.current) scheduleResume();
     };
 
@@ -237,15 +336,11 @@ function GlobeScene({
     };
   }, [gl, stopAutoSpin, scheduleResume, isCardOpenRef]);
 
-  // ── Per-frame loop ──
   useFrame((_, delta) => {
     if (!globeRef.current) return;
-
-    // Hard freeze while card is open — no rotation at all
     if (isCardOpenRef.current) return;
 
     if (isReturning.current) {
-      // Lerp X back to flat, spin Y normally
       globeRef.current.rotation.x = THREE.MathUtils.lerp(
         globeRef.current.rotation.x, 0, LERP_SPEED
       );
@@ -261,8 +356,7 @@ function GlobeScene({
     }
   });
 
-  // ── lat/lon → 3-D ──
-  const latLonToVec3 = (lat: number, lon: number, r = 1.21) => {
+  const latLonToVec3 = (lat: number, lon: number, r = GLOBE_RADIUS + 0.01) => {
     const phi = (90 - lat) * (Math.PI / 180);
     const theta = (lon + 180) * (Math.PI / 180);
     return new THREE.Vector3(
@@ -274,8 +368,41 @@ function GlobeScene({
 
   return (
     <>
+      <ambientLight intensity={colors.ambient} />
+      <pointLight position={[5, 5, 5]} intensity={colors.point} />
+      <pointLight position={[-5, -5, -5]} intensity={colors.point * 0.5} color={colors.border} />
+
       <group ref={globeRef} position={[0, 0, 0]}>
+        {/* The "Coated" Sphere (Oceans + Land) */}
+        <mesh>
+          <sphereGeometry args={[GLOBE_RADIUS, 128, 128]} />
+          {worldTexture ? (
+             <meshStandardMaterial 
+              map={worldTexture} 
+              roughness={0.7} 
+              metalness={0.1}
+            />
+          ) : (
+            <meshStandardMaterial color={colors.ocean} />
+          )}
+        </mesh>
+
+        {/* Borders Layer */}
         {borders && <primitive object={borders} />}
+        
+        {/* Atmosphere Glow */}
+        <mesh scale={[1.02, 1.02, 1.02]}>
+          <sphereGeometry args={[GLOBE_RADIUS, 64, 64]} />
+          <meshPhongMaterial
+            color={colors.glow}
+            transparent
+            opacity={theme === 'light' ? 0.05 : 0.15}
+            side={THREE.BackSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+
+        {/* Dots Layer */}
         {countryDots.map((c, i) => (
           <GlobeDot
             key={i}
@@ -297,18 +424,16 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<SelectedDot | null>(null);
   const [cardScreen, setCardScreen] = useState<CardScreen | null>(null);
+  const { theme } = useTheme();
 
-  // Shared refs — readable inside the fiber loop without stale closures
   const isCardOpenRef = useRef(false);
   const scheduleResumeRef = useRef<(() => void) | null>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
 
-  // Keep isCardOpenRef in sync with React state
   useEffect(() => {
     isCardOpenRef.current = selected !== null;
   }, [selected]);
 
-  // 3D world pos → 2D screen px
   const project3Dto2D = useCallback(
     (worldPos: THREE.Vector3): CardScreen | null => {
       if (!containerRef.current || !cameraRef.current) return null;
@@ -334,7 +459,6 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   const handleClose = useCallback(() => {
     setSelected(null);
     setCardScreen(null);
-    // Start 2-second countdown then resume rotation
     scheduleResumeRef.current?.();
   }, []);
 
@@ -352,9 +476,16 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
         style={{ touchAction: "none" }}
         onCreated={({ camera }) => { cameraRef.current = camera; }}
       >
-        <ambientLight intensity={0.7} />
-        <pointLight position={[3, 3, 3]} intensity={1.2} />
-        <Stars radius={120} depth={100} count={10000} factor={3} saturation={0} fade speed={0.15} />
+        <Stars 
+          radius={120} 
+          depth={100} 
+          count={10000} 
+          factor={3} 
+          saturation={0} 
+          fade 
+          speed={0.15} 
+          opacity={theme === 'light' ? 0.05 : 1}
+        />
 
         <GlobeScene
           onLoaded={onLoaded}
@@ -364,7 +495,6 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
         />
       </Canvas>
 
-      {/* 2-D overlay */}
       {selected && cardScreen && (
         <CountryCard
           countryName={selected.country.name}

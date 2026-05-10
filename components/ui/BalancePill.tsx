@@ -11,7 +11,11 @@ interface BalancePillProps {
     isVisible: boolean;
 }
 
+import { useTheme } from "@/contexts/ThemeContext";
+
 export default function BalancePill({ balance, isVisible }: BalancePillProps) {
+    const { theme } = useTheme();
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
@@ -186,7 +190,9 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                                     {/* Currency Icon comes after number for TON/Stars */}
                                                     <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
                                                         {type === "ton" && (
-                                                            <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
+                                                            <div className={`${theme === 'light' ? 'bg-black rounded-full p-0.5' : ''}`}>
+                                                                <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
+                                                            </div>
                                                         )}
                                                         {type === "stars" && (
                                                             <div className="text-app-accent flex items-center justify-center scale-90">

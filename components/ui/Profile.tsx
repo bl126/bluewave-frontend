@@ -7,6 +7,7 @@ import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useTonAddress, useTonConnectUI, TonConnectButton, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import { findRoleByName } from "@/lib/roles";
@@ -31,6 +32,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
   // Tab State
   type TabId = "bio" | "roles" | "drops";
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabId>("bio");
 
   // Use passed telegramUser for immediate UI if available
@@ -410,7 +412,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               <TonConnectButton style={{ width: '100%', height: '100%' }} />
                             </div>
                           )}
-                          <div className="p-3 bg-app-accent/5 rounded-2xl border border-app-border"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
+                          <div className={`p-3 ${theme === 'light' ? 'bg-black' : 'bg-app-accent/5'} rounded-2xl border border-app-border`}><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
                             <span className="text-text-main font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? t("profile.connected") : t("profile.connect_wallet")}</span>
                           </div>

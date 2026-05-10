@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { X } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface CountryCardProps {
     countryName: string;
@@ -22,24 +23,64 @@ export default function CountryCard({
     dotY,
     onClose,
 }: CountryCardProps) {
+    const { theme } = useTheme();
     const [displayed, setDisplayed] = useState("");
     const [visible, setVisible] = useState(false);
     const [cardPos, setCardPos] = useState({ x: 0, y: 0, width: MIN_CARD_W });
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Theme-aware styles
+    const styles = useMemo(() => {
+        switch (theme) {
+            case "light":
+                return {
+                    bg: "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,1) 100%)",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    shadow: "0 10px 40px rgba(0,0,0,0.1), 0 2px 10px rgba(0,0,0,0.05)",
+                    text: "#0f172a",
+                    subtext: "#64748b",
+                    accent: "#000000",
+                    closeBg: "rgba(0,0,0,0.05)",
+                    scanColor: "rgba(0,0,0,0.05)",
+                    glow: "none"
+                };
+            case "dim":
+                return {
+                    bg: "linear-gradient(135deg, rgba(23,33,43,0.96) 0%, rgba(36,47,61,0.98) 100%)",
+                    border: "1px solid rgba(0,230,255,0.25)",
+                    shadow: "0 0 32px rgba(0,230,255,0.08), 0 8px 32px rgba(0,0,0,0.4)",
+                    text: "#f5f5f5",
+                    subtext: "#708499",
+                    accent: "#00f6ff",
+                    closeBg: "rgba(0,246,255,0.1)",
+                    scanColor: "rgba(0,246,255,0.15)",
+                    glow: "drop-shadow(0 0 6px rgba(0,230,255,0.3))"
+                };
+            default: // original
+                return {
+                    bg: "linear-gradient(135deg, rgba(0,12,26,0.96) 0%, rgba(0,6,16,0.98) 100%)",
+                    border: "1px solid rgba(0,230,255,0.35)",
+                    shadow: "0 0 32px rgba(0,230,255,0.12), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,230,255,0.08)",
+                    text: "#e8f9ff",
+                    subtext: "#00e6ff",
+                    accent: "#00e6ff",
+                    closeBg: "rgba(0,230,255,0.08)",
+                    scanColor: "rgba(0,230,255,0.2)",
+                    glow: "drop-shadow(0 0 6px rgba(0,230,255,0.3))"
+                };
+        }
+    }, [theme]);
 
     // ── Compute dynamic width & position ──
     useEffect(() => {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
-        // Estimate width based on name length (crude but effective)
         const estimatedW = Math.max(MIN_CARD_W, Math.min(MAX_CARD_W, 60 + countryName.length * 8));
         const cardH = 72;
 
         let cx = dotX + 24;
-        // Flip if it overflows right
         if (cx + estimatedW > vw - EDGE_PAD) cx = dotX - estimatedW - 24;
-        // Clamp horizontally
         cx = Math.max(EDGE_PAD, Math.min(cx, vw - estimatedW - EDGE_PAD));
 
         let cy = dotY - cardH / 2;
@@ -48,13 +89,11 @@ export default function CountryCard({
         setCardPos({ x: cx, y: cy, width: estimatedW });
     }, [dotX, dotY, countryName]);
 
-    // ── Fade-in ──
     useEffect(() => {
         const t = setTimeout(() => setVisible(true), 30);
         return () => clearTimeout(t);
     }, []);
 
-    // ── Typewriter ──
     useEffect(() => {
         let idx = 0;
         setDisplayed("");
@@ -95,11 +134,9 @@ export default function CountryCard({
                         width: "100%",
                         height: "100%",
                         borderRadius: 14,
-                        background:
-                            "linear-gradient(135deg, rgba(0,12,26,0.96) 0%, rgba(0,6,16,0.98) 100%)",
-                        border: "1px solid rgba(0,230,255,0.35)",
-                        boxShadow:
-                            "0 0 32px rgba(0,230,255,0.12), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,230,255,0.08)",
+                        background: styles.bg,
+                        border: styles.border,
+                        boxShadow: styles.shadow,
                         backdropFilter: "blur(16px)",
                         WebkitBackdropFilter: "blur(16px)",
                         display: "flex",
@@ -117,8 +154,7 @@ export default function CountryCard({
                             left: 0,
                             width: 40,
                             height: 40,
-                            background:
-                                "radial-gradient(circle at 0% 0%, rgba(0,230,255,0.08), transparent 70%)",
+                            background: `radial-gradient(circle at 0% 0%, ${styles.scanColor}, transparent 70%)`,
                             pointerEvents: "none",
                         }}
                     />
@@ -128,7 +164,7 @@ export default function CountryCard({
                             fontSize: 26,
                             lineHeight: 1,
                             flexShrink: 0,
-                            filter: "drop-shadow(0 0 6px rgba(0,230,255,0.3))",
+                            filter: styles.glow,
                         }}
                     >
                         {flag}
@@ -139,10 +175,9 @@ export default function CountryCard({
                             style={{
                                 fontSize: 13,
                                 fontWeight: 700,
-                                color: "#e8f9ff",
+                                color: styles.text,
                                 letterSpacing: "0.04em",
                                 fontFamily: "system-ui, -apple-system, sans-serif",
-                                textShadow: "0 0 12px rgba(0,230,255,0.35)",
                                 lineHeight: 1.2,
                                 wordBreak: "break-word",
                                 whiteSpace: "normal",
@@ -155,7 +190,7 @@ export default function CountryCard({
                                         display: "inline-block",
                                         width: 2,
                                         height: 13,
-                                        background: "#00e6ff",
+                                        background: styles.accent,
                                         marginLeft: 2,
                                         verticalAlign: "middle",
                                         borderRadius: 1,
@@ -173,8 +208,8 @@ export default function CountryCard({
                             width: 22,
                             height: 22,
                             borderRadius: "50%",
-                            background: "rgba(0,230,255,0.08)",
-                            border: "1px solid rgba(0,230,255,0.25)",
+                            background: styles.closeBg,
+                            border: `1px solid ${styles.scanColor}`,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -183,7 +218,7 @@ export default function CountryCard({
                             transition: "background 0.2s, border-color 0.2s",
                         }}
                     >
-                        <X size={11} color="rgba(0,230,255,0.8)" strokeWidth={2.5} />
+                        <X size={11} color={styles.accent} strokeWidth={2.5} />
                     </button>
 
                     <div
@@ -202,7 +237,7 @@ export default function CountryCard({
                                 right: 0,
                                 height: 1,
                                 background:
-                                    "linear-gradient(90deg, transparent 0%, rgba(0,230,255,0.2) 50%, transparent 100%)",
+                                    `linear-gradient(90deg, transparent 0%, ${styles.scanColor} 50%, transparent 100%)`,
                                 animation: "tw-scan 2.5s linear infinite",
                             }}
                         />
