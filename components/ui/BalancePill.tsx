@@ -118,7 +118,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[140]"
+                        className="fixed inset-0 bg-app-bg/20 backdrop-blur-sm z-[140]"
                         onClick={() => setIsExpanded(false)}
                     />
                 )}
@@ -148,8 +148,8 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                     layout
                                     onClick={() => handleSwitch(type)}
                                     whileTap={{ scale: 0.95 }}
-                                    className={`flex items-center justify-between bg-black/40 backdrop-blur-xl border border-cyan-500/30 
-                                    text-cyan-400 font-bold shadow-[0_0_15px_rgba(0,230,255,0.15)] overflow-hidden ${isExpanded ? "w-40 sm:w-48" : "w-auto min-w-fit px-3"}`}
+                                    className={`flex items-center justify-between bg-app-card backdrop-blur-xl border border-app-border 
+                                    text-app-accent font-bold shadow-app-shadow overflow-hidden ${isExpanded ? "w-40 sm:w-48" : "w-auto min-w-fit px-3"}`}
                                     initial={!isPrimary ? { opacity: 0, scale: 0.8, y: -20 } : false}
                                     animate={{
                                         opacity: 1,
@@ -166,21 +166,21 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                             {type === "points" ? (
                                                 balance !== null ? (
                                                     <div className="flex items-center gap-1">
-                                                        <span className="text-cyan-400 font-black">
+                                                        <span className="text-app-accent font-black">
                                                             {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}
                                                         </span>
-                                                        <span className="text-[9px] sm:text-[10px] tracking-widest text-cyan-400 font-black ml-0.5 uppercase">$BWAVE</span>
+                                                        <span className="text-[9px] sm:text-[10px] tracking-widest text-app-accent font-black ml-0.5 uppercase">$BWAVE</span>
                                                     </div>
                                                 ) : (
-                                                    <span className="animate-pulse text-cyan-400">...</span>
+                                                    <span className="animate-pulse text-app-accent">...</span>
                                                 )
                                             ) : (
                                                 <div className="flex items-center gap-1.5">
                                                     <div className="flex items-center gap-0.5">
                                                         <span className="opacity-60 font-mono text-[10px]">$</span>
-                                                        <span className="text-cyan-400 font-black">0</span>
+                                                        <span className="text-app-accent font-black">0</span>
                                                         <span className="opacity-40 mx-0.5">~</span>
-                                                        <span className="text-cyan-400 font-black">0</span>
+                                                        <span className="text-app-accent font-black">0</span>
                                                     </div>
                                                     
                                                     {/* Currency Icon comes after number for TON/Stars */}
@@ -201,8 +201,8 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
 
                                     {/* Plus icon - Only visible when expanded for TON/Stars */}
                                     {isExpanded && type !== "points" ? (
-                                        <div className="shrink-0 bg-cyan-500/10 p-0.5 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(0,230,255,0.1)]">
-                                            <Plus size={10} strokeWidth={4} className="text-cyan-400" />
+                                        <div className="shrink-0 bg-app-accent/10 p-0.5 rounded-md border border-app-border shadow-app-shadow">
+                                            <Plus size={10} strokeWidth={4} className="text-app-accent" />
                                         </div>
                                     ) : (
                                         // Invisible spacer to maintain layout consistency ONLY when expanded

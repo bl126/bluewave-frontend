@@ -203,13 +203,13 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+                    className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-app-bg/80 backdrop-blur-md"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className="relative w-full max-w-sm bg-black border border-cyan-500/20 rounded-[2.5rem] p-8 overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.2)]"
+                        className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] p-8 overflow-hidden shadow-app-shadow"
                         initial={{ scale: 0.9, y: 20, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -218,7 +218,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         {/* Exit Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-cyan-400 transition-colors z-10"
+                            className="absolute top-6 right-6 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors z-10"
                         >
                             <X size={20} />
                         </button>
@@ -226,11 +226,11 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         <div className="flex flex-col items-center gap-8">
                             {/* BW ID Header */}
                             <div className="text-center space-y-1 mt-2">
-                                <h2 className="text-2xl font-black text-white uppercase tracking-tight">{bwId}</h2>
+                                <h2 className="text-2xl font-black text-text-main uppercase tracking-tight">{bwId}</h2>
                             </div>
 
                             {/* QR Code Container (used by canvas renderer) */}
-                            <div ref={qrRef} className="p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            <div ref={qrRef} className="p-4 bg-white rounded-3xl shadow-app-shadow">
                                 <div className="bg-white p-2 rounded-xl">
                                     <QRCode
                                         value={link}
@@ -243,7 +243,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                             </div>
 
                             {/* Info Text */}
-                            <p className="text-cyan-500/40 text-[10px] font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
+                            <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
                                 {t("referral.share_desc")}
                             </p>
 
@@ -252,7 +252,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                                 <button
                                     onClick={handleShare}
                                     disabled={isSharing}
-                                    className="w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-cyan-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(6,182,212,0.2)] disabled:opacity-50"
+                                    className="w-full h-14 bg-app-accent text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-app-accent/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-app-shadow disabled:opacity-50"
                                 >
                                     {isSharing ? (
                                         <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -264,9 +264,9 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
 
                                 <button
                                     onClick={handleCopy}
-                                    className="w-full h-14 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                    className="w-full h-14 bg-app-accent/5 border border-app-border text-text-main rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-app-accent/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                 >
-                                    {copied ? <Check size={16} className="text-cyan-400" /> : <Copy size={16} />}
+                                    {copied ? <Check size={16} className="text-app-accent" /> : <Copy size={16} />}
                                     {copied ? t("referral.copied_link") : t("referral.copy_link")}
                                 </button>
                             </div>

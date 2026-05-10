@@ -2,8 +2,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Globe } from "lucide-react";
+import { X, User, Globe, Sun, Moon, Zap, Palette } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface SettingsProps {
     isOpen: boolean;
@@ -13,12 +14,14 @@ interface SettingsProps {
 
 export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsProps) {
     const { t } = useLanguage();
+    const { theme, setTheme } = useTheme();
+
     return (
         <AnimatePresence>
             {isOpen && (
                 <>
                     <motion.div
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                        className="fixed inset-0 bg-app-bg/50 backdrop-blur-sm z-50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -26,9 +29,9 @@ export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsPr
                     />
 
                     <motion.div
-                        className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                       w-full max-w-sm bg-black/70 backdrop-blur-xl border border-cyan-900/50
-                       rounded-2xl p-6 text-cyan-200 shadow-[0_0_40px_#00e6ff20]"
+                        className="fixed z-[500] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                       w-full max-w-[340px] bg-app-card backdrop-blur-xl border border-app-border
+                       rounded-[2rem] p-6 text-text-main shadow-app-shadow"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
@@ -36,39 +39,72 @@ export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsPr
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-cyan-400 text-xl font-semibold tracking-wide">
+                            <h2 className="text-app-accent text-xl font-black uppercase tracking-tight">
                                 {t("settings.title")}
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="text-cyan-300 hover:text-cyan-100 transition-colors"
+                                className="p-2 rounded-xl bg-app-accent/5 text-text-sub hover:text-app-accent transition-colors"
                             >
-                                <X size={20} />
+                                <X size={18} />
                             </button>
                         </div>
 
                         {/* Settings Options */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {/* Language */}
                             <button
                                 onClick={() => {
                                     onClose();
                                     onOpenLanguage();
                                 }}
-                                className="w-full bg-black/40 backdrop-blur-md border border-cyan-900/50 
-                           rounded-xl p-4 text-left hover:bg-cyan-500/10 transition-all
-                           shadow-[0_0_15px_#00e6ff15] group"
+                                className="w-full bg-app-accent/5 border border-app-border 
+                           rounded-2xl p-4 text-left hover:bg-app-accent/10 transition-all group"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-cyan-500/20 p-2 rounded-lg group-hover:bg-cyan-500/30 transition-all">
-                                        <Globe className="w-5 h-5 text-cyan-400" />
+                                    <div className="bg-app-accent/10 p-2.5 rounded-xl group-hover:bg-app-accent/20 transition-all">
+                                        <Globe className="w-5 h-5 text-app-accent" />
                                     </div>
                                     <div>
-                                        <div className="text-cyan-300 font-semibold text-sm">{t("settings.language")}</div>
-                                        <div className="text-cyan-500 text-xs">{t("settings.language_desc")}</div>
+                                        <div className="text-text-main font-bold text-sm uppercase tracking-tight">{t("settings.language")}</div>
+                                        <div className="text-text-sub text-[10px] uppercase font-black tracking-widest">{t("settings.language_desc")}</div>
                                     </div>
                                 </div>
                             </button>
+
+                            {/* Theme Selection */}
+                            <div className="bg-white/5 border border-[var(--border)] rounded-2xl p-4">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="bg-[var(--accent)]/10 p-2.5 rounded-xl">
+                                        <Palette className="w-5 h-5 text-[var(--accent)]" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[var(--text-main)] font-bold text-sm uppercase tracking-tight">Appearance</div>
+                                        <div className="text-[var(--text-sub)] text-[10px] uppercase font-black tracking-widest">Select your interface style</div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 bg-app-bg/20 p-1 rounded-xl">
+                                    {[
+                                        { id: 'light', icon: Sun, label: 'Light' },
+                                        { id: 'dim', icon: Moon, label: 'Dim' },
+                                        { id: 'original', icon: Zap, label: 'Night' }
+                                    ].map((mode) => (
+                                        <button
+                                            key={mode.id}
+                                            onClick={() => setTheme(mode.id as any)}
+                                            className={`flex flex-col items-center gap-1.5 py-2 rounded-lg transition-all ${
+                                                theme === mode.id 
+                                                ? 'bg-app-accent text-black shadow-lg' 
+                                                : 'text-text-sub hover:text-text-main hover:bg-app-accent/5'
+                                            }`}
+                                        >
+                                            <mode.icon size={18} strokeWidth={theme === mode.id ? 3 : 2} />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">{mode.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 </>

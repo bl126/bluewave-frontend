@@ -69,8 +69,8 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
-                 flex items-center justify-around w-[94%] max-w-md bg-black/40 backdrop-blur-xl
-                 rounded-[2rem] p-1.5 shadow-[0_0_30px_rgba(0,230,255,0.15)] border border-cyan-500/10"
+                 flex items-center justify-around w-[94%] max-w-md bg-app-bg/40 backdrop-blur-xl
+                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border"
         >
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -86,7 +86,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         {isActive && (
                             <motion.div
                                 layoutId="activePill"
-                                className="absolute inset-x-1 inset-y-1 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl z-0"
+                                className="absolute inset-x-1 inset-y-1 bg-app-accent/10 border border-app-border rounded-2xl z-0"
                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                         )}
@@ -95,28 +95,28 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         <div className={`relative z-10 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "scale-110" : "scale-100 opacity-40 group-hover:opacity-60"}`}>
                             {tab.idIsProfile ? (
                                 <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all duration-300 
-                                ${isActive ? "border-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]" : "border-cyan-500/20 grayscale"}`}>
+                                ${isActive ? "border-app-accent shadow-app-shadow" : "border-app-border grayscale"}`}>
                                     {userAvatarUrl ? (
                                         <img src={userAvatarUrl} alt="profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <User size={16} className="text-cyan-400" />
+                                        <User size={16} className="text-app-accent" />
                                     )}
                                 </div>
                             ) : (
                                 <div className="relative">
-                                    {isActive && <div className="absolute inset-0 blur-md bg-cyan-400/40 rounded-full" />}
-                                    {Icon && <Icon size={20} className={`relative transition-colors ${isActive ? "text-cyan-400" : "text-cyan-100"}`} />}
+                                    {isActive && <div className="absolute inset-0 blur-md bg-app-accent/40 rounded-full" />}
+                                    {Icon && <Icon size={20} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
 
                                     {/* Mission Badge */}
                                     {tab.id === "missions" && missionBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
                                             {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
                                         </div>
                                     )}
 
                                     {/* Explore Badge */}
                                     {tab.id === "explore" && exploreBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-[0_0_8px_#00e6ff80] border border-black/20">
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
                                             {exploreBadgeCount > 9 ? "9+" : exploreBadgeCount}
                                         </div>
                                     )}
@@ -124,7 +124,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                             )}
 
                             <span className={`text-[9px] font-black uppercase tracking-tighter transition-all 
-                               ${isActive ? "text-cyan-100" : "text-cyan-500/60"}`}>
+                               ${isActive ? "text-text-main" : "text-text-sub"}`}>
                                 {tab.label}
                             </span>
                         </div>

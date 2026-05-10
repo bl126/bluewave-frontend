@@ -43,7 +43,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-3xl overflow-hidden"
+                    className="fixed inset-0 z-[200] flex items-center justify-center bg-app-bg/90 backdrop-blur-3xl overflow-hidden"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -73,11 +73,11 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                         transition={{ type: "spring", damping: 15, stiffness: 100 }}
                     >
                         {/* Glow effect */}
-                        <div className="absolute inset-0 bg-cyan-500/20 blur-[100px] rounded-full animate-pulse" />
+                        <div className="absolute inset-0 bg-app-accent/20 blur-[100px] rounded-full animate-pulse" />
 
                         {/* Badge Container */}
                         <motion.div
-                            className={`w-32 h-32 rounded-[2.5rem] bg-gradient-to-br ${roleData?.color || 'from-cyan-500/20 to-cyan-600/20'} border-4 ${roleData?.border || 'border-cyan-500/50'} flex items-center justify-center mb-8 shadow-[0_0_50px_rgba(34,211,238,0.4)] relative`}
+                            className={`w-32 h-32 rounded-[2.5rem] bg-gradient-to-br ${roleData?.color || 'from-app-accent/20 to-app-accent/40'} border-4 ${roleData?.border || 'border-app-accent/50'} flex items-center justify-center mb-8 shadow-app-shadow relative`}
                             animate={{
                                 rotate: [0, -5, 5, -5, 0],
                                 scale: [1, 1.1, 1]
@@ -88,10 +88,10 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                                 ease: "easeInOut"
                             }}
                         >
-                            <Icon size={64} className="text-cyan-400" />
+                            <Icon size={64} className="text-app-accent" />
 
                             <motion.div
-                                className="absolute -bottom-4 -right-4 w-12 h-12 rounded-full bg-cyan-500 border-4 border-black flex items-center justify-center shadow-xl"
+                                className="absolute -bottom-4 -right-4 w-12 h-12 rounded-full bg-app-accent border-4 border-app-bg flex items-center justify-center shadow-xl"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.5, type: "spring" }}
@@ -105,20 +105,20 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">{t("level_up_modal.title")}</h1>
-                            <p className="text-cyan-400 font-bold uppercase tracking-[0.3em] text-sm mb-6">
+                            <h1 className="text-4xl font-black text-text-main uppercase tracking-tighter mb-2">{t("level_up_modal.title")}</h1>
+                            <p className="text-app-accent font-bold uppercase tracking-[0.3em] text-sm mb-6">
                                 {t("level_up_modal.reached")} {level}
                             </p>
 
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-8">
-                                <p className="text-xs text-white/60 font-medium uppercase leading-relaxed">
+                            <div className="bg-app-accent/5 border border-app-border rounded-2xl p-4 mb-8">
+                                <p className="text-xs text-text-sub font-medium uppercase leading-relaxed">
                                     {t(`roles_list.LEVEL ${level}.desc`) || t("level_up_modal.default_desc")}
                                 </p>
                             </div>
 
                             <button
                                 onClick={onClose}
-                                className="px-10 py-4 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:bg-cyan-400 transition-all active:scale-95"
+                                className="px-10 py-4 bg-app-accent text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow hover:bg-app-accent/80 transition-all active:scale-95"
                             >
                                 {t("level_up_modal.continue")}
                             </button>

@@ -139,7 +139,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
         );
       }
       return (
-        <div className={`w-full h-full rounded-full bg-cyan-950/40 border ${borderColor} flex items-center justify-center text-cyan-400 font-black`}>
+        <div className={`w-full h-full rounded-full bg-app-accent/5 border ${borderColor} flex items-center justify-center text-app-accent font-black`}>
           {((user.first_name || user.name || "U").charAt(0)).toUpperCase()}
         </div>
       );
@@ -184,7 +184,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.5, ease: "easeOut" }}
-              className="w-24 h-24 bg-cyan-500/10 rounded-3xl flex items-center justify-center mx-auto border border-cyan-500/20 shadow-[0_0_40px_rgba(0,230,255,0.12)] mb-8 relative"
+              className="w-24 h-24 bg-app-accent/10 rounded-3xl flex items-center justify-center mx-auto border border-app-border shadow-[0_0_40px_rgba(0,230,255,0.12)] mb-8 relative"
             >
               <span className="text-5xl">🔒</span>
               <motion.div
@@ -201,13 +201,13 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
               transition={{ delay: 0.25, duration: 0.5 }}
               className="space-y-3 mb-8"
             >
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+              <h2 className="text-2xl font-black text-text-main uppercase tracking-tight">
                 Citizens Only
               </h2>
               <p className="text-[11px] text-cyan-400/80 font-black uppercase tracking-[0.25em]">
                 Leaderboard · Connect to Compete
               </p>
-              <p className="text-xs text-white/30 max-w-[240px] leading-relaxed mx-auto pt-2">
+              <p className="text-xs text-text-sub max-w-[240px] leading-relaxed mx-auto pt-2">
                 Connect your TON wallet to enter the global ranks and compete for the top.
               </p>
             </motion.div>
@@ -237,7 +237,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`${isInline ? 'relative w-full' : 'fixed inset-0 bg-black/90 backdrop-blur-2xl z-[170]'} flex flex-col text-cyan-200 transition-all duration-300 ${countriesOpen ? 'z-[210]' : ''}`}
+          className={`${isInline ? 'relative w-full' : 'fixed inset-0 bg-app-bg/90 backdrop-blur-2xl z-[170]'} flex flex-col text-text-main transition-all duration-300 ${countriesOpen ? 'z-[210]' : ''}`}
           style={isInline ? {} : { paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={isInline ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}

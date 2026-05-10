@@ -218,7 +218,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
         <>
           {/* Fullscreen blur overlay */}
           <motion.div
-            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-lg"
+            className="fixed inset-0 z-40 bg-app-bg/70 backdrop-blur-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -227,19 +227,19 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
           {/* Centered glass card */}
           <motion.div
             className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                       w-[90%] max-w-sm bg-black/70 backdrop-blur-2xl border border-cyan-900/70
-                       rounded-2xl p-5 text-cyan-100 shadow-[0_0_30px_#00e6ff50]"
+                       w-[90%] max-w-sm bg-app-card backdrop-blur-2xl border border-app-border
+                       rounded-2xl p-5 text-text-main shadow-app-shadow"
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.85, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
             <div className="flex justify-between items-center mb-3">
-              <div className="text-xs uppercase tracking-[0.2em] text-cyan-500">
+              <div className="text-xs uppercase tracking-[0.2em] text-app-accent">
                 {t("onboarding.title")}
               </div>
               <button
-                className="text-cyan-400/70 hover:text-cyan-100 transition"
+                className="text-text-sub hover:text-text-main transition"
                 onClick={() => { }}
               // We intentionally do NOT allow closing/onSkip.
               >
@@ -247,22 +247,22 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
               </button>
             </div>
 
-            <h2 className="text-lg font-semibold text-cyan-200 mb-1">
+            <h2 className="text-lg font-semibold text-text-main mb-1">
               {t("onboarding.hero_title")}
             </h2>
-            <p className="text-xs text-cyan-400 mb-4">
+            <p className="text-xs text-app-accent mb-4">
               {t("onboarding.hero_desc")}
             </p>
 
             {step === 1 && (
               <div className="space-y-3">
-                <label className="text-xs text-cyan-300">
+                <label className="text-xs text-text-sub">
                   {t("onboarding.username_label")}
                   <input
                     value={username}
                     readOnly
                     placeholder={t("onboarding.loading")}
-                    className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
+                    className="mt-1 w-full rounded-md bg-app-bg/40 border border-app-border px-3 py-2 text-sm
                                opacity-70 cursor-not-allowed"
                   />
                 </label>
@@ -271,13 +271,13 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                   onClick={handleRequestCode}
                   disabled={loading}
                   className="w-full mt-1 py-2 rounded-md text-sm font-medium
-                             bg-cyan-500/20 border border-cyan-400 text-cyan-100
-                             hover:bg-cyan-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                             bg-app-accent/20 border border-app-border text-text-main
+                             hover:bg-app-accent/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? t("onboarding.btn_requesting") : t("onboarding.btn_request")}
                 </button>
 
-                <p className="text-[11px] text-cyan-500/80">
+                <p className="text-[11px] text-text-sub">
                   {t("onboarding.bot_hint")}
                 </p>
 
@@ -296,23 +296,23 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
 
             {step === 2 && (
               <div className="space-y-3">
-                <p className="text-xs text-cyan-300">
+                <p className="text-xs text-text-sub">
                   {t("onboarding.code_sent")}{" "}
-                  <span className="text-cyan-100 font-medium">
+                  <span className="text-text-main font-medium">
                     {username.trim()}
                   </span>.
                 </p>
 
-                <label className="text-xs text-cyan-300">
+                <label className="text-xs text-text-sub">
                   {t("onboarding.code_label")}
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="123456"
                     maxLength={6}
-                    className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
+                    className="mt-1 w-full rounded-md bg-app-bg/40 border border-app-border px-3 py-2 text-sm
                                tracking-[0.3em] text-center
-                               focus:outline-none focus:border-cyan-400"
+                               focus:outline-none focus:border-app-accent"
                   />
                 </label>
 
@@ -320,8 +320,8 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                   onClick={handleVerifyCode}
                   disabled={loading}
                   className="w-full mt-1 py-2 rounded-md text-sm font-medium
-                             bg-cyan-500/20 border border-cyan-400 text-cyan-100
-                             hover:bg-cyan-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                             bg-app-accent/20 border border-app-border text-text-main
+                             hover:bg-app-accent/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? t("onboarding.btn_verifying") : t("onboarding.btn_verify")}
                 </button>
@@ -330,11 +330,11 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
 
             {step === 3 && (
               <div className="space-y-3">
-                <p className="text-xs text-cyan-300 mb-1">
+                <p className="text-xs text-text-sub mb-1">
                   {t("onboarding.step3_title")}
                 </p>
 
-                <label className="text-xs text-cyan-300">
+                <label className="text-xs text-text-sub">
                   {t("onboarding.country_label")}
 
                   {/* SEARCH BOX */}
@@ -342,22 +342,22 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder={t("onboarding.search_placeholder")}
-                    className="mt-1 w-full rounded-md bg-black/40 border border-cyan-800 px-3 py-2 text-sm
-                               focus:outline-none focus:border-cyan-400 mb-2"
+                    className="mt-1 w-full rounded-md bg-app-bg/40 border border-app-border px-3 py-2 text-sm
+                               focus:outline-none focus:border-app-accent mb-2"
                   />
 
 
 
                   {/* ALL COUNTRIES - FILTERED */}
-                  <div className="text-[10px] text-cyan-500 mb-1">{t("onboarding.all_countries")}</div>
-                  <div className="max-h-32 overflow-y-auto border border-cyan-900 rounded-md bg-black/30 p-2">
+                  <div className="text-[10px] text-app-accent mb-1">{t("onboarding.all_countries")}</div>
+                  <div className="max-h-32 overflow-y-auto border border-app-border rounded-md bg-app-bg/30 p-2">
                     {ALL_COUNTRIES.filter(c =>
                       c.name.toLowerCase().includes(search.toLowerCase())
                     ).map((c) => (
                       <div
                         key={c.code}
-                        className={`px-2 py-1 text-sm rounded-md cursor-pointer hover:bg-cyan-500/10
-                                    ${country === c.code ? "bg-cyan-600/20" : ""}`}
+                        className={`px-2 py-1 text-sm rounded-md cursor-pointer hover:bg-app-accent/10
+                                    ${country === c.code ? "bg-app-accent/20" : ""}`}
                         onClick={() => setCountry(c.code)}
                       >
                         {c.name}
@@ -370,8 +370,8 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                   onClick={handleActivatePresence}
                   disabled={loading}
                   className="w-full mt-1 py-2 rounded-md text-sm font-medium
-                             bg-cyan-500 border border-cyan-300 text-black
-                             hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                             bg-app-accent border border-app-border text-black
+                             hover:bg-app-accent/80 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? t("onboarding.btn_activating") : t("onboarding.btn_activate")}
                 </button>
@@ -384,7 +384,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
               </div>
             )}
 
-            <div className="mt-3 text-[10px] text-cyan-500/70">
+            <div className="mt-3 text-[10px] text-text-sub">
               {t("onboarding.footer_note")}
             </div>
           </motion.div>

@@ -128,7 +128,7 @@ export default function StreakRecoveryModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[160] bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-[160] bg-app-bg/80 backdrop-blur-md"
           />
 
           {/* Modal Container */}
@@ -137,21 +137,21 @@ export default function StreakRecoveryModal({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-sm bg-[#0B1221] border border-red-500/30 rounded-[2rem] overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.15)] pointer-events-auto relative"
+              className="w-full max-w-sm bg-app-card border border-app-border rounded-[2rem] overflow-hidden shadow-app-shadow pointer-events-auto relative"
             >
               {success ? (
                 <div className="p-8 flex flex-col items-center text-center">
-                  <div className="w-20 h-20 bg-green-500/10 border-2 border-green-500 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                  <div className="w-20 h-20 bg-green-500/10 border-2 border-green-500 rounded-full flex items-center justify-center mb-6 shadow-app-shadow">
                     <Flame size={40} className="text-green-400" />
                   </div>
-                  <h2 className="text-2xl font-black text-white uppercase tracking-wider mb-2">{t("streakRecovery.streak_saved_title")}</h2>
+                  <h2 className="text-2xl font-black text-text-main uppercase tracking-wider mb-2">{t("streakRecovery.streak_saved_title")}</h2>
                   <p className="text-green-400 font-bold tracking-widest text-sm uppercase">{t("streakRecovery.streak_saved_subtitle")}</p>
                 </div>
               ) : (
                 <>
                   <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 bg-white/5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                    className="absolute top-4 right-4 p-2 bg-app-accent/5 rounded-full text-text-sub hover:text-text-main hover:bg-app-accent/10 transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -159,19 +159,19 @@ export default function StreakRecoveryModal({
                   <div className="p-8 flex flex-col items-center text-center">
                     <div className="w-20 h-20 relative mb-6">
                       <div className="absolute inset-0 bg-red-500/20 rounded-full animate-pulse blur-xl" />
-                      <div className="w-full h-full bg-black/50 border border-red-500/50 rounded-full flex items-center justify-center relative z-10 overflow-hidden backdrop-blur-md shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+                      <div className="w-full h-full bg-app-bg/50 border border-app-border rounded-full flex items-center justify-center relative z-10 overflow-hidden backdrop-blur-md shadow-app-shadow">
                         <Flame size={32} className="text-red-500 opacity-80" />
                         <div className="absolute inset-0 bg-gradient-to-t from-red-500/20 to-transparent" />
                       </div>
-                      <div className="absolute -bottom-2 -right-2 bg-black border border-red-500/50 rounded-full p-1.5 z-20 shadow-lg">
+                      <div className="absolute -bottom-2 -right-2 bg-app-bg border border-app-border rounded-full p-1.5 z-20 shadow-lg">
                         <ShieldAlert size={16} className="text-red-400" />
                       </div>
                     </div>
 
-                    <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">
+                    <h2 className="text-xl font-black text-text-main uppercase tracking-tight mb-2">
                       {t("streakRecovery.streak_at_risk_title")}
                     </h2>
-                    <p className="text-white/60 text-xs font-bold leading-relaxed mb-6 uppercase tracking-wider">
+                    <p className="text-text-main/60 text-xs font-bold leading-relaxed mb-6 uppercase tracking-wider">
                       {t("streakRecovery.streak_at_risk_subtitle").replace("{days}", recoverableStreak.toString())}
                     </p>
 
@@ -211,8 +211,8 @@ export default function StreakRecoveryModal({
                       disabled={loading || !hasEnoughBalance || (timeLeft?.hours === 0 && timeLeft?.minutes === 0 && timeLeft?.seconds === 0)}
                       className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all relative overflow-hidden flex flex-col items-center gap-1 ${
                         !hasEnoughBalance
-                          ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-                          : "bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.3)] active:scale-95"
+                          ? "bg-app-accent/5 border border-app-border text-text-sub cursor-not-allowed"
+                          : "bg-red-500 text-white shadow-app-shadow active:scale-95"
                       }`}
                     >
                       {loading ? (
@@ -220,7 +220,7 @@ export default function StreakRecoveryModal({
                       ) : !hasEnoughBalance ? (
                         <>
                           <span>{t("streakRecovery.insufficient_balance")}</span>
-                          <span className="text-[9px] text-white/30 font-bold tracking-widest">{t("streakRecovery.need_more_bp").replace("{amount}", (RECOVERY_COST - pointsBalance).toString())}</span>
+                          <span className="text-[9px] text-text-sub font-bold tracking-widest">{t("streakRecovery.need_more_bp").replace("{amount}", (RECOVERY_COST - pointsBalance).toString())}</span>
                         </>
                       ) : (
                         <>
@@ -231,7 +231,7 @@ export default function StreakRecoveryModal({
                     
                     <button 
                       onClick={onClose} 
-                      className="mt-4 text-[10px] font-bold text-white/30 tracking-widest uppercase hover:text-white/50 transition-colors"
+                      className="mt-4 text-[10px] font-bold text-text-sub tracking-widest uppercase hover:text-text-main transition-colors"
                     >
                       {t("streakRecovery.dismiss")}
                     </button>

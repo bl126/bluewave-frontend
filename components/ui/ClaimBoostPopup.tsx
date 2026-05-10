@@ -96,13 +96,13 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-hidden"
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-app-bg/90 backdrop-blur-md overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="w-full max-w-sm rounded-[2rem] border border-cyan-500/20 bg-gradient-to-b from-black/80 to-cyan-950/40 p-6 flex flex-col items-center shadow-[0_0_50px_#00e6ff10] overflow-hidden relative"
+            className="w-full max-w-sm rounded-[2rem] border border-app-border bg-app-card p-6 flex flex-col items-center shadow-app-shadow overflow-hidden relative"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
@@ -123,7 +123,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
               <motion.div
                 className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg border-2 ${step >= 4 ? "bg-green-500/20 border-green-500/50 text-green-400" :
                   step >= 2 ? "bg-orange-500/20 border-orange-500/50 text-orange-400" :
-                    "bg-cyan-500/20 border-cyan-500/50 text-cyan-400"
+                    "bg-app-accent/20 border-app-border text-app-accent"
                   }`}
                 animate={{
                   scale: step === 2 || step === 4 ? [1, 1.2, 1] : 1,
@@ -136,19 +136,19 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                     <Zap size={32} />}
               </motion.div>
 
-              <h2 className="text-cyan-50/60 uppercase tracking-widest text-[11px] font-bold mb-2">{t("claim_boost_popup.title")}</h2>
+              <h2 className="text-text-sub uppercase tracking-widest text-[11px] font-bold mb-2">{t("claim_boost_popup.title")}</h2>
 
               {/* Dynamic Number Display */}
               <motion.div
                 className={`text-6xl font-black mb-1 flex items-baseline gap-2 ${step >= 4 ? "text-green-400 drop-shadow-[0_0_15px_#4ade80]" :
                   step >= 2 ? "text-orange-400 drop-shadow-[0_0_15px_#f97316]" :
-                    "text-cyan-50"
+                    "text-text-main"
                   }`}
                 animate={{ scale: step === 3 ? [1, 1.1, 1] : 1 }}
                 transition={{ duration: 0.2, repeat: step === 3 ? Infinity : 0 }}
               >
                 {displayValue}
-                <span className="text-sm font-bold opacity-60">$BWAVE</span>
+                <span className="text-sm font-bold opacity-60 text-text-sub">$BWAVE</span>
               </motion.div>
 
               {/* Roles Boost Reveal */}
@@ -160,7 +160,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="text-cyan-400/60 uppercase tracking-widest text-xs font-bold"
+                      className="text-app-accent/60 uppercase tracking-widest text-xs font-bold"
                     >
                       {t("claim_boost_popup.calculating")}
                     </motion.div>
@@ -187,7 +187,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 + (idx * 0.1) }}
-                            className="text-[9px] font-black uppercase tracking-widest bg-cyan-950/50 text-cyan-300 border border-cyan-800/50 px-2 py-1 rounded"
+                            className="text-[9px] font-black uppercase tracking-widest bg-app-accent/5 text-app-accent border border-app-border px-2 py-1 rounded"
                           >
                             + {t(`roles_list.${role}.name`)}
                           </motion.div>
@@ -201,7 +201,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                       key="step-no-boost"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-cyan-500/50 uppercase tracking-widest text-[10px] font-bold text-center"
+                      className="text-text-sub uppercase tracking-widest text-[10px] font-bold text-center"
                     >
                       {t("claim_boost_popup.no_boost")}<br />{t("claim_boost_popup.no_boost_hint")}
                     </motion.div>
@@ -216,7 +216,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onClose}
-                    className="mt-6 w-full py-4 rounded-xl bg-cyan-500 text-black font-black uppercase tracking-widest text-sm hover:bg-cyan-400 active:scale-95 transition-all shadow-[0_0_20px_#00e6ff40]"
+                    className="mt-6 w-full py-4 rounded-xl bg-app-accent text-black font-black uppercase tracking-widest text-sm hover:bg-app-accent/80 active:scale-95 transition-all shadow-app-shadow"
                   >
                     {t("claim_boost_popup.collect")}
                   </motion.button>

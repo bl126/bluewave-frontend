@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { fetcher } from "@/lib/swrFetcher";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import { subscribeToSessionExpiry } from "@/lib/session";
 import SessionExpiredOverlay from "@/components/ui/SessionExpiredOverlay";
@@ -24,8 +25,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <LanguageProvider>
-      <TonConnectUIProvider
+    <ThemeProvider>
+      <LanguageProvider>
+        <TonConnectUIProvider
         manifestUrl="https://miniapp.bluewaveprotocol.xyz/tonconnect-manifest.json"
         actionsConfiguration={{
           twaReturnUrl: "https://t.me/Bluewave_Ecosystem_bot",
@@ -54,5 +56,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </SWRConfig>
       </TonConnectUIProvider>
     </LanguageProvider>
-  );
+  </ThemeProvider>
+);
 }

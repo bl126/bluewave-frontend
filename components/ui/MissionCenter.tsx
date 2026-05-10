@@ -80,14 +80,14 @@ function PresenceCard({
   return (
     <div className={`
       relative overflow-hidden rounded-2xl border transition-all duration-300
-      ${isActive ? "border-cyan-500/50 bg-cyan-950/20 shadow-[0_0_20px_#00e6ff10]" : ""}
-      ${isCompleted ? "border-cyan-400 bg-cyan-900/30 shadow-[0_0_30px_#00e6ff30]" : ""}
-      ${mission.status === "inactive" ? "border-cyan-900/30 bg-black/40" : ""}
+      ${isActive ? "border-app-accent/50 bg-app-accent/10 shadow-app-shadow" : ""}
+      ${isCompleted ? "border-app-accent bg-app-accent/20 shadow-app-shadow" : ""}
+      ${mission.status === "inactive" ? "border-app-border bg-app-card" : ""}
     `}>
       {/* Background Progress Bar (Fill) */}
       {(isActive || isCompleted) && (
         <div
-          className="absolute inset-0 bg-cyan-500/20 transition-all duration-1000 ease-linear"
+          className="absolute inset-0 bg-app-accent/20 transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       )}
@@ -109,10 +109,10 @@ function PresenceCard({
           className={`
             w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all
             ${isCompleted
-              ? "bg-cyan-400 text-black hover:bg-cyan-300 shadow-[0_0_15px_#00e6ff]"
+              ? "bg-app-accent text-black hover:bg-app-accent/80 shadow-app-shadow"
               : isActive
-                ? "bg-transparent text-cyan-500/50 cursor-not-allowed border border-cyan-500/20"
-                : "bg-cyan-950/50 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-900/50 hover:border-cyan-400"
+                ? "bg-transparent text-text-sub cursor-not-allowed border border-app-border"
+                : "bg-app-accent/10 text-app-accent border border-app-border hover:bg-app-accent/20 hover:border-app-accent"
             }
           `}
         >
@@ -125,7 +125,7 @@ function PresenceCard({
 
       {/* Active Glow Line */}
       {isActive && (
-        <div className="absolute bottom-0 left-0 h-1 bg-cyan-400 shadow-[0_0_15px_#00e6ff]"
+        <div className="absolute bottom-0 left-0 h-1 bg-app-accent shadow-app-shadow"
           style={{ width: `${progress}%`, transition: "width 1s linear" }}
         />
       )}
@@ -148,8 +148,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
   if (!telegram_id && isOpen) {
     return (
-      <div className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-cyan-500">
-        <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4" />
+      <div className="fixed inset-0 z-[120] bg-app-bg/95 backdrop-blur-xl flex flex-col items-center justify-center text-app-accent">
+        <div className="w-8 h-8 border-2 border-app-accent/20 border-t-app-accent rounded-full animate-spin mb-4" />
         <span className="text-[10px] font-black uppercase tracking-widest opacity-50">{t("missions.synchronizing")}</span>
       </div>
     );
@@ -647,7 +647,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       {isOpen && (
 
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-xl flex flex-col text-cyan-200"
+          className="fixed inset-0 z-[120] bg-app-bg/95 backdrop-blur-xl flex flex-col text-text-main"
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -658,13 +658,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
           {/* ── Ghost Mode Gate ── */}
           {!telegramUser?.wallet_address && (
-            <div className="absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-2xl">
-              <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(6,182,212,0.2)]">
-                <Lock size={32} className="text-cyan-400 animate-pulse" />
+            <div className="absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center bg-app-bg/40 backdrop-blur-2xl">
+              <div className="w-20 h-20 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center mb-6 shadow-app-shadow">
+                <Lock size={32} className="text-app-accent animate-pulse" />
               </div>
               
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">{t("ghost.sector_encrypted")}</h2>
-              <p className="text-cyan-500/60 text-xs font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px]">
+              <h2 className="text-2xl font-black text-text-main uppercase tracking-tighter mb-2">{t("ghost.sector_encrypted")}</h2>
+              <p className="text-app-accent/60 text-xs font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px]">
                 {t("ghost.connect_prompt")}
               </p>
 
@@ -672,7 +672,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
                 }}
-                className="px-8 py-4 bg-cyan-500 text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 transition-all"
+                className="px-8 py-4 bg-app-accent text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-app-shadow active:scale-95 transition-all"
               >
                 {t("ghost.connect_btn")}
               </button>
@@ -696,8 +696,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                         ? "bg-white/5 border border-white/20 text-white/50"
                         : "bg-transparent border border-white/10 text-white/25 hover:border-white/20"
                       : isActive
-                        ? "bg-cyan-500/15 border border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_#00e6ff15]"
-                        : "bg-transparent border border-cyan-900/40 text-cyan-600 hover:border-cyan-700/50 hover:text-cyan-500"
+                        ? "bg-app-accent/15 border border-app-border text-app-accent shadow-app-shadow"
+                        : "bg-transparent border border-app-border text-text-sub hover:border-app-accent/50 hover:text-app-accent"
                     }`}
                 >
                   {tab === "presence" && t("missions.tabs.presence")}
@@ -705,7 +705,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   {tab === "quest" && t("missions.tabs.quest")}
                   {tab === "earn" && t("missions.tabs.earn")}
                   {badge > 0 && tab !== "earn" && tab !== "quest" && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_10px_#00e6ff]">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-app-accent text-black text-[9px] font-black flex items-center justify-center leading-none shadow-app-shadow">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
@@ -759,25 +759,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   ))}
                   {presenceMissions.length === 0 && loading && (
                     <div className="animate-pulse space-y-3">
-                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
-                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
-                      <div className="h-20 bg-cyan-900/20 rounded-2xl border border-cyan-900/40" />
+                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
+                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
+                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
                     </div>
                   )}
                   {presenceMissions.length === 0 && !loading && (
                     <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-                      <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center opacity-50">
-                        <Clock size={20} className="text-cyan-400" />
+                      <div className="w-12 h-12 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center opacity-50">
+                        <Clock size={20} className="text-app-accent" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-bold text-cyan-200 uppercase tracking-widest">{t("presence.system_offline")}</p>
-                        <p className="text-[10px] text-cyan-500/70 max-w-[200px] leading-relaxed">
+                        <p className="text-sm font-bold text-text-main uppercase tracking-widest">{t("presence.system_offline")}</p>
+                        <p className="text-[10px] text-text-sub max-w-[200px] leading-relaxed">
                           {t("presence.sync_error_desc")}
                         </p>
                       </div>
                       <button
                         onClick={() => mutatePresence()}
-                        className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all font-mono"
+                        className="px-4 py-2 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-app-accent/20 transition-all font-mono"
                       >
                         {t("presence.retry_sync")}
                       </button>
@@ -800,16 +800,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       key={m.id}
                       className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
                       ${m.status === "done"
-                          ? "border-gray-800 bg-black/40 opacity-50"
-                          : "border-cyan-900/50 bg-cyan-950/10 hover:border-cyan-500/30"
+                          ? "border-app-border bg-app-card opacity-50"
+                          : "border-app-border bg-app-accent/5 hover:border-app-accent/50"
                         }`}
                     >
                       <div>
-                        <p className="text-sm font-bold text-cyan-100">{m.name}</p>
-                        <p className="text-xs text-cyan-500 font-mono mt-0.5">{m.points} $BWAVE</p>
+                        <p className="text-sm font-bold text-text-main">{m.name}</p>
+                        <p className="text-xs text-app-accent font-mono mt-0.5">{m.points} $BWAVE</p>
                       </div>
                       {m.status === "open" && m.id !== "invite_daily" && (
-                        <button onClick={() => handleOpen(m.id)} className="px-3 py-1.5 text-xs font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-lg hover:bg-cyan-500/20 transition-colors uppercase tracking-wider">
+                        <button onClick={() => handleOpen(m.id)} className="px-3 py-1.5 text-xs font-bold bg-app-accent/10 border border-app-border text-app-accent rounded-lg hover:bg-app-accent/20 transition-colors uppercase tracking-wider">
                           {t("missions.open")}
                         </button>
                       )}
@@ -823,8 +823,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                           onClick={() => handleClaim(m.id)}
                           disabled={claimingMissionId === m.id}
                           className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition-all ${claimingMissionId === m.id
-                            ? "bg-cyan-700 text-cyan-200 border border-cyan-600 cursor-wait"
-                            : "bg-cyan-500 text-black border border-cyan-400 shadow-[0_0_15px_#00e6ff80] animate-pulse"
+                            ? "bg-app-accent/80 text-black border border-app-border cursor-wait"
+                            : "bg-app-accent text-black border border-app-border shadow-app-shadow animate-pulse"
                             }`}
                         >
                           {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
@@ -839,7 +839,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   ))}
                   {loading && missions.length === 0 && (
                     <div className="space-y-3 animate-pulse">
-                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-cyan-900/10 rounded-xl border border-cyan-900/30" />)}
+                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-app-accent/5 rounded-xl border border-app-border" />)}
                     </div>
                   )}
                   {!loading && missions.length === 0 && !error && (
@@ -859,27 +859,27 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   transition={{ duration: 0.25 }}
                   className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
                 >
-                  <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)]' : 'bg-violet-500/10 border-violet-500/30 shadow-[0_0_30px_rgba(139,92,246,0.2)]'} flex items-center justify-center`}>
+                   <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-app-accent/10 border-app-border shadow-app-shadow' : 'bg-violet-500/10 border-violet-500/30 shadow-[0_0_30px_rgba(139,92,246,0.2)]'} flex items-center justify-center`}>
                     <span className="text-4xl">{isHumanVerified ? '⚡' : '🔒'}</span>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white uppercase tracking-widest">{t("missions.quests.title")}</h3>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-violet-500/15 border-violet-500/30 text-violet-400'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-cyan-400' : 'bg-violet-400'}`} />
+                    <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("missions.quests.title")}</h3>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-app-accent/15 border-app-border text-app-accent' : 'bg-violet-500/15 border-violet-500/30 text-violet-400'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-app-accent' : 'bg-violet-400'}`} />
                       {isHumanVerified ? t("missions.quests.verified_human") : t("missions.quests.verified_only")}
                     </div>
                   </div>
-                  <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
+                  <div className="max-w-xs bg-app-accent/5 border border-app-border rounded-2xl p-5 space-y-3">
                     {isHumanVerified ? (
-                      <p className="text-sm text-white/70 leading-relaxed italic">
+                      <p className="text-sm text-text-main/70 leading-relaxed italic">
                         {t("missions.quests.empty")}
                       </p>
                     ) : (
                       <>
-                        <p className="text-sm text-white/70 leading-relaxed">
+                        <p className="text-sm text-text-main/70 leading-relaxed">
                           {t("missions.quests.desc")}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
+                        <div className="flex items-center gap-2 text-xs text-text-sub font-semibold border-t border-app-border pt-3">
                           <Lock size={12} className="text-violet-400" />
                           {t("missions.quests.lock_hint")}
                         </div>
@@ -907,11 +907,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       {t("missions.earn_drop.coming_soon")}
                     </div>
                   </div>
-                  <div className="max-w-xs bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
-                    <p className="text-sm text-white/70 leading-relaxed">
+                  <div className="max-w-xs bg-app-accent/5 border border-app-border rounded-2xl p-5 space-y-3">
+                    <p className="text-sm text-text-main/70 leading-relaxed">
                       {t("missions.earn_drop.desc")}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-white/40 font-semibold border-t border-white/5 pt-3">
+                    <div className="flex items-center gap-2 text-xs text-text-sub font-semibold border-t border-app-border pt-3">
                       <Clock size={12} className="text-orange-400" />
                       {t("missions.earn_drop.active_hint")}
                     </div>
@@ -927,8 +927,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
                     className="fixed bottom-1/3 left-1/2 -translate-x-1/2 z-[200]
-                               bg-cyan-950/90 border border-cyan-500/50 text-cyan-100
-                               px-6 py-3 rounded-full shadow-[0_0_30px_#00e6ff40]
+                               bg-app-bg/90 border border-app-border text-text-main
+                               px-6 py-3 rounded-full shadow-app-shadow
                                text-sm font-bold tracking-wide backdrop-blur-xl whitespace-nowrap"
                   >
                     {popup}

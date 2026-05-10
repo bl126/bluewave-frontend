@@ -33,7 +33,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        className="absolute inset-0 bg-app-bg/80 backdrop-blur-md"
                         onClick={handleClose}
                     />
 
@@ -43,7 +43,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.9, y: -20, opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-cyan-800/40 bg-[#060606] shadow-[0_0_60px_rgba(0,230,255,0.15)]"
+                        className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-app-border bg-app-card shadow-app-shadow"
                     >
                         {/* Decorative background effects */}
                         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none rounded-[2rem]">
@@ -58,16 +58,16 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 initial={{ scale: 0, rotate: -20 }}
                                 animate={{ scale: 1, rotate: 0 }}
                                 transition={{ type: "spring", damping: 15, delay: 0.2 }}
-                                className="w-20 h-20 mb-6 rounded-full bg-black/50 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(0,230,255,0.2)]"
+                                className="w-20 h-20 mb-6 rounded-full bg-app-bg/50 border border-app-border flex items-center justify-center shadow-app-shadow"
                             >
-                                <span className="text-2xl font-black text-cyan-400 tracking-wider">BLU</span>
+                                <span className="text-2xl font-black text-app-accent tracking-wider">BLU</span>
                             </motion.div>
 
                             <motion.h2
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className="text-2xl font-bold text-white mb-2 tracking-tight"
+                                className="text-2xl font-bold text-text-main mb-2 tracking-tight"
                             >
                                 {t("daily_ai_popup.title")}
                             </motion.h2>
@@ -76,7 +76,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-sm text-gray-400 mb-6 leading-relaxed"
+                                className="text-sm text-text-sub mb-6 leading-relaxed"
                             >
                                 {t("daily_ai_popup.desc")}
                             </motion.p>
@@ -88,17 +88,17 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 className="w-full bg-cyan-950/20 border border-cyan-900/50 rounded-2xl py-6 px-4 mb-8 flex flex-col relative overflow-hidden group"
                             >
                                 {/* Subtle inner glow */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-app-accent/5 to-transparent pointer-events-none" />
 
-                                <span className="text-xs font-semibold text-cyan-500 uppercase tracking-[0.2em] mb-2 pointer-events-auto">
+                                <span className="text-xs font-semibold text-app-accent uppercase tracking-[0.2em] mb-2 pointer-events-auto">
                                     {t("daily_ai_popup.reward_generated")}
                                 </span>
 
                                 <div className="flex items-center justify-center gap-2">
-                                    <span className="text-4xl font-black text-white pointer-events-auto shadow-sm">
+                                    <span className="text-4xl font-black text-text-main pointer-events-auto shadow-sm">
                                         +{pointsAwarded.toLocaleString()}
                                     </span>
-                                    <span className="text-base font-bold text-cyan-400 pointer-events-auto mt-2">
+                                    <span className="text-base font-bold text-app-accent pointer-events-auto mt-2">
                                         XP
                                     </span>
                                 </div>
@@ -111,9 +111,9 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 onClick={handleClose}
                                 className="w-full relative group overflow-hidden rounded-xl bg-cyan-500 p-[1px]"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-cyan-600 opacity-80" />
-                                <div className="relative flex items-center justify-center rounded-xl bg-black px-4 py-3 transition-colors group-hover:bg-cyan-950/50">
-                                    <span className="font-bold text-cyan-400 transition-colors group-hover:text-cyan-300">
+                                <div className="absolute inset-0 bg-gradient-to-r from-app-accent/80 to-app-accent opacity-80" />
+                                <div className="relative flex items-center justify-center rounded-xl bg-app-bg px-4 py-3 transition-colors group-hover:bg-app-accent/10">
+                                    <span className="font-bold text-app-accent transition-colors">
                                         {t("daily_ai_popup.acknowledge")}
                                     </span>
                                 </div>

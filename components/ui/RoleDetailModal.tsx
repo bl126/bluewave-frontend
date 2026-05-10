@@ -23,7 +23,7 @@ export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[500] bg-app-bg/80 backdrop-blur-sm"
           />
 
           {/* Popup */}
@@ -33,14 +33,14 @@ export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps)
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.88 }}
               transition={{ type: "spring", damping: 24, stiffness: 280 }}
-              className="relative w-full max-w-sm rounded-[2rem] border border-cyan-500/20 bg-gradient-to-b from-black/80 to-cyan-950/40 p-7 flex flex-col items-center gap-5 shadow-[0_0_50px_#00e6ff10] overflow-hidden pointer-events-auto"
+              className="relative w-full max-w-sm rounded-[2rem] border border-app-border bg-app-card p-7 flex flex-col items-center gap-5 shadow-app-shadow overflow-hidden pointer-events-auto"
             >
               {/* X Close */}
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
               >
-                <X size={16} className="text-white/50" />
+                <X size={16} className="text-text-sub" />
               </button>
 
               {/* Role Icon */}
@@ -66,17 +66,17 @@ export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps)
               {/* Credential & Protocol Access */}
               <div className="w-full space-y-3">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 block">{t("roles_overlay.credential")}</span>
-                  <p className="text-sm text-white/75 font-medium leading-relaxed">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-sub block">{t("roles_overlay.credential")}</span>
+                  <p className="text-sm text-text-main/75 font-medium leading-relaxed">
                     {t(`roles_list.${role.name}.desc`) || role.desc}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/60 flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-app-accent/5 border border-app-border space-y-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-app-accent/60 flex items-center gap-1.5">
                     <Star size={10} className="text-yellow-400" /> {t("roles_overlay.protocol_access")}
                   </span>
-                  <p className="text-sm text-cyan-50/85 font-semibold leading-snug">
+                  <p className="text-sm text-text-main/85 font-semibold leading-snug">
                     {t(`roles_list.${role.name}.benefit`) || role.benefit}
                   </p>
                 </div>

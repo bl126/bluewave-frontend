@@ -114,14 +114,14 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+                    className="fixed inset-0 z-[150] bg-app-bg/80 backdrop-blur-md flex items-center justify-center p-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                 >
                     <motion.div
-                        className="relative w-full max-w-sm bg-[#050505] border border-cyan-500/20 rounded-[2.5rem] overflow-hidden flex flex-col max-h-[70vh] shadow-[0_0_50px_rgba(6,182,212,0.2)]"
+                        className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden flex flex-col max-h-[70vh] shadow-app-shadow"
                         initial={{ scale: 0.9, y: 20, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -131,15 +131,15 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                         {/* Exit Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 p-2 bg-white/5 rounded-full text-cyan-400 hover:text-cyan-300 transition-colors z-[160]"
+                            className="absolute top-4 right-4 p-2 bg-app-accent/5 rounded-full text-app-accent hover:text-app-accent/80 transition-colors z-[160]"
                         >
                             <X size={16} />
                         </button>
 
                         {/* Header */}
                         <div className="p-4 pt-6 flex flex-col items-center border-b border-white/5 text-center">
-                            <h2 className="text-white text-lg font-black uppercase tracking-tight">{t("level_popup.title")}</h2>
-                            <p className="text-cyan-500/50 text-[8px] font-bold uppercase tracking-widest mt-0.5">{t("level_popup.subtitle")}</p>
+                            <h2 className="text-text-main text-lg font-black uppercase tracking-tight">{t("level_popup.title")}</h2>
+                            <p className="text-text-sub text-[8px] font-bold uppercase tracking-widest mt-0.5">{t("level_popup.subtitle")}</p>
                         </div>
 
                         {/* Content - Scrollable Accordion */}

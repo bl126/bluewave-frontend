@@ -343,14 +343,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className={`fixed inset-0 bg-black flex flex-col overflow-hidden text-cyan-200 ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 bg-app-bg flex flex-col overflow-hidden text-text-main ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-app-accent/5 blur-[100px] pointer-events-none" />
 
       {/* ─── Tab Bar (fixed, solid, no floating) ─── */}
       <motion.div
@@ -359,14 +359,14 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed top-20 left-0 right-0 z-[130] bg-black border-b border-white/10 pointer-events-auto"
+        className="fixed top-20 left-0 right-0 z-[130] bg-app-bg border-b border-app-border pointer-events-auto"
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
           {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabClick(tab)}
-              className={`relative pb-3 flex items-center justify-center transition-all ${activeTab === tab ? "text-cyan-400" : "text-white/30"}`}
+              className={`relative pb-3 flex items-center justify-center transition-all ${activeTab === tab ? "text-app-accent" : "text-text-sub"}`}
             >
               {tab === "foryou" && (
                 hasAccess ? (
@@ -379,13 +379,13 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                 hasAccess ? (
                   <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>
                 ) : (
-                  <Lock size={18} className="text-white/30" />
+                  <Lock size={18} className="text-text-sub" />
                 )
               )}
               {tab === "notifications" && (
                 hasAccess ? (
                   <div className="relative">
-                    <Bell size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
+                    <Bell size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />
                     {unreadCount > 0 && (
                       <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
                         {unreadCount > 9 ? "!" : unreadCount}
@@ -393,15 +393,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                     )}
                   </div>
                 ) : (
-                  <Lock size={18} className="text-white/30" />
+                  <Lock size={18} className="text-text-sub" />
                 )
               )}
-              {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />}
+              {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />}
 
               {activeTab === tab && (
                 <motion.div
                   layoutId="exploreTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-accent shadow-app-shadow"
                 />
               )}
             </button>
@@ -540,7 +540,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   </div>
                 ) : pagedPosts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-64 text-center p-8">
-                    <p className="text-white/20 text-sm font-black uppercase tracking-widest">No posts yet</p>
+                    <p className="text-text-sub text-sm font-black uppercase tracking-widest">No posts yet</p>
                   </div>
                 ) : (
                   <div className="pb-32">
@@ -577,7 +577,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[180] bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 z-[180] bg-app-bg/40 backdrop-blur-md"
             onClick={() => setIsSpeedDialOpen(false)}
           />
         )}

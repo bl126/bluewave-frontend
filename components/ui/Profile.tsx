@@ -254,7 +254,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     <>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/95 backdrop-blur-2xl flex flex-col overflow-hidden text-cyan-200"
+          className="fixed inset-0 z-[120] bg-app-bg/95 backdrop-blur-2xl flex flex-col overflow-hidden text-text-main"
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -273,9 +273,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               {user && (
                 <div className="flex flex-col gap-6">
                   {/* User info card */}
-                  <div className="bg-black/40 backdrop-blur-xl border border-cyan-500/10 rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden pt-10">
+                  <div className="bg-app-card backdrop-blur-xl border border-app-border rounded-[2.5rem] p-6 flex items-center gap-5 relative overflow-hidden pt-10">
                     <div className="relative">
-                      <div className="w-20 h-20 rounded-full border-2 border-cyan-400/30 overflow-hidden shadow-[0_0_20px_#00e6ff20] relative z-10">
+                      <div className="w-20 h-20 rounded-full border-2 border-app-accent/30 overflow-hidden shadow-app-shadow relative z-10">
                         <img
                           src={user.photo_url || `https://ui-avatars.com/api/?name=${user.username}&background=0f172a&color=22d3ee&bold=true`}
                           alt="avatar"
@@ -283,30 +283,30 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         />
                       </div>
                       {user.streak_days >= 3 && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-cyan-950 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_#22d3ee] z-20">
-                          <Flame size={12} className="text-cyan-400" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-app-card border-2 border-app-accent flex items-center justify-center shadow-app-shadow z-20">
+                          <Flame size={12} className="text-app-accent" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 flex flex-col items-start gap-1">
                       <div className="flex flex-col">
-                        <h2 className="text-white text-xl font-black uppercase tracking-tight">
+                        <h2 className="text-text-main text-xl font-black uppercase tracking-tight">
                           {user.name || user.username}
                         </h2>
                         <div className="flex items-center gap-2 py-0.5">
-                          <div className="flex items-center gap-1 bg-cyan-500/10 px-2 py-1 rounded-lg border border-cyan-500/20">
-                            <span className="text-cyan-400/80 font-mono text-[9px] uppercase tracking-tighter">
+                          <div className="flex items-center gap-1 bg-app-accent/10 px-2 py-1 rounded-lg border border-app-border">
+                            <span className="text-text-sub font-mono text-[9px] uppercase tracking-tighter">
                               {t("explore.bw_id_label")}: {user.wallet_address ? (showId ? user.bw_id : `${user.bw_id?.slice(0, 5)}***`) : "NOT ASSIGNED"}
                             </span>
                             {user.wallet_address && (
-                              <button onClick={() => setShowId(!showId)} className="text-cyan-400/50 hover:text-cyan-400">
+                              <button onClick={() => setShowId(!showId)} className="text-text-sub hover:text-app-accent">
                                 {showId ? <EyeOff size={10} /> : <Eye size={10} />}
                               </button>
                             )}
                           </div>
                           {user.wallet_address && (
-                            <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all">
-                              {copied ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
+                            <button onClick={() => { navigator.clipboard.writeText(user.bw_id); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg bg-app-accent/10 border border-app-border text-text-sub hover:text-app-accent hover:bg-app-accent/20 transition-all">
+                              {copied ? <Check size={12} className="text-app-accent" /> : <Copy size={12} />}
                             </button>
                           )}
                         </div>
@@ -316,7 +316,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                       <button
                         ref={menuButtonRef}
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="p-1.5 rounded-full text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-colors"
+                        className="p-1.5 rounded-full text-text-sub hover:text-app-accent hover:bg-app-accent/10 transition-colors"
                       >
                         <MoreVertical size={16} />
                       </button>
@@ -331,7 +331,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="fixed z-[150] w-44 bg-black/90 backdrop-blur-xl border border-cyan-900/40 rounded-xl shadow-[0_0_20px_#00e6ff30] overflow-hidden"
+                          className="fixed z-[150] w-44 bg-app-bg/90 backdrop-blur-xl border border-app-border rounded-xl shadow-app-shadow overflow-hidden"
                           style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
                         >
                           <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.ecosystem_roles")}</button>
@@ -342,9 +342,9 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     )}
                   </AnimatePresence>
 
-                  <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/5 rounded-2xl p-1 shrink-0">
+                  <div className="grid grid-cols-3 gap-2 bg-app-accent/5 border border-app-border rounded-2xl p-1 shrink-0">
                     {(["bio", "roles", "drops"] as TabId[]).map((tab) => (
-                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "text-cyan-400/70 hover:text-cyan-400/90 hover:bg-white/10"}`}>
+                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-app-accent text-black shadow-app-shadow" : "text-text-sub hover:text-text-main hover:bg-app-accent/10"}`}>
                         {tab === "bio" && t("profile.bio")} {tab === "roles" && t("profile.roles")} {tab === "drops" && t("profile.drops")}
                       </button>
                     ))}
@@ -354,14 +354,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "bio" && (
                       <>
                         <div className="grid grid-cols-3 gap-3">
-                          <button onClick={() => user.wallet_address && setIsLevelPopupOpen(true)} className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative">
+                          <button onClick={() => user.wallet_address && setIsLevelPopupOpen(true)} className="bg-app-card backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative">
                             {user.wallet_address ? (
                                 <>
-                                    <span className="text-white text-lg font-black">{level}</span>
-                                    <span className="text-cyan-400/80 text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
+                                    <span className="text-text-main text-lg font-black">{level}</span>
+                                    <span className="text-text-sub text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
                                 </>
                             ) : (
-                                <Lock size={16} className="text-cyan-500/30" />
+                                <Lock size={16} className="text-text-sub/30" />
                             )}
                           </button>
                           <button 
@@ -374,7 +374,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                 }
                               }
                             }}
-                            className={`bg-black/30 backdrop-blur-md border ${user.recoverable_streak > 0 ? 'border-red-500/50 hover:border-red-500/80 cursor-pointer shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-cyan-500/10 cursor-default'} rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative transition-all active:scale-95`}
+                            className={`bg-app-card backdrop-blur-md border ${user.recoverable_streak > 0 ? 'border-red-500/50 hover:border-red-500/80 cursor-pointer shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-app-border cursor-default'} rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative transition-all active:scale-95`}
                           >
                             {user.wallet_address ? (
                                 <>
@@ -383,80 +383,80 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                            <Flame size={12} className="text-white" />
                                         </div>
                                     )}
-                                    <span className={`text-xl font-black ${user.recoverable_streak > 0 ? 'text-red-400' : 'text-white'}`}>{user.streak_days || 0}</span>
-                                    <span className={`${user.recoverable_streak > 0 ? 'text-red-500/50' : 'text-cyan-500/50'} text-[8px] font-black uppercase tracking-widest`}>{t("profile.streak_label")}</span>
+                                    <span className={`text-xl font-black ${user.recoverable_streak > 0 ? 'text-red-400' : 'text-text-main'}`}>{user.streak_days || 0}</span>
+                                    <span className={`${user.recoverable_streak > 0 ? 'text-red-500/50' : 'text-text-sub/50'} text-[8px] font-black uppercase tracking-widest`}>{t("profile.streak_label")}</span>
                                 </>
                             ) : (
-                                <Lock size={16} className="text-cyan-500/30" />
+                                <Lock size={16} className="text-text-sub/30" />
                             )}
                           </button>
-                          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
+                          <div className="bg-app-bg/30 backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
                             {user.wallet_address ? (
                                 <>
-                                    <span className="text-white text-xl font-black">{user.total_referrals || 0}</span>
-                                    <span className="text-cyan-400/80 text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
+                                    <span className="text-text-main text-xl font-black">{user.total_referrals || 0}</span>
+                                    <span className="text-text-sub text-[8px] font-black uppercase tracking-widest">{t("profile.networks_label")}</span>
                                 </>
                             ) : (
-                                <Lock size={16} className="text-cyan-500/30" />
+                                <Lock size={16} className="text-text-sub/30" />
                             )}
                           </div>
                         </div>
 
                         {/* Independent Wallet Card */}
-                        <div className="relative bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-cyan-500/30">
+                        <div className="relative bg-app-bg/30 backdrop-blur-md border border-app-border rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-app-accent/30">
                           {/* Native Button Overlay - High Priority for Deep Links */}
                           {!user?.wallet_address && (
                             <div className="absolute inset-0 opacity-0 z-50">
                               <TonConnectButton style={{ width: '100%', height: '100%' }} />
                             </div>
                           )}
-                          <div className="p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
+                          <div className="p-3 bg-app-accent/5 rounded-2xl border border-app-border"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
-                            <span className="text-white font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? t("profile.connected") : t("profile.connect_wallet")}</span>
+                            <span className="text-text-main font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? t("profile.connected") : t("profile.connect_wallet")}</span>
                           </div>
                         </div>
 
                         {/* Independent Earnings Card */}
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
+                        <div className="bg-app-bg/30 backdrop-blur-md border border-app-border rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center justify-between">
-                              <span className="text-cyan-400/80 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
-                              <button onClick={() => setShowEarnings(!showEarnings)} className="text-cyan-500/30 hover:text-cyan-400 transition-colors">
+                              <span className="text-text-sub text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
+                              <button onClick={() => setShowEarnings(!showEarnings)} className="text-text-sub/30 hover:text-app-accent transition-colors">
                                 {showEarnings ? <EyeOff size={12} /> : <Eye size={12} />}
                               </button>
                             </div>
                             <div className="flex items-baseline gap-2">
-                              <span className="text-white text-4xl font-black">{showEarnings ? user.referral_earnings_pending : "*******"}</span>
-                              <span className="text-cyan-400/60 text-sm font-bold uppercase tracking-widest">$BWAVE</span>
+                              <span className="text-text-main text-4xl font-black">{showEarnings ? user.referral_earnings_pending : "*******"}</span>
+                              <span className="text-text-sub text-sm font-bold uppercase tracking-widest">$BWAVE</span>
                             </div>
                           </div>
                           <div className="flex gap-3">
-                            <button onClick={handleClaim} disabled={claiming || user.referral_earnings_pending === 0} className="flex-1 h-14 bg-cyan-500/5 border-2 border-cyan-500/20 rounded-2xl text-cyan-400 font-bold uppercase text-xs tracking-widest hover:bg-cyan-500/10 disabled:opacity-30 transition-all">{claiming ? t("profile.claiming") : t("profile.claim")}</button>
-                            <button onClick={handleNotifyInactive} disabled={notifying || cooldown !== null} className="flex-1 h-14 bg-black/40 border border-cyan-950 rounded-2xl text-cyan-500/40 font-bold uppercase text-[10px] leading-tight px-2 hover:text-cyan-400 transition-all">{notifying ? t("profile.notifying") : (cooldown !== null ? cooldownText : t("profile.notify_inactive_btn"))}</button>
+                            <button onClick={handleClaim} disabled={claiming || user.referral_earnings_pending === 0} className="flex-1 h-14 bg-app-accent/5 border-2 border-app-border rounded-2xl text-app-accent font-bold uppercase text-xs tracking-widest hover:bg-app-accent/10 disabled:opacity-30 transition-all">{claiming ? t("profile.claiming") : t("profile.claim")}</button>
+                            <button onClick={handleNotifyInactive} disabled={notifying || cooldown !== null} className="flex-1 h-14 bg-app-bg/40 border border-app-border rounded-2xl text-text-sub/40 font-bold uppercase text-[10px] leading-tight px-2 hover:text-app-accent transition-all">{notifying ? t("profile.notifying") : (cooldown !== null ? cooldownText : t("profile.notify_inactive_btn"))}</button>
                           </div>
                         </div>
 
                         {/* Independent Network Builder Card */}
-                        <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-6 flex flex-col gap-5">
+                        <div className="bg-app-card backdrop-blur-md border border-app-border rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
-                              <span className="text-cyan-400/80 text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
-                              <p className="text-cyan-400/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
+                              <span className="text-text-sub text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
+                              <p className="text-text-sub/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
                             </div>
                             <button 
                               onClick={() => user.wallet_address ? setIsReferralModalOpen(true) : alert(t("alerts.connect_wallet_ref"))} 
-                              className={`px-4 py-2 bg-cyan-500/5 border border-cyan-500/10 rounded-xl text-cyan-400 font-bold uppercase text-[10px] tracking-widest hover:bg-cyan-500/10 transition-all ${!user.wallet_address ? 'opacity-50' : ''}`}
+                              className={`px-4 py-2 bg-app-accent/5 border border-app-border rounded-xl text-app-accent font-bold uppercase text-[10px] tracking-widest hover:bg-app-accent/10 transition-all ${!user.wallet_address ? 'opacity-50' : ''}`}
                             >
                               {t("profile.get_link")}
                             </button>
                           </div>
                           <button 
                             onClick={() => user.wallet_address ? setIsConnectBluOpen(true) : alert(t("alerts.connect_wallet_blu"))} 
-                            className={`w-full h-14 bg-cyan-500 text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
+                            className={`w-full h-14 bg-app-accent text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-app-shadow active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
                           >
                             {t("profile.connect_blu")}
                           </button>
-                          <p className="text-cyan-400/70 text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
+                          <p className="text-text-sub text-[9px] font-black uppercase tracking-[0.2em] mt-8 text-center w-full block">
                             {t("profile.joined_at")}: {(() => {
                               const raw = user.joined_at || user.created_at;
                               if (!raw) return t("profile.protocol_active");
@@ -496,14 +496,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     )}
 
                     {activeTab === "drops" && (
-                      <div className="bg-black/30 backdrop-blur-md border border-cyan-500/10 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center">
-                        <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.15)]"><span className="text-4xl">🎁</span></div>
+                      <div className="bg-app-bg/30 backdrop-blur-md border border-app-border rounded-3xl p-8 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center">
+                        <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-app-shadow"><span className="text-4xl">🎁</span></div>
                         <div className="space-y-2">
-                          <h3 className="text-xl font-black text-white uppercase tracking-widest">{t("profile.protocol_drops")}</h3>
+                          <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("profile.protocol_drops")}</h3>
                           <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">{t("profile.locked")}</div>
                         </div>
-                        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-3">
-                          <p className="text-xs text-white/50 leading-relaxed uppercase tracking-wider">{t("profile.drops_desc")}</p>
+                        <div className="bg-app-accent/5 border border-app-border rounded-2xl p-5 space-y-3">
+                          <p className="text-xs text-text-sub leading-relaxed uppercase tracking-wider">{t("profile.drops_desc")}</p>
                         </div>
                       </div>
                     )}
@@ -532,7 +532,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
           <AnimatePresence>
             {badgeUnlocked && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-cyan-500 text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-[0_0_20px_rgba(6,182,212,0.6)] z-[200]">{t("profile.unlocked")}</motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-app-accent text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-app-shadow z-[200]">{t("profile.unlocked")}</motion.div>
             )}
           </AnimatePresence>
         </motion.div>
