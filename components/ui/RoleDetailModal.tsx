@@ -38,7 +38,7 @@ export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps)
               {/* X Close */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 border border-app-border transition-colors"
               >
                 <X size={16} className="text-text-sub" />
               </button>

@@ -131,13 +131,13 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                         {/* Exit Button */}
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 p-2 bg-app-accent/5 rounded-full text-app-accent hover:text-app-accent/80 transition-colors z-[160]"
+                            className="absolute top-4 right-4 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 border border-app-border transition-colors"
                         >
                             <X size={16} />
                         </button>
 
                         {/* Header */}
-                        <div className="p-4 pt-6 flex flex-col items-center border-b border-white/5 text-center">
+                        <div className="p-4 pt-6 flex flex-col items-center border-b border-app-border text-center">
                             <h2 className="text-text-main text-lg font-black uppercase tracking-tight">{t("level_popup.title")}</h2>
                             <p className="text-text-sub text-[8px] font-bold uppercase tracking-widest mt-0.5">{t("level_popup.subtitle")}</p>
                         </div>
@@ -154,8 +154,8 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                     <div
                                         key={lvl.level}
                                         className={`border transition-all duration-300 rounded-[2rem] overflow-hidden ${isExpanded
-                                            ? "bg-cyan-500/5 border-cyan-500/30"
-                                            : "bg-white/[0.02] border-white/5 opacity-60"
+                                            ? "bg-app-accent/5 border-app-accent/30"
+                                            : "bg-app-accent/[0.02] border-app-border opacity-60"
                                             }`}
                                     >
                                         {/* Level Card Header */}
@@ -164,29 +164,29 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                             className="w-full p-3.5 flex items-center gap-4 text-left"
                                         >
                                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border shadow-lg ${isCompleted || isCurrent
-                                                ? (roleData?.border ? `${roleData.border} bg-cyan-500/10 text-cyan-400` : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400")
-                                                : "border-white/10 bg-white/5 text-white/20"
+                                                ? (roleData?.border ? `${roleData.border} bg-app-accent/10 text-app-accent` : "border-app-accent/20 bg-app-accent/10 text-app-accent")
+                                                : "border-app-border bg-app-accent/5 text-text-sub/20"
                                                 }`}>
                                                 <lvl.icon size={18} />
                                             </div>
 
                                             <div className="flex-1 flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted || isCurrent ? "text-white" : "text-white/40"}`}>
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted || isCurrent ? "text-text-main" : "text-text-sub/40"}`}>
                                                         {t("level_popup.level")} {lvl.level}
                                                     </span>
                                                     {isCompleted && (
-                                                        <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#00E6FF]">
+                                                        <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-app-accent">
                                                             <Check size={8} className="text-black stroke-[4px]" />
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span className={`text-[9px] font-bold uppercase tracking-widest ${isCompleted || isCurrent ? "text-cyan-400" : "text-white/20"}`}>
+                                                <span className={`text-[9px] font-bold uppercase tracking-widest ${isCompleted || isCurrent ? "text-app-accent" : "text-text-sub/20"}`}>
                                                     {roleData?.name || lvl.role}
                                                 </span>
                                             </div>
 
-                                            <div className={`transition-transform duration-300 ${isExpanded ? "rotate-180 text-cyan-400" : "text-white/20"}`}>
+                                            <div className={`transition-transform duration-300 ${isExpanded ? "rotate-180 text-app-accent" : "text-text-sub/20"}`}>
                                                 <ChevronDown size={16} />
                                             </div>
                                         </button>
@@ -201,7 +201,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                     transition={{ duration: 0.3 }}
                                                     className="overflow-hidden"
                                                 >
-                                                    <div className="px-5 pb-5 flex flex-col gap-3 border-t border-cyan-500/10 pt-4">
+                                                    <div className="px-5 pb-5 flex flex-col gap-3 border-t border-app-accent/10 pt-4">
                                                         {lvl.criteria.map((cri) => {
                                                             const current = getMetricValue(cri.id);
                                                             const target = cri.target;
@@ -211,14 +211,14 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                             return (
                                                                 <div key={cri.id} className="flex flex-col gap-2">
                                                                     <div className="flex flex-row items-start justify-between gap-3">
-                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/60 flex-1 min-w-0 leading-tight">
+                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-text-sub/60 flex-1 min-w-0 leading-tight">
                                                                             {cri.label.includes('.') ? t(cri.label) : cri.label}
                                                                         </span>
                                                                         <div className="flex items-center gap-1.5 shrink-0">
                                                                             {done ? (
-                                                                                <Check size={10} className="text-[#00E6FF]" />
+                                                                                <Check size={10} className="text-app-accent" />
                                                                             ) : null}
-                                                                            <span className={`text-[9px] font-mono ${done ? "text-cyan-400" : "text-white/30"}`}>
+                                                                            <span className={`text-[9px] font-mono ${done ? "text-app-accent" : "text-text-sub/30"}`}>
                                                                                 {cri.type === "boolean"
                                                                                     ? (done ? t("level_popup.verified") : t("level_popup.not_yet"))
                                                                                     : cri.type === "default"
@@ -229,9 +229,9 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                                     </div>
 
                                                                     {cri.type !== "default" && (
-                                                                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                                                        <div className="h-1 w-full bg-app-accent/5 rounded-full overflow-hidden">
                                                                             <motion.div
-                                                                                className="h-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]"
+                                                                                className="h-full bg-app-accent shadow-app-shadow"
                                                                                 initial={{ width: 0 }}
                                                                                 animate={{ width: `${progress}%` }}
                                                                                 transition={{ duration: 1, ease: "easeOut" }}
@@ -242,11 +242,11 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                             );
                                                         })}
 
-                                                        <div className="mt-1 p-3 bg-cyan-500/5 rounded-2xl border border-cyan-500/10">
-                                                            <p className="text-[8px] text-cyan-400/60 font-medium leading-relaxed uppercase tracking-tighter">
+                                                        <div className="mt-1 p-3 bg-app-accent/5 rounded-2xl border border-app-border">
+                                                            <p className="text-[8px] text-app-accent/60 font-medium leading-relaxed uppercase tracking-tighter">
                                                                 {roleData?.desc || t("level_popup.default_desc")}
                                                             </p>
-                                                            <p className="text-[8px] text-cyan-400 mt-0.5 font-bold uppercase">
+                                                            <p className="text-[8px] text-app-accent mt-0.5 font-bold uppercase">
                                                                 {t("level_popup.benefit")} {roleData?.benefit || t("level_popup.default_benefit")}
                                                             </p>
                                                         </div>

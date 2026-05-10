@@ -693,8 +693,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   className={`relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all duration-200
                     ${isEarn || isQuest
                       ? isActive
-                        ? "bg-white/5 border border-white/20 text-white/50"
-                        : "bg-transparent border border-white/10 text-white/25 hover:border-white/20"
+                        ? "bg-app-accent/5 border border-app-border text-text-sub/50"
+                        : "bg-transparent border border-app-border/30 text-text-sub/25 hover:border-app-border/50"
                       : isActive
                         ? "bg-app-accent/15 border border-app-border text-app-accent shadow-app-shadow"
                         : "bg-transparent border border-app-border text-text-sub hover:border-app-accent/50 hover:text-app-accent"
@@ -734,7 +734,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
 
               {error && (
-                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-center font-bold">
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs text-center font-bold">
                   {(error === "AUTH_REQUIRED" || error === "AUTH_EXPIRED") ? t("missions.session_expired") : error}
                 </div>
               )}
@@ -759,9 +759,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   ))}
                   {presenceMissions.length === 0 && loading && (
                     <div className="animate-pulse space-y-3">
-                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
-                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
-                      <div className="h-20 bg-app-accent/5 rounded-2xl border border-app-border" />
+                      <div className="h-20 bg-app-card rounded-2xl border border-app-border" />
+                      <div className="h-20 bg-app-card rounded-2xl border border-app-border" />
+                      <div className="h-20 bg-app-card rounded-2xl border border-app-border" />
                     </div>
                   )}
                   {presenceMissions.length === 0 && !loading && (
@@ -777,7 +777,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       </div>
                       <button
                         onClick={() => mutatePresence()}
-                        className="px-4 py-2 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-app-accent/20 transition-all font-mono"
+                        className="h-10 px-4 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-app-accent/20 transition-all font-mono"
                       >
                         {t("presence.retry_sync")}
                       </button>
@@ -800,46 +800,54 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       key={m.id}
                       className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
                       ${m.status === "done"
-                          ? "border-app-border bg-app-card opacity-50"
-                          : "border-app-border bg-app-accent/5 hover:border-app-accent/50"
+                          ? "border-app-border bg-app-card-bg opacity-50"
+                          : "border-app-border bg-app-card-bg hover:border-app-accent/50"
                         }`}
                     >
                       <div>
-                        <p className="text-sm font-bold text-text-main">{m.name}</p>
-                        <p className="text-xs text-app-accent font-mono mt-0.5">{m.points} $BWAVE</p>
-                      </div>
-                      {m.status === "open" && m.id !== "invite_daily" && (
-                        <button onClick={() => handleOpen(m.id)} className="px-3 py-1.5 text-xs font-bold bg-app-accent/10 border border-app-border text-app-accent rounded-lg hover:bg-app-accent/20 transition-colors uppercase tracking-wider">
-                          {t("missions.open")}
-                        </button>
-                      )}
-                      {m.status === "waiting" && (
-                        <button disabled className="px-3 py-1.5 text-xs font-bold bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg uppercase tracking-wider animate-pulse">
-                          {t("missions.syncing").toUpperCase()}
-                        </button>
-                      )}
-                      {m.status === "claim" && (
-                        <button
-                          onClick={() => handleClaim(m.id)}
-                          disabled={claimingMissionId === m.id}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider transition-all ${claimingMissionId === m.id
-                            ? "bg-app-accent/80 text-black border border-app-border cursor-wait"
-                            : "bg-app-accent text-black border border-app-border shadow-app-shadow animate-pulse"
-                            }`}
-                        >
-                          {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
-                        </button>
-                      )}
-                      {m.status === "done" && (
-                        <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-                          <Check size={12} /> {t("missions.done")}
+                        <h4 className="text-[11px] font-black text-text-main uppercase tracking-tighter">{m.name}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-black text-app-accent">+{m.points} $BWAVE</span>
                         </div>
-                      )}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {m.status === "claim" && (
+                          <button
+                            onClick={() => handleClaim(m.id)}
+                            disabled={claimingMissionId === m.id}
+                            className="h-10 px-4 bg-app-accent text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-app-shadow hover:bg-app-accent/80 transition-all flex items-center gap-1.5"
+                          >
+                            {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
+                          </button>
+                        )}
+                        {m.status === "waiting" && (
+                          <button
+                            className="h-10 px-4 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 cursor-wait opacity-50"
+                          >
+                            <Clock size={12} className="animate-spin" />
+                            {t("missions.verifying").toUpperCase()}
+                          </button>
+                        )}
+                        {m.status === "open" && (
+                          <button
+                            onClick={() => handleOpen(m.id)}
+                            className="h-10 px-6 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-app-accent/20 hover:border-app-accent/40 transition-all flex items-center gap-1.5"
+                          >
+                            {t("missions.open")}
+                          </button>
+                        )}
+                        {m.status === "done" && (
+                          <div className="px-3 py-1.5 text-xs font-bold text-text-sub uppercase tracking-wider flex items-center gap-1">
+                            <Check size={12} /> {t("missions.done")}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {loading && missions.length === 0 && (
                     <div className="space-y-3 animate-pulse">
-                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-app-accent/5 rounded-xl border border-app-border" />)}
+                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-app-card rounded-xl border border-app-border" />)}
                     </div>
                   )}
                   {!loading && missions.length === 0 && !error && (
@@ -859,17 +867,17 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   transition={{ duration: 0.25 }}
                   className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
                 >
-                   <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-app-accent/10 border-app-border shadow-app-shadow' : 'bg-violet-500/10 border-violet-500/30 shadow-[0_0_30px_rgba(139,92,246,0.2)]'} flex items-center justify-center`}>
+                   <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-app-accent/10 border-app-border shadow-app-shadow' : 'bg-app-border/20 border-app-border shadow-app-shadow'} flex items-center justify-center`}>
                     <span className="text-4xl">{isHumanVerified ? '⚡' : '🔒'}</span>
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("missions.quests.title")}</h3>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-app-accent/15 border-app-border text-app-accent' : 'bg-violet-500/15 border-violet-500/30 text-violet-400'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-app-accent' : 'bg-violet-400'}`} />
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-app-accent/15 border-app-border text-app-accent' : 'bg-app-border/50 border-app-border text-text-sub'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-app-accent' : 'bg-text-sub'}`} />
                       {isHumanVerified ? t("missions.quests.verified_human") : t("missions.quests.verified_only")}
                     </div>
                   </div>
-                  <div className="max-w-xs bg-app-accent/5 border border-app-border rounded-2xl p-5 space-y-3">
+                  <div className="max-w-xs bg-app-card border border-app-border rounded-2xl p-5 space-y-3">
                     {isHumanVerified ? (
                       <p className="text-sm text-text-main/70 leading-relaxed italic">
                         {t("missions.quests.empty")}
@@ -877,10 +885,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     ) : (
                       <>
                         <p className="text-sm text-text-main/70 leading-relaxed">
-                          {t("missions.quests.desc")}
+                          {t("missions.quests.lock_desc")}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-text-sub font-semibold border-t border-app-border pt-3">
-                          <Lock size={12} className="text-violet-400" />
+                          <Lock size={12} className="text-app-accent" />
                           {t("missions.quests.lock_hint")}
                         </div>
                       </>

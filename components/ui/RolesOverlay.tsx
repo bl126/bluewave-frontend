@@ -85,8 +85,8 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
               {ROLE_CATEGORIES.map((category, idx) => (
                 <div key={idx} className="flex flex-col gap-6">
                   <div className="flex flex-col">
-                    <h3 className="text-xl font-black text-white uppercase tracking-tight">{t(`roles_cats.${category.title}.title`) || category.title}</h3>
-                    <p className="text-xs font-bold uppercase tracking-widest text-cyan-400/60 mt-1">{t(`roles_cats.${category.title}.desc`) || category.description}</p>
+                    <h3 className="text-xl font-black text-text-main uppercase tracking-tight">{t(`roles_cats.${category.title}.title`) || category.title}</h3>
+                    <p className="text-xs font-bold uppercase tracking-widest text-app-accent/60 mt-1">{t(`roles_cats.${category.title}.desc`) || category.description}</p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
