@@ -73,7 +73,7 @@ export default function Marketplace({ isOpen, onClose, telegramUser }: Marketpla
                         onClick={() => {
                             window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
                         }}
-                        className="px-8 py-4 bg-app-accent text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-app-shadow active:scale-95 transition-all"
+                        className="px-8 py-4 bg-app-accent text-app-bg rounded-2xl font-black text-sm uppercase tracking-widest shadow-app-shadow active:scale-95 transition-all"
                     >
                         {t("ghost.connect_btn")}
                     </button>

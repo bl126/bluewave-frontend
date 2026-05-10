@@ -257,7 +257,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                                 <button
                                     onClick={handleShare}
                                     disabled={isSharing}
-                                    className="w-full h-14 bg-app-accent text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-app-accent/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-app-shadow disabled:opacity-50"
+                                    className="w-full h-14 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-app-accent/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-app-shadow disabled:opacity-50"
                                 >
                                     {isSharing ? (
                                         <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />

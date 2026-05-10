@@ -322,7 +322,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                         <div className={`${width} ${height} relative rounded-t-[2rem] border-t-2 ${borderTopColor} border-x ${borderColor} ${glowIntensity} overflow-hidden group mt-2`}>
                           {/* Label: 1st, 2nd, 3rd - Moved up slightly */}
                           <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
-                            <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-app-accent text-black shadow-app-shadow`}>
+                            <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full bg-app-accent text-app-bg shadow-app-shadow`}>
                               {getOrdinalLabel(u.rank)}
                             </span>
                           </div>
@@ -860,7 +860,7 @@ function JoinTheBoardModal({ isOpen, onClose, onGetRefLink }: {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={onGetRefLink}
-                  className="w-full h-14 rounded-2xl bg-app-accent text-black font-black uppercase text-xs tracking-widest shadow-app-shadow hover:bg-app-accent/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 rounded-2xl bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest shadow-app-shadow hover:bg-app-accent/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
                   <Link2 size={15} />
                   Get Referral Link

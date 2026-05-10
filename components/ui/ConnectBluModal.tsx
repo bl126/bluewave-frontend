@@ -231,7 +231,7 @@ export default function ConnectBluModal({
                                                                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-app-accent/10 border border-app-border text-app-accent font-bold hover:bg-app-accent/20 transition-all active:scale-95"
                                                                     >
                                                                         {t("connect_blu.req_1_bot")}
-                                                                        <span id="copy-bot-btn" className="text-[7px] bg-app-accent text-black px-1 rounded ml-1">{t("connect_blu.copy")}</span>
+                                                                        <span id="copy-bot-btn" className="text-[7px] bg-app-accent text-app-bg px-1 rounded ml-1">{t("connect_blu.copy")}</span>
                                                                     </button>{" "}
                                                                     {t("connect_blu.req_1_suffix")}
                                                                 </span>
@@ -271,7 +271,7 @@ export default function ConnectBluModal({
                                                             <button
                                                                 onClick={handleVerify}
                                                                 disabled={verifying || !channelInput.trim()}
-                                                                className="w-full h-13 py-3.5 bg-app-accent text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                                className="w-full h-13 py-3.5 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                                             >
                                                                 {verifying ? <><Loader2 size={16} className="animate-spin" /> {t("connect_blu.verifying")}</> : t("connect_blu.verify_btn")}
                                                             </button>

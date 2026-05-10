@@ -118,7 +118,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
 
                             <button
                                 onClick={onClose}
-                                className="px-10 py-4 bg-app-accent text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow hover:bg-app-accent/80 transition-all active:scale-95"
+                                className="px-10 py-4 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow hover:bg-app-accent/80 transition-all active:scale-95"
                             >
                                 {t("level_up_modal.continue")}
                             </button>

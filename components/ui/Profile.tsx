@@ -344,7 +344,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
                   <div className="grid grid-cols-3 gap-2 bg-app-accent/5 border border-app-border rounded-2xl p-1 shrink-0">
                     {(["bio", "roles", "drops"] as TabId[]).map((tab) => (
-                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-app-accent text-black shadow-app-shadow" : "text-text-sub hover:text-text-main hover:bg-app-accent/10"}`}>
+                      <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${activeTab === tab ? "bg-app-accent text-app-bg shadow-app-shadow" : "text-text-sub hover:text-text-main hover:bg-app-accent/10"}`}>
                         {tab === "bio" && t("profile.bio")} {tab === "roles" && t("profile.roles")} {tab === "drops" && t("profile.drops")}
                       </button>
                     ))}
@@ -452,7 +452,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           </div>
                           <button 
                             onClick={() => user.wallet_address ? setIsConnectBluOpen(true) : alert(t("alerts.connect_wallet_blu"))} 
-                            className={`w-full h-14 bg-app-accent text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-app-shadow active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
+                            className={`w-full h-14 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-app-shadow active:scale-[0.98] transition-all ${!user.wallet_address ? 'grayscale opacity-50' : ''}`}
                           >
                             {t("profile.connect_blu")}
                           </button>
@@ -532,7 +532,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
           <AnimatePresence>
             {badgeUnlocked && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-app-accent text-black px-6 py-2 rounded-full font-black uppercase text-xs shadow-app-shadow z-[200]">{t("profile.unlocked")}</motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-app-accent text-app-bg px-6 py-2 rounded-full font-black uppercase text-xs shadow-app-shadow z-[200]">{t("profile.unlocked")}</motion.div>
             )}
           </AnimatePresence>
         </motion.div>

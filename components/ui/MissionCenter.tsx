@@ -109,7 +109,7 @@ function PresenceCard({
           className={`
             w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all
             ${isCompleted
-              ? "bg-app-accent text-black hover:bg-app-accent/80 shadow-app-shadow"
+              ? "bg-app-accent text-app-bg hover:bg-app-accent/80 shadow-app-shadow"
               : isActive
                 ? "bg-transparent text-text-sub cursor-not-allowed border border-app-border"
                 : "bg-app-accent/10 text-app-accent border border-app-border hover:bg-app-accent/20 hover:border-app-accent"
@@ -672,7 +672,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }));
                 }}
-                className="px-8 py-4 bg-app-accent text-black rounded-2xl font-black text-sm uppercase tracking-widest shadow-app-shadow active:scale-95 transition-all"
+                className="px-8 py-4 bg-app-accent text-app-bg rounded-2xl font-black text-sm uppercase tracking-widest shadow-app-shadow active:scale-95 transition-all"
               >
                 {t("ghost.connect_btn")}
               </button>
@@ -705,7 +705,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   {tab === "quest" && t("missions.tabs.quest")}
                   {tab === "earn" && t("missions.tabs.earn")}
                   {badge > 0 && tab !== "earn" && tab !== "quest" && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-app-accent text-black text-[9px] font-black flex items-center justify-center leading-none shadow-app-shadow">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-app-accent text-app-bg text-[9px] font-black flex items-center justify-center leading-none shadow-app-shadow">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
@@ -816,7 +816,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                           <button
                             onClick={() => handleClaim(m.id)}
                             disabled={claimingMissionId === m.id}
-                            className="h-10 px-4 bg-app-accent text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-app-shadow hover:bg-app-accent/80 transition-all flex items-center gap-1.5"
+                            className="h-10 px-4 bg-app-accent text-app-bg rounded-xl text-[10px] font-black uppercase tracking-widest shadow-app-shadow hover:bg-app-accent/80 transition-all flex items-center gap-1.5"
                           >
                             {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
                           </button>

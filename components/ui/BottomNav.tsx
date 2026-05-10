@@ -109,14 +109,14 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
 
                                     {/* Mission Badge */}
                                     {tab.id === "missions" && missionBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-app-bg text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
                                             {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
                                         </div>
                                     )}
 
                                     {/* Explore Badge */}
                                     {tab.id === "explore" && exploreBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
+                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-app-bg text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
                                             {exploreBadgeCount > 9 ? "9+" : exploreBadgeCount}
                                         </div>
                                     )}

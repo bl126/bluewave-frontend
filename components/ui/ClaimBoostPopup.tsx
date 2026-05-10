@@ -216,7 +216,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     onClick={onClose}
-                    className="mt-6 w-full py-4 rounded-xl bg-app-accent text-black font-black uppercase tracking-widest text-sm hover:bg-app-accent/80 active:scale-95 transition-all shadow-app-shadow"
+                    className="mt-6 w-full py-4 rounded-xl bg-app-accent text-app-bg font-black uppercase tracking-widest text-sm hover:bg-app-accent/80 active:scale-95 transition-all shadow-app-shadow"
                   >
                     {t("claim_boost_popup.collect")}
                   </motion.button>

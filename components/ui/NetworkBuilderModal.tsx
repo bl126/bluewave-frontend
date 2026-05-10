@@ -136,7 +136,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
 
                             <motion.button
                                 onClick={onClose}
-                                className="w-full py-4 mt-2 bg-app-accent text-black rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-app-accent/80 active:scale-[0.98] transition-all shadow-app-shadow"
+                                className="w-full py-4 mt-2 bg-app-accent text-app-bg rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-app-accent/80 active:scale-[0.98] transition-all shadow-app-shadow"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 }}

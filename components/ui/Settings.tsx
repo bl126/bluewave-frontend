@@ -95,7 +95,7 @@ export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsPr
                                             onClick={() => setTheme(mode.id as any)}
                                             className={`flex flex-col items-center gap-1.5 py-2 rounded-lg transition-all ${
                                                 theme === mode.id 
-                                                ? 'bg-app-accent text-black shadow-lg' 
+                                                ? 'bg-app-accent text-app-bg shadow-lg' 
                                                 : 'text-text-sub hover:text-text-main hover:bg-app-accent/5'
                                             }`}
                                         >
