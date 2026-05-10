@@ -43,6 +43,7 @@ import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
+import ReferralShareModal from "./ReferralShareModal";
 
 const ADMIN_IDS = [5023869471];
 const BETA_TESTER_IDS: number[] = [
@@ -82,6 +83,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
   const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -518,6 +520,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   telegramUser={telegramUser}
                   isInline={true}
                   onSheetOpenChange={(open) => setIsLeaderboardSheetOpen(open)}
+                  onGetRefLink={() => setIsReferralModalOpen(true)}
                 />
               </motion.div>
             )}
@@ -707,6 +710,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ─── Referral Share Modal ─── */}
+      <ReferralShareModal
+        isOpen={isReferralModalOpen}
+        onClose={() => setIsReferralModalOpen(false)}
+        telegramId={telegramUser?.id || null}
+        bwId={swrUser?.bw_id || ""}
+        referralLink={swrUser?.referral_link}
+      />
 
     </motion.div>
   );

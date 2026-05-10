@@ -806,7 +806,7 @@ function JoinTheBoardModal({ isOpen, onClose, onGetRefLink }: {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -815,52 +815,55 @@ function JoinTheBoardModal({ isOpen, onClose, onGetRefLink }: {
 
           {/* Modal card */}
           <motion.div
-            className="fixed inset-0 z-[201] flex items-center justify-center px-5"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            className="fixed inset-0 z-[201] flex items-center justify-center p-6 pointer-events-none"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="w-full max-w-sm bg-[#050d12] border border-cyan-500/20 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,230,255,0.08)]">
+            <div className="w-full max-w-sm bg-black border border-cyan-500/20 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.2)] pointer-events-auto relative">
+              {/* Ambient glow */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,230,255,0.05)_0%,_transparent_70%)] pointer-events-none" />
+
               {/* Header */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-cyan-500/10">
+              <div className="flex items-center justify-between px-6 pt-6 pb-4">
                 <div>
-                  <p className="text-[11px] font-black text-white uppercase tracking-widest">How to rank here</p>
-                  <p className="text-[9px] text-cyan-600 font-bold uppercase tracking-wider mt-0.5">Network Builders Board</p>
+                  <h2 className="text-white font-black text-lg uppercase tracking-tight">How to Rank</h2>
+                  <p className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-widest leading-none mt-1">Network Builders Board</p>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400/60 hover:text-cyan-400 transition-colors"
-                >
-                  <X size={14} />
+                <button onClick={onClose} className="p-2 rounded-xl bg-white/5 text-cyan-500/40 hover:text-cyan-400 transition-colors">
+                  <X size={18} />
                 </button>
               </div>
+
+              {/* Divider */}
+              <div className="h-px w-full bg-cyan-500/10" />
 
               {/* Steps */}
               <div className="px-6 py-5 space-y-4">
                 {[
-                  { n: "1", text: "Share your referral link and onboard humans to your network" },
-                  { n: "2", text: "Each person who connects their TON wallet & activates their first presence counts as your Network" },
-                  { n: "3", text: "Verified Humans in your network count 3× — quality over quantity" }
+                  { n: "01", text: "Share your referral link and onboard humans to your network" },
+                  { n: "02", text: "Each person who connects their TON wallet & activates their first presence counts as your Network" },
+                  { n: "03", text: "Verified Humans in your network count 3× — quality over quantity" }
                 ].map((step) => (
                   <div key={step.n} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-[9px] font-black text-cyan-400">{step.n}</span>
                     </div>
-                    <p className="text-[11px] text-cyan-200/70 font-medium leading-relaxed">{step.text}</p>
+                    <p className="text-[11px] text-cyan-100/70 font-medium leading-relaxed flex-1">{step.text}</p>
                   </div>
                 ))}
               </div>
 
               {/* CTA button */}
-              <div className="px-6 pb-6">
+              <div className="px-6 pb-7">
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={onGetRefLink}
-                  className="w-full h-12 rounded-2xl bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(0,230,255,0.2)] hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-14 rounded-2xl bg-cyan-500 text-black font-black uppercase text-xs tracking-widest shadow-[0_10px_20px_rgba(6,182,212,0.2)] hover:bg-cyan-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
-                  <Link2 size={14} />
-                  Get Ref Link
+                  <Link2 size={15} />
+                  Get Referral Link
                 </motion.button>
               </div>
             </div>
