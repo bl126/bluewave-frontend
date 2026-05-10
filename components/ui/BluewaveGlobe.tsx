@@ -66,13 +66,14 @@ function GlobeScene({
     switch (theme) {
       case "light":
         return {
-          ocean: "#F8F9FA",
-          land: "#CBD5E1",
-          border: "#000000",
-          glow: "#CBD5E1",
-          ambient: 1.5,
-          point: 1.0,
-          stars: 0.1
+          ocean: "#050505",
+          land: "#111111",
+          border: "#222222",
+          glow: "#ffffff",
+          ambient: 0.8,
+          point: 1.2,
+          stars: 0,
+          atmosphereOpacity: 0.4
         };
       case "dim":
         return {
@@ -82,7 +83,8 @@ function GlobeScene({
           glow: "#00F6FF",
           ambient: 0.7,
           point: 1.2,
-          stars: 0.6
+          stars: 0.6,
+          atmosphereOpacity: 0.15
         };
       default: // original
         return {
@@ -92,7 +94,8 @@ function GlobeScene({
           glow: "#00F6FF",
           ambient: 0.4,
           point: 1.5,
-          stars: 1.0
+          stars: 1.0,
+          atmosphereOpacity: 0.15
         };
     }
   }, [theme]);
@@ -370,7 +373,11 @@ function GlobeScene({
     <>
       <ambientLight intensity={colors.ambient} />
       <pointLight position={[5, 5, 5]} intensity={colors.point} />
-      <pointLight position={[-5, -5, -5]} intensity={colors.point * 0.5} color={colors.border} />
+      {/* RIM Light to make the dark globe pop in Light Mode */}
+      {theme === 'light' && (
+        <pointLight position={[5, 5, 5]} intensity={1.5} color="#ffffff" />
+      )}
+      <pointLight position={[-10, 10, 10]} intensity={theme === 'light' ? 2 : 1.5} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
 
       <group ref={globeRef} position={[0, 0, 0]}>
         {/* The "Coated" Sphere (Oceans + Land) */}
@@ -396,9 +403,9 @@ function GlobeScene({
           <meshPhongMaterial
             color={colors.glow}
             transparent
-            opacity={theme === 'light' ? 0.05 : 0.15}
+            opacity={colors.atmosphereOpacity}
             side={THREE.BackSide}
-            blending={THREE.AdditiveBlending}
+            blending={theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending}
           />
         </mesh>
 

@@ -27,11 +27,11 @@ export default function GlobeDot({
     switch (theme) {
       case "light":
         return {
-          base: "#000000",
-          emissive: "#000000",
-          ripple: "#000000",
-          particles: "#64748b",
-          intensity: 0.5
+          base: "#FFFFFF",
+          emissive: "#FFFFFF",
+          ripple: "#FFFFFF",
+          particles: "#FFFFFF",
+          intensity: 3
         };
       case "dim":
         return {
