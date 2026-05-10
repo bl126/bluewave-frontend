@@ -64,9 +64,9 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                                     y: [0, -10, 0],
                                     scale: [1, 1.1, 1],
                                     filter: [
-                                        "drop-shadow(0 0 10px #22d3ee)",
-                                        "drop-shadow(0 0 20px #06b6d4)",
-                                        "drop-shadow(0 0 10px #22d3ee)"
+                                        `drop-shadow(0 0 10px var(--accent))`,
+                                        `drop-shadow(0 0 20px var(--accent))`,
+                                        `drop-shadow(0 0 10px var(--accent))`
                                     ]
                                 }}
                                 transition={{
@@ -111,14 +111,14 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.4, type: "spring" }}
-                                className="w-full bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-8 flex items-center justify-between group overflow-hidden relative"
+                                className="w-full bg-app-accent/10 border border-app-accent/20 rounded-2xl p-4 mb-8 flex items-center justify-between group overflow-hidden relative"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-app-accent/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 <div className="text-left">
                                     <p className="text-[10px] text-app-accent font-bold uppercase tracking-widest mb-1">{t("streak_celebration.reward_granted")}</p>
                                     <p className="text-2xl font-black text-text-main tracking-tight">+{rewardAmount} $BWAVE</p>
                                 </div>
-                                <div className="p-2 rounded-full bg-app-accent text-black shadow-app-shadow">
+                                <div className="p-2 rounded-full bg-app-accent text-app-bg shadow-app-shadow">
                                     <Check size={20} strokeWidth={3} />
                                 </div>
                             </motion.div>
@@ -134,13 +134,13 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                             </div>
 
                             {/* Close Label */}
-                            <p className="mt-6 text-[10px] text-cyan-900 font-bold uppercase tracking-widest">
+                            <p className="mt-6 text-[10px] text-text-sub font-bold uppercase tracking-widest">
                                 {t("streak_celebration.footer")}
                             </p>
                         </div>
 
                         {/* Bottom Accent */}
-                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
+                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-app-accent to-transparent opacity-50" />
                     </motion.div>
                 </div>
             )}

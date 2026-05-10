@@ -47,8 +47,8 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                     >
                         {/* Decorative background effects */}
                         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none rounded-[2rem]">
-                            <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(ellipse_at_top_right,rgba(0,230,255,0.12)_0%,rgba(0,0,0,0)_60%)]" />
-                            <div className="absolute bottom-[-10%] left-[20%] w-[100%] h-[100%] bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,100,255,0.1)_0%,rgba(0,0,0,0)_50%)]" />
+                            <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(ellipse_at_top_right,var(--accent-glow)_0%,transparent_60%)]" />
+                            <div className="absolute bottom-[-10%] left-[20%] w-[100%] h-[100%] bg-[radial-gradient(ellipse_at_bottom_left,var(--accent-glow)_0%,transparent_50%)]" />
                         </div>
 
                         <div className="relative z-10 p-8 flex flex-col items-center text-center">
@@ -85,7 +85,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", damping: 20, delay: 0.5 }}
-                                className="w-full bg-cyan-950/20 border border-cyan-900/50 rounded-2xl py-6 px-4 mb-8 flex flex-col relative overflow-hidden group"
+                                className="w-full bg-app-accent/5 border border-app-border rounded-2xl py-6 px-4 mb-8 flex flex-col relative overflow-hidden group"
                             >
                                 {/* Subtle inner glow */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-app-accent/5 to-transparent pointer-events-none" />
@@ -109,7 +109,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 }}
                                 onClick={handleClose}
-                                className="w-full relative group overflow-hidden rounded-xl bg-cyan-500 p-[1px]"
+                                className="w-full relative group overflow-hidden rounded-xl bg-app-accent p-[1px]"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-app-accent/80 to-app-accent opacity-80" />
                                 <div className="relative flex items-center justify-center rounded-xl bg-app-bg px-4 py-3 transition-colors group-hover:bg-app-accent/10">

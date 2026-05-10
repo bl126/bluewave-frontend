@@ -334,16 +334,16 @@ const WhitepaperSection = ({ section }: { section: typeof WHITEPAPER_CONTENT[0] 
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="border-b border-cyan-900/30 last:border-0 pb-4">
+        <div className="border-b border-app-border last:border-0 pb-4">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between py-4 text-left group transition-all"
             >
-                <h2 className="text-xl md:text-2xl font-bold text-cyan-100 flex items-center gap-3">
-                    <span className={`w-1 h-6 bg-cyan-500 rounded-full shadow-[0_0_10px_#06b6d4] transition-all duration-300 ${isOpen ? 'h-8 bg-cyan-400' : ''}`}></span>
-                    <span className="group-hover:text-cyan-200 transition-colors">{section.title}</span>
+                <h2 className="text-xl md:text-2xl font-bold text-text-main flex items-center gap-3">
+                    <span className={`w-1 h-6 bg-app-accent rounded-full shadow-app-shadow transition-all duration-300 ${isOpen ? 'h-8' : ''}`}></span>
+                    <span className="group-hover:text-app-accent transition-colors">{section.title}</span>
                 </h2>
-                <div className={`p-2 rounded-full border border-cyan-900/30 bg-cyan-950/20 text-cyan-400 transition-all duration-300 ${isOpen ? 'bg-cyan-900/40 border-cyan-500/50 rotate-180' : 'group-hover:border-cyan-700/50'}`}>
+                <div className={`p-2 rounded-full border border-app-border bg-app-accent/10 text-app-accent transition-all duration-300 ${isOpen ? 'bg-app-accent/20 border-app-accent/50 rotate-180' : 'group-hover:border-app-accent/50'}`}>
                     {isOpen ? <Minus size={20} /> : <Plus size={20} />}
                 </div>
             </button>
@@ -357,7 +357,7 @@ const WhitepaperSection = ({ section }: { section: typeof WHITEPAPER_CONTENT[0] 
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="overflow-hidden"
                     >
-                        <div className="pb-6 text-gray-300 leading-relaxed space-y-4 text-base md:text-lg font-light tracking-wide pl-4 border-l-2 border-cyan-900/20 ml-1.5">
+                        <div className="pb-6 text-text-sub leading-relaxed space-y-4 text-base md:text-lg font-light tracking-wide pl-4 border-l-2 border-app-border ml-1.5">
                             {section.content!.split('\n').map((paragraph, idx) => (
                                 paragraph.trim() && <p key={idx}>{paragraph}</p>
                             ))}
@@ -408,7 +408,7 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 20 }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="relative w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-2xl md:border md:border-cyan-900/30 overflow-hidden bg-gradient-to-b from-[#0B0F14] to-[#05070a] shadow-[0_0_50px_-10px_rgba(0,230,255,0.1)]"
+                        className="relative w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-2xl md:border md:border-app-border overflow-hidden bg-app-bg shadow-app-shadow"
                         onClick={(e) => e.stopPropagation()} // Prevent close on content click
                     >
                         {/* Floating Download Button (Top Right, below Hamburger) */}
@@ -416,10 +416,10 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                             <a
                                 href="/bluewavewhitepaper.pdf"
                                 download
-                                className="group flex flex-col items-center gap-1 text-cyan-400 hover:text-cyan-200 transition-colors"
+                                className="group flex flex-col items-center gap-1 text-app-accent hover:text-text-main transition-colors"
                                 title="Download Whitepaper"
                             >
-                                <div className="p-3 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50 shadow-[0_0_15px_-5px_#22d3ee]">
+                                <div className="p-3 rounded-full bg-app-accent/10 group-hover:bg-app-accent/20 transition-colors border border-app-border shadow-app-shadow">
                                     <Download size={20} />
                                 </div>
                                 <span className="text-[10px] font-medium tracking-wide uppercase opacity-70 group-hover:opacity-100">PDF</span>
@@ -431,9 +431,9 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                             {/* Back Button */}
                             <button
                                 onClick={onClose}
-                                className="group flex items-center gap-2 text-cyan-400 hover:text-cyan-200 transition-colors pointer-events-auto"
+                                className="group flex items-center gap-2 text-app-accent hover:text-text-main transition-colors pointer-events-auto"
                             >
-                                <div className="p-2 rounded-full bg-cyan-950/30 group-hover:bg-cyan-900/50 transition-colors border border-cyan-900/50">
+                                <div className="p-2 rounded-full bg-app-accent/10 group-hover:bg-app-accent/20 transition-colors border border-app-border">
                                     <ArrowLeft size={20} />
                                 </div>
                                 <span className="text-sm font-medium tracking-wide uppercase hidden sm:block">Back</span>
@@ -451,15 +451,15 @@ export default function WhitepaperOverlay({ isOpen, onClose }: WhitepaperOverlay
                                     if (section.type === "header") {
                                         return (
                                             <div key={section.id} className="text-center space-y-4 mb-12 animate-fade-in">
-                                                <h1 className="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-white to-cyan-200 pb-2">
+                                                <h1 className="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-app-accent via-text-main to-app-accent pb-2">
                                                     {section.title}
                                                 </h1>
-                                                <p className="text-cyan-400/80 text-sm tracking-widest uppercase">{section.subtitle}</p>
-                                                <div className="pt-4 text-xs text-gray-400">
+                                                <p className="text-app-accent/80 text-sm tracking-widest uppercase">{section.subtitle}</p>
+                                                <div className="pt-4 text-xs text-text-sub">
                                                     <p>{section.author}</p>
-                                                    <a href={`mailto:${section.contact}`} className="text-cyan-600 hover:text-cyan-400 transition-colors">{section.contact}</a>
+                                                    <a href={`mailto:${section.contact}`} className="text-app-accent hover:opacity-70 transition-colors">{section.contact}</a>
                                                 </div>
-                                                <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mx-auto mt-8" />
+                                                <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-app-accent/50 to-transparent mx-auto mt-8" />
                                             </div>
                                         );
                                     }

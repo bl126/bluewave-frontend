@@ -77,26 +77,31 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         ctx.fillRect(0, 0, W, H);
 
         // --- Subtle glow behind QR ---
+        const style = getComputedStyle(document.documentElement);
+        const accent = style.getPropertyValue('--accent').trim() || "#06b6d4";
+        const accentGlow = style.getPropertyValue('--accent-glow').trim() || "rgba(6,182,212,0.18)";
+        const textSub = style.getPropertyValue('--text-sub').trim() || "rgba(255,255,255,0.35)";
+
         const glow = ctx.createRadialGradient(W / 2, H / 2 - 60, 20, W / 2, H / 2 - 60, 380);
-        glow.addColorStop(0, "rgba(6,182,212,0.18)");
-        glow.addColorStop(1, "rgba(6,182,212,0)");
+        glow.addColorStop(0, accentGlow);
+        glow.addColorStop(1, "transparent");
         ctx.fillStyle = glow;
         ctx.fillRect(0, 0, W, H);
 
         // --- Header: BLUEWAVE ---
         ctx.font = "bold 64px -apple-system, system-ui, sans-serif";
         ctx.letterSpacing = "8px";
-        ctx.fillStyle = "#06b6d4"; // cyan-500
+        ctx.fillStyle = accent;
         ctx.textAlign = "center";
         ctx.fillText(t("referral.canvas_header"), W / 2, 140);
 
         // Sub-header
         ctx.font = "500 32px -apple-system, system-ui, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillStyle = textSub;
         ctx.fillText(t("referral.canvas_subheader"), W / 2, 200);
 
         // --- Divider line ---
-        ctx.strokeStyle = "rgba(6,182,212,0.25)";
+        ctx.strokeStyle = accent + "40"; // 25% opacity
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(140, 240);

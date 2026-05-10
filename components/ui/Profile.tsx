@@ -265,8 +265,8 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
             <div className="max-w-md mx-auto w-full px-6 pt-6 pb-32">
               {loading && !user && (
                 <div className="flex flex-col items-center justify-center pt-20 gap-4">
-                  <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                  <span className="text-cyan-400/80 text-xs font-bold uppercase tracking-widest">{t("profile.loading_protocol")}</span>
+                  <div className="w-16 h-16 border-4 border-app-accent/20 border-t-app-accent rounded-full animate-spin" />
+                  <span className="text-app-accent/80 text-xs font-bold uppercase tracking-widest">{t("profile.loading_protocol")}</span>
                 </div>
               )}
 
@@ -331,12 +331,12 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="fixed z-[150] w-44 bg-app-bg/90 backdrop-blur-xl border border-app-border rounded-xl shadow-app-shadow overflow-hidden"
+                          className="fixed z-[150] w-44 bg-app-card/90 backdrop-blur-xl border border-app-border rounded-xl shadow-app-shadow overflow-hidden"
                           style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
                         >
-                          <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.ecosystem_roles")}</button>
-                          <button onClick={() => { setMenuOpen(false); onOpenBwaveScan?.(); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors border-b border-white/5">{t("menu.presence_ledger")}</button>
-                          <button onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs text-cyan-200 hover:bg-cyan-500/10 transition-colors">{t("settings.title")}</button>
+                          <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className="w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border">{t("menu.ecosystem_roles")}</button>
+                          <button onClick={() => { setMenuOpen(false); onOpenBwaveScan?.(); }} className="w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border">{t("menu.presence_ledger")}</button>
+                          <button onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} className="w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors">{t("settings.title")}</button>
                         </motion.div>
                       </>
                     )}
@@ -480,11 +480,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               const Icon = roleData?.icon || UserCheck;
                               const translatedName = t(`roles_list.${role}.name`);
                               return (
-                                <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-cyan-500/5 to-cyan-500/5'} border ${roleData?.border || 'border-cyan-500/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
-                                  <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-cyan-400'}`}>
+                                <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-app-accent/5 to-app-accent/5'} border ${roleData?.border || 'border-app-accent/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
+                                  <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-app-accent'}`}>
                                     {roleData?.image ? <img src={roleData.image} alt={role} className="w-5 h-5 object-contain" /> : <Icon size={18} />}
                                   </div>
-                                  <span className={`text-[8px] font-black ${roleData?.text || 'text-cyan-400'} uppercase tracking-tighter text-center leading-none`}>
+                                  <span className={`text-[8px] font-black ${roleData?.text || 'text-app-accent'} uppercase tracking-tighter text-center leading-none`}>
                                     {translatedName.split(' ').map((word: string, i: number) => (<span key={i} className="block">{word}</span>))}
                                   </span>
                                 </button>

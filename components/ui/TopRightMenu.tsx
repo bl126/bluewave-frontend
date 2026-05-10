@@ -41,7 +41,7 @@ export default function TopRightMenu({
           }}
           transition={{ duration: 0.18 }}
           style={{ originX: 0.5, originY: 0.5 }}
-          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+          className="absolute h-[2px] w-5 bg-app-accent rounded"
         />
 
         {/* Middle line */}
@@ -50,7 +50,7 @@ export default function TopRightMenu({
           animate={open ? "open" : "closed"}
           variants={{ closed: { opacity: 1 }, open: { opacity: 0 } }}
           transition={{ duration: 0.14 }}
-          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+          className="absolute h-[2px] w-5 bg-app-accent rounded"
         />
 
         {/* Bottom line */}
@@ -63,7 +63,7 @@ export default function TopRightMenu({
           }}
           transition={{ duration: 0.18 }}
           style={{ originX: 0.5, originY: 0.5 }}
-          className="absolute h-[2px] w-5 bg-cyan-400 rounded"
+          className="absolute h-[2px] w-5 bg-app-accent rounded"
         />
       </button>
 
@@ -88,10 +88,10 @@ export default function TopRightMenu({
               transition={{ duration: 0.18 }}
               className="
                 absolute right-0 mt-3 w-52 z-50
-                bg-black/70 backdrop-blur-xl
-                border border-cyan-900/50
+                bg-app-card/90 backdrop-blur-xl
+                border border-app-border
                 rounded-xl
-                shadow-[0_0_25px_#00e6ff30]
+                shadow-app-shadow
                 overflow-hidden
               "
             >
@@ -130,8 +130,8 @@ function MenuItem({
       className={`
         w-full text-left px-4 py-3 text-sm transition-all duration-300
         ${isActive
-          ? "text-cyan-50 bg-cyan-900/40 shadow-[inset_3px_0_0_0_#22d3ee]"
-          : "text-cyan-200 hover:bg-cyan-500/10"
+          ? "text-app-accent bg-app-accent/10 shadow-[inset_3px_0_0_0_currentColor]"
+          : "text-text-main hover:bg-app-accent/10"
         }
       `}
     >

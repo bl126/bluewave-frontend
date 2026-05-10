@@ -63,14 +63,14 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+            <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-app-bg/95 backdrop-blur-md">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    className="w-full max-w-sm rounded-[2rem] border border-cyan-500/30 bg-gradient-to-ob from-cyan-950/60 to-black p-6 relative overflow-hidden shadow-[0_0_50px_rgba(0,230,255,0.15)]"
+                    className="w-full max-w-sm rounded-[2rem] border border-app-border bg-app-card p-6 relative overflow-hidden shadow-app-shadow"
                 >
                     {/* Subtle Background Glow */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-cyan-500/10 blur-[50px] pointer-events-none" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-app-accent/5 blur-[50px] pointer-events-none" />
 
                     {step === "intro" && (
                         <motion.div
@@ -79,17 +79,17 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                             exit={{ opacity: 0, x: 20 }}
                             className="flex flex-col items-center text-center pt-2"
                         >
-                            <div className="w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(0,230,255,0.3)]">
-                                <ShieldCheck className="text-cyan-400 w-8 h-8" />
+                            <div className="w-16 h-16 rounded-full bg-app-accent/10 border border-app-accent/30 flex items-center justify-center mb-6 shadow-app-shadow">
+                                <ShieldCheck className="text-app-accent w-8 h-8" />
                             </div>
 
-                            <h2 className="text-xl font-black text-white uppercase tracking-wider mb-3">
+                            <h2 className="text-xl font-black text-text-main uppercase tracking-wider mb-3">
                                 Secure Your Account
                             </h2>
 
-                            <div className="space-y-4 text-sm text-cyan-50/70 mb-8 bg-black/40 p-4 rounded-2xl border border-white/5">
+                            <div className="space-y-4 text-sm text-text-sub mb-8 bg-app-bg/40 p-4 rounded-2xl border border-app-border">
                                 <p>
-                                    Your Bluewave ID is tied to your Telegram account. If you lose access to Telegram or get banned, <strong className="text-cyan-400">you will lose your ecosystem progress and yielded tokens.</strong>
+                                    Your Bluewave ID is tied to your Telegram account. If you lose access to Telegram or get banned, <strong className="text-app-accent">you will lose your ecosystem progress and yielded tokens.</strong>
                                 </p>
                                 <div className="flex gap-2 items-start text-orange-400/90 bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 text-left">
                                     <AlertTriangle size={16} className="shrink-0 mt-0.5" />
@@ -101,7 +101,7 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
 
                             <button
                                 onClick={() => setStep("form")}
-                                className="w-full py-4 rounded-xl bg-cyan-500 text-black font-black uppercase tracking-widest text-sm hover:bg-cyan-400 transition-colors shadow-[0_0_20px_rgba(0,230,255,0.4)]"
+                                className="w-full py-4 rounded-xl bg-app-accent text-app-bg font-black uppercase tracking-widest text-sm hover:opacity-90 transition-all shadow-app-shadow"
                             >
                                 Set Password Now
                             </button>
@@ -116,31 +116,31 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                             className="flex flex-col pt-2"
                         >
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center">
-                                    <Key className="text-cyan-400 w-5 h-5" />
+                                <div className="w-10 h-10 rounded-full bg-app-accent/10 border border-app-accent/30 flex items-center justify-center">
+                                    <Key className="text-app-accent w-5 h-5" />
                                 </div>
-                                <h2 className="text-lg font-black text-white uppercase tracking-wider">
+                                <h2 className="text-lg font-black text-text-main uppercase tracking-wider">
                                     Recovery Password
                                 </h2>
                             </div>
 
                             <div className="space-y-4 mb-6">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-cyan-400/60 ml-2">New Password</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-app-accent/60 ml-2">New Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-app-accent/50" />
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="Minimum 6 characters"
-                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
+                                            className="w-full bg-app-bg/50 border border-app-border rounded-xl py-3.5 pl-11 pr-11 text-text-main text-sm focus:outline-none focus:border-app-accent focus:bg-app-accent/5 transition-colors"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(v => !v)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500/50 hover:text-cyan-300 transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub/50 hover:text-app-accent transition-colors"
                                         >
                                             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                         </button>
@@ -148,21 +148,21 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-cyan-400/60 ml-2">Confirm Password</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-app-accent/60 ml-2">Confirm Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-app-accent/50" />
                                         <input
                                             type={showConfirm ? "text" : "password"}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Repeat password"
-                                            className="w-full bg-black/50 border border-cyan-500/30 rounded-xl py-3.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-cyan-400 focus:bg-cyan-950/30 transition-colors"
+                                            className="w-full bg-app-bg/50 border border-app-border rounded-xl py-3.5 pl-11 pr-11 text-text-main text-sm focus:outline-none focus:border-app-accent focus:bg-app-accent/5 transition-colors"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirm(v => !v)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-500/50 hover:text-cyan-300 transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub/50 hover:text-app-accent transition-colors"
                                         >
                                             {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                                         </button>
@@ -182,7 +182,7 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 rounded-xl bg-cyan-500 text-black font-black uppercase tracking-widest text-sm hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(0,230,255,0.2)] mt-auto"
+                                className="w-full py-4 rounded-xl bg-app-accent text-app-bg font-black uppercase tracking-widest text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-app-shadow mt-auto"
                             >
                                 {loading ? "Saving..." : "Save Securely"}
                             </button>
@@ -201,10 +201,10 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
                             >
                                 <CheckCircle2 className="w-10 h-10" />
                             </motion.div>
-                            <h2 className="text-xl font-black text-emerald-400 uppercase tracking-widest mb-2">
+                            <h2 className="text-xl font-black text-emerald-500 uppercase tracking-widest mb-2">
                                 Secured
                             </h2>
-                            <p className="text-sm text-cyan-50/70">
+                            <p className="text-sm text-text-sub">
                                 Your account recovery password has been saved. You may now continue to the app.
                             </p>
                         </motion.div>

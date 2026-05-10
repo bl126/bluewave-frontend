@@ -189,7 +189,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                                             <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                                                         )}
                                                         {type === "stars" && (
-                                                            <div className="text-cyan-400 flex items-center justify-center scale-90">
+                                                            <div className="text-app-accent flex items-center justify-center scale-90">
                                                                 <StarIcon />
                                                             </div>
                                                         )}

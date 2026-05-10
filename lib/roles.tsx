@@ -25,8 +25,8 @@ export const ROLE_CATEGORIES = [
     title: "Community Progression Roles",
     description: "Earnable through consistent organic participation.",
     roles: [
-      { name: "New Wave", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "Just arrived. Welcome", benefit: "Goal: Learn, observe, interact meaningfully.", icon: Star, boost: "+1%" },
-      { name: "Active Human", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Consistent participation without spam.", benefit: "Higher visibility, eligibility for advanced roles.", icon: Star, boost: "+5%" },
+      { name: "New Wave", color: "from-[var(--accent)]/20 to-[var(--accent)]/20", border: "border-[var(--accent)]/50", text: "text-app-accent", desc: "Just arrived. Welcome", benefit: "Goal: Learn, observe, interact meaningfully.", icon: Star, boost: "+1%" },
+      { name: "Active Human", color: "from-[var(--accent)]/20 to-[var(--accent)]/20", border: "border-[var(--accent)]/50", text: "text-app-accent", desc: "Consistent participation without spam.", benefit: "Higher visibility, eligibility for advanced roles.", icon: Star, boost: "+5%" },
       { name: "Network Builder", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Invited 10+ active humans to the network.", benefit: "Higher referral yields and network influence.", icon: Target, boost: "+10%" },
       { name: "Contributor", color: "from-gray-300/20 to-gray-400/20", border: "border-gray-300/50", text: "text-gray-300", desc: "Adds value through ideas, feedback, or help.", benefit: "Reputation boost, private contributor chats.", icon: Star, boost: "+8%" },
       { name: "OG", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Long-term, consistent, value-driven member.", benefit: "Priority access, special drops, status.", icon: Trophy, boost: "+15%" },
@@ -48,7 +48,7 @@ export const ROLE_CATEGORIES = [
     roles: [
       { name: "X Supporter", color: "from-stone-600/20 to-stone-700/20", border: "border-stone-600/50", text: "text-stone-400", desc: "Engages with posts authentically.", benefit: "Access to X-based missions.", icon: Target, boost: "+5%" },
       { name: "X Raider", color: "from-rose-600/20 to-rose-700/20", border: "border-rose-600/50", text: "text-rose-500", desc: "Coordinates meaningful raids (no bot behavior).", benefit: "Raid-only rewards & leaderboards.", icon: Zap, boost: "+10%" },
-      { name: "X Ambassador", color: "from-cyan-400/20 to-cyan-500/20", border: "border-cyan-400/50", text: "text-cyan-300", desc: "Represents Bluewave publicly with high-quality threads.", benefit: "Ambassador rewards, early announcements.", icon: Verified, boost: "+20%" }
+      { name: "X Ambassador", color: "from-[var(--accent)]/20 to-[var(--accent)]/20", border: "border-[var(--accent)]/50", text: "text-app-accent", desc: "Represents Bluewave publicly with high-quality threads.", benefit: "Ambassador rewards, early announcements.", icon: Verified, boost: "+20%" }
     ]
   },
   {
@@ -63,8 +63,8 @@ export const ROLE_CATEGORIES = [
     title: "Ecosystem Levels",
     description: "Your journey through the Bluewave Presence Economy.",
     roles: [
-      { name: "LEVEL 1", color: "from-teal-500/20 to-teal-600/20", border: "border-teal-500/50", text: "text-teal-400", desc: "The 'New Wave'. Your journey begins here.", benefit: "Access to basic missions. Yield: +1%", icon: Star, boost: "+1%" },
-      { name: "LEVEL 2", color: "from-cyan-500/20 to-cyan-600/20", border: "border-cyan-500/50", text: "text-cyan-400", desc: "Pulse Scout. Consistent presence builder.", benefit: "Improved referral yields. Yield: +5%", icon: Zap, boost: "+5%" },
+      { name: "LEVEL 1", color: "from-[var(--accent)]/20 to-[var(--accent)]/20", border: "border-[var(--accent)]/50", text: "text-app-accent", desc: "The 'New Wave'. Your journey begins here.", benefit: "Access to basic missions. Yield: +1%", icon: Star, boost: "+1%" },
+      { name: "LEVEL 2", color: "from-[var(--accent)]/20 to-[var(--accent)]/20", border: "border-[var(--accent)]/50", text: "text-app-accent", desc: "Pulse Scout. Consistent presence builder.", benefit: "Improved referral yields. Yield: +5%", icon: Zap, boost: "+5%" },
       { name: "LEVEL 3", color: "from-indigo-500/20 to-indigo-600/20", border: "border-indigo-500/50", text: "text-indigo-400", desc: "Signal Architect. Growing the network structure.", benefit: "Advanced mission access. Yield: +10%", icon: Target, boost: "+10%" },
       { name: "LEVEL 4", color: "from-purple-500/20 to-purple-600/20", border: "border-purple-500/50", text: "text-purple-400", desc: "Wave Commander. A pillar of the ecosystem.", benefit: "Priority support & perks. Yield: +20%", icon: Shield, boost: "+20%" },
       { name: "LEVEL 5", color: "from-fuchsia-500/20 to-fuchsia-600/20", border: "border-fuchsia-500/50", text: "text-fuchsia-400", desc: "Blu Legend. Master of the Presence Economy.", benefit: "Alpha governance weight. Yield: +50%", icon: Trophy, boost: "+50%" }

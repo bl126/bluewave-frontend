@@ -125,7 +125,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
       lg: "w-16 h-16 text-xl",
     };
 
-    const borderColor = isMe ? "border-cyan-300 shadow-[0_0_15px_rgba(0,230,255,0.5)]" : "border-cyan-500/30 shadow-[0_0_10px_rgba(0,230,255,0.2)]";
+    const borderColor = isMe ? "border-app-accent shadow-app-shadow" : "border-app-border shadow-app-shadow";
 
     const renderContent = () => {
       if (user.photo_url && !imgError) {
@@ -188,7 +188,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
             >
               <span className="text-5xl">🔒</span>
               <motion.div
-                className="absolute inset-0 rounded-3xl border border-cyan-400/20"
+                className="absolute inset-0 rounded-3xl border border-app-accent/20"
                 animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.8, 0.4] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               />
@@ -223,7 +223,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                   new CustomEvent("setActiveTab", { detail: "profile" })
                 )
               }
-              className="h-14 px-10 bg-cyan-500 text-black text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-[0_0_25px_rgba(0,230,255,0.35)] active:scale-95 transition-all hover:bg-cyan-400"
+              className="h-14 px-10 bg-app-accent text-app-bg text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-app-shadow active:scale-95 transition-all hover:opacity-90"
             >
               Connect Wallet →
             </motion.button>
@@ -454,7 +454,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                 {/* LIST SECTION */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center px-2 relative">
-                    <h3 className="text-cyan-500/70 text-[10px] font-black uppercase tracking-[0.3em]">
+                    <h3 className="text-app-accent/70 text-[10px] font-black uppercase tracking-[0.3em]">
                       {viewMode === "global" ? "Global Leaderboard" : "Network Builders"}
                     </h3>
                     {/* Filter Toggle */}
