@@ -137,12 +137,14 @@ function GlobeScene({
 
   const globeMaterial = useMemo(() => {
     const isDark = theme === "original" || theme === "dim";
-    // Graceful fallback: use solid color if textures haven't loaded yet
+    // Always pass an explicit color — never undefined.
+    // color × map = white × texture = texture (neutral).
+    // When no texture, color acts as the solid fallback.
     if (isDark) {
       return (
         <meshStandardMaterial
           map={nightMap ?? undefined}
-          color={nightMap ? undefined : colors.ocean}
+          color={nightMap ? "#ffffff" : colors.ocean}
           emissive={new THREE.Color("#ffcf8b")}
           emissiveIntensity={nightMap ? 0.8 : 0}
           emissiveMap={nightMap ?? undefined}
@@ -154,7 +156,7 @@ function GlobeScene({
     return (
       <meshStandardMaterial
         map={dayMap ?? undefined}
-        color={dayMap ? undefined : colors.ocean}
+        color={dayMap ? "#ffffff" : colors.ocean}
         roughness={0.8}
         metalness={0.1}
       />
