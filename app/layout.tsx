@@ -25,10 +25,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Full viewport on all devices */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        
+        {/* ⚡ THEME BLOCKING SCRIPT: Prevents "flash" of wrong theme on load */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('bw_theme') || 'original';
+              document.documentElement.setAttribute('data-theme', theme);
+              if (theme === 'light') document.body.style.backgroundColor = '#ffffff';
+              else if (theme === 'dim') document.body.style.backgroundColor = '#17212B';
+              else document.body.style.backgroundColor = '#000000';
+            } catch (e) {}
+          })();
+        `}} />
+
+        {/* 🌍 GLOBE TEXTURE PRELOADING: Start fetching high-res textures immediately */}
+        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg" as="image" />
+        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-night.jpg" as="image" />
+        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-clouds.png" as="image" />
+        
+        {/* 🎨 LOGO PRELOADING: Prevent branding flicker */}
+        <link rel="preload" href="/bluewave_logo.png" as="image" />
+        <link rel="preload" href="/bluewave_lightmode.png" as="image" />
+        <link rel="preload" href="/logo-bluewave.png" as="image" />
+
         {/* Telegram Mini App SDK — must be first */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
-      <body className="h-full overflow-hidden bg-black selection:bg-cyan-500/30 touch-none overscroll-none">
+      <body className="h-full overflow-hidden bg-black selection:bg-cyan-500/30 touch-none overscroll-none transition-colors duration-300">
         <Providers>
           <BackgroundAmbience />
           {children}

@@ -1,7 +1,7 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
+import { Stars, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import {
   useEffect,
@@ -9,11 +9,18 @@ import {
   useState,
   useCallback,
   useMemo,
+  Suspense
 } from "react";
 import GlobeDot from "./GlobeDot";
 import CountryCard from "./CountryCard";
 import { cacheManager, CACHE_TTL } from "@/lib/cacheManager";
 import { useTheme } from "@/contexts/ThemeContext";
+import * as THREE_CORE from "three";
+
+// Enable Three.js caching globally
+if (typeof window !== "undefined") {
+  THREE_CORE.Cache.enabled = true;
+}
 
 // ─── Types ─────────────────────────────────────────────────
 interface CountryDot {
@@ -100,71 +107,43 @@ function GlobeScene({
     }
   }, [theme]);
 
-  // ── Texture Generation (The "Coat") ──
-  const [worldTexture, setWorldTexture] = useState<THREE.CanvasTexture | null>(null);
+  // ── Texture Loading ──
+  // Use high-resolution reliable textures
+  const [dayMap, nightMap, cloudsMap] = useLoader(THREE.TextureLoader, [
+    "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+    "https://unpkg.com/three-globe/example/img/earth-night.jpg",
+    "https://unpkg.com/three-globe/example/img/earth-clouds.png"
+  ]);
 
-  useEffect(() => {
-    const loadAndDraw = async () => {
-      try {
-        const res = await fetch(`/data/countries.geojson`);
-        const geoData = await res.json();
+  // Configure textures
+  useMemo(() => {
+    [dayMap, nightMap, cloudsMap].forEach(tex => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = gl.capabilities.getMaxAnisotropy();
+    });
+  }, [dayMap, nightMap, cloudsMap, gl]);
 
-        const canvas = document.createElement("canvas");
-        canvas.width = 4096;
-        canvas.height = 2048;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+  const globeMaterial = useMemo(() => {
+    const isDark = theme === "original" || theme === "dim";
+    return (
+      <meshStandardMaterial
+        map={isDark ? nightMap : dayMap}
+        emissive={isDark ? new THREE.Color("#ffcf8b") : new THREE.Color("#000000")}
+        emissiveIntensity={isDark ? 0.8 : 0}
+        emissiveMap={isDark ? nightMap : null}
+        roughness={0.8}
+        metalness={0.1}
+      />
+    );
+  }, [theme, dayMap, nightMap]);
 
-        // Fill Background (Oceans)
-        ctx.fillStyle = colors.ocean;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw Countries (Land "Coat")
-        ctx.fillStyle = colors.land;
-        
-        const features = geoData.features as any[];
-        features.forEach((f: any) => {
-          const g = f.geometry;
-          if (!g) return;
-          
-          const drawRing = (ring: [number, number][]) => {
-            ctx.beginPath();
-            ring.forEach(([lng, lat], i) => {
-              const x = ((lng + 180) / 360) * canvas.width;
-              const y = ((90 - lat) / 180) * canvas.height;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            });
-            ctx.closePath();
-            ctx.fill();
-          };
-
-          if (g.type === "Polygon") {
-            g.coordinates.forEach((ring: any) => drawRing(ring));
-          } else if (g.type === "MultiPolygon") {
-            g.coordinates.forEach((poly: any) => {
-              poly.forEach((ring: any) => drawRing(ring));
-            });
-          }
-        });
-
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        setWorldTexture(tex);
-      } catch (e) {
-        console.error("Globe Texture Load Error:", e);
-      }
-    };
-
-    loadAndDraw();
-  }, [colors.ocean, colors.land]);
-
-  // ── Rotation refs ──
+  // Rotation refs
   const isDragging = useRef(false);
   const lastPointer = useRef({ x: 0, y: 0 });
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAutoSpinning = useRef(true);
   const isReturning = useRef(false);
+  const cloudsRef = useRef<THREE.Mesh>(null!);
 
   // ── scheduleResume ──
   const scheduleResume = useCallback(() => {
@@ -340,6 +319,11 @@ function GlobeScene({
   }, [gl, stopAutoSpin, scheduleResume, isCardOpenRef]);
 
   useFrame((_, delta) => {
+    // Rotate clouds slightly faster than earth for realism
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += delta * 0.02;
+    }
+
     if (!globeRef.current) return;
     if (isCardOpenRef.current) return;
 
@@ -372,26 +356,52 @@ function GlobeScene({
   return (
     <>
       <ambientLight intensity={colors.ambient} />
-      <pointLight position={[5, 5, 5]} intensity={colors.point} />
-      <pointLight position={[-10, 10, 10]} intensity={colors.point * 0.7} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
+      {/* Sun Light */}
+      <directionalLight 
+        position={[5, 3, 5]} 
+        intensity={theme === 'light' ? 2.5 : 1.5} 
+        color={theme === 'light' ? "#ffffff" : "#fff5e6"}
+      />
+      {/* Back Glow */}
+      <pointLight 
+        position={[-5, -3, -5]} 
+        intensity={theme === 'light' ? 0.5 : 1.2} 
+        color={theme === 'light' ? "#ffffff" : "#00f6ff"} 
+      />
 
       <group ref={globeRef} position={[0, 0, 0]}>
-        {/* The Globe Sphere — Real Earth Colors */}
-        <mesh>
+        {/* The Globe Sphere — Real Earth Textures */}
+        <mesh receiveShadow castShadow>
           <sphereGeometry args={[GLOBE_RADIUS, 128, 128]} />
-          {worldTexture ? (
-            <meshStandardMaterial
-              map={worldTexture}
-              roughness={0.75}
-              metalness={0.05}
-            />
-          ) : (
-            <meshStandardMaterial color={colors.ocean} />
-          )}
+          {globeMaterial}
         </mesh>
 
-        {/* Borders Layer */}
-        {borders && <primitive object={borders} />}
+        {/* Cloud Layer */}
+        <mesh ref={cloudsRef}>
+          <sphereGeometry args={[GLOBE_RADIUS + 0.015, 64, 64]} />
+          <meshStandardMaterial
+            map={cloudsMap}
+            transparent={true}
+            opacity={0.4}
+            depthWrite={false}
+          />
+        </mesh>
+
+        {/* Atmosphere Glow */}
+        <mesh>
+          <sphereGeometry args={[GLOBE_RADIUS * 1.04, 64, 64]} />
+          <meshPhongMaterial
+            color={theme === 'light' ? "#aaddff" : "#00f6ff"}
+            transparent={true}
+            opacity={0.15}
+            side={THREE.BackSide}
+          />
+        </mesh>
+
+        {/* Borders Layer (Subtle) */}
+        {borders && (
+          <primitive object={borders} />
+        )}
 
         {/* Country Dots Layer */}
         {countryDots.map((c, i) => (
@@ -488,29 +498,32 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
         camera={{ position: [0, 0, 3.5], fov: 60 }}
         style={{ touchAction: "none" }}
         onCreated={({ camera }) => { cameraRef.current = camera; }}
+        shadows
       >
         {/* Theme-aware canvas background */}
         <SceneBackground />
 
-        {/* Stars only in Night mode */}
-        {theme === 'original' && (
+        {/* Stars in Night/Dim mode */}
+        {(theme === 'original' || theme === 'dim') && (
           <Stars
             radius={120}
             depth={100}
-            count={10000}
-            factor={3}
+            count={7000}
+            factor={4}
             saturation={0}
             fade
-            speed={0.15}
+            speed={0.5}
           />
         )}
 
-        <GlobeScene
-          onLoaded={onLoaded}
-          onDotClick={handleDotClick}
-          isCardOpenRef={isCardOpenRef}
-          scheduleResumeRef={scheduleResumeRef}
-        />
+        <Suspense fallback={null}>
+          <GlobeScene
+            onLoaded={onLoaded}
+            onDotClick={handleDotClick}
+            isCardOpenRef={isCardOpenRef}
+            scheduleResumeRef={scheduleResumeRef}
+          />
+        </Suspense>
       </Canvas>
 
       {selected && cardScreen && (

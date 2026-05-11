@@ -12,17 +12,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>("original");
+    // Initialize from the attribute set by the blocking script in layout.tsx
+    const [theme, setThemeState] = useState<Theme>(() => {
+        if (typeof window !== 'undefined') {
+            return (document.documentElement.getAttribute("data-theme") as Theme) || "original";
+        }
+        return "original";
+    });
 
     useEffect(() => {
+        // Sync any manual changes or storage updates
         const savedTheme = localStorage.getItem("bw_theme") as Theme;
-        if (savedTheme) {
+        if (savedTheme && savedTheme !== theme) {
             setThemeState(savedTheme);
             document.documentElement.setAttribute("data-theme", savedTheme);
-        } else {
-            document.documentElement.setAttribute("data-theme", "original");
         }
-    }, []);
+    }, [theme]);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
