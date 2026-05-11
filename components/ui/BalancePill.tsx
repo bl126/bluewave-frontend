@@ -173,7 +173,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                                         <span className="text-app-accent font-black">
                                                             {isExpanded ? formatFull(balance) : formatAbbreviated(balance)}
                                                         </span>
-                                                        <span className="text-[9px] sm:text-[10px] tracking-widest text-app-accent font-black ml-0.5 uppercase">$BWAVE</span>
+                                                        <span className={`text-[9px] sm:text-[10px] tracking-widest font-black ml-0.5 uppercase ${theme === 'light' ? 'text-black/60' : 'text-app-accent'}`}>$BWAVE</span>
                                                     </div>
                                                 ) : (
                                                     <span className="animate-pulse text-app-accent">...</span>
@@ -181,7 +181,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                             ) : (
                                                 <div className="flex items-center gap-1.5">
                                                     <div className="flex items-center gap-0.5">
-                                                        <span className="opacity-60 font-mono text-[10px]">$</span>
+                                                        <span className={`opacity-60 font-mono text-[10px] ${theme === 'light' ? 'text-black/40' : ''}`}>$</span>
                                                         <span className="text-app-accent font-black">0</span>
                                                         <span className="opacity-40 mx-0.5">~</span>
                                                         <span className="text-app-accent font-black">0</span>
@@ -190,7 +190,7 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                                     {/* Currency Icon comes after number for TON/Stars */}
                                                     <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
                                                         {type === "ton" && (
-                                                        <div className={`${(mounted ? theme : 'original') === 'light' ? 'bg-black rounded-full p-0.5' : ''}`}>
+                                                        <div className={`${(mounted ? theme : 'original') === 'light' ? 'bg-black/10 rounded-full p-0.5' : ''}`}>
                                                                 <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                                                             </div>
                                                         )}
@@ -204,10 +204,10 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                             )}
                                         </motion.span>
                                     </div>
-
+ 
                                     {/* Plus icon - Only visible when expanded for TON/Stars */}
                                     {isExpanded && type !== "points" ? (
-                                        <div className="shrink-0 bg-app-accent/10 p-0.5 rounded-md border border-app-border shadow-app-shadow">
+                                        <div className={`shrink-0 p-0.5 rounded-md border shadow-app-shadow ${theme === 'light' ? 'bg-black/5 border-black/10' : 'bg-app-accent/10 border-app-border'}`}>
                                             <Plus size={10} strokeWidth={4} className="text-app-accent" />
                                         </div>
                                     ) : (

@@ -6,6 +6,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface LanguageSelectorProps {
     isOpen: boolean;
@@ -33,6 +34,7 @@ const languages: Language[] = [
 
 export default function LanguageSelector({ isOpen, onClose, onComplete }: LanguageSelectorProps) {
     const { language, setLanguage, t } = useLanguage();
+    const { theme } = useTheme();
 
     const handleSelectLanguage = (code: string) => {
         setLanguage(code);
@@ -52,7 +54,7 @@ export default function LanguageSelector({ isOpen, onClose, onComplete }: Langua
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-[200] bg-app-bg/70 backdrop-blur-sm"
+                        className={`fixed inset-0 z-[200] backdrop-blur-sm ${theme === 'light' ? 'bg-white/20' : 'bg-app-bg/70'}`}
                     />
 
                     {/* Modal Container */}

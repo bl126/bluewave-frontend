@@ -5,6 +5,7 @@ import { Home, Rocket, Globe, ShoppingCart, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi } from "@/lib/useApi";
 import { useMemo } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export type TabId = "home" | "missions" | "explore" | "market" | "profile";
 
@@ -19,6 +20,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, telegramId, exploreBadgeCount = 0, isVisible = true }: BottomNavProps) {
     const { t } = useLanguage();
+    const { theme } = useTheme();
 
     // Fetch counts for Mission Badge
     const { data: presenceMissions } = useApi(telegramId ? `/presence/list/${telegramId}` : null);
@@ -68,9 +70,9 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
-                 flex items-center justify-around w-[94%] max-w-md bg-app-bg/40 backdrop-blur-xl
-                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border"
+            className={`absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
+                 flex items-center justify-around w-[94%] max-w-md backdrop-blur-3xl
+                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border ${theme === 'light' ? 'bg-white/40' : 'bg-app-bg/40'}`}
         >
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -86,7 +88,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         {isActive && (
                             <motion.div
                                 layoutId="activePill"
-                                className="absolute inset-x-1 inset-y-1 bg-app-accent/10 border border-app-border rounded-2xl z-0"
+                                className={`absolute inset-x-1 inset-y-1 border border-app-border rounded-2xl z-0 ${theme === 'light' ? 'bg-app-accent/20' : 'bg-app-accent/10'}`}
                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                         )}

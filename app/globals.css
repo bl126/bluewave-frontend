@@ -75,15 +75,15 @@
 }
 
 [data-theme="light"] {
-  --app-bg: #FFFFFF;
-  --card-bg: #F7F7F8;
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --text-main: #0D0D0D;
-  --text-sub: #676767;
-  --border: rgba(0, 0, 0, 0.08);
-  --accent: #000000;
-  --accent-glow: rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --app-bg: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
+  --card-bg: rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --text-main: #0F172A;
+  --text-sub: #64748B;
+  --border: rgba(255, 255, 255, 0.8);
+  --accent: #0284C7;
+  --accent-glow: rgba(2, 132, 199, 0.1);
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="dim"] {
@@ -177,6 +177,18 @@ html, body {
 @keyframes fillBar {
   from { width: 0%; }
   to   { width: var(--target); }
+}
+
+@keyframes cloudFloat {
+  0% { transform: translate(-10%, -10%) scale(1); }
+  50% { transform: translate(10%, 10%) scale(1.1); }
+  100% { transform: translate(-10%, -10%) scale(1); }
+}
+
+@keyframes skyShift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 

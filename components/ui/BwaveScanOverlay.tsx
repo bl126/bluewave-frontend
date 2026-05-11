@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink, RefreshCw, Globe, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface BwaveScanOverlayProps {
     isOpen: boolean;
@@ -11,12 +12,13 @@ interface BwaveScanOverlayProps {
 }
 
 export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOverlayProps) {
+    const { theme } = useTheme();
     const [isLoading, setIsLoading] = useState(true);
     const [idCopied, setIdCopied] = useState(false);
 
     // Construct the deep-link URL. If bwId is present, we try to focus on it.
     const baseUrl = "https://bwavescan.xyz";
-    const finalUrl = bwId ? `${baseUrl}/?id=${bwId}` : baseUrl;
+    const finalUrl = bwId ? `${baseUrl}/?id=${bwId}&theme=${theme}` : `${baseUrl}/?theme=${theme}`;
 
     const handleOpenExternal = () => {
         const tg = (window as any).Telegram?.WebApp;
@@ -44,7 +46,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[200] bg-black flex flex-col"
+                    className={`fixed inset-0 z-[200] flex flex-col ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
                     style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 35px)" }}
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
@@ -52,15 +54,15 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 >
                     {/* Header Bar */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/10 bg-black/80 backdrop-blur-md">
+                    <div className={`flex items-center justify-between px-4 py-3 border-b backdrop-blur-md ${theme === 'light' ? 'bg-white/80 border-black/5' : 'bg-black/80 border-cyan-500/10'}`}>
                         <div className="flex items-center gap-3">
                             <div className="p-0.5 rounded-lg bg-cyan-500/10 border border-cyan-400/20 w-8 h-8 flex items-center justify-center overflow-hidden">
                                 <img src="/BwaveScan-logo.png" alt="BwaveScan" className="w-full h-full object-contain" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-cyan-50 text-xs font-black uppercase tracking-widest leading-none">BwaveScan</span>
+                                <span className={`text-xs font-black uppercase tracking-widest leading-none ${theme === 'light' ? 'text-black' : 'text-cyan-50'}`}>BwaveScan</span>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-cyan-500/50 text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px]">
+                                    <span className={`text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px] ${theme === 'light' ? 'text-black/40' : 'text-cyan-500/50'}`}>
                                         {bwId ? `BW ID: ${bwId}` : "Ecosystem Ledger"}
                                     </span>
                                     {bwId && (
@@ -87,9 +89,9 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     </div>
 
                     {/* Iframe Container */}
-                    <div className="flex-1 relative bg-zinc-950">
+                    <div className={`flex-1 relative ${theme === 'light' ? 'bg-zinc-50' : 'bg-zinc-950'}`}>
                         {isLoading && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black z-10">
+                            <div className={`absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
                                 <motion.div
                                     animate={{ rotate: 360 }}
                                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -97,7 +99,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                                 >
                                     <RefreshCw size={32} />
                                 </motion.div>
-                                <p className="text-cyan-500/50 text-[10px] font-black uppercase tracking-widest">Bridging to BwaveScan...</p>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${theme === 'light' ? 'text-black/30' : 'text-cyan-500/50'}`}>Bridging to BwaveScan...</p>
                             </div>
                         )}
 
@@ -111,8 +113,8 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     </div>
 
                     {/* Footer Safety Bar */}
-                    <div className="p-3 bg-black border-t border-cyan-500/10 text-center pb-[max(12px,env(safe-area-inset-bottom))]">
-                        <p className="text-[9px] text-cyan-800 font-bold uppercase tracking-widest">
+                    <div className={`p-3 border-t text-center pb-[max(12px,env(safe-area-inset-bottom))] ${theme === 'light' ? 'bg-zinc-100 border-black/5' : 'bg-black border-cyan-500/10'}`}>
+                        <p className={`text-[9px] font-bold uppercase tracking-widest ${theme === 'light' ? 'text-black/20' : 'text-cyan-800'}`}>
                             OFFICIAL BWAVESCAN IN-APP INTERFACE
                         </p>
                     </div>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { ROLE_CATEGORIES } from "@/lib/roles";
 import RoleDetailModal from "./RoleDetailModal";
 
@@ -15,6 +16,7 @@ interface RolesOverlayProps {
 
 export default function RolesOverlay({ isOpen, onClose, initialRoleName }: RolesOverlayProps) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [selectedRole, setSelectedRole] = useState<any>(null);
 
   // Sync initialRoleName when opening
@@ -48,7 +50,7 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[210] bg-app-bg backdrop-blur-3xl flex flex-col overflow-y-auto"
+            className={`fixed inset-0 z-[210] flex flex-col overflow-y-auto backdrop-blur-3xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg'}`}
             style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 25px)" }}
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
@@ -70,11 +72,11 @@ export default function RolesOverlay({ isOpen, onClose, initialRoleName }: Roles
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="px-4 py-3 rounded-2xl bg-app-accent/5 border border-app-border flex flex-col gap-1">
+                  <div className={`px-4 py-3 rounded-2xl border flex flex-col gap-1 ${theme === 'light' ? 'bg-black/5 border-black/10' : 'bg-app-accent/5 border-app-border'}`}>
                     <span className="text-[10px] uppercase font-bold text-text-sub tracking-widest">{t("roles_overlay.dist_label")}</span>
                     <span className="text-sm font-black text-text-main leading-tight">{t("roles_overlay.dist_val")}</span>
                   </div>
-                  <div className="px-4 py-3 rounded-2xl bg-app-accent/5 border border-app-border flex flex-col gap-1">
+                  <div className={`px-4 py-3 rounded-2xl border flex flex-col gap-1 ${theme === 'light' ? 'bg-black/5 border-black/10' : 'bg-app-accent/5 border-app-border'}`}>
                     <span className="text-[10px] uppercase font-bold text-text-sub tracking-widest">{t("roles_overlay.assign_label")}</span>
                     <span className="text-sm font-black text-text-main leading-tight">{t("roles_overlay.assign_val")}</span>
                   </div>

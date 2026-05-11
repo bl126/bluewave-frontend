@@ -67,12 +67,16 @@ function FallbackGlobe({ colors, isDark }: { colors: any, isDark: boolean }) {
 function TexturedGlobe({ 
   isDark, colors, globeRef, cloudsRef, onDotClick, countryDots, borders, logoRef 
 }: any) {
+  const { theme, mounted } = useTheme();
   // useTexture suspends the component until all assets are loaded
   const [dayMap, nightMap, cloudsMap] = useTexture([
     "/textures/earth-blue-marble.jpg",
     "/textures/earth-night.jpg",
     "/textures/earth-clouds.png"
   ]);
+
+  // If not mounted yet, show nothing or a generic fallback to avoid hydration/theme mismatches
+  if (!mounted) return null;
 
   // Configure textures
   useEffect(() => {
@@ -101,7 +105,7 @@ function TexturedGlobe({
             map={isDark ? nightMap : dayMap}
             color="#ffffff" // Neutral white so map colors are perfect
             emissive={new THREE.Color(isDark ? "#ffcf8b" : "#000000")}
-            emissiveIntensity={isDark ? 0.8 : 0}
+            emissiveIntensity={theme === 'dim' ? 0.35 : (isDark ? 0.8 : 0)}
             emissiveMap={isDark ? nightMap : undefined}
             roughness={0.8}
             metalness={0.1}
@@ -165,9 +169,9 @@ function GlobeScene({
   const colors = useMemo(() => {
     switch (theme) {
       case "light":
-        return { ocean: "#1a6fa0", border: "#1a1a1a", glow: "#555555", ambient: 1.4 };
+        return { ocean: "#2563EB", border: "#FFFFFF", glow: "#FFFFFF", ambient: 1.6 };
       case "dim":
-        return { ocean: "#0d3d5f", border: "#00F6FF", glow: "#00F6FF", ambient: 0.9 };
+        return { ocean: "#0d3d5f", border: "#00F6FF", glow: "#00F6FF", ambient: 0.6 };
       default: // original
         return { ocean: "#061422", border: "#00F6FF", glow: "#00F6FF", ambient: 0.4 };
     }
@@ -330,8 +334,8 @@ function GlobeScene({
   return (
     <>
       <ambientLight intensity={colors.ambient} />
-      <directionalLight position={[5, 3, 5]} intensity={theme === 'light' ? 2.5 : 1.5} color={theme === 'light' ? "#ffffff" : "#fff5e6"} />
-      <pointLight position={[-5, -3, -5]} intensity={theme === 'light' ? 0.5 : 1.2} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
+      <directionalLight position={[5, 3, 5]} intensity={theme === 'light' ? 2.5 : (theme === 'dim' ? 1.8 : 1.5)} color={theme === 'light' ? "#ffffff" : "#fff5e6"} />
+      <pointLight position={[-5, -3, -5]} intensity={theme === 'light' ? 0.5 : (theme === 'dim' ? 0.8 : 1.2)} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
 
       <Suspense fallback={<FallbackGlobe colors={colors} isDark={isDark} />}>
         <TexturedGlobe 

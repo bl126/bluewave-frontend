@@ -41,6 +41,7 @@ import {
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 import ReferralShareModal from "./ReferralShareModal";
@@ -77,6 +78,7 @@ interface ExploreProps {
 
 export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("leaderboard");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
@@ -343,7 +345,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
       initial={{ opacity: 0, scale: 1.02 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
-      className={`fixed inset-0 bg-app-bg flex flex-col overflow-hidden text-text-main ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main backdrop-blur-3xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg'} ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -359,7 +361,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
           opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed top-20 left-0 right-0 z-[130] bg-app-bg border-b border-app-border pointer-events-auto"
+        className={`fixed top-20 left-0 right-0 z-[130] border-b border-app-border pointer-events-auto backdrop-blur-xl ${theme === 'light' ? 'bg-white/20' : 'bg-app-bg'}`}
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
           {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
