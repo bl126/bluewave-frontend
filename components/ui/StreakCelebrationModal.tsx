@@ -127,7 +127,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                             <div className="w-full space-y-3">
                                 <button
                                     onClick={onClose}
-                                    className="w-full py-4 bg-app-accent hover:bg-app-accent/80 text-black font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow"
+                                    className="w-full py-4 bg-app-accent hover:bg-app-accent/80 text-app-bg font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow"
                                 >
                                     {t("streak_celebration.claim_continue")}
                                 </button>

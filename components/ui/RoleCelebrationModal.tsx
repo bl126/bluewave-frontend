@@ -110,7 +110,7 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                             {/* Action Button */}
                             <button
                                 onClick={onClose}
-                                className="w-full py-4 bg-app-accent hover:bg-app-accent/80 text-black font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow"
+                                className="w-full py-4 bg-app-accent hover:bg-app-accent/80 text-app-bg font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow"
                             >
                                 {t("role_celebration.collect")}
                             </button>

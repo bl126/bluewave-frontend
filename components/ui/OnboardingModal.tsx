@@ -370,7 +370,7 @@ export default function OnboardingModal({ isOpen, onComplete, autoUsername, init
                   onClick={handleActivatePresence}
                   disabled={loading}
                   className="w-full mt-1 py-2 rounded-md text-sm font-medium
-                             bg-app-accent border border-app-border text-black
+                             bg-app-accent border border-app-border text-app-bg
                              hover:bg-app-accent/80 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? t("onboarding.btn_activating") : t("onboarding.btn_activate")}

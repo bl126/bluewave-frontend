@@ -96,7 +96,7 @@ export default function LevelUpModal({ level, isOpen, onClose }: LevelUpModalPro
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.5, type: "spring" }}
                             >
-                                <Check size={24} className="text-black stroke-[4px]" />
+                                <Check size={24} className="text-app-bg stroke-[4px]" />
                             </motion.div>
                         </motion.div>
 

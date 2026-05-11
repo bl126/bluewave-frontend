@@ -61,41 +61,41 @@ function GlobeScene({
   const logoRef = useRef<THREE.Mesh>(null!);
   const [countryDots, setCountryDots] = useState<CountryDot[]>([]);
   
-  // Theme-aware colors
+  // Theme-aware colors — real Earth palette
   const colors = useMemo(() => {
     switch (theme) {
       case "light":
         return {
-          ocean: "#050505",
-          land: "#111111",
-          border: "#222222",
-          glow: "#ffffff",
-          ambient: 0.8,
-          point: 1.2,
+          ocean: "#1a6fa0",    // Real ocean blue
+          land: "#5a8a4a",     // Real land green
+          border: "#1a1a1a",   // Dark borders — visible on light globe
+          glow: "#555555",     // Subtle secondary border lines
+          ambient: 1.4,
+          point: 0.8,
           stars: 0,
-          atmosphereOpacity: 0.4
+          atmosphereOpacity: 0 // No edge glow
         };
       case "dim":
         return {
-          ocean: "#050A15",
-          land: "#1E293B",
+          ocean: "#0d3d5f",    // Deeper ocean for dim environment
+          land: "#2d5c3f",     // Deeper land for dim environment
           border: "#00F6FF",
           glow: "#00F6FF",
-          ambient: 0.7,
-          point: 1.2,
+          ambient: 0.9,
+          point: 1.0,
           stars: 0.6,
-          atmosphereOpacity: 0.15
+          atmosphereOpacity: 0 // No edge glow
         };
-      default: // original
+      default: // night
         return {
-          ocean: "#000000",
-          land: "#0D0D0D",
+          ocean: "#061422",    // Near-black deep ocean for space feel
+          land: "#0c200e",     // Near-black deep land for space feel
           border: "#00F6FF",
           glow: "#00F6FF",
           ambient: 0.4,
           point: 1.5,
           stars: 1.0,
-          atmosphereOpacity: 0.15
+          atmosphereOpacity: 0 // No edge glow
         };
     }
   }, [theme]);
@@ -373,21 +373,17 @@ function GlobeScene({
     <>
       <ambientLight intensity={colors.ambient} />
       <pointLight position={[5, 5, 5]} intensity={colors.point} />
-      {/* RIM Light to make the dark globe pop in Light Mode */}
-      {theme === 'light' && (
-        <pointLight position={[5, 5, 5]} intensity={1.5} color="#ffffff" />
-      )}
-      <pointLight position={[-10, 10, 10]} intensity={theme === 'light' ? 2 : 1.5} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
+      <pointLight position={[-10, 10, 10]} intensity={colors.point * 0.7} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
 
       <group ref={globeRef} position={[0, 0, 0]}>
-        {/* The "Coated" Sphere (Oceans + Land) */}
+        {/* The Globe Sphere — Real Earth Colors */}
         <mesh>
           <sphereGeometry args={[GLOBE_RADIUS, 128, 128]} />
           {worldTexture ? (
-             <meshStandardMaterial 
-              map={worldTexture} 
-              roughness={0.7} 
-              metalness={0.1}
+            <meshStandardMaterial
+              map={worldTexture}
+              roughness={0.75}
+              metalness={0.05}
             />
           ) : (
             <meshStandardMaterial color={colors.ocean} />
@@ -396,20 +392,8 @@ function GlobeScene({
 
         {/* Borders Layer */}
         {borders && <primitive object={borders} />}
-        
-        {/* Atmosphere Glow */}
-        <mesh scale={[1.02, 1.02, 1.02]}>
-          <sphereGeometry args={[GLOBE_RADIUS, 64, 64]} />
-          <meshPhongMaterial
-            color={colors.glow}
-            transparent
-            opacity={colors.atmosphereOpacity}
-            side={THREE.BackSide}
-            blending={theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending}
-          />
-        </mesh>
 
-        {/* Dots Layer */}
+        {/* Country Dots Layer */}
         {countryDots.map((c, i) => (
           <GlobeDot
             key={i}
@@ -424,6 +408,28 @@ function GlobeScene({
       {logoRef.current && <primitive object={logoRef.current} />}
     </>
   );
+}
+
+// ─── Scene Background — sets Canvas clear color per theme ────
+function SceneBackground() {
+  const { gl } = useThree();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    switch (theme) {
+      case 'light':
+        gl.setClearColor(new THREE.Color('#ffffff'), 1);
+        break;
+      case 'dim':
+        gl.setClearColor(new THREE.Color('#17212B'), 1);
+        break;
+      default: // night
+        gl.setClearColor(new THREE.Color('#000000'), 1);
+        break;
+    }
+  }, [theme, gl]);
+
+  return null;
 }
 
 // ─── Outer component ─────────────────────────────────────────
@@ -483,15 +489,19 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
         style={{ touchAction: "none" }}
         onCreated={({ camera }) => { cameraRef.current = camera; }}
       >
-        {theme !== 'light' && (
-          <Stars 
-            radius={120} 
-            depth={100} 
-            count={10000} 
-            factor={3} 
-            saturation={0} 
-            fade 
-            speed={0.15} 
+        {/* Theme-aware canvas background */}
+        <SceneBackground />
+
+        {/* Stars only in Night mode */}
+        {theme === 'original' && (
+          <Stars
+            radius={120}
+            depth={100}
+            count={10000}
+            factor={3}
+            saturation={0}
+            fade
+            speed={0.15}
           />
         )}
 

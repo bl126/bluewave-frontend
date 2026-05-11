@@ -41,12 +41,12 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
         switch (theme) {
             case "light":
                 return {
-                    buttonBg: "bg-white/80",
+                    buttonBg: "bg-black",
                     buttonBorder: "border-black",
-                    buttonText: "text-black",
-                    buttonShadow: "shadow-lg shadow-black/10",
+                    buttonText: "text-white",
+                    buttonShadow: "shadow-lg shadow-black/30",
                     panelBg: "bg-white/95",
-                    panelBorder: "border-black",
+                    panelBorder: "border-black/10",
                     panelShadow: "shadow-2xl shadow-black/20",
                     headerBg: "bg-white",
                     headerText: "text-black",

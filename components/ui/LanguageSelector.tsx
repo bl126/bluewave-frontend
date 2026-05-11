@@ -112,7 +112,7 @@ export default function LanguageSelector({ isOpen, onClose, onComplete }: Langua
                                                         animate={{ scale: 1 }}
                                                         className="absolute top-1 right-1 w-4 h-4 rounded-full bg-app-accent flex items-center justify-center shadow-app-shadow"
                                                     >
-                                                        <Check size={10} className="text-black stroke-[3px]" />
+                                                        <Check size={10} className="text-app-bg stroke-[3px]" />
                                                     </motion.div>
                                                 )}
                                             </button>

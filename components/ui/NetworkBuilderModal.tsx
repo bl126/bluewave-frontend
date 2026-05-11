@@ -74,7 +74,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
                                     animate={{ rotate: 0, scale: 1 }}
                                     transition={{ delay: 0.2, type: "spring" }}
                                 >
-                                    <Target size={48} className="text-black" />
+                                    <Target size={48} className="text-app-bg" />
                                 </motion.div>
 
                                 {/* Floating particles */}

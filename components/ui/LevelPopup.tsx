@@ -177,7 +177,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                     </span>
                                                     {isCompleted && (
                                                         <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-app-accent">
-                                                            <Check size={8} className="text-black stroke-[4px]" />
+                                                            <Check size={8} className="text-app-bg stroke-[4px]" />
                                                         </div>
                                                     )}
                                                 </div>
