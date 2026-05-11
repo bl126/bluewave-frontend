@@ -118,23 +118,10 @@ function TexturedGlobe({
             depthWrite={false}
           />
         </mesh>
-
-        {/* Atmosphere Glow */}
-        <mesh>
-          <sphereGeometry args={[GLOBE_RADIUS * 1.04, 64, 64]} />
-          <meshPhongMaterial
-            color={isDark ? "#00f6ff" : "#aaddff"}
-            transparent={true}
-            opacity={0.15}
-            side={THREE.BackSide}
-          />
-        </mesh>
-
         {/* Borders Layer (Subtle) */}
         {borders && (
           <primitive object={borders} />
         )}
-
         {/* Country Dots Layer */}
         {countryDots.map((c: any, i: number) => (
           <GlobeDot

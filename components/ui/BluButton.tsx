@@ -16,7 +16,7 @@ interface BluButtonProps {
 }
 
 export default function BluButton({ isExpanded = false, onToggleExpand }: BluButtonProps) {
-    const { theme } = useTheme();
+    const { theme, mounted } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         { role: "blu", content: "I am Blu. How can I help you navigate the Human Presence Layer?" }
@@ -38,7 +38,8 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
 
     // Theme-aware styles
     const styles = useMemo(() => {
-        switch (theme) {
+        const activeTheme = mounted ? theme : "original";
+        switch (activeTheme) {
             case "light":
                 return {
                     buttonBg: "bg-black",
@@ -160,7 +161,7 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                     <>
                         {/* Backdrop */}
                         <motion.div
-                            className={`fixed inset-0 z-[86] backdrop-blur-sm ${theme === 'light' ? 'bg-black/10' : 'bg-black/40'}`}
+                            className={`fixed inset-0 z-[86] backdrop-blur-sm ${(mounted ? theme : 'original') === 'light' ? 'bg-black/10' : 'bg-black/40'}`}
                             onClick={() => setIsOpen(false)}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -173,7 +174,7 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.96 }}
                             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                            className={`fixed z-[87] left-1/2 -translate-x-1/2 flex flex-col backdrop-blur-2xl overflow-hidden transition-all duration-300 ${styles.panelBg} ${styles.panelShadow}
+                            className={`fixed z-[87] left-1/2 -translate-x-1/2 flex flex-col backdrop-blur-2xl overflow-hidden ${styles.panelBg} ${styles.panelShadow}
                                 ${isExpanded
                                     ? "inset-0 w-full h-full max-w-none rounded-none border-none"
                                     : `bottom-24 w-[90vw] max-w-sm h-[60vh] rounded-3xl border ${styles.panelBorder}`
@@ -181,10 +182,10 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                         >
                             {/* Header */}
                             {!isExpanded && (
-                                <div className={`flex items-center justify-between px-5 pt-4 pb-3 border-b ${theme === 'light' ? 'border-black/10' : 'border-cyan-900/40'} ${styles.headerBg}`}>
+                                <div className={`flex items-center justify-between px-5 pt-4 pb-3 border-b ${(mounted ? theme : 'original') === 'light' ? 'border-black/10' : 'border-cyan-900/40'} ${styles.headerBg}`}>
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${theme === 'light' ? 'bg-black border-black shadow-lg' : 'bg-cyan-950/80 border-cyan-500/50 shadow-[0_0_10px_rgba(0,230,255,0.3)]'}`}>
-                                            <span className={`text-[9px] font-black tracking-widest ${theme === 'light' ? 'text-white' : 'text-cyan-300'}`}>BLU</span>
+                                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${(mounted ? theme : 'original') === 'light' ? 'bg-black border-black shadow-lg' : 'bg-cyan-950/80 border-cyan-500/50 shadow-[0_0_10px_rgba(0,230,255,0.3)]'}`}>
+                                            <span className={`text-[9px] font-black tracking-widest ${(mounted ? theme : 'original') === 'light' ? 'text-white' : 'text-cyan-300'}`}>BLU</span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className={`text-[12px] font-bold tracking-wide ${styles.headerText}`}>Bluewave Intelligence</span>
@@ -194,7 +195,7 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => onToggleExpand?.(true)}
-                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${theme === 'light' ? 'bg-black/5 hover:bg-black/10 text-black' : 'bg-white/5 hover:bg-white/10 text-cyan-500 hover:text-cyan-300'}`}
+                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${(mounted ? theme : 'original') === 'light' ? 'bg-black/5 hover:bg-black/10 text-black' : 'bg-white/5 hover:bg-white/10 text-cyan-500 hover:text-cyan-300'}`}
                                         >
                                             <Maximize2 size={14} />
                                         </button>
@@ -222,9 +223,9 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                                 {isLoading && (
                                     <div className="flex justify-start">
                                         <div className={`border rounded-2xl rounded-bl-sm p-4 flex items-center gap-1.5 ${styles.bluBubble}`}>
-                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0 }} className={`w-1.5 h-1.5 rounded-full ${theme === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
-                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.2 }} className={`w-1.5 h-1.5 rounded-full ${theme === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
-                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.4 }} className={`w-1.5 h-1.5 rounded-full ${theme === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
+                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0 }} className={`w-1.5 h-1.5 rounded-full ${(mounted ? theme : 'original') === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
+                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.2 }} className={`w-1.5 h-1.5 rounded-full ${(mounted ? theme : 'original') === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
+                                            <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.4 }} className={`w-1.5 h-1.5 rounded-full ${(mounted ? theme : 'original') === 'light' ? 'bg-black/40' : 'bg-cyan-500/60'}`} />
                                         </div>
                                     </div>
                                 )}
@@ -233,8 +234,8 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
 
                             {/* Input Form */}
                             <div className={isExpanded
-                                ? `p-3 mb-8 mx-4 backdrop-blur-xl border rounded-2xl ${theme === 'light' ? 'bg-white border-black/10 shadow-lg' : 'bg-cyan-950/20 border-cyan-500/20 shadow-[0_0_30px_rgba(0,230,255,0.1)]'}`
-                                : `p-3 border-t ${styles.headerBg} ${theme === 'light' ? 'border-black/10' : 'border-cyan-900/40'}`
+                                ? `p-3 mb-8 mx-4 backdrop-blur-xl border rounded-2xl ${(mounted ? theme : 'original') === 'light' ? 'bg-white border-black/10 shadow-lg' : 'bg-cyan-950/20 border-cyan-500/20 shadow-[0_0_30px_rgba(0,230,255,0.1)]'}`
+                                : `p-3 border-t ${styles.headerBg} ${(mounted ? theme : 'original') === 'light' ? 'border-black/10' : 'border-cyan-900/40'}`
                             }>
                                 <form onSubmit={handleSendMessage} className="relative flex items-center">
                                     <input
@@ -250,7 +251,7 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
                                         disabled={!inputValue.trim() || isLoading}
                                         className={`absolute right-2 w-8 h-8 flex items-center justify-center rounded-xl transition-colors ${styles.sendBtn} disabled:opacity-30`}
                                     >
-                                        <svg className={`w-4 h-4 ${theme === 'light' ? 'text-white' : 'text-black'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                        <svg className={`w-4 h-4 ${(mounted ? theme : 'original') === 'light' ? 'text-white' : 'text-black'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                     </button>
                                 </form>
                             </div>

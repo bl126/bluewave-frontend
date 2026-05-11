@@ -119,7 +119,7 @@ export default function CountryCard({
                     top: cardPos.y,
                     width: cardPos.width,
                     minHeight: 72,
-                    zIndex: 60,
+                    zIndex: 200,
                     opacity: visible ? 1 : 0,
                     transform: visible
                         ? "translateY(0) scale(1)"
