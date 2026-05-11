@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dim" | "original";
 
@@ -12,17 +12,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // ⚡ Read theme synchronously from the data-theme attribute set by the
-    // blocking <script> in layout.tsx — runs before React, so no flicker ever.
-    const [theme, setThemeState] = useState<Theme>(() => {
-        if (typeof window !== 'undefined') {
-            return (document.documentElement.getAttribute("data-theme") as Theme) || "original";
-        }
-        return "original";
-    });
+    // ⚠️ SSR SAFE: Always start with "original" on server to avoid hydration mismatch.
+    // The blocking <script> in layout.tsx already sets the correct CSS/data-theme
+    // attribute before React mounts, so there is ZERO visual flash.
+    // The single useEffect below syncs React state to the real value after mount.
+    const [theme, setThemeState] = useState<Theme>("original");
 
-    // No useEffect needed — the blocking script already set the correct theme
-    // before React mounted. setTheme() below keeps everything in sync on changes.
+    useEffect(() => {
+        // Runs once after mount — reads the true saved theme and syncs state.
+        // By this point the blocking script has already applied correct CSS,
+        // so this update is invisible to the user.
+        const savedTheme = (localStorage.getItem("bw_theme") as Theme) || "original";
+        setThemeState(savedTheme);
+        // Also ensure the data-theme attribute is set (may be redundant, but safe)
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    }, []); // Empty deps — run ONCE on mount only
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);

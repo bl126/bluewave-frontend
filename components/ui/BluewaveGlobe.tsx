@@ -135,33 +135,8 @@ function GlobeScene({
     loadTex("/textures/earth-clouds.png", setCloudsMap);
   }, [gl]);
 
-  const globeMaterial = useMemo(() => {
-    const isDark = theme === "original" || theme === "dim";
-    // Always pass an explicit color — never undefined.
-    // color × map = white × texture = texture (neutral).
-    // When no texture, color acts as the solid fallback.
-    if (isDark) {
-      return (
-        <meshStandardMaterial
-          map={nightMap ?? undefined}
-          color={nightMap ? "#ffffff" : colors.ocean}
-          emissive={new THREE.Color("#ffcf8b")}
-          emissiveIntensity={nightMap ? 0.8 : 0}
-          emissiveMap={nightMap ?? undefined}
-          roughness={0.8}
-          metalness={0.1}
-        />
-      );
-    }
-    return (
-      <meshStandardMaterial
-        map={dayMap ?? undefined}
-        color={dayMap ? "#ffffff" : colors.ocean}
-        roughness={0.8}
-        metalness={0.1}
-      />
-    );
-  }, [theme, dayMap, nightMap, colors.ocean]);
+  // isDark is used inline in JSX — no useMemo needed, R3F handles reactive prop updates
+  const isDark = theme === "original" || theme === "dim";
 
   // Rotation refs
   const isDragging = useRef(false);
@@ -397,9 +372,23 @@ function GlobeScene({
 
       <group ref={globeRef} position={[0, 0, 0]}>
         {/* The Globe Sphere — Real Earth Textures */}
+        {/* Inline material props: R3F reconciler updates Three.js material properties
+            reactively as dayMap/nightMap state changes. Never return JSX from useMemo
+            for materials — it breaks reconciler identity tracking. */}
         <mesh receiveShadow castShadow>
           <sphereGeometry args={[GLOBE_RADIUS, 128, 128]} />
-          {globeMaterial}
+          <meshStandardMaterial
+            map={isDark ? (nightMap ?? undefined) : (dayMap ?? undefined)}
+            color={isDark
+              ? (nightMap ? "#ffffff" : colors.ocean)
+              : (dayMap ? "#ffffff" : colors.ocean)
+            }
+            emissive={new THREE.Color(isDark ? "#ffcf8b" : "#000000")}
+            emissiveIntensity={isDark && !!nightMap ? 0.8 : 0}
+            emissiveMap={isDark ? (nightMap ?? undefined) : undefined}
+            roughness={0.8}
+            metalness={0.1}
+          />
         </mesh>
 
         {/* Cloud Layer — only rendered once texture is loaded */}
