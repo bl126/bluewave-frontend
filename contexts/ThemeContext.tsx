@@ -7,26 +7,22 @@ type Theme = "light" | "dim" | "original";
 interface ThemeContextType {
     theme: Theme;
     setTheme: (theme: Theme) => void;
+    mounted: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // ⚠️ SSR SAFE: Always start with "original" on server to avoid hydration mismatch.
-    // The blocking <script> in layout.tsx already sets the correct CSS/data-theme
-    // attribute before React mounts, so there is ZERO visual flash.
-    // The single useEffect below syncs React state to the real value after mount.
     const [theme, setThemeState] = useState<Theme>("original");
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // Runs once after mount — reads the true saved theme and syncs state.
-        // By this point the blocking script has already applied correct CSS,
-        // so this update is invisible to the user.
+        // Run on client mount
         const savedTheme = (localStorage.getItem("bw_theme") as Theme) || "original";
         setThemeState(savedTheme);
-        // Also ensure the data-theme attribute is set (may be redundant, but safe)
+        setMounted(true);
         document.documentElement.setAttribute("data-theme", savedTheme);
-    }, []); // Empty deps — run ONCE on mount only
+    }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
@@ -35,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, setTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme, mounted }}>
             {children}
         </ThemeContext.Provider>
     );
