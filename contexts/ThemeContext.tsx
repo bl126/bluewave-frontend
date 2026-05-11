@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 type Theme = "light" | "dim" | "original";
 
@@ -12,7 +12,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // Initialize from the attribute set by the blocking script in layout.tsx
+    // ⚡ Read theme synchronously from the data-theme attribute set by the
+    // blocking <script> in layout.tsx — runs before React, so no flicker ever.
     const [theme, setThemeState] = useState<Theme>(() => {
         if (typeof window !== 'undefined') {
             return (document.documentElement.getAttribute("data-theme") as Theme) || "original";
@@ -20,14 +21,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         return "original";
     });
 
-    useEffect(() => {
-        // Sync any manual changes or storage updates
-        const savedTheme = localStorage.getItem("bw_theme") as Theme;
-        if (savedTheme && savedTheme !== theme) {
-            setThemeState(savedTheme);
-            document.documentElement.setAttribute("data-theme", savedTheme);
-        }
-    }, [theme]);
+    // No useEffect needed — the blocking script already set the correct theme
+    // before React mounted. setTheme() below keeps everything in sync on changes.
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);

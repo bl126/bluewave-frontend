@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import {
@@ -107,35 +107,59 @@ function GlobeScene({
     }
   }, [theme]);
 
-  // ── Texture Loading ──
-  // Use high-resolution reliable textures
-  const [dayMap, nightMap, cloudsMap] = useLoader(THREE.TextureLoader, [
-    "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
-    "https://unpkg.com/three-globe/example/img/earth-night.jpg",
-    "https://unpkg.com/three-globe/example/img/earth-clouds.png"
-  ]);
+  // ── Texture Loading (resilient: fails silently, falls back to solid color) ──
+  const [dayMap, setDayMap] = useState<THREE.Texture | null>(null);
+  const [nightMap, setNightMap] = useState<THREE.Texture | null>(null);
+  const [cloudsMap, setCloudsMap] = useState<THREE.Texture | null>(null);
 
-  // Configure textures
-  useMemo(() => {
-    [dayMap, nightMap, cloudsMap].forEach(tex => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = gl.capabilities.getMaxAnisotropy();
-    });
-  }, [dayMap, nightMap, cloudsMap, gl]);
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    const maxAniso = gl.capabilities.getMaxAnisotropy();
+
+    const loadTex = (url: string, setter: (t: THREE.Texture) => void) => {
+      loader.load(
+        url,
+        (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.anisotropy = maxAniso;
+          setter(tex);
+        },
+        undefined,
+        (err) => console.warn(`[Globe] Texture load failed (using fallback color): ${url}`, err)
+      );
+    };
+
+    // Local textures — served from /public/textures/ (no external CDN dependency)
+    loadTex("/textures/earth-blue-marble.jpg", setDayMap);
+    loadTex("/textures/earth-night.jpg", setNightMap);
+    loadTex("/textures/earth-clouds.png", setCloudsMap);
+  }, [gl]);
 
   const globeMaterial = useMemo(() => {
     const isDark = theme === "original" || theme === "dim";
+    // Graceful fallback: use solid color if textures haven't loaded yet
+    if (isDark) {
+      return (
+        <meshStandardMaterial
+          map={nightMap ?? undefined}
+          color={nightMap ? undefined : colors.ocean}
+          emissive={new THREE.Color("#ffcf8b")}
+          emissiveIntensity={nightMap ? 0.8 : 0}
+          emissiveMap={nightMap ?? undefined}
+          roughness={0.8}
+          metalness={0.1}
+        />
+      );
+    }
     return (
       <meshStandardMaterial
-        map={isDark ? nightMap : dayMap}
-        emissive={isDark ? new THREE.Color("#ffcf8b") : new THREE.Color("#000000")}
-        emissiveIntensity={isDark ? 0.8 : 0}
-        emissiveMap={isDark ? nightMap : null}
+        map={dayMap ?? undefined}
+        color={dayMap ? undefined : colors.ocean}
         roughness={0.8}
         metalness={0.1}
       />
     );
-  }, [theme, dayMap, nightMap]);
+  }, [theme, dayMap, nightMap, colors.ocean]);
 
   // Rotation refs
   const isDragging = useRef(false);
@@ -376,16 +400,18 @@ function GlobeScene({
           {globeMaterial}
         </mesh>
 
-        {/* Cloud Layer */}
-        <mesh ref={cloudsRef}>
-          <sphereGeometry args={[GLOBE_RADIUS + 0.015, 64, 64]} />
-          <meshStandardMaterial
-            map={cloudsMap}
-            transparent={true}
-            opacity={0.4}
-            depthWrite={false}
-          />
-        </mesh>
+        {/* Cloud Layer — only rendered once texture is loaded */}
+        {cloudsMap && (
+          <mesh ref={cloudsRef}>
+            <sphereGeometry args={[GLOBE_RADIUS + 0.015, 64, 64]} />
+            <meshStandardMaterial
+              map={cloudsMap}
+              transparent={true}
+              opacity={0.4}
+              depthWrite={false}
+            />
+          </mesh>
+        )}
 
         {/* Atmosphere Glow */}
         <mesh>

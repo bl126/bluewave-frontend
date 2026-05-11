@@ -39,10 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })();
         `}} />
 
-        {/* 🌍 GLOBE TEXTURE PRELOADING: Start fetching high-res textures immediately */}
-        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg" as="image" />
-        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-night.jpg" as="image" />
-        <link rel="preload" href="https://unpkg.com/three-globe/example/img/earth-clouds.png" as="image" />
+        {/* 🌍 GLOBE TEXTURE PRELOADING: Local assets — no CDN dependency */}
+        <link rel="preload" href="/textures/earth-blue-marble.jpg" as="image" />
+        <link rel="preload" href="/textures/earth-night.jpg" as="image" />
+        <link rel="preload" href="/textures/earth-clouds.png" as="image" />
         
         {/* 🎨 LOGO PRELOADING: Prevent branding flicker */}
         <link rel="preload" href="/bluewave_logo.png" as="image" />
