@@ -354,6 +354,15 @@ function SceneBackground() {
   return null;
 }
 
+// ─── Camera Reference Tracker ──────────────────────────────
+function CameraTracker({ cameraRef }: { cameraRef: React.MutableRefObject<THREE.Camera | null> }) {
+  const { camera } = useThree();
+  useEffect(() => {
+    cameraRef.current = camera;
+  }, [camera, cameraRef]);
+  return null;
+}
+
 // ─── Main Export ───────────────────────────────────────────────
 export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -371,17 +380,28 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
     if (!containerRef.current || !cameraRef.current) return null;
     const rect = containerRef.current.getBoundingClientRect();
     const proj = worldPos.clone().project(cameraRef.current);
-    return { dotX: ((proj.x + 1) / 2) * rect.width, dotY: ((-proj.y + 1) / 2) * rect.height };
+    
+    // Convert NDC to screen pixels
+    return { 
+      dotX: ((proj.x + 1) / 2) * rect.width, 
+      dotY: ((-proj.y + 1) / 2) * rect.height 
+    };
   }, []);
 
   const handleDotClick = useCallback((dot: CountryDot, worldPos: THREE.Vector3) => {
-    setSelected({ country: dot, worldPos });
-    setCardScreen(project3Dto2D(worldPos));
+    const coords = project3Dto2D(worldPos);
+    if (coords && !isNaN(coords.dotX) && !isNaN(coords.dotY)) {
+      setSelected({ country: dot, worldPos });
+      setCardScreen(coords);
+    } else {
+      setSelected(null);
+    }
   }, [project3Dto2D]);
 
   return (
-    <div ref={containerRef} className="fullscreen-fixed" style={{ position: 'absolute' }}>
+    <div ref={containerRef} className="fullscreen-fixed">
       <Canvas camera={{ position: [0, 0, 3.5], fov: 60 }} shadows>
+        <CameraTracker cameraRef={cameraRef} />
         <SceneBackground />
         {(theme === 'original' || theme === 'dim') && <Stars radius={120} count={7000} speed={0.5} fade />}
         <Suspense fallback={null}>

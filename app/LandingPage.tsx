@@ -742,7 +742,7 @@ export default function LandingPage() {
   return (
     <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: "var(--app-bg)" }}>
       {/* 🌍 Background Globe */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0">
         <BluewaveGlobe />
       </div>
       {/* 💰 Floating Balance Pill */}

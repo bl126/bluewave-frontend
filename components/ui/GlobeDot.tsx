@@ -94,7 +94,7 @@ export default function GlobeDot({
       <mesh
         onPointerDown={(e) => {
           e.stopPropagation();
-          onClick(position);
+          onClick(e.point);
         }}
       >
         <sphereGeometry args={[0.035, 16, 16]} />
