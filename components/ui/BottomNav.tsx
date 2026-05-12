@@ -70,9 +70,9 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
+            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
                  flex items-center justify-around w-[94%] max-w-md 
-                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border ${theme === 'light' ? 'bg-white' : 'bg-app-bg/40 backdrop-blur-3xl'}`}
+                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
         >
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -88,7 +88,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         {isActive && (
                             <motion.div
                                 layoutId="activePill"
-                                className={`absolute inset-x-1 inset-y-1 border border-app-border rounded-2xl z-0 ${theme === 'light' ? 'bg-app-accent/20' : 'bg-app-accent/10'}`}
+                                className="absolute inset-x-1 inset-y-1 border border-app-border rounded-2xl z-0 bg-app-accent/10"
                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                         )}

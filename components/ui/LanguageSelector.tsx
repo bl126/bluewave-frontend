@@ -34,7 +34,6 @@ const languages: Language[] = [
 
 export default function LanguageSelector({ isOpen, onClose, onComplete }: LanguageSelectorProps) {
     const { language, setLanguage, t } = useLanguage();
-    const { theme } = useTheme();
 
     const handleSelectLanguage = (code: string) => {
         setLanguage(code);
@@ -54,7 +53,7 @@ export default function LanguageSelector({ isOpen, onClose, onComplete }: Langua
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className={`fixed inset-0 z-[200] backdrop-blur-sm ${theme === 'light' ? 'bg-white/20' : 'bg-app-bg/70'}`}
+                        className="fixed inset-0 z-[200] bg-app-bg/70 backdrop-blur-sm"
                     />
 
                     {/* Modal Container */}

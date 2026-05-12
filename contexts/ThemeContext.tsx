@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dim" | "original";
+type Theme = "dim" | "original";
 
 interface ThemeContextType {
     theme: Theme;
@@ -13,28 +13,32 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // ⚡ SYNC INIT: Read the attribute set by the blocking script in layout.tsx.
-    // This ensures the first React render matches the visually applied CSS theme.
-    const [theme, setThemeState] = useState<Theme>(() => {
-        if (typeof window !== 'undefined') {
-            return (document.documentElement.getAttribute("data-theme") as Theme) || "original";
-        }
-        return "original";
-    });
+    const [theme, setThemeState] = useState<Theme>("original");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // Double-check localStorage on mount just in case, but usually unnecessary
-        // due to the blocking script + synchronous init above.
-        const savedTheme = (localStorage.getItem("bw_theme") as Theme) || "original";
-        if (savedTheme !== theme) setThemeState(savedTheme);
         setMounted(true);
+        const savedTheme = localStorage.getItem("bw_theme") as Theme;
+        if (savedTheme && (savedTheme === "original" || savedTheme === "dim")) {
+            setThemeState(savedTheme);
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        } else {
+            setThemeState("original");
+            document.documentElement.setAttribute("data-theme", "original");
+            localStorage.setItem("bw_theme", "original");
+        }
     }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
         localStorage.setItem("bw_theme", newTheme);
         document.documentElement.setAttribute("data-theme", newTheme);
+
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg) {
+            tg.setHeaderColor(validatedTheme === "original" ? "#000000" : "#17212B");
+            tg.setBackgroundColor(validatedTheme === "original" ? "#000000" : "#17212B");
+        }
     };
 
     return (

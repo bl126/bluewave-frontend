@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* tailwindcss plugin: ignore unknown @apply rules */
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+
 
 @theme inline {
   --color-background: var(--background);
@@ -59,8 +56,8 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: #000000;
+  --foreground: #FFFFFF;
   
   /* [NEW] Theme Variables - Default (Original) */
   --app-bg: #000000;
@@ -72,18 +69,6 @@
   --accent: #00F6FF;
   --accent-glow: rgba(0, 246, 255, 0.2);
   --shadow: 0 0 40px rgba(0, 230, 255, 0.1);
-}
-
-[data-theme="light"] {
-  --app-bg: #FFFFFF;
-  --card-bg: #FFFFFF;
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --text-main: #000000;
-  --text-sub: #666666;
-  --border: rgba(0, 0, 0, 0.1);
-  --accent: #000000;
-  --accent-glow: rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dim"] {

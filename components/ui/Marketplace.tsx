@@ -14,13 +14,12 @@ interface MarketplaceProps {
 
 export default function Marketplace({ isOpen, onClose, telegramUser }: MarketplaceProps) {
   const { t } = useLanguage();
-  const { theme } = useTheme();
   return (
     <>
       {isOpen && (
         <>
           <motion.div
-            className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-3xl'}`}
+            className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main bg-app-bg/95 backdrop-blur-3xl`}
             style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -61,7 +60,7 @@ export default function Marketplace({ isOpen, onClose, telegramUser }: Marketpla
 
             {/* ── Ghost Mode Gate ── */}
             {!telegramUser?.wallet_address && (
-                <div className={`absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center backdrop-blur-2xl ${theme === 'light' ? 'bg-white/40' : 'bg-app-bg/40'}`}>
+                <div className={`absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center backdrop-blur-2xl bg-app-bg/40`}>
                     <div className="w-20 h-20 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center mb-6 shadow-app-shadow">
                         <Lock size={32} className="text-app-accent animate-pulse" />
                     </div>

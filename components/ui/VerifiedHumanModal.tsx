@@ -30,7 +30,7 @@ export default function VerifiedHumanModal({ isOpen, onClose }: VerifiedHumanMod
                 <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
                     {/* Backdrop */}
                     <motion.div
-                        className={`absolute inset-0 ${theme === 'light' ? 'bg-white' : 'bg-black/80 backdrop-blur-md'}`}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

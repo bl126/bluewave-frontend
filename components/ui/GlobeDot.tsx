@@ -25,14 +25,6 @@ export default function GlobeDot({
 
   const colors = useMemo(() => {
     switch (theme) {
-      case "light":
-        return {
-          base: "#FFFFFF",
-          emissive: "#FFFFFF",
-          ripple: "#FFFFFF",
-          particles: "#FFFFFF",
-          intensity: 3
-        };
       case "dim":
         return {
           base: "#00e6ff",
@@ -142,7 +134,7 @@ export default function GlobeDot({
           transparent
           opacity={0.8}
           depthWrite={false}
-          blending={theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending}
+          blending={THREE.AdditiveBlending}
         />
       </points>
     </group>

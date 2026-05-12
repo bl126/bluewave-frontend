@@ -32,7 +32,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
   // Tab State
   type TabId = "bio" | "roles" | "drops";
-  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabId>("bio");
 
   // Use passed telegramUser for immediate UI if available
@@ -256,7 +255,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     <>
       {isOpen && (
         <motion.div
-          className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-3xl'}`}
+          className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main bg-app-bg/95 backdrop-blur-3xl`}
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -333,7 +332,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className={`fixed z-[150] w-44 border border-app-border rounded-xl shadow-app-shadow overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-app-card/90 backdrop-blur-2xl'}`}
+                          className="fixed z-[150] w-44 border border-app-border rounded-xl shadow-app-shadow overflow-hidden bg-app-card/90 backdrop-blur-2xl"
                           style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
                         >
                           <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className={`w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border`}>{t("menu.ecosystem_roles")}</button>
@@ -356,7 +355,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "bio" && (
                       <>
                         <div className="grid grid-cols-3 gap-3">
-                          <button onClick={() => user.wallet_address && setIsLevelPopupOpen(true)} className={`${theme === 'light' ? 'bg-white/30' : 'bg-app-card'} backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative`}>
+                          <button onClick={() => user.wallet_address && setIsLevelPopupOpen(true)} className="bg-app-card backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative">
                             {user.wallet_address ? (
                                 <>
                                     <span className="text-text-main text-lg font-black">{level}</span>
@@ -376,7 +375,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                 }
                               }
                             }}
-                            className={`${theme === 'light' ? 'bg-white/30' : 'bg-app-card'} backdrop-blur-md border ${user.recoverable_streak > 0 ? 'border-red-500/50 hover:border-red-500/80 cursor-pointer shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-app-border cursor-default'} rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative transition-all active:scale-95`}
+                            className={`bg-app-card backdrop-blur-md border ${user.recoverable_streak > 0 ? 'border-red-500/50 hover:border-red-500/80 cursor-pointer shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-app-border cursor-default'} rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative transition-all active:scale-95`}
                           >
                             {user.wallet_address ? (
                                 <>
@@ -392,7 +391,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                 <Lock size={16} className="text-text-sub/30" />
                             )}
                           </button>
-                          <div className={`${theme === 'light' ? 'bg-white/20' : 'bg-app-bg/30'} backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative`}>
+                          <div className="bg-app-bg/30 backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
                             {user.wallet_address ? (
                                 <>
                                     <span className="text-text-main text-xl font-black">{user.total_referrals || 0}</span>
@@ -405,21 +404,21 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Independent Wallet Card */}
-                        <div className={`relative ${theme === 'light' ? 'bg-white/20' : 'bg-app-bg/30'} backdrop-blur-md border border-app-border rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-app-accent/30`}>
+                        <div className="relative bg-app-bg/30 backdrop-blur-md border border-app-border rounded-2xl p-1.5 flex items-center shadow-lg group transition-all cursor-pointer hover:border-app-accent/30">
                           {/* Native Button Overlay - High Priority for Deep Links */}
                           {!user?.wallet_address && (
                             <div className="absolute inset-0 opacity-0 z-50">
                               <TonConnectButton style={{ width: '100%', height: '100%' }} />
                             </div>
                           )}
-                          <div className={`p-3 ${theme === 'light' ? 'bg-black' : 'bg-app-accent/5'} rounded-2xl border border-app-border`}><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
+                          <div className="p-3 bg-app-accent/5 rounded-2xl border border-app-border"><img src="/ton-transparent.png" alt="Ton" className="w-8 h-8 object-contain" /></div>
                           <div className="flex-1 px-4 flex flex-col">
                             <span className="text-text-main font-extrabold text-xs uppercase tracking-[0.15em]">{user.wallet_address ? t("profile.connected") : t("profile.connect_wallet")}</span>
                           </div>
                         </div>
 
                         {/* Independent Earnings Card */}
-                        <div className={`${theme === 'light' ? 'bg-white/30 border-black/5' : 'bg-app-bg/30 border-app-border'} backdrop-blur-md border rounded-3xl p-6 flex flex-col gap-5`}>
+                        <div className="bg-app-bg/30 border border-app-border backdrop-blur-md rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center justify-between">
                               <span className="text-text-sub text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_earnings")}</span>
@@ -439,7 +438,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                         </div>
 
                         {/* Independent Network Builder Card */}
-                        <div className={`${theme === 'light' ? 'bg-white/40 border-black/5' : 'bg-app-card border-app-border'} backdrop-blur-md border rounded-3xl p-6 flex flex-col gap-5`}>
+                        <div className="bg-app-card border border-app-border backdrop-blur-md rounded-3xl p-6 flex flex-col gap-5">
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
                               <span className="text-text-sub text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
@@ -474,7 +473,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     {activeTab === "roles" && (
                       <div className="py-4">
                         {!user.roles || user.roles.length === 0 ? (
-                          <div className={`flex flex-col items-center justify-center gap-3 py-10 opacity-70 ${theme === 'light' ? 'text-black/30' : ''}`}><ShieldCheck size={40} /><span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles_unlocked")}</span></div>
+                          <div className={`flex flex-col items-center justify-center gap-3 py-10 opacity-70`}><ShieldCheck size={40} /><span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles_unlocked")}</span></div>
                         ) : (
                           <div className="grid grid-cols-3 gap-3">
                             {user.roles.map((role: string) => {
@@ -482,7 +481,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                               const Icon = roleData?.icon || UserCheck;
                               const translatedName = t(`roles_list.${role}.name`);
                               return (
-                                <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || (theme === 'light' ? 'from-black/5 to-black/5' : 'from-app-accent/5 to-app-accent/5')} border ${roleData?.border || 'border-app-accent/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
+                                <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-app-accent/5 to-app-accent/5'} border ${roleData?.border || 'border-app-accent/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
                                   <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-app-accent'}`}>
                                     {roleData?.image ? <img src={roleData.image} alt={role} className="w-5 h-5 object-contain" /> : <Icon size={18} />}
                                   </div>
@@ -498,13 +497,13 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                     )}
 
                     {activeTab === "drops" && (
-                      <div className={`${theme === 'light' ? 'bg-white/30 border-black/5' : 'bg-app-bg/30 border-app-border'} backdrop-blur-md border rounded-3xl p-8 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center`}>
+                      <div className={`bg-app-bg/30 border-app-border backdrop-blur-md border rounded-3xl p-8 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center`}>
                         <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-app-shadow"><span className="text-4xl">🎁</span></div>
                         <div className="space-y-2">
                           <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("profile.protocol_drops")}</h3>
                           <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">{t("profile.locked")}</div>
                         </div>
-                        <div className={`${theme === 'light' ? 'bg-black/5 border-black/10' : 'bg-app-accent/5 border-app-border'} border rounded-2xl p-5 space-y-3`}>
+                        <div className={`bg-app-accent/5 border-app-border border rounded-2xl p-5 space-y-3`}>
                           <p className="text-xs text-text-sub leading-relaxed uppercase tracking-wider">{t("profile.drops_desc")}</p>
                         </div>
                       </div>

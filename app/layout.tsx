@@ -30,10 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
             try {
-              var theme = localStorage.getItem('bw_theme') || 'original';
+              var theme = localStorage.getItem('bw_theme');
+              if (theme !== 'dim' && theme !== 'original') theme = 'original'; // Default to high-contrast night
               document.documentElement.setAttribute('data-theme', theme);
-              if (theme === 'light') document.body.style.backgroundColor = '#ffffff';
-              else if (theme === 'dim') document.body.style.backgroundColor = '#17212B';
+              if (theme === 'dim') document.body.style.backgroundColor = '#17212B';
               else document.body.style.backgroundColor = '#000000';
             } catch (e) {}
           })();
@@ -46,7 +46,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         {/* 🎨 LOGO PRELOADING: Prevent branding flicker */}
         <link rel="preload" href="/bluewave_logo.png" as="image" />
-        <link rel="preload" href="/bluewave_lightmode.png" as="image" />
         <link rel="preload" href="/logo-bluewave.png" as="image" />
 
         {/* Telegram Mini App SDK — must be first */}

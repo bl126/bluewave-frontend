@@ -78,7 +78,7 @@ function TexturedGlobe({
 
   // useTexture suspends the component until all assets are loaded
   const [dayMap, nightMap, cloudsMap] = useTexture([
-    "/textures/earth-blue-marble.jpg",
+    "/textures/earth-night.jpg", // Force night map
     "/textures/earth-night.jpg",
     "/textures/earth-clouds.png"
   ]);
@@ -107,11 +107,11 @@ function TexturedGlobe({
         <mesh receiveShadow castShadow>
           <sphereGeometry args={[GLOBE_RADIUS, 128, 128]} />
           <meshStandardMaterial
-            map={isDark ? nightMap : dayMap}
-            color="#ffffff" // Neutral white so map colors are perfect
-            emissive={new THREE.Color(isDark ? "#ffcf8b" : "#000000")}
-            emissiveIntensity={theme === 'dim' ? 0.35 : (isDark ? 0.8 : 0)}
-            emissiveMap={isDark ? nightMap : undefined}
+            map={nightMap}
+            color="#ffffff" 
+            emissive={new THREE.Color("#ffcf8b")}
+            emissiveIntensity={theme === 'dim' ? 0.35 : 0.8}
+            emissiveMap={nightMap}
             roughness={0.8}
             metalness={0.1}
           />
@@ -178,8 +178,6 @@ function GlobeScene({
 
   const colors = useMemo(() => {
     switch (theme) {
-      case "light":
-        return { ocean: "#1E40AF", border: "#FFFFFF", glow: "#FFFFFF", ambient: 1.0 };
       case "dim":
         return { ocean: "#0d3d5f", border: "#00F6FF", glow: "#00F6FF", ambient: 0.6 };
       default: // original
@@ -344,8 +342,8 @@ function GlobeScene({
   return (
     <>
       <ambientLight intensity={colors.ambient} />
-      <directionalLight position={[5, 3, 5]} intensity={theme === 'light' ? 2.5 : (theme === 'dim' ? 1.8 : 1.5)} color={theme === 'light' ? "#ffffff" : "#fff5e6"} />
-      <pointLight position={[-5, -3, -5]} intensity={theme === 'light' ? 0.5 : (theme === 'dim' ? 0.8 : 1.2)} color={theme === 'light' ? "#ffffff" : "#00f6ff"} />
+      <directionalLight position={[5, 3, 5]} intensity={theme === 'dim' ? 1.8 : 1.5} color="#fff5e6" />
+      <pointLight position={[-5, -3, -5]} intensity={theme === 'dim' ? 0.8 : 1.2} color="#00f6ff" />
 
       <Suspense fallback={<FallbackGlobe colors={colors} isDark={isDark} />}>
         <TexturedGlobe 
@@ -362,7 +360,7 @@ function SceneBackground() {
   const { gl } = useThree();
   const { theme } = useTheme();
   useEffect(() => {
-    const colorMap = { light: '#ffffff', dim: '#17212B', original: '#000000' };
+    const colorMap = { dim: '#17212B', original: '#000000' };
     gl.setClearColor(new THREE.Color(colorMap[theme] || '#000000'), 1);
   }, [theme, gl]);
   return null;
@@ -417,7 +415,7 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
       <Canvas camera={{ position: [0, 0, 3.5], fov: 60 }} shadows>
         <CameraTracker cameraRef={cameraRef} />
         <SceneBackground />
-        {(theme === 'original' || theme === 'dim') && <Stars radius={120} count={7000} speed={0.5} fade />}
+        <Stars radius={120} count={7000} speed={0.5} fade />
         <Suspense fallback={null}>
           <GlobeScene onLoaded={onLoaded} onDotClick={handleDotClick} isCardOpenRef={isCardOpenRef} scheduleResumeRef={scheduleResumeRef} />
         </Suspense>

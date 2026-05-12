@@ -10,15 +10,6 @@ export default function BackgroundAmbience() {
 
   const config = useMemo(() => {
     switch (theme) {
-      case "light":
-        return {
-          color: "#FFFFFF",
-          opacity: 0.4,
-          count: 25,
-          speed: [0.05, 0.2] as [number, number],
-          radius: [0.5, 2.0] as [number, number],
-          wind: [-0.1, 0.1] as [number, number],
-        };
       case "dim":
         return {
           color: "#00F6FF",
@@ -42,10 +33,7 @@ export default function BackgroundAmbience() {
 
   return (
     <>
-      {/* 🌤️ LIGHT MODE: Static Clean Background */}
-      {theme === "light" && (
-        <div className="fixed inset-0 pointer-events-none z-0 bg-[#FFFFFF]" />
-      )}
+
  
       {/* ❄️ Global Particles Layer */}
       <div 

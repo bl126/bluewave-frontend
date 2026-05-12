@@ -11,7 +11,6 @@ interface RecoveryPasswordModalProps {
 }
 
 export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }: RecoveryPasswordModalProps) {
-    const { theme } = useTheme();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -65,7 +64,7 @@ export default function RecoveryPasswordModal({ isOpen, telegramId, onSuccess }:
 
     return (
         <AnimatePresence>
-            <div className={`fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg/95'}`}>
+            <div className={`fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-app-bg/95`}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}

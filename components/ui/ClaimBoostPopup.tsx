@@ -98,7 +98,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className={`fixed inset-0 z-[300] flex items-center justify-center p-4 ${theme === 'light' ? 'bg-white' : 'bg-app-bg/90 backdrop-blur-md'} overflow-hidden`}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-app-bg/90 backdrop-blur-md overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

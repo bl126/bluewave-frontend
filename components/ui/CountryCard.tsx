@@ -32,18 +32,6 @@ export default function CountryCard({
     // Theme-aware styles
     const styles = useMemo(() => {
         switch (theme) {
-            case "light":
-                return {
-                    bg: "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,1) 100%)",
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    shadow: "0 10px 40px rgba(0,0,0,0.1), 0 2px 10px rgba(0,0,0,0.05)",
-                    text: "#0f172a",
-                    subtext: "#64748b",
-                    accent: "#000000",
-                    closeBg: "rgba(0,0,0,0.05)",
-                    scanColor: "rgba(0,0,0,0.05)",
-                    glow: "none"
-                };
             case "dim":
                 return {
                     bg: "linear-gradient(135deg, rgba(23,33,43,0.96) 0%, rgba(36,47,61,0.98) 100%)",

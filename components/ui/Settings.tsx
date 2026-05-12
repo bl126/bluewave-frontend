@@ -84,9 +84,8 @@ export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsPr
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-2 bg-app-bg/20 p-1 rounded-xl">
+                                <div className="grid grid-cols-2 gap-2 bg-app-bg/20 p-1 rounded-xl">
                                     {[
-                                        { id: 'light', icon: Sun, label: 'Light' },
                                         { id: 'dim', icon: Moon, label: 'Dim' },
                                         { id: 'original', icon: Zap, label: 'Night' }
                                     ].map((mode) => (
