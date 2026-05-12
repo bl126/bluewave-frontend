@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Award, Users, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface NetworkBuilderModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface NetworkBuilderModalProps {
 }
 
 export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderModalProps) {
+    const { theme } = useTheme();
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
@@ -25,7 +27,7 @@ export default function NetworkBuilderModal({ isOpen, onClose }: NetworkBuilderM
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-app-bg/90 backdrop-blur-xl"
+                    className={`fixed inset-0 z-[200] flex items-center justify-center p-6 ${theme === 'light' ? 'bg-white' : 'bg-app-bg/90 backdrop-blur-xl'}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

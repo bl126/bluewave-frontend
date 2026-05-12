@@ -20,7 +20,7 @@ export default function Marketplace({ isOpen, onClose, telegramUser }: Marketpla
       {isOpen && (
         <>
           <motion.div
-            className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main backdrop-blur-3xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg/95'}`}
+            className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-3xl'}`}
             style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -75,15 +75,15 @@
 }
 
 [data-theme="light"] {
-  --app-bg: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
-  --card-bg: rgba(255, 255, 255, 0.4);
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --text-main: #0F172A;
-  --text-sub: #64748B;
-  --border: rgba(255, 255, 255, 0.8);
-  --accent: #0284C7;
-  --accent-glow: rgba(2, 132, 199, 0.1);
-  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  --app-bg: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --text-main: #000000;
+  --text-sub: #666666;
+  --border: rgba(0, 0, 0, 0.1);
+  --accent: #000000;
+  --accent-glow: rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dim"] {

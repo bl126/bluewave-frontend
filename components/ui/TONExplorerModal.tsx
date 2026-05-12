@@ -31,7 +31,7 @@ export default function TONExplorerModal({ isOpen, onClose }: TONExplorerModalPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-app-bg/80 backdrop-blur-xl"
+            className={`absolute inset-0 ${theme === 'light' ? 'bg-white' : 'bg-app-bg/80 backdrop-blur-xl'}`}
             onClick={onClose}
           />
 

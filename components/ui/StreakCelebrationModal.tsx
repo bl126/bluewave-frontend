@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Check, Share2, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface StreakCelebrationModalProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
     onClose,
 }) => {
     const { t } = useLanguage();
+    const { theme } = useTheme();
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
@@ -41,7 +43,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-app-bg/90 backdrop-blur-md"
+                        className={`absolute inset-0 ${theme === 'light' ? 'bg-white' : 'bg-app-bg/90 backdrop-blur-md'}`}
                     />
 
                     {/* Modal Card */}

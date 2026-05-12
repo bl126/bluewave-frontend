@@ -150,7 +150,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
   if (!telegram_id && isOpen) {
     return (
-      <div className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-app-accent backdrop-blur-xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg/95'}`}>
+      <div className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-app-accent ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-xl'}`}>
         <div className="w-8 h-8 border-2 border-app-accent/20 border-t-app-accent rounded-full animate-spin mb-4" />
         <span className="text-[10px] font-black uppercase tracking-widest opacity-50">{t("missions.synchronizing")}</span>
       </div>
@@ -655,7 +655,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       {isOpen && (
 
         <motion.div
-          className={`fixed inset-0 z-[120] flex flex-col text-text-main backdrop-blur-3xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg/95'}`}
+          className={`fixed inset-0 z-[120] flex flex-col text-text-main ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-3xl'}`}
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -666,7 +666,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
           {/* ── Ghost Mode Gate ── */}
           {!telegramUser?.wallet_address && (
-            <div className={`absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center backdrop-blur-2xl ${theme === 'light' ? 'bg-white/40' : 'bg-app-bg/40'}`}>
+            <div className={`absolute inset-0 z-[150] flex flex-col items-center justify-center p-8 text-center ${theme === 'light' ? 'bg-white' : 'bg-app-bg/40 backdrop-blur-2xl'}`}>
               <div className="w-20 h-20 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center mb-6 shadow-app-shadow">
                 <Lock size={32} className="text-app-accent animate-pulse" />
               </div>
@@ -918,7 +918,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     <span className="text-4xl">🎁</span>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white uppercase tracking-widest">{t("missions.earn_drop.title")}</h3>
+                    <h3 className={`text-xl font-black uppercase tracking-widest ${theme === 'light' ? 'text-black' : 'text-white'}`}>{t("missions.earn_drop.title")}</h3>
                     <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">
                       {t("missions.earn_drop.coming_soon")}
                     </div>

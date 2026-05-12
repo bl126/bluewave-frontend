@@ -54,10 +54,10 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 >
                     {/* Header Bar */}
-                    <div className={`flex items-center justify-between px-4 py-3 border-b backdrop-blur-md ${theme === 'light' ? 'bg-white/80 border-black/5' : 'bg-black/80 border-cyan-500/10'}`}>
+                    <div className={`flex items-center justify-between px-4 py-3 border-b ${theme === 'light' ? 'bg-white border-black/5' : 'bg-black/80 border-cyan-500/10 backdrop-blur-md'}`}>
                         <div className="flex items-center gap-3">
-                            <div className="p-0.5 rounded-lg bg-cyan-500/10 border border-cyan-400/20 w-8 h-8 flex items-center justify-center overflow-hidden">
-                                <img src="/BwaveScan-logo.png" alt="BwaveScan" className="w-full h-full object-contain" />
+                            <div className={`p-0.5 rounded-lg border w-8 h-8 flex items-center justify-center overflow-hidden ${theme === 'light' ? 'bg-black/5 border-black/10' : 'bg-cyan-500/10 border-cyan-400/20'}`}>
+                                <img src="/BwaveScan-logo.png" alt="BwaveScan" className={`w-full h-full object-contain ${theme === 'light' ? 'grayscale' : ''}`} />
                             </div>
                             <div className="flex flex-col">
                                 <span className={`text-xs font-black uppercase tracking-widest leading-none ${theme === 'light' ? 'text-black' : 'text-cyan-50'}`}>BwaveScan</span>
@@ -68,7 +68,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                                     {bwId && (
                                         <button
                                             onClick={handleCopyId}
-                                            className="text-cyan-500/40 hover:text-cyan-400 transition-colors"
+                                            className={`transition-colors ${theme === 'light' ? 'text-black/20 hover:text-black' : 'text-cyan-500/40 hover:text-cyan-400'}`}
                                         >
                                             {idCopied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
                                         </button>
@@ -80,7 +80,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleOpenExternal}
-                                className="p-2 text-cyan-400/60 hover:text-cyan-400 transition-colors"
+                                className={`p-2 transition-colors ${theme === 'light' ? 'text-black/40 hover:text-black' : 'text-cyan-400/60 hover:text-cyan-400'}`}
                                 title="Open in Browser"
                             >
                                 <ExternalLink size={18} />
@@ -95,7 +95,7 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                                 <motion.div
                                     animate={{ rotate: 360 }}
                                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                    className="text-cyan-400"
+                                    className={`${theme === 'light' ? 'text-black' : 'text-cyan-400'}`}
                                 >
                                     <RefreshCw size={32} />
                                 </motion.div>

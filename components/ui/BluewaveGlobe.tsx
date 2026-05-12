@@ -67,16 +67,21 @@ function FallbackGlobe({ colors, isDark }: { colors: any, isDark: boolean }) {
 function TexturedGlobe({ 
   isDark, colors, globeRef, cloudsRef, onDotClick, countryDots, borders, logoRef 
 }: any) {
-  const { theme, mounted } = useTheme();
+  const { theme: contextTheme, mounted } = useTheme();
+  // ⚡ IMMEDIATE THEME DETECTION: Read directly from DOM if not yet hydrated
+  // to prevent "Night Mode" flicker on first render.
+  const theme = !mounted && typeof document !== 'undefined'
+    ? (document.documentElement.getAttribute("data-theme") as any) || contextTheme
+    : contextTheme;
+
+  // We use the prop 'isDark' passed from parent GlobeScene which is now synchronized
+
   // useTexture suspends the component until all assets are loaded
   const [dayMap, nightMap, cloudsMap] = useTexture([
     "/textures/earth-blue-marble.jpg",
     "/textures/earth-night.jpg",
     "/textures/earth-clouds.png"
   ]);
-
-  // If not mounted yet, show nothing or a generic fallback to avoid hydration/theme mismatches
-  if (!mounted) return null;
 
   // Configure textures
   useEffect(() => {
@@ -156,7 +161,12 @@ function GlobeScene({
   scheduleResumeRef: React.MutableRefObject<(() => void) | null>;
 }) {
   const { gl } = useThree();
-  const { theme } = useTheme();
+  const { theme: contextTheme, mounted } = useTheme();
+
+  // ⚡ IMMEDIATE THEME DETECTION: Read directly from DOM if not yet hydrated
+  const theme = !mounted && typeof document !== 'undefined'
+    ? (document.documentElement.getAttribute("data-theme") as any) || contextTheme
+    : contextTheme;
 
   const [borders, setBorders] = useState<THREE.Group | null>(null);
   const globeRef = useRef<THREE.Group>(null!);
@@ -169,7 +179,7 @@ function GlobeScene({
   const colors = useMemo(() => {
     switch (theme) {
       case "light":
-        return { ocean: "#2563EB", border: "#FFFFFF", glow: "#FFFFFF", ambient: 1.6 };
+        return { ocean: "#1E40AF", border: "#FFFFFF", glow: "#FFFFFF", ambient: 1.0 };
       case "dim":
         return { ocean: "#0d3d5f", border: "#00F6FF", glow: "#00F6FF", ambient: 0.6 };
       default: // original

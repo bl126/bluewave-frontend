@@ -256,7 +256,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     <>
       {isOpen && (
         <motion.div
-          className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main backdrop-blur-3xl ${theme === 'light' ? 'bg-white/30' : 'bg-app-bg/95'}`}
+          className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main ${theme === 'light' ? 'bg-white' : 'bg-app-bg/95 backdrop-blur-3xl'}`}
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -333,7 +333,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className={`fixed z-[150] w-44 backdrop-blur-2xl border border-app-border rounded-xl shadow-app-shadow overflow-hidden ${theme === 'light' ? 'bg-white/40' : 'bg-app-card/90'}`}
+                          className={`fixed z-[150] w-44 border border-app-border rounded-xl shadow-app-shadow overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-app-card/90 backdrop-blur-2xl'}`}
                           style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
                         >
                           <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className={`w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border`}>{t("menu.ecosystem_roles")}</button>

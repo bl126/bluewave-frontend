@@ -71,8 +71,8 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={`absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
-                 flex items-center justify-around w-[94%] max-w-md backdrop-blur-3xl
-                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border ${theme === 'light' ? 'bg-white/40' : 'bg-app-bg/40'}`}
+                 flex items-center justify-around w-[94%] max-w-md 
+                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border ${theme === 'light' ? 'bg-white' : 'bg-app-bg/40 backdrop-blur-3xl'}`}
         >
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;

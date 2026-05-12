@@ -42,25 +42,25 @@ export default function BluButton({ isExpanded = false, onToggleExpand }: BluBut
         switch (activeTheme) {
             case "light":
                 return {
-                    buttonBg: "bg-white/40",
-                    buttonBorder: "border-white/60",
-                    buttonText: "text-sky-900",
-                    buttonShadow: "shadow-xl shadow-sky-900/5",
-                    panelBg: "bg-white/40",
-                    panelBorder: "border-white/80",
-                    panelShadow: "shadow-2xl shadow-sky-900/10",
-                    headerBg: "bg-white/20",
-                    headerText: "text-sky-950",
-                    headerSub: "text-sky-800/60",
-                    userBubble: "bg-sky-500/20 text-sky-950 border-sky-200/50 rounded-br-sm",
-                    bluBubble: "bg-white/40 text-sky-900 border-white/60 rounded-bl-sm",
-                    inputBg: "bg-white/30",
-                    inputBorder: "border-white/60",
-                    inputText: "text-sky-950",
-                    inputPlaceholder: "placeholder-sky-400",
-                    inputFocus: "focus:border-sky-400",
-                    sendBtn: "bg-sky-500 text-white",
-                    iconColor: "text-sky-600"
+                    buttonBg: "bg-white",
+                    buttonBorder: "border-black/10",
+                    buttonText: "text-black",
+                    buttonShadow: "shadow-lg shadow-black/5",
+                    panelBg: "bg-white",
+                    panelBorder: "border-black/10",
+                    panelShadow: "shadow-2xl shadow-black/10",
+                    headerBg: "bg-gray-50",
+                    headerText: "text-black",
+                    headerSub: "text-black/40",
+                    userBubble: "bg-black text-white border-black rounded-br-sm",
+                    bluBubble: "bg-gray-100 text-black border-gray-200 rounded-bl-sm",
+                    inputBg: "bg-gray-50",
+                    inputBorder: "border-black/10",
+                    inputText: "text-black",
+                    inputPlaceholder: "placeholder-black/30",
+                    inputFocus: "focus:border-black/30",
+                    sendBtn: "bg-black text-white",
+                    iconColor: "text-black/60"
                 };
             case "dim":
                 return {

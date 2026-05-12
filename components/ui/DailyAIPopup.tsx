@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface DailyAIPopupProps {
     pointsAwarded: number;
@@ -11,6 +12,7 @@ interface DailyAIPopupProps {
 
 export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupProps) {
     const { t } = useLanguage();
+    const { theme } = useTheme();
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -33,7 +35,7 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-app-bg/80 backdrop-blur-md"
+                        className={`absolute inset-0 ${theme === 'light' ? 'bg-white' : 'bg-app-bg/80 backdrop-blur-md'}`}
                         onClick={handleClose}
                     />
 
