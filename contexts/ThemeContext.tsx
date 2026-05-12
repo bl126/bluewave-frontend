@@ -36,8 +36,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
         const tg = (window as any).Telegram?.WebApp;
         if (tg) {
-            tg.setHeaderColor(validatedTheme === "original" ? "#000000" : "#17212B");
-            tg.setBackgroundColor(validatedTheme === "original" ? "#000000" : "#17212B");
+            tg.setHeaderColor(newTheme === "original" ? "#000000" : "#17212B");
+            tg.setBackgroundColor(newTheme === "original" ? "#000000" : "#17212B");
         }
     };
 
