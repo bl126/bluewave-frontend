@@ -149,7 +149,6 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
   if (!telegram_id && isOpen) {
     return (
-    return (
       <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center text-app-accent bg-app-bg/95 backdrop-blur-xl">
         <div className="w-8 h-8 border-2 border-app-accent/20 border-t-app-accent rounded-full animate-spin mb-4" />
         <span className="text-[10px] font-black uppercase tracking-widest opacity-50">{t("missions.synchronizing")}</span>
