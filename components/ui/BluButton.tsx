@@ -22,34 +22,17 @@ interface BluButtonProps {
     onOpenCocoon?: () => void;
 }
 
-// Advanced Typewriter with Deletion (Backspacing) support
-const Typewriter = ({ text, onComplete }: { text: string, onComplete?: () => void }) => {
-    const [currentText, setCurrentText] = useState("");
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [index, setIndex] = useState(0);
-
+// Instant Display Component (Replaces Typewriter)
+const MessageDisplay = ({ text, onComplete }: { text: string, onComplete?: () => void }) => {
     useEffect(() => {
-        if (!isDeleting && index < text.length) {
-            const timeout = setTimeout(() => {
-                setCurrentText(prev => prev + text[index]);
-                setIndex(prev => prev + 1);
-            }, 20);
-            return () => clearTimeout(timeout);
-        } else if (!isDeleting && index === text.length) {
-            // Hold for 3 seconds then start deleting
-            const timeout = setTimeout(() => setIsDeleting(true), 3000);
-            return () => clearTimeout(timeout);
-        } else if (isDeleting && currentText.length > 0) {
-            const timeout = setTimeout(() => {
-                setCurrentText(prev => prev.slice(0, -1));
-            }, 20);
-            return () => clearTimeout(timeout);
-        } else if (isDeleting && currentText.length === 0) {
+        // Still hold for 3 seconds before 'dismissing' if it's the auto-greeting
+        const timeout = setTimeout(() => {
             onComplete?.();
-        }
-    }, [index, text, isDeleting, currentText, onComplete]);
+        }, 5000);
+        return () => clearTimeout(timeout);
+    }, [text, onComplete]);
 
-    return <span>{currentText}</span>;
+    return <span>{text}</span>;
 };
 
 export default function BluButton({ 
@@ -68,15 +51,17 @@ export default function BluButton({
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showGreeting, setShowGreeting] = useState(false);
+    const [hasGreetingBeenDismissed, setHasGreetingBeenDismissed] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const firstName = telegramUser?.first_name || "there";
 
     useEffect(() => {
-        const timer = setTimeout(() => { if (!isOpen) setShowGreeting(true); }, 1000);
+        if (hasGreetingBeenDismissed || isOpen) return;
+        const timer = setTimeout(() => { setShowGreeting(true); }, 1500);
         return () => clearTimeout(timer);
-    }, [isOpen]);
+    }, [isOpen, hasGreetingBeenDismissed]);
 
     useEffect(() => {
         if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -115,11 +100,11 @@ export default function BluButton({
         setIsLoading(true);
 
         const steps = [
-            { content: `Welcome to the Wave, ${firstName}! I'm Blu. To start your journey, first go to your **Profile** and connect your **TON Wallet**. This is essential for your $BWAVE rewards.`, delay: 1000 },
-            { content: `Next, open the **Mission Center** and go to the **Presence Tab**. Activate your 1h, 4h, or 24h signals. The more you sync, the more points you earn!`, delay: 5000 },
-            { content: `Want to stack points faster? Complete **Social Missions** in the Social tab. Every follow and share counts towards your reputation.`, delay: 9000 },
-            { content: `Keep an eye on the **Explore Tab** to see the Leaderboard. Watch your rank climb as you stay active in the ecosystem!`, delay: 13000 },
-            { content: `PRO TIP: Tap the **3 dots** on your Profile to see **Ecosystem Roles**. Be active in our community to earn roles that multiply your rewards! 🚀`, delay: 17000 }
+            { content: `Welcome to the Wave, ${firstName}! I'm Blu. To start your journey, first go to your **Profile** and connect your **TON Wallet**. This is essential for your $BWAVE rewards.`, delay: 500 },
+            { content: `Next, open the **Mission Center** and go to the **Presence Tab**. Activate your 1h, 4h, or 24h signals. The more you sync, the more points you earn!`, delay: 2500 },
+            { content: `Want to stack points faster? Complete **Social Missions** in the Social tab. Every follow and share counts towards your reputation.`, delay: 4500 },
+            { content: `Keep an eye on the **Explore Tab** to see the Leaderboard. Watch your rank climb as you stay active in the ecosystem!`, delay: 6500 },
+            { content: `PRO TIP: Tap the **3 dots** on your Profile to see **Ecosystem Roles**. Be active in our community to earn roles that multiply your rewards! 🚀`, delay: 8500 }
         ];
 
         steps.forEach((step, i) => {
@@ -140,12 +125,24 @@ export default function BluButton({
         }
     }, [isOpen, isNewUser, isGuideStarted]);
 
+    useEffect(() => {
+        if (isOpen && messages.length === 0 && !isNewUser) {
+            setMessages([{ 
+                role: "blu", 
+                content: greetingMessage,
+                timestamp: new Date().toLocaleTimeString()
+            }]);
+        }
+    }, [isOpen, greetingMessage, isNewUser, messages.length]);
+
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
         
         if (!isExpanded) onToggleExpand?.(true);
         setIsOpen(true);
+        setShowGreeting(false);
+        setHasGreetingBeenDismissed(true);
         
         const userMsg = inputValue.trim();
         setInputValue("");
@@ -175,7 +172,11 @@ export default function BluButton({
             {/* 1. THE MINI ORB (Shrunken & Liquid Glass) */}
             <div className="fixed z-[85] top-[18%] left-2 select-none">
                 <motion.button
-                    onClick={() => { setIsOpen(true); setShowGreeting(false); }}
+                    onClick={() => { 
+                        setIsOpen(true); 
+                        setShowGreeting(false); 
+                        setHasGreetingBeenDismissed(true);
+                    }}
                     whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(0, 246, 255, 0.4)" }}
                     whileTap={{ scale: 0.9 }}
                     className="relative w-11 h-11 rounded-full border border-cyan-500/30 backdrop-blur-3xl bg-black/40 flex items-center justify-center overflow-hidden group"
@@ -206,13 +207,24 @@ export default function BluButton({
                             className="absolute left-14 top-0 w-56 p-4 rounded-2xl rounded-tl-none bg-black/60 border border-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] z-[86]"
                         >
                             <p className="text-[11px] text-cyan-50/90 leading-relaxed font-medium">
-                                <Typewriter 
+                                <MessageDisplay 
                                     text={greetingMessage} 
-                                    onComplete={() => setShowGreeting(false)} 
+                                    onComplete={() => {
+                                        setShowGreeting(false);
+                                        setHasGreetingBeenDismissed(true);
+                                    }} 
                                 />
                             </p>
                             <div className="mt-3 flex justify-end">
-                                <button onClick={() => setShowGreeting(false)} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest hover:bg-white/10 transition-colors">Dismiss</button>
+                                <button 
+                                    onClick={() => {
+                                        setShowGreeting(false);
+                                        setHasGreetingBeenDismissed(true);
+                                    }} 
+                                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest hover:bg-white/10 transition-colors"
+                                >
+                                    Dismiss
+                                </button>
                             </div>
                         </motion.div>
                     )}
@@ -231,7 +243,7 @@ export default function BluButton({
                             className={`fixed z-[87] flex flex-col backdrop-blur-[40px] bg-black/40 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden
                                 ${isExpanded 
                                     ? "inset-0 w-full h-full rounded-none border-none" 
-                                    : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-sm h-[75vh] rounded-[2.5rem]"
+                                    : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-sm h-[50vh] rounded-[2.5rem]"
                                 }`}
                         >
                             {/* Ambient Background Mesh */}
@@ -252,8 +264,11 @@ export default function BluButton({
                             )}
 
                             {/* Scroll Area */}
-                            <div className={`relative z-10 flex-1 overflow-y-auto px-6 pb-32 flex flex-col gap-6
-                                ${isExpanded ? "pt-[160px]" : "pt-6"}`}>
+                            <div 
+                                className={`relative z-10 flex-1 overflow-y-auto px-6 pb-32 flex flex-col gap-6
+                                    ${isExpanded ? "pt-[200px]" : "pt-6"}`}
+                                style={isExpanded ? { paddingTop: "max(200px, env(safe-area-inset-top, 0px) + 160px)" } : {}}
+                            >
                                 {/* Welcome Card */}
                                 <div className="space-y-6">
                                     <h2 className="text-2xl font-black text-white tracking-tighter">
