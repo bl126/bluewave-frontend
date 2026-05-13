@@ -31,6 +31,7 @@ import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
 import DailyAIPopup from "@/components/ui/DailyAIPopup";
+import CocoonOverlay from "@/components/ui/CocoonOverlay";
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
@@ -120,7 +121,13 @@ export default function LandingPage() {
   // 🧭 Navigation Visibility
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour;
+  // 🥚 Cocoon State
+  const [isCocoonOpen, setCocoonOpen] = useState(false);
+
+  // 🎯 Pending Mission Count
+  const [pendingMissionCount, setPendingMissionCount] = useState(0);
+
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -182,6 +189,10 @@ export default function LandingPage() {
       }
       if (isAIPopupOpen) {
         handleClearAIPopup();
+        return;
+      }
+      if (isCocoonOpen) {
+        setCocoonOpen(false);
         return;
       }
 
@@ -432,6 +443,11 @@ export default function LandingPage() {
         */
 
         setBalance(user.points_balance ?? null);
+        
+        // 🎯 Set pending mission count
+        if (data.missions && Array.isArray(data.missions)) {
+          setPendingMissionCount(data.missions.length);
+        }
 
         setBalance(user.points_balance ?? null);
 
@@ -758,6 +774,10 @@ export default function LandingPage() {
         <BluButton
           isExpanded={isBluExpanded}
           onToggleExpand={setIsBluExpanded}
+          telegramUser={telegramUser}
+          balance={balance}
+          pendingMissionCount={pendingMissionCount}
+          onOpenCocoon={() => setCocoonOpen(true)}
         />
       )}
 
@@ -930,6 +950,12 @@ export default function LandingPage() {
         />
       )
       */}
+
+      {/* 🥚 Cocoon Overlay */}
+      <CocoonOverlay 
+        isOpen={isCocoonOpen}
+        onClose={() => setCocoonOpen(false)}
+      />
     </div>
   );
 }
