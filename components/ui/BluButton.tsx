@@ -242,7 +242,7 @@ export default function BluButton({
 
                             {/* Header (Only for Small Mode) */}
                             {!isExpanded && (
-                                <div className="relative z-10 flex items-center justify-between px-6 py-5">
+                                <div className="relative z-20 flex items-center justify-between px-6 py-5 bg-black/20 border-b border-white/5">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                                         <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Blu OS v2.1</span>
@@ -252,7 +252,8 @@ export default function BluButton({
                             )}
 
                             {/* Scroll Area */}
-                            <div className={`relative z-10 flex-1 overflow-y-auto px-6 pt-6 pb-32 flex flex-col gap-6 ${isExpanded ? "pt-36" : ""}`}>
+                            <div className={`relative z-10 flex-1 overflow-y-auto px-6 pb-32 flex flex-col gap-6
+                                ${isExpanded ? "pt-[160px]" : "pt-6"}`}>
                                 {/* Welcome Card */}
                                 <div className="space-y-6">
                                     <h2 className="text-2xl font-black text-white tracking-tighter">
@@ -365,7 +366,7 @@ export default function BluButton({
                                         animate={{ x: 0 }}
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                        className="fixed z-[101] left-0 top-0 bottom-0 w-1/2 max-w-sm bg-black/80 border-r border-white/10 backdrop-blur-[60px] p-8 pt-36 flex flex-col"
+                                        className="fixed z-[101] left-0 top-0 bottom-0 w-1/2 max-w-sm bg-black/80 border-r border-white/10 backdrop-blur-[60px] p-8 pt-[160px] flex flex-col"
                                     >
                                         <div className="flex items-center justify-between mb-10">
                                             <span className="text-xs font-black text-cyan-400 uppercase tracking-[0.4em]">Archives</span>
