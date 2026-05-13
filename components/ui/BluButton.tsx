@@ -33,7 +33,7 @@ const Typewriter = ({ text, onComplete }: { text: string, onComplete?: () => voi
             const timeout = setTimeout(() => {
                 setCurrentText(prev => prev + text[index]);
                 setIndex(prev => prev + 1);
-            }, 40);
+            }, 20);
             return () => clearTimeout(timeout);
         } else if (!isDeleting && index === text.length) {
             // Hold for 3 seconds then start deleting
@@ -211,9 +211,8 @@ export default function BluButton({
                                     onComplete={() => setShowGreeting(false)} 
                                 />
                             </p>
-                            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                                <button onClick={() => setIsOpen(true)} className="whitespace-nowrap px-2 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-bold text-cyan-400 uppercase tracking-widest">Open Pad</button>
-                                <button onClick={() => setShowGreeting(false)} className="px-2 py-1 text-[9px] font-bold text-white/30 uppercase">Dismiss</button>
+                            <div className="mt-3 flex justify-end">
+                                <button onClick={() => setShowGreeting(false)} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest hover:bg-white/10 transition-colors">Dismiss</button>
                             </div>
                         </motion.div>
                     )}
@@ -232,7 +231,7 @@ export default function BluButton({
                             className={`fixed z-[87] flex flex-col backdrop-blur-[40px] bg-black/40 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden
                                 ${isExpanded 
                                     ? "inset-0 w-full h-full rounded-none border-none" 
-                                    : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-sm h-[60vh] rounded-[2.5rem]"
+                                    : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-sm h-[75vh] rounded-[2.5rem]"
                                 }`}
                         >
                             {/* Ambient Background Mesh */}
@@ -253,7 +252,7 @@ export default function BluButton({
                             )}
 
                             {/* Scroll Area */}
-                            <div className={`relative z-10 flex-1 overflow-y-auto px-6 pt-4 pb-32 flex flex-col gap-6 ${isExpanded ? "pt-24" : ""}`}>
+                            <div className={`relative z-10 flex-1 overflow-y-auto px-6 pt-6 pb-32 flex flex-col gap-6 ${isExpanded ? "pt-36" : ""}`}>
                                 {/* Welcome Card */}
                                 <div className="space-y-6">
                                     <h2 className="text-2xl font-black text-white tracking-tighter">
@@ -261,26 +260,28 @@ export default function BluButton({
                                     </h2>
                                     
                                     {/* Action Pills */}
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <QuickActionPill 
+                                                icon={<Globe size={16} />} 
+                                                label="PresenceFi" 
+                                                onClick={() => handleQuickAction("Explain PresenceFi")}
+                                            />
+                                            <QuickActionPill 
+                                                icon={<Award size={16} />} 
+                                                label="Missions" 
+                                                onClick={() => window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "missions" }))}
+                                            />
+                                        </div>
                                         <QuickActionPill 
-                                            icon={<Globe size={16} />} 
-                                            label="PresenceFi" 
-                                            onClick={() => handleQuickAction("Explain PresenceFi")}
-                                        />
-                                        <QuickActionPill 
-                                            icon={<img src="/cocoon_egg.png" alt="🥚" className="w-4 h-4" onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }} />} 
-                                            label="Cocoon" 
-                                            color="border-purple-500/20 text-purple-400"
+                                            icon={<img src="/cocoon_egg.png" alt="🥚" className="w-5 h-6 object-contain" onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }} />} 
+                                            label="Cocoon Network Experience" 
+                                            color="border-purple-500/20 text-purple-400 bg-purple-500/5"
                                             onClick={onOpenCocoon}
                                         />
                                         <QuickActionPill 
-                                            icon={<Award size={16} />} 
-                                            label="Missions" 
-                                            onClick={() => window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "missions" }))}
-                                        />
-                                        <QuickActionPill 
                                             icon={<Wallet size={16} />} 
-                                            label="Wallet" 
+                                            label="Wallet & Financial Assets" 
                                             onClick={() => window.dispatchEvent(new CustomEvent("setActiveTab", { detail: "profile" }))}
                                         />
                                     </div>
@@ -318,7 +319,7 @@ export default function BluButton({
                             </div>
 
                             {/* 4. FLOATING INPUT (ChatGPT Style) */}
-                            <div className="absolute bottom-8 left-0 right-0 px-6 z-20">
+                            <div className="absolute bottom-5 left-0 right-0 px-6 z-20">
                                 <motion.form 
                                     onSubmit={handleSendMessage}
                                     className="relative max-w-lg mx-auto"
@@ -329,13 +330,13 @@ export default function BluButton({
                                         value={inputValue}
                                         onChange={(e) => setInputValue(e.target.value)}
                                         placeholder="Message Blu..." 
-                                        className="w-full bg-white/5 border border-white/10 backdrop-blur-3xl rounded-[2rem] px-6 py-5 text-sm text-white focus:border-cyan-500/50 outline-none transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)] pr-14" 
+                                        className="w-full bg-white/5 border border-white/10 backdrop-blur-3xl rounded-[2rem] px-6 py-4 text-sm text-white focus:border-cyan-500/50 outline-none transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)] pr-14" 
                                     />
                                     <button 
                                         type="submit" 
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center hover:scale-105 transition-transform"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-cyan-500 text-black flex items-center justify-center hover:scale-105 transition-transform"
                                     >
-                                        <Send size={18} />
+                                        <Send size={16} />
                                     </button>
                                 </motion.form>
                             </div>
@@ -364,7 +365,7 @@ export default function BluButton({
                                         animate={{ x: 0 }}
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                        className="fixed z-[101] left-0 top-0 bottom-0 w-1/2 max-w-sm bg-black/80 border-r border-white/10 backdrop-blur-[60px] p-8 flex flex-col"
+                                        className="fixed z-[101] left-0 top-0 bottom-0 w-1/2 max-w-sm bg-black/80 border-r border-white/10 backdrop-blur-[60px] p-8 pt-36 flex flex-col"
                                     >
                                         <div className="flex items-center justify-between mb-10">
                                             <span className="text-xs font-black text-cyan-400 uppercase tracking-[0.4em]">Archives</span>

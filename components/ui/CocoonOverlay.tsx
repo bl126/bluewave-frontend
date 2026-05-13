@@ -41,32 +41,21 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
 
             {/* Hero Section */}
             <div className="flex flex-col items-center text-center mb-16">
-              {/* CSS-Rendered Cocoon Egg */}
-              <div className="relative w-40 h-52 mb-10">
+              {/* Actual Cocoon Egg Image */}
+              <div className="relative w-48 mb-10">
                 <motion.div
                   animate={{ 
-                    y: [0, -10, 0],
-                    filter: [
-                      "drop-shadow(0 0 20px rgba(0, 191, 255, 0.3))",
-                      "drop-shadow(0 0 40px rgba(123, 47, 190, 0.5))",
-                      "drop-shadow(0 0 20px rgba(0, 191, 255, 0.3))"
-                    ]
+                    y: [0, -15, 0],
                   }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-full relative"
+                  className="w-full relative"
                 >
-                  {/* Egg Shape */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00BFFF] via-[#4B0082] to-[#040B1A] rounded-[50%_50%_50%_50%/60%_60%_40%_40%] border border-white/20 overflow-hidden shadow-2xl">
-                    {/* Mesh Overlay */}
-                    <div className="absolute inset-0 opacity-30" 
-                      style={{ 
-                        backgroundImage: `linear-gradient(30deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%), linear-gradient(-30deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%)`,
-                        backgroundSize: '30px 30px'
-                      }} 
-                    />
-                    {/* Inner Glow */}
-                    <div className="absolute top-1/4 left-1/4 w-1/2 h-1/2 bg-white/20 blur-2xl rounded-full" />
-                  </div>
+                  <img 
+                    src="/cocoon_egg.png" 
+                    alt="Cocoon Egg" 
+                    className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,191,255,0.4)]"
+                    onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
+                  />
                 </motion.div>
                 
                 {/* Floor Shadow */}
