@@ -126,6 +126,8 @@ export default function LandingPage() {
 
   // 🎯 Pending Mission Count
   const [pendingMissionCount, setPendingMissionCount] = useState(0);
+  const [socialMissionCount, setSocialMissionCount] = useState(0);
+  const [presenceMissionCount, setPresenceMissionCount] = useState(0);
 
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
 
@@ -445,8 +447,26 @@ export default function LandingPage() {
         setBalance(user.points_balance ?? null);
         
         // 🎯 Set pending mission count
-        if (data.missions && Array.isArray(data.missions)) {
-          setPendingMissionCount(data.missions.length);
+        if (data.missions) {
+          const m = data.missions;
+          let social = 0;
+          
+          const countPending = (list: any[]) => {
+            if (!Array.isArray(list)) return 0;
+            return list.filter(item => item.status !== "done").length;
+          };
+
+          social += countPending(m.normal);
+          social += countPending(m.daily);
+          social += countPending(m.onboarding);
+          if (m.story && m.story.status !== "done") social += 1;
+
+          setSocialMissionCount(social);
+        }
+
+        if (data.presence && Array.isArray(data.presence)) {
+          const pPending = data.presence.filter((pm: any) => pm.status === "inactive" || pm.status === "completed").length;
+          setPresenceMissionCount(pPending);
         }
 
         setBalance(user.points_balance ?? null);
@@ -777,6 +797,8 @@ export default function LandingPage() {
           telegramUser={telegramUser}
           balance={balance}
           pendingMissionCount={pendingMissionCount}
+          socialMissionCount={socialMissionCount}
+          presenceMissionCount={presenceMissionCount}
           onOpenCocoon={() => setCocoonOpen(true)}
         />
       )}
