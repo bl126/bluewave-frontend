@@ -2,13 +2,14 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Globe, Award, Wallet, Sparkles, Send, Terminal, Plus, Mic, ChevronDown, LayoutGrid } from "lucide-react";
+import { X, Globe, Award, Wallet, Sparkles, Send, Terminal, Plus, Mic, ChevronDown, LayoutGrid, Image as ImageIcon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface Message {
     role: "user" | "blu";
     content: string;
     timestamp: string;
+    image?: string;
 }
 
 interface BluButtonProps {
@@ -39,6 +40,9 @@ export default function BluButton({
     const [isLoading, setIsLoading] = useState(false);
     const [showGreeting, setShowGreeting] = useState(false);
     const [hasGreetingBeenDismissed, setHasGreetingBeenDismissed] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // 🔓 Access Control Logic: Now open to everyone
@@ -102,12 +106,18 @@ export default function BluButton({
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!inputValue.trim()) return;
+        if (!inputValue.trim() && !selectedImage) return;
         
         const userMsg = inputValue.trim();
         setInputValue("");
-        setMessages(prev => [...prev, { role: "user", content: userMsg, timestamp: new Date().toLocaleTimeString() }]);
+        setMessages(prev => [...prev, { 
+            role: "user", 
+            content: userMsg, 
+            image: selectedImage || undefined,
+            timestamp: new Date().toLocaleTimeString() 
+        }]);
         
+        setSelectedImage(null);
         setIsLoading(true);
         setTimeout(() => {
             setMessages(prev => [...prev, { 
@@ -117,6 +127,17 @@ export default function BluButton({
             }]);
             setIsLoading(false);
         }, 3000); 
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setSelectedImage(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
@@ -151,19 +172,15 @@ export default function BluButton({
                                 className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 blur-xl opacity-20"
                             />
                         </div>
-
                         
                         <span className={`relative text-[8px] font-black tracking-[0.3em] transition-colors ${isAuthorized ? "text-cyan-300 group-hover:text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-white/20"}`}>
                             BLU
                         </span>
 
-                        {/* Outer Atmospheric Glow (Much Stronger) */}
+                        {/* Outer Atmospheric Glow */}
                         {isAuthorized && (
                             <motion.div 
-                                animate={{ 
-                                    scale: [1, 1.2, 1],
-                                    opacity: [0.2, 0.5, 0.2] 
-                                }}
+                                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
                                 transition={{ duration: 3, repeat: Infinity }}
                                 className="absolute inset-0 bg-cyan-400/20 blur-2xl -z-10"
                             />
@@ -171,7 +188,7 @@ export default function BluButton({
                     </motion.button>
                 </motion.div>
 
-                {/* Mini Greeting Bubble (Reduced & Specific) */}
+                {/* Mini Greeting Bubble */}
                 <AnimatePresence>
                     {showGreeting && (
                         <motion.div 
@@ -185,15 +202,10 @@ export default function BluButton({
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                                     <span className="text-[8px] font-black text-cyan-400/60 uppercase tracking-widest">Blu Intelligence</span>
                                 </div>
-
                                 <p className="text-[10px] text-white/90 leading-snug font-medium">
                                     {greetingMessage}
                                 </p>
-
-                                <button 
-                                    onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} 
-                                    className="text-[8px] font-bold text-white/30 uppercase tracking-widest hover:text-white transition-colors"
-                                >
+                                <button onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} className="text-[8px] font-bold text-white/30 uppercase tracking-widest hover:text-white transition-colors">
                                     Dismiss
                                 </button>
                             </div>
@@ -211,23 +223,25 @@ export default function BluButton({
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden"
                     >
-                        {/* Cocoon Dynamic Island (Top Navigation) */}
-                        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[101]">
+                        {/* Slim Cocoon Dynamic Island (Top Navigation) - Lowered by 10pt */}
+                        <div className="absolute top-9 left-1/2 -translate-x-1/2 z-[101]">
                             <motion.button 
                                 initial={{ y: -20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 onClick={onOpenCocoon}
-                                className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
                             >
-                                <div className="relative w-6 h-7 overflow-hidden">
+                                <div className="relative w-5 h-6 overflow-hidden">
                                     <img 
                                         src="/cocoon_egg.png" 
                                         alt="Cocoon" 
-                                        className="w-full h-full object-contain filter drop-shadow-[0_0_12px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform"
+                                        className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
                                         onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
                                     />
                                 </div>
-                                <span className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Cocoon</span>
+                                <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                    Cocoon
+                                </span>
                             </motion.button>
                         </div>
 
@@ -240,58 +254,21 @@ export default function BluButton({
                         {/* Main Content Area */}
                         <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 pt-20">
                             
-                            {/* The Central Orb (The Soul of the AI) */}
+                            {/* The Central Asset (Replaced Orb with blu_image.png) */}
                             <div className="relative mb-12">
                                 <motion.div 
-                                    animate={{ 
-                                        scale: [1, 1.05, 1],
-                                        rotate: [0, 5, 0, -5, 0]
-                                    }}
-                                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                                    className="relative w-48 h-48 rounded-full border border-white/10 shadow-[0_0_80px_rgba(0,246,255,0.1)] overflow-hidden flex items-center justify-center group"
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="relative w-48 h-48 flex items-center justify-center"
                                 >
-                                    {/* Glass Surface */}
-                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl z-10" />
-                                    
-                                    {/* Liquid Gradients */}
-                                    <motion.div 
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                        className="absolute w-[150%] h-[150%] bg-[conic-gradient(from_0deg,#0ea5e9,transparent_90deg,#8b5cf6,transparent_180deg,#0ea5e9)] opacity-30"
+                                    <div className="absolute inset-0 bg-cyan-500/5 blur-[60px] rounded-full animate-pulse" />
+                                    <img 
+                                        src="/blu_image.png" 
+                                        alt="Blu" 
+                                        className="w-40 h-40 object-contain relative z-20"
+                                        onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
                                     />
-                                    
-                                    {/* Inner Core Pulse */}
-                                    <motion.div 
-                                        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
-                                        transition={{ duration: 4, repeat: Infinity }}
-                                        className="absolute w-24 h-24 rounded-full bg-cyan-400/20 blur-2xl z-20"
-                                    />
-
-                                    {/* Logo Placeholder */}
-                                    <div className="relative z-30 opacity-60">
-                                        <Sparkles size={40} className="text-white" />
-                                    </div>
                                 </motion.div>
-
-                                {/* Floating Particles */}
-                                <div className="absolute inset-0 -z-10 pointer-events-none">
-                                    {[...Array(5)].map((_, i) => (
-                                        <motion.div
-                                            key={i}
-                                            animate={{ 
-                                                y: [-20, 20, -20], 
-                                                x: [-10, 10, -10],
-                                                opacity: [0.1, 0.4, 0.1]
-                                            }}
-                                            transition={{ duration: 5 + i, repeat: Infinity, delay: i }}
-                                            className="absolute w-1 h-1 rounded-full bg-white"
-                                            style={{ 
-                                                top: `${20 + i * 15}%`, 
-                                                left: `${10 + i * 20}%` 
-                                            }}
-                                        />
-                                    ))}
-                                </div>
                             </div>
 
                             {/* Welcome Text */}
@@ -329,6 +306,9 @@ export default function BluButton({
                                                     : "bg-white/5 border-white/10 text-white/70 rounded-bl-none"
                                                 }`}
                                             >
+                                                {msg.image && (
+                                                    <img src={msg.image} alt="User Upload" className="mb-3 rounded-xl w-full object-cover max-h-40" />
+                                                )}
                                                 {msg.content}
                                             </div>
                                         </motion.div>
@@ -338,60 +318,48 @@ export default function BluButton({
                             )}
                         </div>
 
-                        {/* TACTICAL INPUT BAR (Bottom Navigation) */}
+                        {/* REDESIGNED TACTICAL INPUT BAR */}
                         <div className="mt-auto px-6 pb-10 relative z-30">
-                            {/* Status Bubble */}
-                            {messages.length === 0 && !isLoading && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mb-4 flex items-center gap-3 px-5 py-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl w-fit mx-auto"
-                                >
-                                    <div className="flex gap-1">
-                                        {[...Array(3)].map((_, i) => (
-                                            <div key={i} className="w-1 h-3 rounded-full bg-cyan-400/40" />
-                                        ))}
-                                    </div>
-                                    <span className="text-[11px] text-white/80 font-medium">{greetingMessage}</span>
-                                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                                </motion.div>
-                            )}
+                            {/* Input Container (Single Row ChatGPT Style) */}
+                            <div className="bg-white/5 border border-white/10 backdrop-blur-[40px] rounded-[2rem] p-1.5 pr-2 flex items-center gap-2 shadow-2xl overflow-hidden">
+                                {/* Hidden File Input */}
+                                <input 
+                                    type="file" 
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
 
-                            {/* Input Container */}
-                            <div className="bg-white/5 border border-white/10 backdrop-blur-[40px] rounded-[2.5rem] p-2 flex flex-col gap-2 overflow-hidden shadow-2xl">
-                                <div className="px-6 pt-4 pb-2">
+                                <button 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${selectedImage ? "text-cyan-400 bg-cyan-400/10" : "text-white/20 hover:text-white/40 hover:bg-white/5"}`}
+                                >
+                                    {selectedImage ? <ImageIcon size={18} /> : <Plus size={20} />}
+                                </button>
+
+                                <div className="flex-1 min-w-0">
                                     <input 
                                         type="text" 
                                         value={inputValue}
                                         onChange={(e) => setInputValue(e.target.value)}
                                         placeholder="Ask Blu anything..." 
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-white/20"
+                                        className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-white/20 py-2"
                                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(e as any)}
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between p-1">
-                                    <div className="flex items-center gap-1">
-                                        <ToolButton icon={<Plus size={16} />} />
-                                        <ToolPill icon={<Globe size={14} />} label="Web" />
-                                        <ToolPill icon={<LayoutGrid size={14} />} label="Tools" />
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-1">
-                                        <ToolButton icon={<Mic size={16} />} />
-                                        <button 
-                                            onClick={handleSendMessage}
-                                            disabled={!inputValue.trim()}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                                                inputValue.trim() 
-                                                    ? "bg-gradient-to-br from-cyan-400 to-blue-600 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]" 
-                                                    : "bg-white/5 text-white/20"
-                                            }`}
-                                        >
-                                            <Send size={18} strokeWidth={2.5} />
-                                        </button>
-                                    </div>
-                                </div>
+                                <button 
+                                    onClick={handleSendMessage}
+                                    disabled={!inputValue.trim() && !selectedImage}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                                        (inputValue.trim() || selectedImage)
+                                            ? "bg-gradient-to-br from-cyan-400 to-blue-600 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]" 
+                                            : "bg-white/5 text-white/10"
+                                    }`}
+                                >
+                                    <Send size={18} strokeWidth={2.5} />
+                                </button>
                             </div>
                         </div>
 
