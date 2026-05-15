@@ -174,6 +174,6 @@ export function useSync(tg_id: number | null) {
 }
 
 // GET Network Hook
-export function useNetwork(tg_id: number | null) {
-  return useApi(tg_id ? `/user/network/${tg_id}` : null);
+export function useNetwork(tg_id: number | null, options: any = {}) {
+  return useApi(tg_id ? `/user/network/${tg_id}` : null, options);
 }

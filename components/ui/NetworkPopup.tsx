@@ -25,7 +25,30 @@ const NOTIFY_COOLDOWN = 4 * 60 * 60 * 1000; // 4 hours in ms
 
 export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferral }: NetworkPopupProps) {
   const { t } = useLanguage();
-  const { data: network, loading, mutate } = useNetwork(isOpen ? telegramId : null);
+  
+  // ⚡ Instant Loading Logic: Use localStorage cache as fallback
+  const [cachedData, setCachedData] = useState<any>(() => {
+    if (typeof window !== "undefined" && telegramId) {
+      const cached = localStorage.getItem(`bw_network_cache_${telegramId}`);
+      return cached ? JSON.parse(cached) : null;
+    }
+    return null;
+  });
+
+  // ⚡ Background Pre-fetching: Fetch even if !isOpen so it's ready
+  const { data: network, loading, mutate } = useNetwork(telegramId, {
+    fallbackData: cachedData,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  // ⚡ Cache Persistence: Update localStorage when fresh data arrives
+  useEffect(() => {
+    if (network && telegramId) {
+      localStorage.setItem(`bw_network_cache_${telegramId}`, JSON.stringify(network));
+    }
+  }, [network, telegramId]);
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [notifyingIds, setNotifyingIds] = useState<Set<number>>(new Set());
   const [countdowns, setCountdowns] = useState<Record<number, string>>({});
@@ -131,7 +154,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-            {loading ? (
+            {loading && !network ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="animate-spin text-app-accent" size={32} />
                 <span className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Gathering Signals...</span>
@@ -139,7 +162,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
             ) : (
               <div className="flex flex-col gap-6">
                 {/* Active Section */}
-                {network?.active?.length > 0 && (
+                {(network?.active?.length > 0) && (
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 px-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-app-accent animate-pulse" />
@@ -160,7 +183,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
                 )}
 
                 {/* Inactive Section */}
-                {network?.inactive?.length > 0 && (
+                {(network?.inactive?.length > 0) && (
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 px-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-text-sub/30" />
@@ -182,7 +205,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
                   </div>
                 )}
 
-                {!network?.active?.length && !network?.inactive?.length && (
+                {!network?.active?.length && !network?.inactive?.length && !loading && (
                   <div className="flex flex-col items-center justify-center py-10 text-center">
                     <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
                       <Users size={24} className="text-text-sub/20" />
