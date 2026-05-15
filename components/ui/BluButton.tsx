@@ -52,6 +52,36 @@ export default function BluButton({
         return () => clearTimeout(timer);
     }, [isOpen, hasGreetingBeenDismissed]);
 
+    // 🕒 Auto-dismiss bubble after 10 seconds
+    useEffect(() => {
+        if (showGreeting) {
+            const timer = setTimeout(() => {
+                setShowGreeting(false);
+                setHasGreetingBeenDismissed(true);
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [showGreeting]);
+
+    // 📱 Telegram Back Button Integration
+    useEffect(() => {
+        const tg = (window as any).Telegram?.WebApp;
+        if (!tg) return;
+
+        if (isOpen) {
+            tg.BackButton.show();
+            tg.BackButton.onClick(() => {
+                setIsOpen(false);
+            });
+        } else {
+            tg.BackButton.hide();
+        }
+
+        return () => {
+            tg.BackButton.offClick();
+        };
+    }, [isOpen]);
+
     useEffect(() => {
         if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isOpen]);
@@ -61,13 +91,13 @@ export default function BluButton({
         const hasPresence = presenceMissionCount > 0;
 
         if (hasSocial && hasPresence) {
-            return `I'm ready to help. You have ${presenceMissionCount} presence and ${socialMissionCount} social missions pending.`;
+            return `Missions pending in Presence & Social tabs.`;
         } else if (hasPresence) {
-            return `I'm ready. Your presence signals need activation (${presenceMissionCount}).`;
+            return `Check the Presence tab—signals need activation.`;
         } else if (hasSocial) {
-            return `I'm ready. New social opportunities are available.`;
+            return `New missions available in the Social tab.`;
         }
-        return `I'm ready. What can I do for you?`;
+        return `Everything is operational. How can I assist you?`;
     }, [socialMissionCount, presenceMissionCount]);
 
     const handleSendMessage = (e: React.FormEvent) => {
@@ -141,41 +171,32 @@ export default function BluButton({
                     </motion.button>
                 </motion.div>
 
-                {/* Mini Greeting Bubble (Redesigned: Liquid Glass) */}
+                {/* Mini Greeting Bubble (Reduced & Specific) */}
                 <AnimatePresence>
                     {showGreeting && (
                         <motion.div 
                             initial={{ opacity: 0, x: -20, scale: 0.95 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, x: -20, scale: 0.95 }}
-                            className="absolute left-16 top-0 w-64 rounded-[2rem] rounded-tl-none border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden"
+                            className="absolute left-16 top-0 w-52 rounded-[1.5rem] rounded-tl-none border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden"
                         >
-                            {/* Inner Glow / Refraction */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-                            
-                            <div className="relative p-5 space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
-                                    <span className="text-[9px] font-black text-cyan-400/60 uppercase tracking-[0.2em]">Signal Received</span>
+                            <div className="relative p-4 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                    <span className="text-[8px] font-black text-cyan-400/60 uppercase tracking-widest">Blu Intelligence</span>
                                 </div>
 
-                                <p className="text-[11px] text-white/90 leading-relaxed font-medium tracking-wide">
-                                    Hello, <span className="text-cyan-400 font-bold">{firstName}</span>. <br/>
+                                <p className="text-[10px] text-white/90 leading-snug font-medium">
                                     {greetingMessage}
                                 </p>
 
-                                <div className="flex justify-end pt-1">
-                                    <button 
-                                        onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} 
-                                        className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all"
-                                    >
-                                        Dismiss
-                                    </button>
-                                </div>
+                                <button 
+                                    onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} 
+                                    className="text-[8px] font-bold text-white/30 uppercase tracking-widest hover:text-white transition-colors"
+                                >
+                                    Dismiss
+                                </button>
                             </div>
-
-                            {/* Bottom Glass Shine */}
-                            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -188,7 +209,7 @@ export default function BluButton({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden"
+                        className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden"
                     >
                         {/* Cocoon Dynamic Island (Top Navigation) */}
                         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[101]">
