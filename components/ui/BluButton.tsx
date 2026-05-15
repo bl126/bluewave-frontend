@@ -12,6 +12,8 @@ interface Message {
 }
 
 interface BluButtonProps {
+    isExpanded?: boolean;
+    onToggleExpand?: (expanded: boolean) => void;
     telegramUser: any;
     balance: number | null;
     pendingMissionCount?: number;
@@ -21,6 +23,8 @@ interface BluButtonProps {
 }
 
 export default function BluButton({ 
+    isExpanded = false,
+    onToggleExpand,
     telegramUser, 
     balance,
     pendingMissionCount = 0,
@@ -100,15 +104,15 @@ export default function BluButton({
                             setShowGreeting(false); 
                             setHasGreetingBeenDismissed(true);
                         }}
-                        whileHover={isAuthorized ? { scale: 1.1 } : {}}
-                        whileTap={isAuthorized ? { scale: 0.9 } : {}}
-                        className={`relative w-12 h-12 rounded-full border backdrop-blur-3xl bg-black/40 flex items-center justify-center overflow-hidden transition-all duration-500 shadow-[0_0_30px_rgba(0,0,0,0.5)] ${
+                        whileHover={isAuthorized ? { scale: 1.1, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" } : {}}
+                        whileTap={isAuthorized ? { scale: 0.95 } : {}}
+                        className={`relative w-12 h-12 rounded-full border backdrop-blur-3xl bg-black/40 flex items-center justify-center overflow-hidden transition-all duration-500 shadow-[0_0_30px_rgba(0,0,0,0.6)] ${
                             isAuthorized 
-                                ? "border-cyan-500/30 group-hover:border-cyan-500/60" 
+                                ? "border-cyan-500/40 group-hover:border-cyan-400" 
                                 : "border-white/5 opacity-50 cursor-default"
                         }`}
                     >
-                        {/* Internal Liquid Orb Animation */}
+                        {/* Internal Liquid Orb Animation (Minimal) */}
                         <div className="absolute inset-0 flex items-center justify-center">
                             <motion.div 
                                 animate={{ 
@@ -116,21 +120,25 @@ export default function BluButton({
                                     rotate: [0, 180, 360],
                                     opacity: [0.3, 0.6, 0.3]
                                 }}
-                                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                                className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500/20 via-blue-500/10 to-purple-500/20 blur-md"
+                                transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+                                className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 blur-xl opacity-20"
                             />
                         </div>
+
                         
-                        <span className={`relative text-[7px] font-black tracking-[0.2em] transition-colors ${isAuthorized ? "text-cyan-400 group-hover:text-cyan-200" : "text-white/20"}`}>
+                        <span className={`relative text-[8px] font-black tracking-[0.3em] transition-colors ${isAuthorized ? "text-cyan-300 group-hover:text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-white/20"}`}>
                             BLU
                         </span>
 
-                        {/* Outer Glow */}
+                        {/* Outer Atmospheric Glow (Much Stronger) */}
                         {isAuthorized && (
                             <motion.div 
-                                animate={{ opacity: [0.1, 0.4, 0.1] }}
+                                animate={{ 
+                                    scale: [1, 1.2, 1],
+                                    opacity: [0.2, 0.5, 0.2] 
+                                }}
                                 transition={{ duration: 3, repeat: Infinity }}
-                                className="absolute inset-0 bg-cyan-500/10 blur-xl"
+                                className="absolute inset-0 bg-cyan-400/20 blur-2xl -z-10"
                             />
                         )}
                     </motion.button>
