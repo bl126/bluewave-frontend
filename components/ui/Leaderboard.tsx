@@ -337,7 +337,7 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
                           />
 
                           <div className="absolute inset-0 flex flex-col items-center justify-start pt-6 px-2 text-center">
-                            <h4 className={`${isFirst ? 'text-[10px]' : 'text-[9px]'} font-black uppercase tracking-widest text-text-main mb-2 truncate max-w-full mt-5`}>
+                            <h4 className={`${isFirst ? 'text-[10px] mt-5' : 'text-[9px] mt-2'} font-black uppercase tracking-widest text-text-main mb-2 truncate max-w-full`}>
                               {u.name}
                             </h4>
 

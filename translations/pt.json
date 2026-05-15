@@ -68,7 +68,10 @@
     "notifying": "Notificando...",
     "wait": "Aguardar",
     "copied": "Copiado",
-    "no_members": "Ainda não há membros na rede"
+    "no_members": "Ainda não há membros na rede",
+    "total_members": "Total de Membros",
+    "active_now": "Ativos Agora",
+    "empty_desc": "Construa sua rede, convide mais pessoas através do seu link de indicação"
   },
   "nav": {
     "home": "Início",

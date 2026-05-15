@@ -67,7 +67,10 @@
     "notifying": "提醒中...",
     "wait": "等待",
     "copied": "已复制",
-    "no_members": "尚无网络成员"
+    "no_members": "尚无网络成员",
+    "total_members": "成员总数",
+    "active_now": "当前活跃",
+    "empty_desc": "建立您的网络，通过您的推荐链接邀请更多人"
   },
   "nav": {
     "home": "首页",

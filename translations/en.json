@@ -68,7 +68,10 @@
     "notifying": "Notifying...",
     "wait": "Wait",
     "copied": "Copied",
-    "no_members": "No network members yet"
+    "no_members": "No network members yet",
+    "total_members": "Total Members",
+    "active_now": "Active Now",
+    "empty_desc": "Build your network, invite more people through your referral link"
   },
   "nav": {
     "home": "Home",

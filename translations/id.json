@@ -68,7 +68,10 @@
     "notifying": "Memberitahu...",
     "wait": "Tunggu",
     "copied": "Disalin",
-    "no_members": "Belum ada anggota jaringan"
+    "no_members": "Belum ada anggota jaringan",
+    "total_members": "Total Anggota",
+    "active_now": "Aktif Sekarang",
+    "empty_desc": "Bangun jaringan Anda, undang lebih banyak orang melalui tautan rujukan Anda"
   },
   "nav": {
     "home": "Beranda",

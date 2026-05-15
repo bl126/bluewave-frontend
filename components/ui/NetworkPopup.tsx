@@ -119,12 +119,12 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
             <div className="flex gap-4 mt-2">
               <div className="flex flex-col">
                 <span className="text-app-accent text-[10px] font-black leading-none">{(network?.active?.length || 0) + (network?.inactive?.length || 0)}</span>
-                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">Total Members</span>
+                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.total_members")}</span>
               </div>
               <div className="w-[1px] h-4 bg-app-border self-center" />
               <div className="flex flex-col">
                 <span className="text-app-accent text-[10px] font-black leading-none">{network?.active?.length || 0}</span>
-                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">Active Now</span>
+                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.active_now")}</span>
               </div>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
                       <Users size={24} className="text-text-sub/20" />
                     </div>
                     <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest max-w-[200px] leading-relaxed mb-6">
-                      build your network invite more people through you referral link
+                      {t("network.empty_desc")}
                     </p>
                     <button 
                       onClick={() => {
