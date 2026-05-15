@@ -225,7 +225,7 @@ export default function LandingPage() {
   }, [
     isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode,
     selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
-    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab
+    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen
   ]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;

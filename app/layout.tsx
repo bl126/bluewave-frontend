@@ -48,6 +48,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/bluewave_logo.png" as="image" />
         <link rel="preload" href="/logo-bluewave.png" as="image" />
 
+        {/* 🤖 BLU AGENT & COCOON: Preload for instant display */}
+        <link rel="preload" href="/blu_image.png" as="image" />
+        <link rel="preload" href="/cocoon_egg.png" as="image" />
+
         {/* Telegram Mini App SDK — must be first */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
