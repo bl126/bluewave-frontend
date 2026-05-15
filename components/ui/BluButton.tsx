@@ -231,18 +231,17 @@ export default function BluButton({
                             </motion.button>
                         </div>
 
-                        {/* 🌌 ZERO-GRAVITY PARTICLE SYSTEM (Activates on first message) */}
+                        {/* 🌌 BLU MATRIX RAIN (Activates on first message) */}
                         <AnimatePresence>
                             {messages.length > 0 && (
                                 <motion.div 
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
+                                    transition={{ duration: 1 }}
                                     className="absolute inset-0 pointer-events-none overflow-hidden z-0"
                                 >
-                                    {[...Array(25)].map((_, i) => (
-                                        <FloatingShape key={i} index={i} />
-                                    ))}
+                                    <MatrixRain />
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -404,55 +403,86 @@ function ToolPill({ icon, label }: { icon: any, label: string }) {
     );
 }
 
-function FloatingShape({ index }: { index: number }) {
-    // Seeded values based on index — avoids Math.random() in render (SSR safe)
-    const seed = (n: number) => ((index * 9301 + n * 49297 + 233995) % 1000) / 1000;
+function MatrixRain() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const size = seed(1) * 28 + 6; // 6-34px
-    const duration = seed(2) * 7 + 8; // 8-15s (fast)
-    const shapeType = index % 3; // 0: Circle, 1: Square, 2: Triangle
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-    const colors = [
-        "rgba(34, 211, 238, 0.25)",  // Cyan
-        "rgba(168, 85, 247, 0.25)",  // Purple
-        "rgba(59, 130, 246, 0.25)",  // Blue
-        "rgba(255, 255, 255, 0.2)",  // White
-    ];
-    const color = colors[index % colors.length];
+        // Resize canvas to fill container
+        const resize = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        };
+        resize();
+        window.addEventListener("resize", resize);
 
-    // Spread particles across the full viewport using deterministic seed values
-    const x0 = seed(3) * 100;
-    const y0 = seed(4) * 100;
-    const x1 = seed(5) * 100;
-    const y1 = seed(6) * 100;
-    const x2 = seed(7) * 100;
-    const y2 = seed(8) * 100;
+        // Bluewave character set: binary + hex + symbols
+        const chars = "01アイウエオカキクケコ◈⬡∞ΔABCDEF0123456789⬢◆▲♦";
+        const fontSize = 13;
+        const cols = Math.floor(canvas.width / fontSize);
+
+        // Each column starts at a random y position
+        const drops: number[] = Array.from({ length: cols }, () => Math.random() * -50);
+
+        // Brand palette: cyan → blue → purple (mapped by trail age)
+        const trailColors = [
+            "rgba(255, 255, 255, 0.9)",  // head — bright white
+            "rgba(34, 211, 238, 0.8)",   // cyan
+            "rgba(34, 211, 238, 0.5)",   // cyan fade
+            "rgba(99, 102, 241, 0.4)",   // indigo
+            "rgba(168, 85, 247, 0.3)",   // purple
+            "rgba(168, 85, 247, 0.15)",  // purple fade
+            "rgba(168, 85, 247, 0.05)",  // barely visible
+        ];
+
+        let animId: number;
+        const draw = () => {
+            // Semi-transparent black overlay creates the trailing fade
+            ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                // Head character: bright white/cyan glow
+                ctx.fillStyle = trailColors[0];
+                ctx.fillText(char, x, y);
+
+                // Randomize speed per column (some faster, some slower)
+                const speed = 0.3 + ((i * 7) % 10) / 20;
+
+                drops[i] += speed;
+
+                // Reset column to top with random delay when it goes off-screen
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = Math.random() * -20;
+                }
+            }
+
+            animId = requestAnimationFrame(draw);
+        };
+
+        draw();
+
+        return () => {
+            cancelAnimationFrame(animId);
+            window.removeEventListener("resize", resize);
+        };
+    }, []);
 
     return (
-        <motion.div
-            initial={{ x: `${x0}vw`, y: `${y0}vh`, opacity: 0, rotate: 0 }}
-            animate={{
-                x: [`${x0}vw`, `${x1}vw`, `${x2}vw`, `${x0}vw`],
-                y: [`${y0}vh`, `${y1}vh`, `${y2}vh`, `${y0}vh`],
-                opacity: [0.15, 0.45, 0.25, 0.15],
-                rotate: [0, 120, 240, 360],
-            }}
-            transition={{
-                duration,
-                repeat: Infinity,
-                ease: "linear",
-                delay: seed(9) * 5, // staggered starts
-            }}
-            style={{
-                position: "absolute",
-                width: size,
-                height: size,
-                backgroundColor: shapeType !== 2 ? color : "transparent",
-                borderRadius: shapeType === 0 ? "50%" : "3px",
-                filter: "blur(1px)",
-                border: shapeType !== 0 ? `1.5px solid ${color}` : "none",
-                clipPath: shapeType === 2 ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "none",
-            }}
+        <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity: 0.4 }}
         />
     );
 }
