@@ -132,6 +132,16 @@ export function notifyInactive(telegram_id: number) {
   return postApi(`/notify_inactive`, { telegram_id });
 }
 
+// GET network
+export function getNetwork(tg_id: number) {
+  return getApi(`/user/network/${tg_id}`);
+}
+
+// POST notify individual
+export function notifyIndividual(target_tg_id: number) {
+  return postApi(`/user/notify_individual`, { target_tg_id });
+}
+
 export function useApi(path: string | null, options: any = {}) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -161,4 +171,9 @@ export function useSync(tg_id: number | null) {
     revalidateOnFocus: true, // Immediately sync when user returns to app
     dedupingInterval: 5000,  // Allow sync even if called more frequently (focus re-enter)
   });
+}
+
+// GET Network Hook
+export function useNetwork(tg_id: number | null) {
+  return useApi(tg_id ? `/user/network/${tg_id}` : null);
 }

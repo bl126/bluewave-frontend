@@ -60,6 +60,16 @@
     "save": "Save",
     "saving": "Saving..."
   },
+  "network": {
+    "title": "Your Network",
+    "active": "Active Network",
+    "inactive": "Inactive Network",
+    "notify": "Notify",
+    "notifying": "Notifying...",
+    "wait": "Wait",
+    "copied": "Copied",
+    "no_members": "No network members yet"
+  },
   "nav": {
     "home": "Home",
     "missions": "Missions",

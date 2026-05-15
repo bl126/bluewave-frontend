@@ -60,6 +60,16 @@
     "save": "Simpan",
     "saving": "Menyimpan..."
   },
+  "network": {
+    "title": "Jaringan Anda",
+    "active": "Jaringan Aktif",
+    "inactive": "Jaringan Tidak Aktif",
+    "notify": "Beritahu",
+    "notifying": "Memberitahu...",
+    "wait": "Tunggu",
+    "copied": "Disalin",
+    "no_members": "Belum ada anggota jaringan"
+  },
   "nav": {
     "home": "Beranda",
     "missions": "Misi",

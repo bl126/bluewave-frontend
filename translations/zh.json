@@ -59,6 +59,16 @@
     "save": "保存",
     "saving": "保存中..."
   },
+  "network": {
+    "title": "您的网络",
+    "active": "活跃网络",
+    "inactive": "不活跃网络",
+    "notify": "提醒",
+    "notifying": "提醒中...",
+    "wait": "等待",
+    "copied": "已复制",
+    "no_members": "尚无网络成员"
+  },
   "nav": {
     "home": "首页",
     "missions": "任务",

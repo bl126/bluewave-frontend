@@ -15,6 +15,7 @@ import ReferralShareModal from "@/components/ui/ReferralShareModal";
 import LevelPopup from "./LevelPopup";
 import LevelUpModal from "./LevelUpModal";
 import ConnectBluModal from "./ConnectBluModal";
+import NetworkPopup from "./NetworkPopup";
 
 // [CODE: FRONTEND_PROFILE_TYPES]
 interface ProfileProps {
@@ -59,6 +60,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [isLevelPopupOpen, setIsLevelPopupOpen] = useState(false);
   const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
+  const [isNetworkPopupOpen, setIsNetworkPopupOpen] = useState(false);
   const [prevLevel, setPrevLevel] = useState<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -391,7 +393,10 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                 <Lock size={16} className="text-text-sub/30" />
                             )}
                           </button>
-                          <div className="bg-app-bg/30 backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 relative">
+                          <button
+                            onClick={() => user.wallet_address && setIsNetworkPopupOpen(true)}
+                            className="bg-app-card backdrop-blur-md border border-app-border rounded-[1.5rem] p-4 flex flex-col items-center justify-center gap-1 active:scale-95 transition-all relative"
+                          >
                             {user.wallet_address ? (
                                 <>
                                     <span className="text-text-main text-xl font-black">{user.total_referrals || 0}</span>
@@ -400,7 +405,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             ) : (
                                 <Lock size={16} className="text-text-sub/30" />
                             )}
-                          </div>
+                          </button>
                         </div>
 
                         {/* Independent Wallet Card */}
@@ -520,6 +525,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
           <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user?.bw_id} referralLink={user?.referral_link} />
           <LevelPopup isOpen={isLevelPopupOpen} onClose={() => setIsLevelPopupOpen(false)} user={user} />
+          <NetworkPopup isOpen={isNetworkPopupOpen} onClose={() => setIsNetworkPopupOpen(false)} telegramId={telegramId} />
           <ConnectBluModal
             isOpen={isConnectBluOpen}
             onClose={() => setIsConnectBluOpen(false)}

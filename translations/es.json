@@ -60,6 +60,16 @@
     "save": "Guardar",
     "saving": "Guardando..."
   },
+  "network": {
+    "title": "Tu Red",
+    "active": "Red Activa",
+    "inactive": "Red Inactiva",
+    "notify": "Notificar",
+    "notifying": "Notificando...",
+    "wait": "Esperar",
+    "copied": "Copiado",
+    "no_members": "Aún no hay miembros en la red"
+  },
   "nav": {
     "home": "Inicio",
     "missions": "Misiones",
