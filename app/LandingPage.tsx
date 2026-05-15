@@ -161,6 +161,10 @@ export default function LandingPage() {
         setRolesOpen(false);
         return;
       }
+      if (isCocoonOpen) {
+        setCocoonOpen(false);
+        return;
+      }
       if (isBluExpanded) {
         setIsBluExpanded(false);
         return;
@@ -191,10 +195,6 @@ export default function LandingPage() {
       }
       if (isAIPopupOpen) {
         handleClearAIPopup();
-        return;
-      }
-      if (isCocoonOpen) {
-        setCocoonOpen(false);
         return;
       }
 

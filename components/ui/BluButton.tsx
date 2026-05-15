@@ -34,7 +34,6 @@ export default function BluButton({
     onOpenCocoon
 }: BluButtonProps) {
     const { theme } = useTheme();
-    const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -51,10 +50,10 @@ export default function BluButton({
     const firstName = telegramUser?.first_name || "there";
 
     useEffect(() => {
-        if (hasGreetingBeenDismissed || isOpen) return;
+        if (hasGreetingBeenDismissed || isExpanded) return;
         const timer = setTimeout(() => { setShowGreeting(true); }, 1500);
         return () => clearTimeout(timer);
-    }, [isOpen, hasGreetingBeenDismissed]);
+    }, [isExpanded, hasGreetingBeenDismissed]);
 
     // 🕒 Auto-dismiss bubble after 10 seconds
     useEffect(() => {
@@ -67,28 +66,11 @@ export default function BluButton({
         }
     }, [showGreeting]);
 
-    // 📱 Telegram Back Button Integration
-    useEffect(() => {
-        const tg = (window as any).Telegram?.WebApp;
-        if (!tg) return;
-
-        if (isOpen) {
-            tg.BackButton.show();
-            tg.BackButton.onClick(() => {
-                setIsOpen(false);
-            });
-        } else {
-            tg.BackButton.hide();
-        }
-
-        return () => {
-            tg.BackButton.offClick();
-        };
-    }, [isOpen]);
+    // Navigation is now handled globally via isExpanded prop and LandingPage.tsx Back Button logic.
 
     useEffect(() => {
-        if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, isOpen]);
+        if (isExpanded) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages, isExpanded]);
 
     const greetingMessage = useMemo(() => {
         const hasSocial = socialMissionCount > 0;
@@ -148,7 +130,7 @@ export default function BluButton({
                     <motion.button
                         onClick={() => { 
                             if (!isAuthorized) return;
-                            setIsOpen(true); 
+                            onToggleExpand?.(true); 
                             setShowGreeting(false); 
                             setHasGreetingBeenDismissed(true);
                         }}
@@ -216,25 +198,29 @@ export default function BluButton({
 
             {/* 2. FULL SCREEN COCOON-STYLE COMMAND CENTER */}
             <AnimatePresence>
-                {isOpen && (
+                {isExpanded && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden"
                     >
-                        {/* Slim Cocoon Dynamic Island (Top Navigation) - Lowered by 10pt */}
-                        <div className="absolute top-9 left-1/2 -translate-x-1/2 z-[101]">
+                        {/* Slim Cocoon Dynamic Island (Top Navigation) - Lowered by 20pt total */}
+                        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[101]">
                             <motion.button 
                                 initial={{ y: -20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                onClick={onOpenCocoon}
+                                onClick={() => {
+                                    onOpenCocoon?.();
+                                    // Interface stays open behind cocoon as requested
+                                }}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
                             >
                                 <div className="relative w-5 h-6 overflow-hidden">
                                     <img 
                                         src="/cocoon_egg.png" 
                                         alt="Cocoon" 
+                                        loading="eager"
                                         className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
                                         onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
                                     />
@@ -245,16 +231,40 @@ export default function BluButton({
                             </motion.button>
                         </div>
 
+                        {/* 🌌 ZERO-GRAVITY PARTICLE SYSTEM (Activates on first message) */}
+                        <AnimatePresence>
+                            {messages.length > 0 && (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 pointer-events-none overflow-hidden z-0"
+                                >
+                                    {[...Array(25)].map((_, i) => (
+                                        <FloatingShape key={i} index={i} />
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         {/* Background Ambient Glows */}
                         <div className="absolute inset-0 pointer-events-none">
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-cyan-500/5 blur-[120px] rounded-full" />
                             <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-purple-500/5 blur-[100px] rounded-full" />
                         </div>
 
-                        {/* Main Content Area */}
-                        <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 pt-20">
+                        {/* Main Content Area (With Focus Blur when chatting) */}
+                        <motion.div 
+                            animate={{ 
+                                filter: messages.length > 0 ? "blur(20px)" : "blur(0px)",
+                                opacity: messages.length > 0 ? 0.3 : 1,
+                                scale: messages.length > 0 ? 0.95 : 1
+                            }}
+                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                            className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 pt-20"
+                        >
                             
-                            {/* The Central Asset (Replaced Orb with blu_image.png) */}
+                            {/* The Central Asset */}
                             <div className="relative mb-12">
                                 <motion.div 
                                     initial={{ scale: 0.8, opacity: 0 }}
@@ -265,6 +275,7 @@ export default function BluButton({
                                     <img 
                                         src="/blu_image.png" 
                                         alt="Blu" 
+                                        loading="eager"
                                         className="w-40 h-40 object-contain relative z-20"
                                         onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
                                     />
@@ -284,15 +295,21 @@ export default function BluButton({
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.1 }}
-                                    className="text-white/40 text-sm font-medium tracking-wide"
+                                    className="text-white/40 text-sm font-medium tracking-wide uppercase text-[10px] tracking-[0.2em]"
                                 >
-                                    Your AI agent for everything
+                                    Bluewave intelligence agent
                                 </motion.p>
                             </div>
+                        </motion.div>
 
-                            {/* Chat View (Only if messages exist) */}
+                        {/* Chat View (Stays focused/clear) */}
+                        <AnimatePresence>
                             {messages.length > 0 && (
-                                <div className="absolute inset-0 pt-[400px] pb-40 px-6 overflow-y-auto z-20 flex flex-col gap-6 custom-scrollbar">
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="absolute inset-0 pt-[400px] pb-40 px-6 overflow-y-auto z-20 flex flex-col gap-6 custom-scrollbar"
+                                >
                                     {messages.map((msg, idx) => (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
@@ -314,9 +331,9 @@ export default function BluButton({
                                         </motion.div>
                                     ))}
                                     <div ref={messagesEndRef} />
-                                </div>
+                                </motion.div>
                             )}
-                        </div>
+                        </AnimatePresence>
 
                         {/* REDESIGNED TACTICAL INPUT BAR */}
                         <div className="mt-auto px-6 pb-10 relative z-30">
@@ -385,5 +402,58 @@ function ToolPill({ icon, label }: { icon: any, label: string }) {
             <span>{label}</span>
             <ChevronDown size={10} className="opacity-40" />
         </button>
+    );
+}
+
+function FloatingShape({ index }: { index: number }) {
+    const size = Math.random() * 40 + 10;
+    const duration = Math.random() * 20 + 20;
+    const shapeType = index % 3; // 0: Circle, 1: Square, 2: Triangle
+    
+    const colors = [
+        "rgba(34, 211, 238, 0.15)", // Cyan
+        "rgba(168, 85, 247, 0.15)", // Purple
+        "rgba(59, 130, 246, 0.15)",  // Blue
+        "rgba(255, 255, 255, 0.1)"   // White
+    ];
+    const color = colors[index % colors.length];
+
+    const initialX = Math.random() * 100;
+    const initialY = Math.random() * 100;
+    const targetX = initialX + (Math.random() * 40 - 20);
+    const targetY = initialY + (Math.random() * 40 - 20);
+
+    return (
+        <motion.div
+            initial={{ 
+                x: `${initialX}%`, 
+                y: `${initialY}%`, 
+                opacity: 0, 
+                rotate: 0,
+                scale: 0.5
+            }}
+            animate={{ 
+                x: [`${initialX}%`, `${targetX}%`, `${initialX}%`],
+                y: [`${initialY}%`, `${targetY}%`, `${initialY}%`],
+                opacity: [0.3, 0.6, 0.3],
+                rotate: [0, 180, 360],
+                scale: [1, 1.2, 1]
+            }}
+            transition={{ 
+                duration, 
+                repeat: Infinity, 
+                ease: "linear" 
+            }}
+            style={{
+                position: "absolute",
+                width: size,
+                height: size,
+                backgroundColor: shapeType !== 2 ? color : "transparent",
+                borderRadius: shapeType === 0 ? "50%" : "4px",
+                filter: "blur(4px)",
+                border: shapeType === 2 ? `2px solid ${color}` : "none",
+                clipPath: shapeType === 2 ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "none"
+            }}
+        />
     );
 }
