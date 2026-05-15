@@ -412,7 +412,6 @@ function MatrixRain() {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // Resize canvas to fill container
         const resize = () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
@@ -420,50 +419,68 @@ function MatrixRain() {
         resize();
         window.addEventListener("resize", resize);
 
-        // Bluewave character set: binary + hex + symbols
-        const chars = "01アイウエオカキクケコ◈⬡∞ΔABCDEF0123456789⬢◆▲♦";
-        const fontSize = 13;
+        // Bluewave character set: binary + hex + katakana + symbols
+        const chars = "01アイウエオカキクケコサシスセソタチツテト◈⬡∞ΔABCDEF0123456789⬢◆▲♦><#@!";
+        const fontSize = 11; // Smaller = more columns = fuller screen
         const cols = Math.floor(canvas.width / fontSize);
 
-        // Each column starts at a random y position
-        const drops: number[] = Array.from({ length: cols }, () => Math.random() * -50);
+        // Each column starts at a random y position off-screen
+        const drops: number[] = Array.from({ length: cols }, () => Math.random() * -100);
 
-        // Brand palette: cyan → blue → purple (mapped by trail age)
-        const trailColors = [
-            "rgba(255, 255, 255, 0.9)",  // head — bright white
-            "rgba(34, 211, 238, 0.8)",   // cyan
-            "rgba(34, 211, 238, 0.5)",   // cyan fade
-            "rgba(99, 102, 241, 0.4)",   // indigo
-            "rgba(168, 85, 247, 0.3)",   // purple
-            "rgba(168, 85, 247, 0.15)",  // purple fade
-            "rgba(168, 85, 247, 0.05)",  // barely visible
+        // 🎨 Each column gets a random brand color palette
+        const brandPalettes = [
+            // Cyan column
+            { head: "rgba(255,255,255,0.95)", body: "rgba(34,211,238,0.85)", mid: "rgba(34,211,238,0.5)", tail: "rgba(34,211,238,0.15)" },
+            // Purple column  
+            { head: "rgba(255,255,255,0.95)", body: "rgba(168,85,247,0.85)", mid: "rgba(168,85,247,0.5)", tail: "rgba(168,85,247,0.15)" },
+            // Blue column
+            { head: "rgba(255,255,255,0.95)", body: "rgba(59,130,246,0.85)", mid: "rgba(59,130,246,0.5)", tail: "rgba(59,130,246,0.15)" },
+            // Cyan-purple mix
+            { head: "rgba(255,255,255,0.95)", body: "rgba(99,102,241,0.85)", mid: "rgba(99,102,241,0.5)", tail: "rgba(99,102,241,0.15)" },
         ];
+
+        // Assign each column a fixed random palette
+        const colPalettes = Array.from({ length: cols }, () =>
+            brandPalettes[Math.floor(Math.random() * brandPalettes.length)]
+        );
+
+        // Per-column speed variation
+        const speeds = Array.from({ length: cols }, (_, i) => 0.25 + ((i * 13) % 17) / 30);
 
         let animId: number;
         const draw = () => {
-            // Semi-transparent black overlay creates the trailing fade
-            ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+            // Semi-transparent overlay creates the glowing trail fade
+            ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.font = `${fontSize}px monospace`;
 
             for (let i = 0; i < drops.length; i++) {
+                const palette = colPalettes[i];
                 const char = chars[Math.floor(Math.random() * chars.length)];
                 const x = i * fontSize;
-                const y = drops[i] * fontSize;
+                const y = Math.floor(drops[i]) * fontSize;
 
-                // Head character: bright white/cyan glow
-                ctx.fillStyle = trailColors[0];
+                // Head character — bright white pop
+                ctx.fillStyle = palette.head;
+                ctx.shadowColor = palette.body;
+                ctx.shadowBlur = 8;
                 ctx.fillText(char, x, y);
 
-                // Randomize speed per column (some faster, some slower)
-                const speed = 0.3 + ((i * 7) % 10) / 20;
+                // Body (one char below head) — brand color, full opacity
+                if (y > fontSize) {
+                    ctx.fillStyle = palette.body;
+                    ctx.shadowBlur = 4;
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, y - fontSize);
+                }
 
-                drops[i] += speed;
+                ctx.shadowBlur = 0;
 
-                // Reset column to top with random delay when it goes off-screen
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = Math.random() * -20;
+                drops[i] += speeds[i];
+
+                // Reset when off screen
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.97) {
+                    drops[i] = Math.random() * -30;
                 }
             }
 
@@ -482,7 +499,7 @@ function MatrixRain() {
         <canvas
             ref={canvasRef}
             className="absolute inset-0 w-full h-full"
-            style={{ opacity: 0.4 }}
+            style={{ opacity: 0.55 }}
         />
     );
 }
