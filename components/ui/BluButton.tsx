@@ -41,11 +41,8 @@ export default function BluButton({
     const [hasGreetingBeenDismissed, setHasGreetingBeenDismissed] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // 🔒 Access Control Logic
-    const isAuthorized = useMemo(() => {
-        const roles = telegramUser?.roles || [];
-        return roles.includes("Bluewave Core") || roles.includes("Beta Explorer") || telegramUser?.is_admin;
-    }, [telegramUser]);
+    // 🔓 Access Control Logic: Now open to everyone
+    const isAuthorized = true;
 
     const firstName = telegramUser?.first_name || "there";
 
@@ -95,7 +92,7 @@ export default function BluButton({
     return (
         <>
             {/* 1. THE MINI ORB BUTTON (Circle + BLU Text) */}
-            <div className="fixed z-[85] top-[18%] left-2 select-none group">
+            <div className="fixed z-[85] top-[16%] left-2 select-none group">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <motion.button
                         onClick={() => { 
@@ -144,31 +141,41 @@ export default function BluButton({
                     </motion.button>
                 </motion.div>
 
-                {/* Mini Greeting Bubble (Same as original but styled for Cocoon) */}
+                {/* Mini Greeting Bubble (Redesigned: Liquid Glass) */}
                 <AnimatePresence>
                     {showGreeting && (
                         <motion.div 
-                            initial={{ opacity: 0, x: -10, scale: 0.9 }}
+                            initial={{ opacity: 0, x: -20, scale: 0.95 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                            className="absolute left-16 top-0 w-60 p-4 rounded-3xl rounded-tl-none bg-black/90 border border-white/10 backdrop-blur-3xl shadow-2xl z-[86]"
+                            exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                            className="absolute left-16 top-0 w-64 rounded-[2rem] rounded-tl-none border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden"
                         >
-                            <div className="flex gap-3">
-                                <div className="w-2 h-2 rounded-full bg-cyan-400 mt-1 shadow-[0_0_8px_rgba(0,246,255,0.8)]" />
-                                <div className="flex-1">
-                                    <p className="text-[11px] text-white/90 leading-relaxed font-medium">
-                                        Hello, {firstName}. {greetingMessage}
-                                    </p>
-                                    <div className="mt-3 flex justify-end">
-                                        <button 
-                                            onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} 
-                                            className="text-[9px] font-black text-cyan-400/60 uppercase tracking-widest hover:text-cyan-400 transition-colors"
-                                        >
-                                            Dismiss
-                                        </button>
-                                    </div>
+                            {/* Inner Glow / Refraction */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+                            
+                            <div className="relative p-5 space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+                                    <span className="text-[9px] font-black text-cyan-400/60 uppercase tracking-[0.2em]">Signal Received</span>
+                                </div>
+
+                                <p className="text-[11px] text-white/90 leading-relaxed font-medium tracking-wide">
+                                    Hello, <span className="text-cyan-400 font-bold">{firstName}</span>. <br/>
+                                    {greetingMessage}
+                                </p>
+
+                                <div className="flex justify-end pt-1">
+                                    <button 
+                                        onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} 
+                                        className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all"
+                                    >
+                                        Dismiss
+                                    </button>
                                 </div>
                             </div>
+
+                            {/* Bottom Glass Shine */}
+                            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                         </motion.div>
                     )}
                 </AnimatePresence>
