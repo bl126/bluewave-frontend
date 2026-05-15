@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Copy, Bell, Check, Loader2, Flame } from "lucide-react";
+import { X, Copy, Bell, Check, Loader2, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNetwork, notifyIndividual } from "@/lib/useApi";
@@ -18,11 +18,12 @@ interface NetworkPopupProps {
   isOpen: boolean;
   onClose: () => void;
   telegramId: number | null;
+  onOpenReferral: () => void;
 }
 
 const NOTIFY_COOLDOWN = 4 * 60 * 60 * 1000; // 4 hours in ms
 
-export default function NetworkPopup({ isOpen, onClose, telegramId }: NetworkPopupProps) {
+export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferral }: NetworkPopupProps) {
   const { t } = useLanguage();
   const { data: network, loading, mutate } = useNetwork(isOpen ? telegramId : null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -97,7 +98,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId }: NetworkPop
         onClick={onClose}
       >
         <motion.div
-          className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden flex flex-col max-h-[75vh] shadow-app-shadow"
+          className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden flex flex-col max-h-[60vh] shadow-app-shadow"
           initial={{ scale: 0.9, y: 20, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -146,7 +147,13 @@ export default function NetworkPopup({ isOpen, onClose, telegramId }: NetworkPop
                     </div>
                     <div className="flex flex-col gap-2">
                       {network.active.map((member: NetworkMember) => (
-                        <MemberItem key={member.tg_id} member={member} active />
+                        <MemberItem 
+                          key={member.tg_id} 
+                          member={member} 
+                          active 
+                          onCopy={() => handleCopy(member.bw_id)}
+                          isCopied={copiedId === member.bw_id}
+                        />
                       ))}
                     </div>
                   </div>
@@ -176,13 +183,22 @@ export default function NetworkPopup({ isOpen, onClose, telegramId }: NetworkPop
                 )}
 
                 {!network?.active?.length && !network?.inactive?.length && (
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
                     <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
-                      <Bell size={24} className="text-text-sub/20" />
+                      <Users size={24} className="text-text-sub/20" />
                     </div>
-                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest max-w-[150px]">
-                      {t("network.no_members")}
+                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest max-w-[200px] leading-relaxed mb-6">
+                      build your network invite more people through you referral link
                     </p>
+                    <button 
+                      onClick={() => {
+                        onClose();
+                        onOpenReferral();
+                      }}
+                      className="px-6 py-3 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/80 active:scale-95 transition-all shadow-lg"
+                    >
+                      {t("profile.get_link")}
+                    </button>
                   </div>
                 )}
               </div>
@@ -212,6 +228,7 @@ function MemberItem({
   isCopied?: boolean;
 }) {
   const { t } = useLanguage();
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div className={`p-3 rounded-2xl border flex items-center gap-3 transition-all ${
@@ -220,14 +237,19 @@ function MemberItem({
         : "bg-white/[0.01] border-app-border opacity-70"
     }`}>
       {/* Avatar */}
-      <div className={`w-10 h-10 rounded-xl overflow-hidden border ${
+      <div className={`w-10 h-10 rounded-xl overflow-hidden border shrink-0 ${
         active ? "border-app-accent/30" : "border-app-border"
       }`}>
-        {member.photo_url ? (
-          <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+        {member.photo_url && !imgError ? (
+          <img 
+            src={member.photo_url} 
+            alt={member.name} 
+            className="w-full h-full object-cover" 
+            onError={() => setImgError(true)}
+          />
         ) : (
           <div className="w-full h-full bg-app-accent/10 flex items-center justify-center text-app-accent font-black text-sm">
-            {member.name[0].toUpperCase()}
+            {(member.name || "U").charAt(0).toUpperCase()}
           </div>
         )}
       </div>
@@ -236,10 +258,10 @@ function MemberItem({
       <div className="flex-1 flex flex-col min-w-0">
         <span className="text-text-main text-[11px] font-black truncate leading-tight">{member.name}</span>
         <div className="flex items-center gap-1 group mt-0.5">
-          <span className="text-text-sub text-[8px] font-mono tracking-tighter opacity-60">{member.bw_id}</span>
+          <span className="text-text-sub text-[8px] font-mono tracking-tighter">{member.bw_id}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onCopy?.(); }}
-            className={`transition-colors ${isCopied ? "text-app-accent" : "text-text-sub/40 hover:text-text-main"}`}
+            className={`transition-colors p-1 -m-1 ${isCopied ? "text-app-accent" : "text-text-sub/60 hover:text-text-main"}`}
           >
             {isCopied ? <Check size={8} /> : <Copy size={8} />}
           </button>
@@ -251,7 +273,7 @@ function MemberItem({
         <button
           onClick={onNotify}
           disabled={isNotifying || !!countdown}
-          className={`px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 h-8 min-w-[70px] justify-center ${
+          className={`px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 h-8 min-w-[70px] justify-center shrink-0 ${
             isNotifying || countdown
               ? "bg-app-accent/5 border-app-border text-text-sub/30"
               : "bg-app-accent/10 border-app-accent/30 text-app-accent hover:bg-app-accent/20"
@@ -271,7 +293,7 @@ function MemberItem({
       )}
 
       {active && (
-        <div className="px-3 py-1.5 rounded-xl bg-app-accent/10 border border-app-accent/30 flex items-center gap-1.5 h-8">
+        <div className="px-3 py-1.5 rounded-xl bg-app-accent/10 border border-app-accent/30 flex items-center gap-1.5 h-8 shrink-0">
           <div className="w-1.5 h-1.5 rounded-full bg-app-accent animate-pulse" />
           <span className="text-app-accent text-[8px] font-black uppercase tracking-widest">ACTIVE</span>
         </div>

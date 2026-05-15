@@ -525,7 +525,12 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
           <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user?.bw_id} referralLink={user?.referral_link} />
           <LevelPopup isOpen={isLevelPopupOpen} onClose={() => setIsLevelPopupOpen(false)} user={user} />
-          <NetworkPopup isOpen={isNetworkPopupOpen} onClose={() => setIsNetworkPopupOpen(false)} telegramId={telegramId} />
+          <NetworkPopup 
+            isOpen={isNetworkPopupOpen} 
+            onClose={() => setIsNetworkPopupOpen(false)} 
+            telegramId={telegramId} 
+            onOpenReferral={() => setIsReferralModalOpen(true)}
+          />
           <ConnectBluModal
             isOpen={isConnectBluOpen}
             onClose={() => setIsConnectBluOpen(false)}
