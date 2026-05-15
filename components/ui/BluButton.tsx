@@ -216,15 +216,13 @@ export default function BluButton({
                                 }}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
                             >
-                                <div className="relative w-5 h-6 overflow-hidden">
-                                    <img 
-                                        src="/cocoon_egg.png" 
-                                        alt="Cocoon" 
-                                        loading="eager"
-                                        className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
-                                        onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
-                                    />
-                                </div>
+                                <img 
+                                    src="/cocoon_egg.png" 
+                                    alt="Cocoon" 
+                                    loading="eager"
+                                    className="w-5 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
+                                    onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
+                                />
                                 <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
                                     Cocoon
                                 </span>
