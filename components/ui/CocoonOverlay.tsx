@@ -29,7 +29,7 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1000] bg-[#040B1A] overflow-y-auto"
+          className="fixed inset-0 z-[99999] bg-[#040B1A] overflow-y-auto"
         >
           {/* Background Starfield (Reusing logic similar to BackgroundStars) */}
           <div className="absolute inset-0 z-0 opacity-40">

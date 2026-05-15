@@ -211,8 +211,8 @@ export default function BluButton({
                                 initial={{ y: -20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 onClick={() => {
+                                    console.log("Cocoon Pill Clicked");
                                     onOpenCocoon?.();
-                                    // Interface stays open behind cocoon as requested
                                 }}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
                             >
@@ -253,14 +253,13 @@ export default function BluButton({
                             <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-purple-500/5 blur-[100px] rounded-full" />
                         </div>
 
-                        {/* Main Content Area (With Focus Blur when chatting) */}
+                        {/* Main Content Area (Subtle blur when chatting) */}
                         <motion.div 
                             animate={{ 
-                                filter: messages.length > 0 ? "blur(20px)" : "blur(0px)",
-                                opacity: messages.length > 0 ? 0.3 : 1,
-                                scale: messages.length > 0 ? 0.95 : 1
+                                filter: messages.length > 0 ? "blur(4px)" : "blur(0px)",
+                                opacity: messages.length > 0 ? 0.8 : 1,
                             }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
                             className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 pt-20"
                         >
                             
@@ -406,53 +405,53 @@ function ToolPill({ icon, label }: { icon: any, label: string }) {
 }
 
 function FloatingShape({ index }: { index: number }) {
-    const size = Math.random() * 40 + 10;
-    const duration = Math.random() * 20 + 20;
+    // Seeded values based on index — avoids Math.random() in render (SSR safe)
+    const seed = (n: number) => ((index * 9301 + n * 49297 + 233995) % 1000) / 1000;
+
+    const size = seed(1) * 28 + 6; // 6-34px
+    const duration = seed(2) * 7 + 8; // 8-15s (fast)
     const shapeType = index % 3; // 0: Circle, 1: Square, 2: Triangle
-    
+
     const colors = [
-        "rgba(34, 211, 238, 0.15)", // Cyan
-        "rgba(168, 85, 247, 0.15)", // Purple
-        "rgba(59, 130, 246, 0.15)",  // Blue
-        "rgba(255, 255, 255, 0.1)"   // White
+        "rgba(34, 211, 238, 0.25)",  // Cyan
+        "rgba(168, 85, 247, 0.25)",  // Purple
+        "rgba(59, 130, 246, 0.25)",  // Blue
+        "rgba(255, 255, 255, 0.2)",  // White
     ];
     const color = colors[index % colors.length];
 
-    const initialX = Math.random() * 100;
-    const initialY = Math.random() * 100;
-    const targetX = initialX + (Math.random() * 40 - 20);
-    const targetY = initialY + (Math.random() * 40 - 20);
+    // Spread particles across the full viewport using deterministic seed values
+    const x0 = seed(3) * 100;
+    const y0 = seed(4) * 100;
+    const x1 = seed(5) * 100;
+    const y1 = seed(6) * 100;
+    const x2 = seed(7) * 100;
+    const y2 = seed(8) * 100;
 
     return (
         <motion.div
-            initial={{ 
-                x: `${initialX}%`, 
-                y: `${initialY}%`, 
-                opacity: 0, 
-                rotate: 0,
-                scale: 0.5
+            initial={{ x: `${x0}vw`, y: `${y0}vh`, opacity: 0, rotate: 0 }}
+            animate={{
+                x: [`${x0}vw`, `${x1}vw`, `${x2}vw`, `${x0}vw`],
+                y: [`${y0}vh`, `${y1}vh`, `${y2}vh`, `${y0}vh`],
+                opacity: [0.15, 0.45, 0.25, 0.15],
+                rotate: [0, 120, 240, 360],
             }}
-            animate={{ 
-                x: [`${initialX}%`, `${targetX}%`, `${initialX}%`],
-                y: [`${initialY}%`, `${targetY}%`, `${initialY}%`],
-                opacity: [0.3, 0.6, 0.3],
-                rotate: [0, 180, 360],
-                scale: [1, 1.2, 1]
-            }}
-            transition={{ 
-                duration, 
-                repeat: Infinity, 
-                ease: "linear" 
+            transition={{
+                duration,
+                repeat: Infinity,
+                ease: "linear",
+                delay: seed(9) * 5, // staggered starts
             }}
             style={{
                 position: "absolute",
                 width: size,
                 height: size,
                 backgroundColor: shapeType !== 2 ? color : "transparent",
-                borderRadius: shapeType === 0 ? "50%" : "4px",
-                filter: "blur(4px)",
-                border: shapeType === 2 ? `2px solid ${color}` : "none",
-                clipPath: shapeType === 2 ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "none"
+                borderRadius: shapeType === 0 ? "50%" : "3px",
+                filter: "blur(1px)",
+                border: shapeType !== 0 ? `1.5px solid ${color}` : "none",
+                clipPath: shapeType === 2 ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "none",
             }}
         />
     );
