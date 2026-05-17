@@ -293,7 +293,7 @@ export default function BluButton({
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </motion.div>
 
             {/* 2. FULL SCREEN COCOON-STYLE COMMAND CENTER */}
             <AnimatePresence>
