@@ -74,9 +74,17 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
                 <h1 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">
                   Cocoon <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Network</span>
                 </h1>
-                <p className="text-gray-400 max-w-xs mx-auto text-sm leading-relaxed font-medium">
+                <p className="text-gray-400 max-w-xs mx-auto text-sm leading-relaxed font-medium mb-6">
                   The privacy shell for the human network. Secure, verifiable AI inference powered by TON.
                 </p>
+
+                {/* 🔒 Coming Soon TEE Banner */}
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 backdrop-blur-md text-purple-300 text-[11px] font-bold max-w-xs mx-auto shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                  <Shield size={14} className="text-purple-400 shrink-0" />
+                  <span className="text-left leading-normal">
+                    Confidential execution powered by Cocoon TEE coming soon
+                  </span>
+                </div>
               </motion.div>
             </div>
 

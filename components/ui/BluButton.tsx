@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Globe, Award, Wallet, Sparkles, Send, Terminal, Plus, Mic, ChevronDown, LayoutGrid, Image as ImageIcon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -333,46 +333,70 @@ export default function BluButton({
 
                         {/* REDESIGNED TACTICAL INPUT BAR */}
                         <div className="mt-auto px-6 pb-10 relative z-30">
-                            {/* Input Container (Single Row ChatGPT Style) */}
-                            <div className="bg-white/5 border border-white/10 backdrop-blur-[40px] rounded-[2rem] p-1.5 pr-2 flex items-center gap-2 shadow-2xl overflow-hidden">
-                                {/* Hidden File Input */}
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef}
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                    accept="image/*"
-                                />
+                            {/* Input Container (Single Row ChatGPT Style, supports image preview at top) */}
+                            <div className="bg-white/5 border border-white/10 backdrop-blur-[40px] rounded-[2rem] p-1.5 pr-2 flex flex-col gap-2 shadow-2xl overflow-hidden">
+                                {selectedImage && (
+                                    <div className="flex pl-12 pt-2">
+                                        <div className="relative inline-block">
+                                            <img 
+                                                src={selectedImage} 
+                                                alt="Preview" 
+                                                className="w-20 h-20 object-cover rounded-2xl border border-white/20 shadow-lg"
+                                            />
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedImage(null);
+                                                    if (fileInputRef.current) fileInputRef.current.value = "";
+                                                }}
+                                                className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white hover:bg-black transition-colors shadow-md z-10"
+                                            >
+                                                <X size={12} strokeWidth={3} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
-                                <button 
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${selectedImage ? "text-cyan-400 bg-cyan-400/10" : "text-white/20 hover:text-white/40 hover:bg-white/5"}`}
-                                >
-                                    {selectedImage ? <ImageIcon size={18} /> : <Plus size={20} />}
-                                </button>
-
-                                <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 w-full">
+                                    {/* Hidden File Input */}
                                     <input 
-                                        type="text" 
-                                        value={inputValue}
-                                        onChange={(e) => setInputValue(e.target.value)}
-                                        placeholder="Ask Blu anything..." 
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-white/20 py-2"
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(e as any)}
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        accept="image/*"
                                     />
-                                </div>
 
-                                <button 
-                                    onClick={handleSendMessage}
-                                    disabled={!inputValue.trim() && !selectedImage}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                                        (inputValue.trim() || selectedImage)
-                                            ? "bg-gradient-to-br from-cyan-400 to-blue-600 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]" 
-                                            : "bg-white/5 text-white/10"
-                                    }`}
-                                >
-                                    <Send size={18} strokeWidth={2.5} />
-                                </button>
+                                    <button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${selectedImage ? "text-cyan-400 bg-cyan-400/10" : "text-white/20 hover:text-white/40 hover:bg-white/5"}`}
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+
+                                    <div className="flex-1 min-w-0">
+                                        <input 
+                                            type="text" 
+                                            value={inputValue}
+                                            onChange={(e) => setInputValue(e.target.value)}
+                                            placeholder="Ask Blu anything..." 
+                                            className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-white/20 py-2"
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(e as any)}
+                                        />
+                                    </div>
+
+                                    <button 
+                                        onClick={handleSendMessage}
+                                        disabled={!inputValue.trim() && !selectedImage}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                                            (inputValue.trim() || selectedImage)
+                                                ? "bg-gradient-to-br from-cyan-400 to-blue-600 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]" 
+                                                : "bg-white/5 text-white/10"
+                                        }`}
+                                    >
+                                        <Send size={18} strokeWidth={2.5} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -401,7 +425,7 @@ function ToolPill({ icon, label }: { icon: any, label: string }) {
     );
 }
 
-function MatrixRain() {
+const MatrixRain = memo(function MatrixRain() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -442,8 +466,8 @@ function MatrixRain() {
             brandPalettes[Math.floor(Math.random() * brandPalettes.length)]
         );
 
-        // Per-column speed variation
-        const speeds = Array.from({ length: cols }, (_, i) => 0.25 + ((i * 13) % 17) / 30);
+        // Per-column speed variation — much faster cinematic Matrix-style rain
+        const speeds = Array.from({ length: cols }, (_, i) => 1.2 + ((i * 7) % 9) / 6);
 
         let animId: number;
         const draw = () => {
@@ -477,8 +501,8 @@ function MatrixRain() {
                 drops[i] += speeds[i];
 
                 // Reset when off screen
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.97) {
-                    drops[i] = Math.random() * -30;
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) {
+                    drops[i] = Math.random() * -20;
                 }
             }
 
@@ -500,4 +524,4 @@ function MatrixRain() {
             style={{ opacity: 0.55 }}
         />
     );
-}
+});
