@@ -824,7 +824,7 @@ export default function LandingPage() {
 
       {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
       <AnimatePresence mode="sync">
-        {isMissionOpen && (
+        {activeTab === "missions" && (
           <MissionCenter
             key="missions"
             isOpen={isMissionOpen}
@@ -833,7 +833,7 @@ export default function LandingPage() {
             isHumanVerified={!!telegramUser?.is_human_verified}
           />
         )}
-        {isExploreOpen && (
+        {activeTab === "explore" && (
           <Explore
             key="explore"
             isOpen={isExploreOpen}
@@ -844,10 +844,10 @@ export default function LandingPage() {
             telegramUser={telegramUser}
           />
         )}
-        {isMarketOpen && (
+        {activeTab === "market" && (
           <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
         )}
-        {isProfileOpen && (
+        {activeTab === "profile" && (
           <Profile
             key="profile"
             isOpen={isProfileOpen}

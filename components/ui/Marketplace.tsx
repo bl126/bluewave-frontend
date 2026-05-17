@@ -15,17 +15,14 @@ interface MarketplaceProps {
 export default function Marketplace({ isOpen, onClose, telegramUser }: MarketplaceProps) {
   const { t } = useLanguage();
   return (
-    <>
-      {isOpen && (
-        <>
-          <motion.div
-            className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main bg-app-bg/95 backdrop-blur-3xl`}
-            style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
+    <motion.div
+      className={`fixed inset-0 z-[120] flex flex-col items-center justify-center text-center p-6 text-text-main bg-app-bg/95 backdrop-blur-3xl`}
+      style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 15 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    >
             {/* content */}
             <div className="flex flex-col items-center justify-center h-full w-full gap-6 relative px-4">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-glow)_0%,transparent_60%)] pointer-events-none" />
@@ -80,9 +77,6 @@ export default function Marketplace({ isOpen, onClose, telegramUser }: Marketpla
                     </button>
                 </div>
             )}
-          </motion.div>
-        </>
-      )}
-    </>
+    </motion.div>
   );
 }

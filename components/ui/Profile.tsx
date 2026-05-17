@@ -254,16 +254,14 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   };
 
   return (
-    <>
-      {isOpen && (
-        <motion.div
-          className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main bg-app-bg/95 backdrop-blur-3xl`}
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-        >
+    <motion.div
+      className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main bg-app-bg/95 backdrop-blur-3xl`}
+      style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 15 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    >
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <div className="max-w-md mx-auto w-full px-6 pt-6 pb-32">
               {loading && !user && (
@@ -547,8 +545,6 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-app-accent text-app-bg px-6 py-2 rounded-full font-black uppercase text-xs shadow-app-shadow z-[200]">{t("profile.unlocked")}</motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-      )}
-    </>
+    </motion.div>
   );
 }
