@@ -41,6 +41,90 @@ export default function BluButton({
     const [hasGreetingBeenDismissed, setHasGreetingBeenDismissed] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     
+    //  Magnetic Snapping & Draggable States
+    const [position, setPosition] = useState({ x: 8, y: 120 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [isSnappedToLeft, setIsSnappedToLeft] = useState(true);
+    
+    const dragStart = useRef({ x: 0, y: 0 });
+    const orbStart = useRef({ x: 0, y: 0 });
+    const isDraggingDistance = useRef(0);
+
+    // Initialize position ONLY once on fresh App Mount
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const initialY = window.innerHeight * 0.16;
+            setPosition({ x: 8, y: initialY });
+            setIsSnappedToLeft(true);
+        }
+    }, []);
+
+    // Track screen resizing separately to preserve active session positions
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const handleResize = () => {
+                setPosition(prev => {
+                    const screenWidth = window.innerWidth;
+                    const orbWidth = 48;
+                    const padding = 8;
+                    if (!isSnappedToLeft) {
+                        return { x: screenWidth - orbWidth - padding, y: prev.y };
+                    }
+                    return prev;
+                });
+            };
+            window.addEventListener("resize", handleResize);
+            return () => window.removeEventListener("resize", handleResize);
+        }
+    }, [isSnappedToLeft]);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        setIsDragging(true);
+        isDraggingDistance.current = 0;
+        dragStart.current = { x: e.clientX, y: e.clientY };
+        orbStart.current = { x: position.x, y: position.y };
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStart.current.x;
+        const dy = e.clientY - dragStart.current.y;
+        
+        isDraggingDistance.current = Math.sqrt(dx * dx + dy * dy);
+        
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const orbWidth = 48;
+        
+        const nextX = Math.max(4, Math.min(screenWidth - orbWidth - 4, orbStart.current.x + dx));
+        const nextY = Math.max(60, Math.min(screenHeight - orbWidth - 100, orbStart.current.y + dy));
+        
+        setPosition({ x: nextX, y: nextY });
+    };
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const orbWidth = 48;
+        const padding = 8; 
+        
+        const snapLeft = position.x < (screenWidth - orbWidth) / 2;
+        setIsSnappedToLeft(snapLeft);
+        
+        const snapX = snapLeft ? padding : screenWidth - orbWidth - padding;
+        
+        const minY = 80;
+        const maxY = screenHeight - orbWidth - 120;
+        const snapY = Math.max(minY, Math.min(maxY, position.y));
+        
+        setPosition({ x: snapX, y: snapY });
+    };
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -124,12 +208,23 @@ export default function BluButton({
 
     return (
         <>
-            {/* 1. THE MINI ORB BUTTON (Circle + BLU Text) */}
-            <div className="fixed z-[85] top-[16%] left-2 select-none group">
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            {/* 1. THE MINI ORB BUTTON (Circle + BLU Text - Magnetic & Draggable) */}
+            <motion.div 
+                animate={{ 
+                    left: position.x, 
+                    top: position.y 
+                }} 
+                transition={isDragging ? { type: "tween", duration: 0 } : { type: "spring", stiffness: 260, damping: 24 }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                className="fixed z-[85] select-none group touch-none"
+                style={{ position: "fixed" }}
+            >
+                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
                     <motion.button
                         onClick={() => { 
-                            if (!isAuthorized) return;
+                            if (!isAuthorized || isDraggingDistance.current > 6) return;
                             onToggleExpand?.(true); 
                             setShowGreeting(false); 
                             setHasGreetingBeenDismissed(true);
@@ -174,10 +269,14 @@ export default function BluButton({
                 <AnimatePresence>
                     {showGreeting && (
                         <motion.div 
-                            initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                            initial={{ opacity: 0, x: isSnappedToLeft ? -20 : 20, scale: 0.95 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, x: -20, scale: 0.95 }}
-                            className="absolute left-16 top-0 w-52 rounded-[1.5rem] rounded-tl-none border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden"
+                            exit={{ opacity: 0, x: isSnappedToLeft ? -20 : 20, scale: 0.95 }}
+                            className={`absolute top-0 w-52 border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden ${
+                                isSnappedToLeft 
+                                    ? "left-16 rounded-[1.5rem] rounded-tl-none" 
+                                    : "right-16 rounded-[1.5rem] rounded-tr-none"
+                            }`}
                         >
                             <div className="relative p-4 space-y-2">
                                 <div className="flex items-center gap-2">
