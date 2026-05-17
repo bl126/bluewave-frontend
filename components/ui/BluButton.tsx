@@ -316,7 +316,7 @@ export default function BluButton({
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
                             >
                                 <img 
-                                    src="/cocoon_egg.png" 
+                                    src="/cocoon_egg.webp" 
                                     alt="Cocoon" 
                                     loading="eager"
                                     className="w-5 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
@@ -368,7 +368,7 @@ export default function BluButton({
                                 >
                                     <div className="absolute inset-0 bg-cyan-500/5 blur-[60px] rounded-full animate-pulse" />
                                     <img 
-                                        src="/blu_image.png" 
+                                        src="/blu_image.webp" 
                                         alt="Blu" 
                                         loading="eager"
                                         className="w-40 h-40 object-contain relative z-20"

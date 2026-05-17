@@ -51,7 +51,7 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
                   className="w-full relative"
                 >
                   <img 
-                    src="/cocoon_egg.png" 
+                    src="/cocoon_egg.webp" 
                     alt="Cocoon Egg" 
                     className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,191,255,0.4)]"
                     onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}

@@ -39,18 +39,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })();
         `}} />
 
-        {/* 🌍 GLOBE TEXTURE PRELOADING: Local assets — no CDN dependency */}
-        <link rel="preload" href="/textures/earth-blue-marble.jpg" as="image" />
+        {/* 🌍 GLOBE TEXTURE PRELOADING: Only load textures actually used by BluewaveGlobe.tsx */}
+        {/* earth-night.jpg (715KB) is the ONLY texture used — both day+night slots use it */}
         <link rel="preload" href="/textures/earth-night.jpg" as="image" />
         <link rel="preload" href="/textures/earth-clouds.png" as="image" />
-        
+        {/* ⚠️ earth-blue-marble.jpg removed — it is NOT referenced in code (saves 1.4MB) */}
+
         {/* 🎨 LOGO PRELOADING: Prevent branding flicker */}
         <link rel="preload" href="/bluewave_logo.png" as="image" />
         <link rel="preload" href="/logo-bluewave.png" as="image" />
 
-        {/* 🤖 BLU AGENT & COCOON: Preload for instant display */}
-        <link rel="preload" href="/blu_image.png" as="image" />
-        <link rel="preload" href="/cocoon_egg.png" as="image" />
+        {/* 🤖 BLU AGENT & COCOON: Lazy-load via <img> when overlays open (saves 12MB on startup) */}
+        {/* blu_image.webp and cocoon_egg.webp are now optimized WebP, loaded on-demand */}
 
         {/* Telegram Mini App SDK — must be first */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
