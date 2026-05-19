@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Loader2, CheckCircle2, AlertCircle, Zap, ChevronRight, RefreshCw, Wallet } from "lucide-react";
-import { useTonConnectUI, useTonAddress } from "@tonconnect/ui-react";
+import { useTonConnectUI, useTonAddress, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import { createPortal } from "react-dom";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
@@ -24,6 +24,21 @@ function minTonRequired(tonPriceUsd: number): number {
   return Math.ceil((MIN_STARS * STAR_PRICE_USD / tonPriceUsd) * 1000) / 1000;
 }
 
+const isSameAddress = (addr1: string, addr2: string) => {
+  if (!addr1 || !addr2) return false;
+  try {
+    return toUserFriendlyAddress(addr1) === toUserFriendlyAddress(addr2);
+  } catch {
+    return addr1.toLowerCase().trim() === addr2.toLowerCase().trim();
+  }
+};
+
+const StarIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+  </svg>
+);
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 type DepositType = "ton" | "stars";
 type TxStatus = "idle" | "pending" | "success" | "error";
@@ -34,12 +49,6 @@ interface DepositModalProps {
   onClose: () => void;
   onSuccess?: (starsAdded?: number) => void;
 }
-
-const StarIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-  </svg>
-);
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function DepositModal({ type, telegramUser, onClose, onSuccess }: DepositModalProps) {
@@ -71,7 +80,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
       const data = await res.json();
       setTonPrice(data["the-open-network"]?.usd || 0);
     } catch {
-      setTonPrice(0); // will show "Price unavailable"
+      setTonPrice(0); // fallback/unavailable
     } finally {
       setPriceLoading(false);
     }
@@ -135,13 +144,17 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const isWalletConnected = !!walletAddress;
   const minTon = tonPrice > 0 ? minTonRequired(tonPrice) : 0;
 
-  // Presets for Stars package — calculated dynamically from live price
+  // DB registered wallet check
+  const dbWallet = telegramUser?.wallet_address;
+  const isWalletMismatch = !!dbWallet && !!walletAddress && !isSameAddress(walletAddress, dbWallet);
+
+  // Presets for Stars package (badge tag removed completely per user request)
   const PRESETS = tonPrice > 0 ? [
-    { ton: minTon,         label: `${minTon} TON`,  badge: "Min" },
-    { ton: Math.ceil(minTon * 5  * 10) / 10, label: "", badge: "" },
-    { ton: Math.ceil(minTon * 10 * 10) / 10, label: "", badge: "Popular" },
-    { ton: Math.ceil(minTon * 25 * 10) / 10, label: "", badge: "Best Value" },
-  ].map(p => ({ ...p, ton: Math.round(p.ton * 100) / 100, label: p.label || `${Math.round(p.ton * 100) / 100} TON` }))
+    { ton: minTon },
+    { ton: Math.ceil(minTon * 5  * 10) / 10 },
+    { ton: Math.ceil(minTon * 10 * 10) / 10 },
+    { ton: Math.ceil(minTon * 25 * 10) / 10 },
+  ].map(p => ({ ...p, ton: Math.round(p.ton * 100) / 100 }))
   : [];
 
   // Active TON amount based on type
@@ -177,6 +190,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   // ─── Send Transaction ────────────────────────────────────────────────────
   const handleDeposit = async () => {
     if (!isWalletConnected) { tonConnectUI.openModal(); return; }
+    if (isWalletMismatch) return;
     if (!isValidAmount || txStatus === "pending") return;
 
     setTxStatus("pending");
@@ -260,18 +274,18 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               {/* Live TON price */}
               <div className="flex items-center gap-1.5 mt-0.5">
                 {priceLoading ? (
-                  <span className="text-text-sub/30 text-[9px] uppercase font-black tracking-widest animate-pulse">Fetching price…</span>
+                  <span className="text-text-main text-[10px] uppercase font-black tracking-widest animate-pulse">Fetching price…</span>
                 ) : tonPrice > 0 ? (
                   <>
-                    <span className="text-text-sub/50 text-[9px] uppercase font-black tracking-widest">
+                    <span className="text-text-main text-[10px] uppercase font-black tracking-widest">
                       1 TON = ${tonPrice.toFixed(3)}
                     </span>
-                    <button onClick={fetchPrice} className="text-text-sub/30 hover:text-app-accent transition-colors">
+                    <button onClick={fetchPrice} className="text-text-main hover:text-app-accent transition-colors">
                       <RefreshCw size={9} />
                     </button>
                   </>
                 ) : (
-                  <span className="text-amber-400 text-[9px] uppercase font-black tracking-widest">Price unavailable</span>
+                  <span className="text-amber-400 text-[10px] uppercase font-black tracking-widest">Price unavailable</span>
                 )}
               </div>
             </div>
@@ -295,20 +309,38 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-6)}` : "Not Connected"}
                 </span>
               </div>
-              <span className="text-text-sub/50 uppercase tracking-widest text-[9px]">Connected Wallet</span>
+              <span className="text-text-main font-bold uppercase tracking-widest text-[9px]">Connected Wallet</span>
             </div>
+
+            {/* Wallet mismatch warning banner (high visibility, clean) */}
+            {isWalletMismatch && (
+              <motion.div 
+                initial={{ opacity: 0, y: -8 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-2 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 shrink-0 text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} className="text-red-400 shrink-0" />
+                  <span className="text-red-400 text-[10px] font-black uppercase tracking-wider">Wallet Address Mismatch</span>
+                </div>
+                <p className="text-text-main text-[11px] font-medium leading-relaxed">
+                  Your profile is registered with: <span className="font-mono text-app-accent font-bold break-all">{dbWallet}</span>.
+                  Please connect that exact wallet in your TON wallet app.
+                </p>
+              </motion.div>
+            )}
 
             {/* Wallet connect banner */}
             {!isWalletConnected && (
               <motion.div 
                 initial={{ opacity: 0, y: -8 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 text-left"
               >
                 <AlertCircle size={16} className="text-amber-400 shrink-0" />
                 <div>
                   <p className="text-amber-300 text-[10px] font-black uppercase tracking-wider">Wallet Disconnected</p>
-                  <p className="text-amber-300/60 text-[9px] font-bold uppercase tracking-widest mt-0.5">Connect your TON wallet to deposit</p>
+                  <p className="text-amber-300/80 text-[9px] font-bold uppercase tracking-widest mt-0.5">Connect your TON wallet to deposit</p>
                 </div>
                 <button 
                   onClick={() => tonConnectUI.openModal()} 
@@ -323,12 +355,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             {type === "ton" && (
               <div className="flex flex-col gap-4">
                 {/* Wallet balance & input box */}
-                <div className="bg-app-bg/50 border border-app-border rounded-2xl p-5 flex flex-col gap-4">
+                <div className="bg-app-bg/30 border border-app-border rounded-2xl p-5 flex flex-col gap-4">
                   {/* Header: Available Balance & Half/Max */}
                   <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                    <span className="text-text-sub/60">Available Balance</span>
-                    <div className="flex items-center gap-2 text-text-sub">
-                      <Wallet size={12} className="text-text-sub/60" />
+                    <span className="text-text-main font-bold">Available Balance</span>
+                    <div className="flex items-center gap-2 text-text-main font-bold">
+                      <Wallet size={12} className="text-text-main shrink-0" />
                       <span className="font-mono">
                         {balanceLoading ? (
                           <span className="animate-pulse">Loading...</span>
@@ -338,17 +370,17 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                           "0.0000"
                         )}
                       </span>
-                      {isWalletConnected && walletBalance !== null && (
+                      {isWalletConnected && walletBalance !== null && !isWalletMismatch && (
                         <div className="flex items-center gap-1.5 ml-1 select-none">
                           <button 
                             onClick={() => handleSetAmountPercent(0.5)}
-                            className="text-app-accent hover:opacity-80 transition-opacity font-black text-[9px] uppercase tracking-widest bg-app-accent/10 px-1.5 py-0.5 rounded border border-app-border"
+                            className="text-app-accent hover:opacity-80 transition-opacity font-black text-[9px] uppercase tracking-widest bg-app-accent/10 px-2 py-0.5 rounded border border-app-border"
                           >
                             Half
                           </button>
                           <button 
                             onClick={() => handleSetAmountPercent(1.0)}
-                            className="text-app-accent hover:opacity-80 transition-opacity font-black text-[9px] uppercase tracking-widest bg-app-accent/10 px-1.5 py-0.5 rounded border border-app-border"
+                            className="text-app-accent hover:opacity-80 transition-opacity font-black text-[9px] uppercase tracking-widest bg-app-accent/10 px-2 py-0.5 rounded border border-app-border"
                           >
                             Max
                           </button>
@@ -367,7 +399,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         setCustomAmount(e.target.value);
                         setSelectedPreset(null);
                       }}
-                      className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-sub/10 w-full min-w-0"
+                      className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-main/20 w-full min-w-0"
                     />
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-app-accent/10 border border-app-border/50 select-none shrink-0">
                       <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
@@ -376,21 +408,21 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   </div>
 
                   {/* Footer: USD Conversion & "Toncoin" text */}
-                  <div className="flex items-center justify-between text-[10px] font-black text-text-sub/40 uppercase tracking-widest">
-                    <span>
+                  <div className="flex items-center justify-between text-[10px] font-black text-text-main uppercase tracking-widest">
+                    <span className="text-text-main font-bold">
                       {customAmount && tonPrice > 0 ? (
                         `$${(parseFloat(customAmount) * tonPrice || 0).toFixed(4)}`
                       ) : (
                         "$0.0000"
                       )}
                     </span>
-                    <span>Toncoin</span>
+                    <span className="text-text-main/60">Toncoin</span>
                   </div>
                 </div>
 
                 {/* TON Presets */}
                 <div>
-                  <p className="text-[9px] font-black text-text-sub/50 uppercase tracking-[0.2em] mb-2">Quick Presets</p>
+                  <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Quick Presets</p>
                   <div className="grid grid-cols-4 gap-2">
                     {[1, 5, 10, 25].map((presetVal) => {
                       const isSelected = parseFloat(customAmount) === presetVal;
@@ -404,7 +436,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                           className={`py-2.5 rounded-xl border text-xs font-black transition-all ${
                             isSelected
                               ? "bg-app-accent/20 border-app-accent text-app-accent shadow-[0_0_12px_rgba(0,246,255,0.15)]"
-                              : "bg-app-accent/5 border-app-border text-text-sub hover:border-app-accent/30"
+                              : "bg-app-accent/5 border-app-border/50 text-text-main hover:border-app-accent/55"
                           }`}
                         >
                           {presetVal} TON
@@ -422,9 +454,9 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 {/* Min Stars info banner */}
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-app-accent/5 border border-app-border shrink-0">
                   <Zap size={12} className="text-app-accent shrink-0" />
-                  <p className="text-text-sub text-[10px] font-black uppercase tracking-widest leading-none">
+                  <p className="text-text-main text-[10px] font-black uppercase tracking-widest leading-none">
                     Minimum Purchase: <span className="text-app-accent font-black">{MIN_STARS} Stars</span>
-                    {tonPrice > 0 && <span className="text-text-sub/40"> · ≈ {minTon} TON (${(minTon * tonPrice).toFixed(2)})</span>}
+                    {tonPrice > 0 && <span className="text-text-main/70"> · ≈ {minTon} TON (${(minTon * tonPrice).toFixed(2)})</span>}
                   </p>
                 </div>
 
@@ -437,7 +469,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   </div>
                 ) : tonPrice > 0 ? (
                   <div>
-                    <p className="text-[9px] font-black text-text-sub/50 uppercase tracking-[0.2em] mb-2">Select Stars Amount</p>
+                    <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Select Stars Amount</p>
                     <div className="grid grid-cols-2 gap-2.5">
                       {PRESETS.map((preset, idx) => {
                         const isSelected = !useCustom && selectedPreset === idx;
@@ -451,26 +483,21 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                               setUseCustom(false);
                               setCustomAmount("");
                             }}
-                            className={`relative flex flex-col p-3 rounded-2xl border transition-all text-left ${
+                            className={`relative flex flex-col p-3.5 rounded-2xl border transition-all text-left ${
                               isSelected
                                 ? "bg-app-accent/15 border-app-accent shadow-[0_0_15px_rgba(0,246,255,0.15)] text-app-accent"
-                                : "bg-app-accent/5 border-app-border hover:border-app-accent/30 text-text-main"
+                                : "bg-app-accent/5 border-app-border hover:border-app-accent/50 text-text-main"
                             }`}
                           >
-                            {preset.badge && (
-                              <span className="absolute top-2.5 right-2.5 text-[8px] font-black uppercase tracking-widest text-app-accent bg-app-accent/15 px-1.5 py-0.5 rounded-full border border-app-border select-none">
-                                {preset.badge}
-                              </span>
-                            )}
                             <div className="flex items-center gap-1.5 mb-1.5">
                               <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
-                              <span className="font-black text-sm">{preset.ton} TON</span>
+                              <span className="font-black text-sm text-text-main">{preset.ton} TON</span>
                             </div>
-                            <div className="flex items-center gap-1 text-[11px] font-black text-text-sub">
+                            <div className="flex items-center gap-1 text-[11px] font-black text-text-main">
                               <StarIcon size={10} />
                               <span>{s.toLocaleString()} Stars</span>
                             </div>
-                            <span className="text-[9px] text-text-sub/30 font-mono mt-0.5">${usd.toFixed(2)}</span>
+                            <span className="text-[10px] text-text-main/80 font-mono mt-0.5">${usd.toFixed(2)}</span>
                           </button>
                         );
                       })}
@@ -480,7 +507,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
                 {/* Custom Amount */}
                 <div>
-                  <p className="text-[9px] font-black text-text-sub/50 uppercase tracking-[0.2em] mb-2">Custom TON Amount</p>
+                  <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Custom TON Amount</p>
                   <div className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
                     useCustom && customAmount ? "border-app-accent bg-app-accent/5" : "border-app-border bg-app-accent/5"
                   }`}>
@@ -500,10 +527,10 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         setUseCustom(true);
                         setSelectedPreset(null);
                       }}
-                      className="flex-1 bg-transparent border-none outline-none text-text-main font-bold text-sm placeholder-text-sub/20"
+                      className="flex-1 bg-transparent border-none outline-none text-text-main font-bold text-sm placeholder-text-main/20"
                     />
                     {useCustom && tonPrice > 0 && activeTon > 0 && (
-                      <span className="text-text-sub/50 text-xs font-mono shrink-0">${usdValue.toFixed(2)}</span>
+                      <span className="text-text-main font-mono shrink-0">${usdValue.toFixed(2)}</span>
                     )}
                   </div>
                 </div>
@@ -524,21 +551,21 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       {isValidAmount ? (
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-text-sub/50">You send</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You send</span>
                             <div className="flex items-center gap-1.5">
                               <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
                               <span className="text-text-main font-black text-base">{activeTon} TON</span>
                             </div>
-                            <span className="text-text-sub/40 text-[9px] font-mono">≈ ${usdValue.toFixed(2)} USD</span>
+                            <span className="text-text-main/90 text-[9px] font-mono">≈ ${usdValue.toFixed(2)} USD</span>
                           </div>
-                          <ChevronRight size={16} className="text-text-sub/20" />
+                          <ChevronRight size={16} className="text-text-main/30" />
                           <div className="flex flex-col gap-0.5 items-end">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-text-sub/50">You receive</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You receive</span>
                             <div className="flex items-center gap-1">
                               <span className="text-app-accent font-black text-base">{starsToReceive.toLocaleString()}</span>
                               <span className="text-app-accent"><StarIcon size={14} /></span>
                             </div>
-                            <span className="text-text-sub/40 text-[9px] font-mono">≈ ${(starsToReceive * STAR_PRICE_USD).toFixed(2)}</span>
+                            <span className="text-text-main/90 text-[9px] font-mono">≈ ${(starsToReceive * STAR_PRICE_USD).toFixed(2)}</span>
                           </div>
                         </div>
                       ) : (
@@ -560,12 +587,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               <motion.button
                 whileTap={{ scale: 0.97 }} 
                 onClick={handleDeposit}
-                disabled={txStatus === "pending" || txStatus === "success" || (isWalletConnected && !isValidAmount)}
+                disabled={txStatus === "pending" || txStatus === "success" || isWalletMismatch || (isWalletConnected && !isValidAmount)}
                 className={`w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 transition-all shadow-lg ${
                   txStatus === "success" ? "bg-emerald-500 text-white"
                   : txStatus === "error"  ? "bg-red-500/20 text-red-400 border border-red-500/30"
                   : !isWalletConnected    ? "bg-app-accent text-app-bg shadow-[0_0_20px_rgba(0,246,255,0.2)]"
-                  : !isValidAmount        ? "bg-app-accent/5 border border-app-border text-text-sub/30 cursor-not-allowed"
+                  : isWalletMismatch       ? "bg-red-500/10 border border-red-500/30 text-red-400 cursor-not-allowed"
+                  : !isValidAmount        ? "bg-app-accent/5 border border-app-border text-text-main/40 cursor-not-allowed"
                   : "bg-app-accent text-app-bg shadow-[0_0_25px_rgba(0,246,255,0.25)] hover:opacity-90"
                 }`}
               >
@@ -575,6 +603,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 
                 {txStatus === "idle" && (
                   !isWalletConnected ? "Connect Wallet to Deposit"
+                  : isWalletMismatch ? "Wallet Mismatch"
                   : !isValidAmount ? (
                       type === "ton" ? "Enter TON Amount" : `Min ${MIN_STARS} Stars (${minTon} TON)`
                     )
@@ -589,7 +618,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 {txStatus === "error"   && "Transaction Failed — Try Again"}
               </motion.button>
 
-              <p className="text-center text-[9px] text-text-sub/30 font-bold uppercase tracking-wider leading-normal">
+              <p className="text-center text-[10px] text-text-main/60 font-bold uppercase tracking-wider leading-normal">
                 {type === "ton" ? (
                   "Transactions credited within ~30s after blockchain confirmation. TON directly funds your active app utility."
                 ) : (
