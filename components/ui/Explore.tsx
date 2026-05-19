@@ -1420,6 +1420,13 @@ function PostCard({
     await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
   };
 
+  // 🔢 Compact number formatter: 1000 → 1k, 21000 → 21k, 100000 → 100k, 1000000 → 1m
+  const fmt = (n: number): string => {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}m`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : (n >= 10_000 ? 0 : 1))}k`;
+    return String(n);
+  };
+
   // 🔗 Shareable post URL — points to the /post/[id] web page which has proper
   // Open Graph tags so Telegram generates a rich link preview (snippet).
   // That page auto-redirects users into the Bluewave mini app.
@@ -1461,7 +1468,8 @@ function PostCard({
     e.stopPropagation();
     if (isCopying) return;
     setIsCopying(true);
-    navigator.clipboard.writeText(postLink).then(() => {
+    // Copy the direct mini app deep link — opens the post straight in Bluewave
+    navigator.clipboard.writeText(miniAppLink).then(() => {
       setTimeout(() => {
         setIsCopying(false);
         setIsMenuOpen(false);
@@ -1640,22 +1648,22 @@ function PostCard({
             </div>
           ) : null}
 
-          {/* ─── Action Bar: Comment · Like · Star · Views ─── */}
-          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/[0.04]">
-            {/* Left: 4 core stats */}
-            <div className="flex items-center gap-5">
+          {/* ─── Action Bar: Comment · Like · Star · Repost (left) | Views (right) ─── */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
+            {/* Left: Comment + Like + Star + Repost — X/Twitter scale, full visibility */}
+            <div className="flex items-center gap-6">
 
-              {/* Comment — open for everyone, no connection required */}
+              {/* Comment — open for everyone */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onCommentClick();
                 }}
-                className="flex items-center gap-1.5 group transition-all"
+                className="flex items-center gap-2 group transition-all"
               >
-                <MessageCircle size={15} className="text-cyan-400/70 group-hover:text-cyan-400 transition-colors" />
-                <span className="text-[11px] font-bold font-mono text-cyan-400/70 group-hover:text-cyan-400 transition-colors">
-                  {post.comments_count || 0}
+                <MessageCircle size={18} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                <span className="text-[12px] font-bold font-mono text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                  {fmt(post.comments_count || 0)}
                 </span>
               </button>
 
@@ -1682,21 +1690,21 @@ function PostCard({
                 <button
                   ref={ackBtnRef}
                   onClick={handleAcknowledge}
-                  className="flex items-center gap-1.5 group transition-all"
+                  className="flex items-center gap-2 group transition-all"
                 >
                   <Heart
-                    size={15}
+                    size={18}
                     fill={isAcknowledged ? "currentColor" : "none"}
                     className={`transition-all ${
                       isAcknowledged
                         ? "text-cyan-400 scale-110"
-                        : "text-cyan-400/70 group-hover:text-cyan-400"
+                        : "text-cyan-400 group-hover:text-cyan-300"
                     }`}
                   />
-                  <span className={`text-[11px] font-bold font-mono transition-colors ${
-                    isAcknowledged ? "text-cyan-400" : "text-cyan-400/70 group-hover:text-cyan-400"
+                  <span className={`text-[12px] font-bold font-mono transition-colors ${
+                    isAcknowledged ? "text-cyan-400" : "text-cyan-400 group-hover:text-cyan-300"
                   }`}>
-                    {localAckCount}
+                    {fmt(localAckCount)}
                   </span>
                 </button>
               </div>
@@ -1704,50 +1712,50 @@ function PostCard({
               {/* Star */}
               <button
                 onClick={handleStar}
-                className="flex items-center gap-1.5 group transition-all"
+                className="flex items-center gap-2 group transition-all"
               >
                 <Star
-                  size={15}
+                  size={18}
                   fill={isStarred ? "currentColor" : "none"}
                   className={`transition-all ${
                     isStarred
                       ? "text-cyan-400 scale-110"
-                      : "text-cyan-400/70 group-hover:text-cyan-400"
+                      : "text-cyan-400 group-hover:text-cyan-300"
                   }`}
                 />
-                <span className={`text-[11px] font-bold font-mono transition-colors ${
-                  isStarred ? "text-cyan-400" : "text-cyan-400/70 group-hover:text-cyan-400"
+                <span className={`text-[12px] font-bold font-mono transition-colors ${
+                  isStarred ? "text-cyan-400" : "text-cyan-400 group-hover:text-cyan-300"
                 }`}>
-                  {localStarCount}
+                  {fmt(localStarCount)}
                 </span>
               </button>
 
-              {/* Views (BarChart2 — matches leaderboard icon) */}
-              <div className="flex items-center gap-1.5">
-                <BarChart2 size={15} className="text-cyan-400/70" />
-                <span className="text-[11px] font-bold font-mono text-cyan-400/70">
-                  {post.views || 0}
-                </span>
-              </div>
+              {/* Repost */}
+              <button
+                onClick={handleRepost}
+                disabled={isReposted || isReposting}
+                className={`flex items-center gap-2 transition-all ${
+                  isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/50" : "text-cyan-400/60 hover:text-cyan-400"
+                }`}
+              >
+                {isReposting
+                  ? <Loader2 size={16} className="animate-spin" />
+                  : <Repeat2 size={18} className={isReposted ? "rotate-180" : ""} />
+                }
+                {(post.reposts_count || 0) > 0 && (
+                  <span className="text-[12px] font-bold font-mono">{fmt(post.reposts_count || 0)}</span>
+                )}
+              </button>
 
             </div>
 
-            {/* Right: Repost (secondary, subtle) */}
-            <button
-              onClick={handleRepost}
-              disabled={isReposted || isReposting}
-              className={`flex items-center gap-1 transition-all ${
-                isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/40" : "text-white/20 hover:text-cyan-400/50"
-              }`}
-            >
-              {isReposting
-                ? <Loader2 size={13} className="animate-spin" />
-                : <Repeat2 size={13} className={isReposted ? "rotate-180" : ""} />
-              }
-              {post.reposts_count > 0 && (
-                <span className="text-[10px] font-mono">{post.reposts_count}</span>
-              )}
-            </button>
+            {/* Right: Views */}
+            <div className="flex items-center gap-2">
+              <BarChart2 size={18} className="text-cyan-400/60" />
+              <span className="text-[12px] font-bold font-mono text-cyan-400/60">
+                {fmt(post.views_count || post.views || 0)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -2079,7 +2087,21 @@ function PostDetailModal({
   const [posting, setPosting] = useState(false);
   const [localComments, setLocalComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(!initialPost.content);
+  const [commentImage, setCommentImage] = useState<string | null>(null); // base64 preview
+  const [commentImageUploading, setCommentImageUploading] = useState(false);
+  const commentImageInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Handle image selection for comment
+  const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCommentImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so same file can be reselected
+    e.target.value = "";
+  };
 
   useEffect(() => {
     if (!initialPost.content && initialPost.id) {
@@ -2106,8 +2128,32 @@ function PostDetailModal({
   }, [comments, commentId]);
 
   const handlePostComment = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && !commentImage) return;
     setPosting(true);
+
+    let uploadedMediaUrl: string | null = null;
+
+    // Upload image if attached
+    if (commentImage) {
+      setCommentImageUploading(true);
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL;
+        const b64 = commentImage.split(",")[1]; // strip data:image/...;base64,
+        const ext = commentImage.split(";")[0].split("/")[1] || "jpg";
+        const uploadRes = await fetch(`${apiBase}/explore/upload_comment_image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: telegramUser.id, image_b64: b64, ext }),
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.url) uploadedMediaUrl = uploadData.url;
+      } catch (e) {
+        console.warn("Comment image upload failed:", e);
+      } finally {
+        setCommentImageUploading(false);
+      }
+    }
+
     const tempId = `temp-${Date.now()}`;
     const optimisticComment = {
       id: tempId,
@@ -2115,6 +2161,7 @@ function PostDetailModal({
       user_id: telegramUser.id,
       parent_id: replyTo?.id || null,
       content: content.trim(),
+      media_url: uploadedMediaUrl || commentImage, // show preview optimistically
       created_at: new Date().toISOString(),
       likes_count: 0,
       is_liked: false,
@@ -2126,6 +2173,7 @@ function PostDetailModal({
 
     setLocalComments(prev => [...prev, optimisticComment]);
     setContent("");
+    setCommentImage(null);
     const prevReplyTo = replyTo;
     setReplyTo(null);
 
@@ -2133,7 +2181,8 @@ function PostDetailModal({
       const res = await postApi(`/explore/post/${post.id}/comment`, {
         user_id: telegramUser.id,
         content: optimisticComment.content,
-        parent_id: optimisticComment.parent_id
+        parent_id: optimisticComment.parent_id,
+        media_url: uploadedMediaUrl || undefined,
       });
 
       if (res.success) {
@@ -2143,6 +2192,7 @@ function PostDetailModal({
     } catch (err) {
       setLocalComments(prev => prev.filter(c => c.id !== tempId));
       setContent(optimisticComment.content);
+      setCommentImage(optimisticComment.media_url || null);
       setReplyTo(prevReplyTo);
     } finally {
       setPosting(false);
@@ -2206,6 +2256,12 @@ function PostDetailModal({
                 </button>
                 <span className="text-[9px] text-white/20 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
+              {/* Comment image — show if exists */}
+              {comment.media_url && (
+                <div className="mb-3 rounded-2xl overflow-hidden border border-white/10 max-w-[240px]">
+                  <img src={comment.media_url} alt="comment media" className="w-full h-auto object-cover" loading="lazy" />
+                </div>
+              )}
               <LinkedText text={comment.content} className="text-[13px] text-white/80 leading-relaxed mb-3 whitespace-pre-wrap" />
               <div className="flex items-center gap-6">
                 <button
@@ -2337,9 +2393,19 @@ function PostDetailModal({
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/90 backdrop-blur-2xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom,20px)+20px)] max-w-xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom,20px)+20px)] max-w-xl mx-auto">
+          {/* Hidden image file input */}
+          <input
+            ref={commentImageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleCommentImageSelect}
+          />
+
+          {/* Reply banner */}
           {replyTo && (
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20 rounded-t-2xl">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20">
               <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                 Replying to <span className="text-white">{replyTo.user.name}</span>
               </span>
@@ -2348,21 +2414,53 @@ function PostDetailModal({
               </button>
             </motion.div>
           )}
-          <div className={`flex items-end gap-3 p-3 bg-white/[0.03] border border-white/10 ${replyTo ? 'rounded-b-2xl' : 'rounded-3xl'} focus-within:border-cyan-500/30 transition-all shadow-2xl`}>
+
+          {/* Image preview strip */}
+          {commentImage && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 px-4 pt-3"
+            >
+              <div className="relative">
+                <img src={commentImage} alt="preview" className="w-16 h-16 rounded-xl object-cover border border-white/10" />
+                <button
+                  onClick={() => setCommentImage(null)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black/80 rounded-full border border-white/20 flex items-center justify-center"
+                >
+                  <X size={10} className="text-white" />
+                </button>
+              </div>
+              <span className="text-[10px] text-white/40 font-mono">Image attached</span>
+            </motion.div>
+          )}
+
+          {/* Input row */}
+          <div className={`flex items-end gap-3 p-3 m-3 mt-2 bg-white/[0.03] border border-white/10 ${
+            replyTo ? 'rounded-2xl' : 'rounded-3xl'
+          } focus-within:border-cyan-500/30 transition-all shadow-2xl`}>
+
+            {/* Image attach button */}
+            <button
+              onClick={() => commentImageInputRef.current?.click()}
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-400/10 transition-all active:scale-90"
+            >
+              <ImageIcon size={18} />
+            </button>
+
             <textarea
               id="comment-input"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Post your reply"
-              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 px-2 resize-none max-h-32 min-h-[40px] custom-scrollbar"
+              placeholder="Post your reply…"
+              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 resize-none max-h-32 min-h-[40px] custom-scrollbar"
               rows={1}
             />
             <button
               onClick={handlePostComment}
-              disabled={posting || !content.trim()}
+              disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
               className="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30 shadow-[0_0_20px_rgba(0,230,255,0.2)]"
             >
-              {posting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} strokeWidth={2.5} />}
+              {(posting || commentImageUploading) ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} strokeWidth={2.5} />}
             </button>
           </div>
         </div>
