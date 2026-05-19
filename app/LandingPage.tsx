@@ -313,6 +313,22 @@ export default function LandingPage() {
             }
         }
 
+        // 📢 Post-link Referral: resolve the post author as the referrer
+        // If opened via a post share link, the post author gets referral credit
+        // if this is a new user who later activates their wallet.
+        if (actionPostId && !referrerId) {
+            try {
+                const postData = await getApi(`/explore/post/${actionPostId}`);
+                if (postData?.tg_id && String(postData.tg_id) !== String(effectiveTgId)) {
+                    referrerId = String(postData.tg_id);
+                    console.log(`📢 POST_REFERRAL: Post ${actionPostId} author ${referrerId} set as referrer`);
+                }
+            } catch (e) {
+                // Non-blocking: if we can't fetch the post, just continue without referrer
+                console.warn("Post referral lookup failed:", e);
+            }
+        }
+
         const savedTgId = String(effectiveTgId);
         window.localStorage.setItem("bw_tg_id", savedTgId); // Keep cache in sync with reality
 

@@ -937,6 +937,9 @@ function PostModal({
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
       className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col md:max-w-md md:mx-auto md:relative md:inset-auto md:h-[90vh] md:rounded-[3rem] md:overflow-hidden"
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)"
+      }}
     >
 
 
@@ -1406,13 +1409,25 @@ function PostCard({
 
   const handleStar = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    // ⭐ Star requires a connected channel (premium action)
+    if (!isConnected) {
+      onConnectRequired();
+      return;
+    }
     const newStarred = !isStarred;
     setIsStarred(newStarred);
     setLocalStarCount((prev: number) => newStarred ? prev + 1 : Math.max(0, prev - 1));
     await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
   };
 
-  const postLink = `https://t.me/BluewaveAppBot/app?startapp=post_${post.id}`;
+  // 🔗 Shareable post URL — points to the /post/[id] web page which has proper
+  // Open Graph tags so Telegram generates a rich link preview (snippet).
+  // That page auto-redirects users into the Bluewave mini app.
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bluewaveprotocol.com";
+  const postLink = `${APP_URL}/post/${post.id}`;
+  // Direct mini app deep link (used only for the Telegram forward action)
+  const miniAppLink = `https://t.me/Bluewave_Ecosystem_bot/bluewave?startapp=post_${post.id}`;
+
 
   const handleForward = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1625,31 +1640,26 @@ function PostCard({
             </div>
           ) : null}
 
-          {/* Bottom row: Acknowledge (Heart) + Repost + Views */}
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-8">
-              {/* Comment Button */}
+          {/* ─── Action Bar: Comment · Like · Star · Views ─── */}
+          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/[0.04]">
+            {/* Left: 4 core stats */}
+            <div className="flex items-center gap-5">
+
+              {/* Comment — open for everyone, no connection required */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (!isConnected) {
-                    onConnectRequired();
-                    return;
-                  }
                   onCommentClick();
                 }}
-                className="flex items-center gap-1.5 group transition-all text-white/40 hover:text-cyan-400/60"
+                className="flex items-center gap-1.5 group transition-all"
               >
-                <div className="p-1.5 rounded-full group-hover:bg-cyan-500/5 transition-colors">
-                  <MessageCircle size={14} />
-                </div>
-                {post.comments_count > 0 && (
-                  <span className="text-[10px] font-bold font-mono text-white/80">
-                    {post.comments_count}
-                  </span>
-                )}
+                <MessageCircle size={15} className="text-cyan-400/70 group-hover:text-cyan-400 transition-colors" />
+                <span className="text-[11px] font-bold font-mono text-cyan-400/70 group-hover:text-cyan-400 transition-colors">
+                  {post.comments_count || 0}
+                </span>
               </button>
 
+              {/* Like (Acknowledge) */}
               <div className="relative">
                 <AnimatePresence>
                   {showSpaceDust && (
@@ -1672,56 +1682,72 @@ function PostCard({
                 <button
                   ref={ackBtnRef}
                   onClick={handleAcknowledge}
-                  className={`flex items-center gap-1.5 group transition-all ${isAcknowledged ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
+                  className="flex items-center gap-1.5 group transition-all"
                 >
-                  <div className={`p-1.5 rounded-full transition-colors ${isAcknowledged ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
-                    <Heart size={14} fill={isAcknowledged ? "currentColor" : "none"} className={isAcknowledged ? "scale-110" : ""} />
-                  </div>
-                  {localAckCount > 0 && (
-                    <span className="text-[10px] font-bold font-mono text-white/80">
-                      {localAckCount}
-                    </span>
-                  )}
+                  <Heart
+                    size={15}
+                    fill={isAcknowledged ? "currentColor" : "none"}
+                    className={`transition-all ${
+                      isAcknowledged
+                        ? "text-cyan-400 scale-110"
+                        : "text-cyan-400/70 group-hover:text-cyan-400"
+                    }`}
+                  />
+                  <span className={`text-[11px] font-bold font-mono transition-colors ${
+                    isAcknowledged ? "text-cyan-400" : "text-cyan-400/70 group-hover:text-cyan-400"
+                  }`}>
+                    {localAckCount}
+                  </span>
                 </button>
               </div>
 
-              <div className="relative">
-                <button
-                  onClick={handleStar}
-                  className={`flex items-center gap-1.5 group transition-all ${isStarred ? "text-cyan-400" : "text-white/40 hover:text-cyan-400/60"}`}
-                >
-                  <div className={`p-1.5 rounded-full transition-colors ${isStarred ? "bg-cyan-500/10 text-cyan-400" : "group-hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400/60"}`}>
-                    <Star size={14} fill={isStarred ? "currentColor" : "none"} className={isStarred ? "scale-110" : ""} />
-                  </div>
-                  {localStarCount > 0 && (
-                    <span className="text-[10px] font-bold font-mono text-white/80">
-                      {localStarCount}
-                    </span>
-                  )}
-                </button>
+              {/* Star */}
+              <button
+                onClick={handleStar}
+                className="flex items-center gap-1.5 group transition-all"
+              >
+                <Star
+                  size={15}
+                  fill={isStarred ? "currentColor" : "none"}
+                  className={`transition-all ${
+                    isStarred
+                      ? "text-cyan-400 scale-110"
+                      : "text-cyan-400/70 group-hover:text-cyan-400"
+                  }`}
+                />
+                <span className={`text-[11px] font-bold font-mono transition-colors ${
+                  isStarred ? "text-cyan-400" : "text-cyan-400/70 group-hover:text-cyan-400"
+                }`}>
+                  {localStarCount}
+                </span>
+              </button>
+
+              {/* Views (BarChart2 — matches leaderboard icon) */}
+              <div className="flex items-center gap-1.5">
+                <BarChart2 size={15} className="text-cyan-400/70" />
+                <span className="text-[11px] font-bold font-mono text-cyan-400/70">
+                  {post.views || 0}
+                </span>
               </div>
 
-              <div className="relative">
-                <button
-                  onClick={handleRepost}
-                  disabled={isReposted || isReposting}
-                  className={`flex items-center gap-1.5 group transition-all ${isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/60" : "text-white/40 hover:text-cyan-400/60"}`}
-                >
-                  <div className={`p-1.5 rounded-full transition-colors ${isReposted ? "bg-cyan-500/10" : isReposting ? "bg-cyan-500/5" : "group-hover:bg-cyan-500/5 text-cyan-400/60"}`}>
-                    {isReposting
-                      ? <Loader2 size={14} className="animate-spin text-cyan-400" />
-                      : <Repeat2 size={14} className={isReposted ? "rotate-180" : ""} />
-                    }
-                  </div>
-                  {post.reposts_count > 0 && <span className="text-[10px] font-bold font-mono text-white/60">{post.reposts_count}</span>}
-                </button>
-              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-white/60 px-2 py-1">
-              <Eye size={14} className="text-cyan-400/80" />
-              <span className="text-[10px] font-mono font-bold text-white/80">{post.views || 0}</span>
-            </div>
+            {/* Right: Repost (secondary, subtle) */}
+            <button
+              onClick={handleRepost}
+              disabled={isReposted || isReposting}
+              className={`flex items-center gap-1 transition-all ${
+                isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/40" : "text-white/20 hover:text-cyan-400/50"
+              }`}
+            >
+              {isReposting
+                ? <Loader2 size={13} className="animate-spin" />
+                : <Repeat2 size={13} className={isReposted ? "rotate-180" : ""} />
+              }
+              {post.reposts_count > 0 && (
+                <span className="text-[10px] font-mono">{post.reposts_count}</span>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -2135,13 +2161,32 @@ function PostDetailModal({
     }
   };
 
+  // 🔗 Open commenter's Telegram profile
+  const openCommenterProfile = (username?: string, tgId?: number) => {
+    const twa = (window as any).Telegram?.WebApp;
+    let link = "";
+    if (username) {
+      link = `https://t.me/${username.replace(/^@/, "")}`;
+    } else if (tgId) {
+      // Deep link by Telegram user ID (works even without a public username)
+      link = `tg://user?id=${tgId}`;
+    }
+    if (!link) return;
+    if (twa?.openTelegramLink) twa.openTelegramLink(link);
+    else window.open(link, "_blank");
+  };
+
   const renderComments = (parentId: number | null = null, depth = 0) => {
     return localComments
       .filter(c => c.parent_id === parentId)
       .map(comment => (
         <div key={comment.id} id={`comment-${comment.id}`} className="flex flex-col">
           <div className={`flex gap-3 py-4 ${depth > 0 ? "ml-6 border-l border-white/5 pl-4" : ""} ${comment.id === commentId ? "bg-cyan-500/5 rounded-xl px-2 -mx-2" : ""}`}>
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40 shadow-sm">
+            {/* Avatar — clickable to open Telegram profile */}
+            <button
+              onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
+              className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40 shadow-sm active:scale-90 transition-transform"
+            >
               {comment.user.photo ? (
                 <img src={comment.user.photo} className="w-full h-full object-cover" />
               ) : (
@@ -2149,10 +2194,16 @@ function PostDetailModal({
                   {comment.user.name?.[0]}
                 </div>
               )}
-            </div>
+            </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-white font-bold text-[11px] truncate tracking-tight uppercase">{comment.user.name}</span>
+                {/* Name — also clickable to open Telegram profile */}
+                <button
+                  onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
+                  className="text-white font-bold text-[11px] truncate tracking-tight uppercase hover:text-cyan-400 transition-colors active:scale-95"
+                >
+                  {comment.user.name}
+                </button>
                 <span className="text-[9px] text-white/20 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               <LinkedText text={comment.content} className="text-[13px] text-white/80 leading-relaxed mb-3 whitespace-pre-wrap" />
@@ -2188,7 +2239,7 @@ function PostDetailModal({
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[500] bg-black/95 flex flex-col items-center justify-center backdrop-blur-2xl"
+      className="fixed inset-0 z-[500] bg-black/95 flex flex-col items-center justify-end backdrop-blur-2xl"
       onClick={onClose}
     >
       <motion.div
@@ -2196,7 +2247,10 @@ function PostDetailModal({
         animate={{ y: 0, opacity: 1 }} 
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 32, stiffness: 300, mass: 1 }}
-        className="w-full max-w-xl h-full bg-zinc-950 flex flex-col md:max-h-[95vh] md:rounded-t-[3rem] shadow-[0_-20px_100px_rgba(0,0,0,1)] overflow-hidden border-t border-white/5"
+        className="w-full max-w-xl bg-zinc-950 flex flex-col shadow-[0_-20px_100px_rgba(0,0,0,1)] overflow-hidden border-t border-white/5"
+        style={{
+          height: "calc(100vh - env(safe-area-inset-top, 0px) - var(--tg-content-safe-area-inset-top, 0px) - 60px)"
+        }}
         onClick={(e) => e.stopPropagation()}
       >
 
