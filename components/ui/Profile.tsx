@@ -137,6 +137,21 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   }, [swrUser]);
 
   useEffect(() => {
+    if (telegramUser) {
+      if (telegramUser.id && telegramUser.id !== telegramId) {
+        setTelegramId(telegramUser.id);
+      }
+      setUser((prev: any) => {
+        if (!prev || prev.wallet_address !== telegramUser.wallet_address || prev.points_balance !== telegramUser.points_balance) {
+          return { ...prev, ...telegramUser };
+        }
+        return prev;
+      });
+      setLoading(false);
+    }
+  }, [telegramUser, telegramId]);
+
+  useEffect(() => {
     if (isOpen && telegramId) {
       loadCooldown();
     }

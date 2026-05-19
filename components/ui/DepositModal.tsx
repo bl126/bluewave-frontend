@@ -24,13 +24,26 @@ function minTonRequired(tonPriceUsd: number): number {
   return Math.ceil((MIN_STARS * STAR_PRICE_USD / tonPriceUsd) * 1000) / 1000;
 }
 
+const friendlyToRaw = (address: string): string => {
+  try {
+    if (address.includes(":")) return address.toLowerCase().trim();
+    const base64 = address.replace(/-/g, "+").replace(/_/g, "/");
+    const binary = atob(base64);
+    const workchain = binary.charCodeAt(1);
+    const wc = workchain === 255 ? -1 : workchain;
+    let hex = "";
+    for (let i = 2; i < 34; i++) {
+      hex += binary.charCodeAt(i).toString(16).padStart(2, "0");
+    }
+    return `${wc}:${hex}`.toLowerCase();
+  } catch {
+    return address.toLowerCase().trim();
+  }
+};
+
 const isSameAddress = (addr1: string, addr2: string) => {
   if (!addr1 || !addr2) return false;
-  try {
-    return toUserFriendlyAddress(addr1) === toUserFriendlyAddress(addr2);
-  } catch {
-    return addr1.toLowerCase().trim() === addr2.toLowerCase().trim();
-  }
+  return friendlyToRaw(addr1) === friendlyToRaw(addr2);
 };
 
 const StarIcon = ({ size = 16 }: { size?: number }) => (
@@ -135,9 +148,10 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   // DB registered wallet check
   const dbWallet = telegramUser?.wallet_address;
-  const activeWalletAddress = walletAddress || dbWallet;
+  const isMatched = !!dbWallet && !!walletAddress && isSameAddress(walletAddress, dbWallet);
+  const activeWalletAddress = isMatched ? dbWallet : (walletAddress || dbWallet);
   const isWalletConnected = !!activeWalletAddress;
-  const isWalletMismatch = !!dbWallet && !!walletAddress && !isSameAddress(walletAddress, dbWallet);
+  const isWalletMismatch = !!dbWallet && !!walletAddress && !isMatched;
 
   useEffect(() => {
     if (activeWalletAddress) {

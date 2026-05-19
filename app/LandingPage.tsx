@@ -244,13 +244,26 @@ export default function LandingPage() {
         }
 
         const dbWallet = telegramUser?.wallet_address;
+        const friendlyToRaw = (address: string): string => {
+          try {
+            if (address.includes(":")) return address.toLowerCase().trim();
+            const base64 = address.replace(/-/g, "+").replace(/_/g, "/");
+            const binary = atob(base64);
+            const workchain = binary.charCodeAt(1);
+            const wc = workchain === 255 ? -1 : workchain;
+            let hex = "";
+            for (let i = 2; i < 34; i++) {
+              hex += binary.charCodeAt(i).toString(16).padStart(2, "0");
+            }
+            return `${wc}:${hex}`.toLowerCase();
+          } catch {
+            return address.toLowerCase().trim();
+          }
+        };
+
         const isSameAddr = (a1: string, a2: string) => {
           if (!a1 || !a2) return false;
-          try {
-            return toUserFriendlyAddress(a1) === toUserFriendlyAddress(a2);
-          } catch {
-            return a1.toLowerCase().trim() === a2.toLowerCase().trim();
-          }
+          return friendlyToRaw(a1) === friendlyToRaw(a2);
         };
 
         if (!isSameAddr(friendlyAddress, dbWallet)) {
@@ -265,6 +278,7 @@ export default function LandingPage() {
               setTelegramUser((prev: any) => ({
                 ...prev,
                 ...user,
+                id: user.tg_id || prev?.id || prev?.tg_id,
                 wallet_address: user.wallet_address || friendlyAddress
               }));
             }
