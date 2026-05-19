@@ -133,20 +133,21 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     return () => clearInterval(interval);
   }, [fetchPrice]);
 
+  // DB registered wallet check
+  const dbWallet = telegramUser?.wallet_address;
+  const activeWalletAddress = walletAddress || dbWallet;
+  const isWalletConnected = !!activeWalletAddress;
+  const isWalletMismatch = !!dbWallet && !!walletAddress && !isSameAddress(walletAddress, dbWallet);
+
   useEffect(() => {
-    if (walletAddress) {
-      fetchWalletBalance(walletAddress);
+    if (activeWalletAddress) {
+      fetchWalletBalance(activeWalletAddress);
     } else {
       setWalletBalance(null);
     }
-  }, [walletAddress, fetchWalletBalance]);
+  }, [activeWalletAddress, fetchWalletBalance]);
 
-  const isWalletConnected = !!walletAddress;
   const minTon = tonPrice > 0 ? minTonRequired(tonPrice) : 0;
-
-  // DB registered wallet check
-  const dbWallet = telegramUser?.wallet_address;
-  const isWalletMismatch = !!dbWallet && !!walletAddress && !isSameAddress(walletAddress, dbWallet);
 
   // Presets for Stars package (badge tag removed completely per user request)
   const PRESETS = tonPrice > 0 ? [
@@ -189,8 +190,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   // ─── Send Transaction ────────────────────────────────────────────────────
   const handleDeposit = async () => {
-    if (!isWalletConnected) { tonConnectUI.openModal(); return; }
-    if (isWalletMismatch) return;
+    if (!walletAddress) { tonConnectUI.openModal(); return; }
     if (!isValidAmount || txStatus === "pending") return;
 
     setTxStatus("pending");
@@ -306,10 +306,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                 </div>
                 <span className="text-text-main font-mono tracking-tight">
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-6)}` : "Not Connected"}
+                  {activeWalletAddress ? `${activeWalletAddress.slice(0, 6)}...${activeWalletAddress.slice(-6)}` : "Not Connected"}
                 </span>
               </div>
-              <span className="text-text-main font-bold uppercase tracking-widest text-[9px]">Connected Wallet</span>
+              <span className="text-text-main font-bold uppercase tracking-widest text-[9px]">
+                {walletAddress ? "Connected Wallet" : dbWallet ? "Registered Wallet" : "No Wallet"}
+              </span>
             </div>
 
             {/* Wallet mismatch warning banner (high visibility, clean) */}
@@ -317,15 +319,16 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               <motion.div 
                 initial={{ opacity: 0, y: -8 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-2 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 shrink-0 text-left"
+                className="flex flex-col gap-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 text-left"
               >
                 <div className="flex items-center gap-2">
-                  <AlertCircle size={16} className="text-red-400 shrink-0" />
-                  <span className="text-red-400 text-[10px] font-black uppercase tracking-wider">Wallet Address Mismatch</span>
+                  <AlertCircle size={16} className="text-amber-400 shrink-0" />
+                  <span className="text-amber-400 text-[10px] font-black uppercase tracking-wider">Different Wallet Connected</span>
                 </div>
                 <p className="text-text-main text-[11px] font-medium leading-relaxed">
-                  Your profile is registered with: <span className="font-mono text-app-accent font-bold break-all">{dbWallet}</span>.
-                  Please connect that exact wallet in your TON wallet app.
+                  Your profile has registered wallet: <span className="font-mono text-app-accent font-bold break-all">{dbWallet}</span>.
+                  You are currently connected with: <span className="font-mono text-app-accent font-bold break-all">{walletAddress}</span>.
+                  You can proceed, but please ensure this is correct.
                 </p>
               </motion.div>
             )}
@@ -587,12 +590,11 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               <motion.button
                 whileTap={{ scale: 0.97 }} 
                 onClick={handleDeposit}
-                disabled={txStatus === "pending" || txStatus === "success" || isWalletMismatch || (isWalletConnected && !isValidAmount)}
+                disabled={txStatus === "pending" || txStatus === "success" || (isWalletConnected && !isValidAmount)}
                 className={`w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 transition-all shadow-lg ${
                   txStatus === "success" ? "bg-emerald-500 text-white"
                   : txStatus === "error"  ? "bg-red-500/20 text-red-400 border border-red-500/30"
                   : !isWalletConnected    ? "bg-app-accent text-app-bg shadow-[0_0_20px_rgba(0,246,255,0.2)]"
-                  : isWalletMismatch       ? "bg-red-500/10 border border-red-500/30 text-red-400 cursor-not-allowed"
                   : !isValidAmount        ? "bg-app-accent/5 border border-app-border text-text-main/40 cursor-not-allowed"
                   : "bg-app-accent text-app-bg shadow-[0_0_25px_rgba(0,246,255,0.25)] hover:opacity-90"
                 }`}
@@ -603,7 +605,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 
                 {txStatus === "idle" && (
                   !isWalletConnected ? "Connect Wallet to Deposit"
-                  : isWalletMismatch ? "Wallet Mismatch"
                   : !isValidAmount ? (
                       type === "ton" ? "Enter TON Amount" : `Min ${MIN_STARS} Stars (${minTon} TON)`
                     )

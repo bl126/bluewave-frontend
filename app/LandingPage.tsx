@@ -32,10 +32,12 @@ import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
 import DailyAIPopup from "@/components/ui/DailyAIPopup";
 import CocoonOverlay from "@/components/ui/CocoonOverlay";
+import { useTonConnectUI, toUserFriendlyAddress } from "@tonconnect/ui-react";
 
 // [CODE: FRONTEND_LANDING_PAGE_MAIN_COMPONENT]
 export default function LandingPage() {
   const { t } = useLanguage();
+  const [tonConnectUI] = useTonConnectUI();
 
   // [CODE: FRONTEND_TELEGRAM_WEBAPP_INIT]
   // ⭐ ENSURE Telegram WebApp is initialized + request full screen
@@ -227,6 +229,53 @@ export default function LandingPage() {
     selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
     isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen
   ]);
+
+  // 🔗 Global wallet synchronization listener
+  useEffect(() => {
+    if (!tonConnectUI || !telegramUser?.id) return;
+
+    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
+      if (wallet?.account?.address) {
+        let friendlyAddress: string;
+        try {
+          friendlyAddress = toUserFriendlyAddress(wallet.account.address);
+        } catch {
+          friendlyAddress = wallet.account.address;
+        }
+
+        const dbWallet = telegramUser?.wallet_address;
+        const isSameAddr = (a1: string, a2: string) => {
+          if (!a1 || !a2) return false;
+          try {
+            return toUserFriendlyAddress(a1) === toUserFriendlyAddress(a2);
+          } catch {
+            return a1.toLowerCase().trim() === a2.toLowerCase().trim();
+          }
+        };
+
+        if (!isSameAddr(friendlyAddress, dbWallet)) {
+          console.log("[GLOBAL WALLET SYNC] Wallet changed. Syncing new wallet to DB:", friendlyAddress);
+          postApi(`/user/update_profile`, {
+            tg_id: telegramUser.id,
+            wallet_address: friendlyAddress
+          })
+          .then((res) => {
+            const user = res?.user || res;
+            if (user) {
+              setTelegramUser((prev: any) => ({
+                ...prev,
+                ...user,
+                wallet_address: user.wallet_address || friendlyAddress
+              }));
+            }
+          })
+          .catch(err => console.error("[GLOBAL WALLET SYNC] Failed to sync wallet to DB:", err));
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [tonConnectUI, telegramUser?.id, telegramUser?.wallet_address]);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
