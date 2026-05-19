@@ -802,6 +802,7 @@ export default function LandingPage() {
         <BalancePill
           balance={balance}
           isVisible={!isBwaveScanOpen}
+          telegramUser={telegramUser}
         />
       )}
 

@@ -3,22 +3,28 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// Lazy-load so TON Connect hooks only run client-side
+const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
 
 type BalanceType = "points" | "ton" | "stars";
 
 interface BalancePillProps {
     balance: number | null;
     isVisible: boolean;
+    telegramUser?: any;
 }
 
 import { useTheme } from "@/contexts/ThemeContext";
 
-export default function BalancePill({ balance, isVisible }: BalancePillProps) {
+export default function BalancePill({ balance, isVisible, telegramUser }: BalancePillProps) {
     const { mounted } = useTheme();
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
+    const [depositType, setDepositType] = useState<"ton" | "stars" | null>(null);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastScrollYRef = useRef(0);
     const pillRef = useRef<HTMLDivElement>(null);
@@ -205,11 +211,19 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                                         </motion.span>
                                     </div>
  
-                                    {/* Plus icon - Only visible when expanded for TON/Stars */}
+                                    {/* Plus icon — clickable for TON/Stars, opens deposit modal */}
                                     {isExpanded && type !== "points" ? (
-                                        <div className={`shrink-0 p-0.5 rounded-md border shadow-app-shadow bg-app-accent/10 border-app-border`}>
+                                        <motion.button
+                                            whileTap={{ scale: 0.85 }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsExpanded(false);
+                                                setDepositType(type as "ton" | "stars");
+                                            }}
+                                            className="shrink-0 p-0.5 rounded-md border shadow-app-shadow bg-app-accent/10 border-app-border hover:bg-app-accent/20 active:scale-90 transition-all"
+                                        >
                                             <Plus size={10} strokeWidth={4} className="text-app-accent" />
-                                        </div>
+                                        </motion.button>
                                     ) : (
                                         // Invisible spacer to maintain layout consistency ONLY when expanded
                                         isExpanded && type === "points" ? <div className="w-[20px]" /> : null
@@ -220,6 +234,19 @@ export default function BalancePill({ balance, isVisible }: BalancePillProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Deposit Modal — portal rendered at body level */}
+            {depositType && (
+                <DepositModal
+                    type={depositType}
+                    telegramUser={telegramUser}
+                    onClose={() => setDepositType(null)}
+                    onSuccess={(starsAdded) => {
+                        // Future: update local star balance optimistically
+                        setDepositType(null);
+                    }}
+                />
+            )}
         </>
     );
 }
