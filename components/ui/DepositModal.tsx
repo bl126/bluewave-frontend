@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Loader2, CheckCircle2, AlertCircle, Zap, ChevronRight, RefreshCw, Wallet } from "lucide-react";
 import { useTonConnectUI, useTonAddress, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import { createPortal } from "react-dom";
+import { postApi } from "@/lib/useApi";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const DEPOSIT_WALLET = process.env.NEXT_PUBLIC_DEPOSIT_WALLET || "";
@@ -319,13 +320,30 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 <div className="w-6 h-6 rounded-full bg-app-accent/10 flex items-center justify-center border border-app-border">
                   <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                 </div>
-                <span className="text-text-main font-mono tracking-tight">
-                  {activeWalletAddress ? `${activeWalletAddress.slice(0, 6)}...${activeWalletAddress.slice(-6)}` : "Not Connected"}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-text-main font-mono tracking-tight">
+                    {activeWalletAddress ? `${activeWalletAddress.slice(0, 6)}...${activeWalletAddress.slice(-6)}` : "Not Connected"}
+                  </span>
+                  {walletAddress && (
+                    <button
+                      onClick={() => tonConnectUI.disconnect()}
+                      className="text-red-400 hover:text-red-300 text-[8px] uppercase tracking-wider text-left transition-colors font-black mt-0.5"
+                    >
+                      [Disconnect]
+                    </button>
+                  )}
+                </div>
               </div>
-              <span className="text-text-main font-bold uppercase tracking-widest text-[9px]">
-                {walletAddress ? "Connected Wallet" : dbWallet ? "Registered Wallet" : "No Wallet"}
-              </span>
+              <div className="flex flex-col items-end">
+                <span className="text-text-main font-bold uppercase tracking-widest text-[9px]">
+                  {walletAddress ? "Connected Wallet" : dbWallet ? "Registered Wallet" : "No Wallet"}
+                </span>
+                {isWalletMismatch && (
+                  <span className="text-amber-400 text-[8px] uppercase tracking-widest font-black mt-0.5 animate-pulse">
+                    Mismatch detected
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Wallet mismatch warning banner (high visibility, clean) */}
@@ -333,7 +351,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               <motion.div 
                 initial={{ opacity: 0, y: -8 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 text-left"
+                className="flex flex-col gap-2.5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 text-left"
               >
                 <div className="flex items-center gap-2">
                   <AlertCircle size={16} className="text-amber-400 shrink-0" />
@@ -342,8 +360,16 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 <p className="text-text-main text-[11px] font-medium leading-relaxed">
                   Your profile has registered wallet: <span className="font-mono text-app-accent font-bold break-all">{dbWallet}</span>.
                   You are currently connected with: <span className="font-mono text-app-accent font-bold break-all">{walletAddress}</span>.
-                  You can proceed, but please ensure this is correct.
+                  Please disconnect and connect your registered wallet to avoid deposit flagging.
                 </p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={() => tonConnectUI.disconnect()}
+                    className="w-full bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 text-[9px] uppercase tracking-wider font-black py-2 rounded-xl transition-all"
+                  >
+                    Disconnect Mismatched Wallet
+                  </button>
+                </div>
               </motion.div>
             )}
 

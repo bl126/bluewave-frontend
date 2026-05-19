@@ -266,8 +266,8 @@ export default function LandingPage() {
           return friendlyToRaw(a1) === friendlyToRaw(a2);
         };
 
-        if (!isSameAddr(friendlyAddress, dbWallet)) {
-          console.log("[GLOBAL WALLET SYNC] Wallet changed. Syncing new wallet to DB:", friendlyAddress);
+        if (!dbWallet) {
+          console.log("[GLOBAL WALLET SYNC] Wallet connected for first time. Syncing to DB:", friendlyAddress);
           postApi(`/user/update_profile`, {
             tg_id: telegramUser.id,
             wallet_address: friendlyAddress
@@ -284,6 +284,8 @@ export default function LandingPage() {
             }
           })
           .catch(err => console.error("[GLOBAL WALLET SYNC] Failed to sync wallet to DB:", err));
+        } else if (!isSameAddr(friendlyAddress, dbWallet)) {
+          console.warn("[GLOBAL WALLET SYNC] Wallet mismatch detected. Current connected:", friendlyAddress, "DB registered:", dbWallet);
         }
       }
     });
