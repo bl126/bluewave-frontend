@@ -234,8 +234,23 @@ export default function LandingPage() {
   useEffect(() => {
     if (!tonConnectUI || !telegramUser?.id) return;
 
+    // Guard: If the Telegram User ID switched on the same device, force disconnect
+    if (typeof window !== "undefined") {
+      const connectedTgId = localStorage.getItem("bluewave_connected_tg_id");
+      if (connectedTgId && connectedTgId !== String(telegramUser.id)) {
+        console.log("[GLOBAL WALLET SYNC] Telegram User ID changed on device. Disconnecting wallet session.");
+        tonConnectUI.disconnect();
+        localStorage.removeItem("bluewave_connected_tg_id");
+        return;
+      }
+    }
+
     const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
       if (wallet?.account?.address) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("bluewave_connected_tg_id", String(telegramUser.id));
+        }
+
         let friendlyAddress: string;
         try {
           friendlyAddress = toUserFriendlyAddress(wallet.account.address);
@@ -286,6 +301,10 @@ export default function LandingPage() {
           .catch(err => console.error("[GLOBAL WALLET SYNC] Failed to sync wallet to DB:", err));
         } else if (!isSameAddr(friendlyAddress, dbWallet)) {
           console.warn("[GLOBAL WALLET SYNC] Wallet mismatch detected. Current connected:", friendlyAddress, "DB registered:", dbWallet);
+        }
+      } else {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("bluewave_connected_tg_id");
         }
       }
     });
