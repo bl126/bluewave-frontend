@@ -347,6 +347,8 @@ export default function LandingPage() {
             is_human_verified: !!u.is_human_verified,
             bw_id: u.bw_id,
             joined_at: u.joined_at,
+            ton_balance: parseFloat(u.ton_balance ?? 0) || 0,
+            stars_balance: Number(u.stars_balance ?? 0) || 0,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
@@ -494,6 +496,8 @@ export default function LandingPage() {
           unread_explore_notifications: data.unread_explore_notifications || 0,
           recoverable_streak: user.recoverable_streak || 0,
           streak_recovery_expires_at: user.streak_recovery_expires_at || null,
+          ton_balance: parseFloat(user.ton_balance ?? 0) || 0,
+          stars_balance: Number(user.stars_balance ?? 0) || 0,
         };
 
         setTelegramUser(finalUser);

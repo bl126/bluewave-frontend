@@ -29,9 +29,24 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
     const lastScrollYRef = useRef(0);
     const pillRef = useRef<HTMLDivElement>(null);
 
-    // Static balances for now
-    const tonBalance = 0;
-    const starBalance = 0;
+    // Fetch live balances from telegramUser prop
+    const tonBalance = telegramUser?.ton_balance || 0;
+    const starBalance = telegramUser?.stars_balance || 0;
+    const [tonPrice, setTonPrice] = useState(3.0);
+
+    useEffect(() => {
+        const fetchPrice = async () => {
+            try {
+                const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd");
+                const data = await res.json();
+                const p = data["the-open-network"]?.usd;
+                if (p) setTonPrice(p);
+            } catch (e) {
+                console.warn("Failed to fetch TON price for BalancePill:", e);
+            }
+        };
+        fetchPrice();
+    }, []);
 
     // Formatting helpers
     const formatAbbreviated = (num: number) => {
@@ -187,16 +202,22 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
                                             ) : (
                                                 <div className="flex items-center gap-1.5">
                                                     <div className="flex items-center gap-0.5">
-                                                        <span className={`opacity-60 font-mono text-[10px]`}>$</span>
-                                                        <span className="text-app-accent font-black">0</span>
-                                                        <span className="opacity-40 mx-0.5">~</span>
-                                                        <span className="text-app-accent font-black">0</span>
+                                                        <span className="text-app-accent font-black">
+                                                            {type === "ton" 
+                                                                ? (isExpanded ? amount.toFixed(4) : amount.toFixed(2)) 
+                                                                : amount.toLocaleString()}
+                                                        </span>
+                                                        <span className="opacity-60 text-[9px] font-bold ml-1">
+                                                            (${type === "ton" 
+                                                                ? (amount * tonPrice).toFixed(2) 
+                                                                : (amount * 0.013).toFixed(2)})
+                                                        </span>
                                                     </div>
                                                     
                                                     {/* Currency Icon comes after number for TON/Stars */}
                                                     <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
                                                         {type === "ton" && (
-                                                        <div className={``}>
+                                                            <div>
                                                                 <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
                                                             </div>
                                                         )}
@@ -238,11 +259,20 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
             {/* Deposit Modal — portal rendered at body level */}
             {depositType && (
                 <DepositModal
-                    type={depositType}
+                    type={depositType === "ton" ? "ton_direct" : "stars"}
                     telegramUser={telegramUser}
                     onClose={() => setDepositType(null)}
-                    onSuccess={(starsAdded) => {
-                        // Future: update local star balance optimistically
+                    onSuccess={(tonAdded, starsAdded) => {
+                        const updates: any = {};
+                        if (tonAdded !== undefined) {
+                            updates.ton_balance = (telegramUser?.ton_balance || 0) + tonAdded;
+                        }
+                        if (starsAdded !== undefined) {
+                            updates.stars_balance = (telegramUser?.stars_balance || 0) + starsAdded;
+                        }
+                        if (Object.keys(updates).length > 0) {
+                            window.dispatchEvent(new CustomEvent("updateUser", { detail: updates }));
+                        }
                         setDepositType(null);
                     }}
                 />

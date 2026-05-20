@@ -1,3 +1,10 @@
+# Frontend Implementation - Dual Balance System
+
+## 📝 File 1: Updated DepositModal.tsx
+
+**Path:** `bluewave-frontend/components/ui/DepositModal.tsx`
+
+```tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -7,57 +14,18 @@ import { useTonConnectUI, useTonAddress, toUserFriendlyAddress } from "@tonconne
 import { createPortal } from "react-dom";
 import { postApi } from "@/lib/useApi";
 import { beginCell } from "@ton/core";
-import ConvertModal from "./ConvertModal";
+import ConvertModal from "./ConvertModal";  // NEW
 
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const DEPOSIT_WALLET = process.env.NEXT_PUBLIC_DEPOSIT_WALLET || "";
-const STAR_PRICE_USD = 0.013;   // $0.013 per Star — matches Telegram's official rate
-const MIN_STARS      = 100;     // minimum purchase: 100 Stars
+const STAR_PRICE_USD = 0.013;
+const MIN_STARS      = 100;
+const MIN_DEPOSIT_TON    = 0.01;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function calcStars(ton: number, tonPriceUsd: number): number {
-  if (ton <= 0 || tonPriceUsd <= 0) return 0;
-  const stars = Math.floor((ton * tonPriceUsd) / STAR_PRICE_USD);
-  return stars >= MIN_STARS ? stars : 0;
-}
+// ... [EXISTING HELPER FUNCTIONS - Keep all existing functions like calcStars, minTonRequired, etc.] ...
 
-function minTonRequired(tonPriceUsd: number): number {
-  if (tonPriceUsd <= 0) return 1;
-  // Round up to 3 decimal places
-  return Math.ceil((MIN_STARS * STAR_PRICE_USD / tonPriceUsd) * 1000) / 1000;
-}
-
-const friendlyToRaw = (address: string): string => {
-  try {
-    if (address.includes(":")) return address.toLowerCase().trim();
-    const base64 = address.replace(/-/g, "+").replace(/_/g, "/");
-    const binary = atob(base64);
-    const workchain = binary.charCodeAt(1);
-    const wc = workchain === 255 ? -1 : workchain;
-    let hex = "";
-    for (let i = 2; i < 34; i++) {
-      hex += binary.charCodeAt(i).toString(16).padStart(2, "0");
-    }
-    return `${wc}:${hex}`.toLowerCase();
-  } catch {
-    return address.toLowerCase().trim();
-  }
-};
-
-const isSameAddress = (addr1: string, addr2: string) => {
-  if (!addr1 || !addr2) return false;
-  return friendlyToRaw(addr1) === friendlyToRaw(addr2);
-};
-
-const StarIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-  </svg>
-);
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-type DepositType = "ton_direct" | "ton" | "stars";
+type DepositType = "ton_direct" | "stars";
 type TxStatus = "idle" | "pending" | "success" | "error";
 
 interface DepositModalProps {
@@ -67,7 +35,6 @@ interface DepositModalProps {
   onSuccess?: (tonAmount?: number, starsAmount?: number) => void;
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
 export default function DepositModal({ type, telegramUser, onClose, onSuccess }: DepositModalProps) {
   const [tonConnectUI] = useTonConnectUI();
   const walletAddress = useTonAddress();
@@ -85,13 +52,14 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
 
-  // User app balances (ton_balance, stars_balance)
-  const [userTonBalance, setUserTonBalance] = useState<number>(0);
+  // NEW: Convert Modal
   const [isConvertOpen, setIsConvertOpen] = useState(false);
+  const [userTonBalance, setUserTonBalance] = useState<number>(0);
+  const [userStarsBalance, setUserStarsBalance] = useState<number>(0);
 
   useEffect(() => { setMounted(true); }, []);
 
-  // ─── Fetch Live TON Price ────────────────────────────────────────────────
+  // Fetch prices and balances (keep existing)
   const fetchPrice = useCallback(async () => {
     setPriceLoading(true);
     try {
@@ -101,13 +69,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
       const data = await res.json();
       setTonPrice(data["the-open-network"]?.usd || 0);
     } catch {
-      setTonPrice(0); // fallback/unavailable
+      setTonPrice(0);
     } finally {
       setPriceLoading(false);
     }
   }, []);
 
-  // ─── Fetch On-Chain Wallet Balance ────────────────────────────────────────
   const fetchWalletBalance = useCallback(async (address: string) => {
     if (!address) {
       setWalletBalance(null);
@@ -115,7 +82,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     }
     setBalanceLoading(true);
     try {
-      // 1. Try Toncenter v3 API
       const res = await fetch(`https://toncenter.com/api/v3/account?address=${address}`);
       if (res.ok) {
         const data = await res.json();
@@ -131,7 +97,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     }
 
     try {
-      // 2. Fallback to Tonapi.io
       const res = await fetch(`https://tonapi.io/v2/accounts/${address}`);
       if (res.ok) {
         const data = await res.json();
@@ -148,24 +113,26 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     setBalanceLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 300_000); // refresh every 5 min
-    return () => clearInterval(interval);
-  }, [fetchPrice]);
-
-  // Fetch user's in-app balances (ton_balance, stars_balance)
+  // NEW: Fetch user balances from app
   useEffect(() => {
     if (telegramUser?.id && type === "stars") {
+      // Get user's current ton_balance and stars_balance
       postApi(`/user/${telegramUser.id}`, {})
         .then((res: any) => {
-          setUserTonBalance(parseFloat(res.ton_balance ?? 0) || 0);
+          setUserTonBalance(res.ton_balance || 0);
+          setUserStarsBalance(res.stars_balance || 0);
         })
-        .catch(() => {});
+        .catch((err) => console.warn("Failed to fetch user balances:", err));
     }
   }, [telegramUser?.id, type]);
 
-  // DB registered wallet check
+  useEffect(() => {
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 300_000);
+    return () => clearInterval(interval);
+  }, [fetchPrice]);
+
+  // ... [EXISTING CODE for wallet address checking, isSameAddress, etc.] ...
   const dbWallet = telegramUser?.wallet_address;
   const isMatched = !!dbWallet && !!walletAddress && isSameAddress(walletAddress, dbWallet);
   const activeWalletAddress = isMatched ? dbWallet : (walletAddress || dbWallet);
@@ -182,7 +149,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   const minTon = tonPrice > 0 ? minTonRequired(tonPrice) : 0;
 
-  // Presets for Stars package (badge tag removed completely per user request)
   const PRESETS = tonPrice > 0 ? [
     { ton: minTon },
     { ton: Math.ceil(minTon * 5  * 10) / 10 },
@@ -191,8 +157,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   ].map(p => ({ ...p, ton: Math.round(p.ton * 100) / 100 }))
   : [];
 
-  // Active TON amount based on type
-  const activeTon = type === "ton" 
+  const activeTon = type === "ton_direct"
     ? parseFloat(customAmount) || 0
     : (useCustom 
         ? parseFloat(customAmount) || 0
@@ -201,17 +166,15 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   const starsToReceive = tonPrice > 0 ? calcStars(activeTon, tonPrice) : 0;
   const usdValue = activeTon * tonPrice;
-  const isValidAmount = type === "ton" 
+  const isValidAmount = type === "ton_direct" 
     ? activeTon > 0 
     : starsToReceive >= MIN_STARS;
 
-  const modalTitle = type === "ton" || type === "ton_direct" ? "Topup TON" : "Buy Stars";
-  
-  // Set percentage amount of available wallet balance
+  const modalTitle = type === "ton_direct" ? "Topup TON" : "Buy Stars";
+
   const handleSetAmountPercent = (percent: number) => {
     if (walletBalance === null || walletBalance <= 0) return;
     if (percent === 1.0) {
-      // Leave a tiny buffer of 0.01 TON for gas fees so transaction won't fail
       const maxAmount = Math.max(0, walletBalance - 0.01);
       setCustomAmount(maxAmount.toFixed(4));
     } else {
@@ -221,7 +184,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     setSelectedPreset(null);
   };
 
-  // ─── Send Transaction ────────────────────────────────────────────────────
   const handleTopup = async () => {
     if (!walletAddress) { tonConnectUI.openModal(); return; }
     if (!isValidAmount || txStatus === "pending") return;
@@ -230,13 +192,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     try {
       const tgId = telegramUser?.id || 0;
       const bwId = telegramUser?.bw_id || "";
-      // Include mode in comment so the monitor knows how to credit
+      
+      // NEW: Add mode to comment
       const mode = type === "ton_direct" ? "ton_direct" : "buy_stars";
       const commentPayload = `tg_id:${tgId}|bw_id:${bwId}|mode:${mode}`;
 
-      // Encode as TON text comment cell and serialize to Base64 Bag of Cells (BoC)
       const cell = beginCell()
-        .storeUint(0, 32) // opcode 0x00000000 prefix for text comments
+        .storeUint(0, 32)
         .storeStringTail(commentPayload)
         .endCell();
       const payloadBase64 = cell.toBoc().toString("base64");
@@ -251,18 +213,16 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
       });
 
       setTxStatus("success");
-      // Refresh wallet balance after short delay
       setTimeout(() => {
         if (walletAddress) fetchWalletBalance(walletAddress);
       }, 3000);
       
-      setTimeout(() => {
-        if (type === "ton_direct") {
-          onSuccess?.(activeTon, undefined);
-        } else {
-          onSuccess?.(undefined, starsToReceive);
-        }
-        onClose();
+      setTimeout(() => { 
+        onSuccess?.(
+          type === "ton_direct" ? activeTon : undefined,
+          type === "stars" ? starsToReceive : undefined
+        ); 
+        onClose(); 
       }, 2500);
     } catch (err: any) {
       if (err?.message?.includes("User rejected")) setTxStatus("idle");
@@ -272,10 +232,9 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   if (!mounted) return null;
 
-  const portal = createPortal(
+  return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-[990] flex items-end justify-center">
-        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -284,7 +243,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           className="fixed inset-0 bg-app-bg/60 backdrop-blur-sm"
         />
 
-        {/* Sheet */}
         <motion.div
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
@@ -313,7 +271,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           <div className="flex items-center justify-between px-8 pb-4 shrink-0">
             <div>
               <h2 className="text-text-main font-black text-xl uppercase tracking-tight">{modalTitle}</h2>
-              {/* Live TON price */}
               <div className="flex items-center gap-1.5 mt-0.5">
                 {priceLoading ? (
                   <span className="text-text-main text-[10px] uppercase font-black tracking-widest animate-pulse">Fetching price…</span>
@@ -341,7 +298,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
           {/* Content Wrapper */}
           <div className="flex-1 overflow-y-auto px-8 pb-6 custom-scrollbar flex flex-col gap-5">
-            {/* Wallet connection status row */}
+            {/* Existing wallet connection UI */}
             <div className="flex items-center justify-between text-xs font-bold shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-app-accent/10 flex items-center justify-center border border-app-border">
@@ -373,7 +330,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               </div>
             </div>
 
-            {/* Wallet mismatch warning banner (high visibility, clean) */}
+            {/* Mismatch warning */}
             {isWalletMismatch && (
               <motion.div 
                 initial={{ opacity: 0, y: -8 }} 
@@ -421,12 +378,11 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               </motion.div>
             )}
 
-            {/* ─── Mode 1: DIRECT TON TOPUP UI (ton_direct or ton) ─── */}
-            {(type === "ton" || type === "ton_direct") && (
+            {/* ─── TON DIRECT MODE ─── */}
+            {type === "ton_direct" && (
               <div className="flex flex-col gap-4">
                 {/* Wallet balance & input box */}
                 <div className="bg-app-bg/30 border border-app-border rounded-2xl p-5 flex flex-col gap-4">
-                  {/* Header: Available Balance & Half/Max */}
                   <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                     <span className="text-text-main font-bold">Available Balance</span>
                     <div className="flex items-center gap-2 text-text-main font-bold">
@@ -459,7 +415,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                     </div>
                   </div>
 
-                  {/* Input Row: Large amount & TON pill */}
                   <div className="flex items-center justify-between gap-4">
                     <input
                       type="number"
@@ -477,7 +432,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                     </div>
                   </div>
 
-                  {/* Footer: USD Conversion & "Toncoin" text */}
                   <div className="flex items-center justify-between text-[10px] font-black text-text-main uppercase tracking-widest">
                     <span className="text-text-main font-bold">
                       {customAmount && tonPrice > 0 ? (
@@ -518,10 +472,10 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               </div>
             )}
 
-            {/* ─── Mode 2: STARS PURCHASE UI ─── */}
+            {/* ─── STARS MODE ─── */}
             {type === "stars" && (
               <div className="flex flex-col gap-4">
-                {/* Min Stars info banner */}
+                {/* Min Stars info */}
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-app-accent/5 border border-app-border shrink-0">
                   <Zap size={12} className="text-app-accent shrink-0" />
                   <p className="text-text-main text-[10px] font-black uppercase tracking-widest leading-none">
@@ -543,31 +497,34 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                     <div className="grid grid-cols-2 gap-2.5">
                       {PRESETS.map((preset, idx) => {
                         const isSelected = !useCustom && selectedPreset === idx;
-                        const s = calcStars(preset.ton, tonPrice);
-                        const usd = preset.ton * tonPrice;
+                        const presetStars = calcStars(preset.ton, tonPrice);
                         return (
-                          <button 
+                          <button
                             key={idx}
                             onClick={() => {
+                              setCustomAmount(String(preset.ton));
                               setSelectedPreset(idx);
                               setUseCustom(false);
-                              setCustomAmount("");
                             }}
-                            className={`relative flex flex-col p-3.5 rounded-2xl border transition-all text-left ${
+                            className={`py-4 px-3 rounded-2xl border transition-all text-left ${
                               isSelected
-                                ? "bg-app-accent/15 border-app-accent shadow-[0_0_15px_rgba(0,246,255,0.15)] text-app-accent"
-                                : "bg-app-accent/5 border-app-border hover:border-app-accent/50 text-text-main"
+                                ? "bg-app-accent/20 border-app-accent shadow-[0_0_12px_rgba(0,246,255,0.15)]"
+                                : "bg-app-accent/5 border-app-border/50 hover:border-app-accent/55"
                             }`}
                           >
-                            <div className="flex items-center gap-1.5 mb-1.5">
-                              <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
-                              <span className="font-black text-sm text-text-main">{preset.ton} TON</span>
+                            <div className="text-xs font-black text-text-main uppercase tracking-tight">
+                              {presetStars:,} ⭐
                             </div>
-                            <div className="flex items-center gap-1 text-[11px] font-black text-text-main">
-                              <StarIcon size={10} />
-                              <span>{s.toLocaleString()} Stars</span>
+                            <div className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${
+                              isSelected ? "text-app-accent" : "text-text-main/60"
+                            }`}>
+                              {preset.ton} TON
                             </div>
-                            <span className="text-[10px] text-text-main/80 font-mono mt-0.5">${usd.toFixed(2)}</span>
+                            <div className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${
+                              isSelected ? "text-app-accent/80" : "text-text-main/40"
+                            }`}>
+                              ${(preset.ton * tonPrice).toFixed(2)} USD
+                            </div>
                           </button>
                         );
                       })}
@@ -575,163 +532,374 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   </div>
                 ) : null}
 
-                {/* Custom Amount */}
+                {/* Custom amount input */}
                 <div>
-                  <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Custom TON Amount</p>
-                  <div className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
-                    useCustom && customAmount ? "border-app-accent bg-app-accent/5" : "border-app-border bg-app-accent/5"
-                  }`}>
-                    <img src="/ton-transparent.png" alt="TON" className="w-5 h-5 object-contain shrink-0" />
+                  <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Custom Amount</p>
+                  <div className="flex gap-2">
                     <input
                       type="number"
-                      min={minTon}
-                      step="0.1"
-                      placeholder={`Min ${minTon} TON`}
+                      placeholder="Enter TON amount"
                       value={customAmount}
                       onChange={(e) => {
                         setCustomAmount(e.target.value);
                         setUseCustom(true);
                         setSelectedPreset(null);
                       }}
-                      onFocus={() => {
-                        setUseCustom(true);
-                        setSelectedPreset(null);
-                      }}
-                      className="flex-1 bg-transparent border-none outline-none text-text-main font-bold text-sm placeholder-text-main/20"
+                      className="flex-1 bg-app-bg/50 border border-app-border rounded-xl px-4 py-3 text-text-main font-mono text-sm placeholder-text-main/40 focus:border-app-accent outline-none transition-colors"
                     />
-                    {useCustom && tonPrice > 0 && activeTon > 0 && (
-                      <span className="text-text-main font-mono shrink-0">${usdValue.toFixed(2)}</span>
-                    )}
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-app-accent/10 border border-app-border/50 select-none">
+                      <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
+                      <span className="text-text-main font-black text-xs">TON</span>
+                    </div>
                   </div>
+                  {customAmount && tonPrice > 0 && (
+                    <div className="mt-2 flex items-center justify-between text-[10px] font-black text-text-main/60 uppercase tracking-widest">
+                      <span>{starsToReceive:,} Stars</span>
+                      <span>${(parseFloat(customAmount) * tonPrice).toFixed(2)} USD</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Conversion Summary */}
-                <AnimatePresence>
-                  {activeTon > 0 && tonPrice > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 8 }} 
-                      animate={{ opacity: 1, y: 0 }} 
-                      exit={{ opacity: 0, y: 8 }}
-                      className={`p-4 rounded-2xl border ${
-                        isValidAmount
-                          ? "bg-app-accent/10 border-app-border"
-                          : "bg-red-500/5 border-red-500/20"
-                      }`}
-                    >
-                      {isValidAmount ? (
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You send</span>
-                            <div className="flex items-center gap-1.5">
-                              <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
-                              <span className="text-text-main font-black text-base">{activeTon} TON</span>
-                            </div>
-                            <span className="text-text-main/90 text-[9px] font-mono">≈ ${usdValue.toFixed(2)} USD</span>
-                          </div>
-                          <ChevronRight size={16} className="text-text-main/30" />
-                          <div className="flex flex-col gap-0.5 items-end">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You receive</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-app-accent font-black text-base">{starsToReceive.toLocaleString()}</span>
-                              <span className="text-app-accent"><StarIcon size={14} /></span>
-                            </div>
-                            <span className="text-text-main/90 text-[9px] font-mono">≈ ${(starsToReceive * STAR_PRICE_USD).toFixed(2)}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <AlertCircle size={14} className="text-red-400 shrink-0" />
-                          <p className="text-red-400 text-xs font-bold">
-                            Below minimum — need at least {MIN_STARS} Stars ({minTon} TON)
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                {/* ─── Convert button: only in stars mode when user has TON balance ─── */}
-                {type === "stars" && userTonBalance > 0 && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                {/* NEW: Convert Button (only if user has TON balance) */}
+                {userTonBalance > 0 && (
+                  <button
                     onClick={() => setIsConvertOpen(true)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-app-accent/10 to-purple-500/10 border border-app-accent/30 hover:border-app-accent/60 text-app-accent font-black uppercase tracking-widest text-[11px] transition-all active:scale-95"
                   >
                     <ArrowRightLeft size={14} />
-                    Convert {userTonBalance.toFixed(4)} TON → Stars
-                  </motion.button>
+                    Convert {userTonBalance.toFixed(4)} TON to Stars
+                  </button>
                 )}
-
               </div>
             )}
 
-            {/* Action Area & CTA */}
-            <div className="mt-2 flex flex-col gap-3 shrink-0">
-              <motion.button
-                whileTap={{ scale: 0.97 }} 
+            {/* Action Button */}
+            <div className="flex gap-3 pt-4">
+              <button
                 onClick={handleTopup}
-                disabled={txStatus === "pending" || txStatus === "success" || (isWalletConnected && !isValidAmount)}
-                className={`w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 transition-all shadow-lg ${
-                  txStatus === "success" ? "bg-emerald-500 text-white"
-                  : txStatus === "error"  ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                  : !isWalletConnected    ? "bg-app-accent text-app-bg shadow-[0_0_20px_rgba(0,246,255,0.2)]"
-                  : !isValidAmount        ? "bg-app-accent/5 border border-app-border text-text-main/40 cursor-not-allowed"
-                  : "bg-app-accent text-app-bg shadow-[0_0_25px_rgba(0,246,255,0.25)] hover:opacity-90"
+                disabled={!isValidAmount || txStatus === "pending"}
+                className={`flex-1 h-14 font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                  !isValidAmount || txStatus === "pending"
+                    ? "bg-app-accent/30 text-app-bg/60 cursor-not-allowed"
+                    : txStatus === "success"
+                    ? "bg-green-500 text-app-bg"
+                    : txStatus === "error"
+                    ? "bg-red-500 text-app-bg"
+                    : "bg-app-accent hover:opacity-90 text-app-bg shadow-app-shadow active:scale-95"
                 }`}
               >
-                {txStatus === "pending" && <Loader2 size={16} className="animate-spin" />}
-                {txStatus === "success"  && <CheckCircle2 size={16} />}
-                {txStatus === "error"    && <AlertCircle size={16} />}
-                
-                {txStatus === "idle" && (
-                  !isWalletConnected ? "Connect Wallet to Topup"
-                  : !isValidAmount ? (
-                      type === "ton" || type === "ton_direct" ? "Enter TON Amount" : `Min ${MIN_STARS} Stars (${minTon} TON)`
-                    )
-                  : (
-                      type === "ton" || type === "ton_direct" ? `Topup ${activeTon} TON` : `Purchase ${starsToReceive.toLocaleString()} Stars`
-                    )
-                )}
-                {txStatus === "pending" && "Waiting for Signature…"}
-                {txStatus === "success" && (
-                  type === "ton" || type === "ton_direct" ? "Topup Sent Successfully! 🎉" : `+${starsToReceive.toLocaleString()} Stars Incoming! 🎉`
-                )}
-                {txStatus === "error"   && "Transaction Failed — Try Again"}
-              </motion.button>
-
-              <p className="text-center text-[10px] text-text-main/60 font-bold uppercase tracking-wider leading-normal">
-                {type === "ton" || type === "ton_direct" ? (
-                  "TON credited to your in-app balance within ~30s after blockchain confirmation."
-                ) : (
-                  `Stars credited within ~30s after blockchain confirmation. Rate: $0.013/Star · Min ${MIN_STARS} Stars`
-                )}
-              </p>
+                {txStatus === "pending" && <Loader2 size={18} className="animate-spin" />}
+                {txStatus === "success" && <CheckCircle2 size={18} />}
+                {txStatus === "error" && <AlertCircle size={18} />}
+                <span>
+                  {txStatus === "pending" ? "Processing..." : 
+                   txStatus === "success" ? "Success!" :
+                   txStatus === "error" ? "Failed" :
+                   type === "ton_direct" ? "Send TON" : "Send & Convert"}
+                </span>
+              </button>
             </div>
           </div>
+
+          {/* Convert Modal (appears inside DepositModal) */}
+          {type === "stars" && userTonBalance > 0 && (
+            <ConvertModal
+              isOpen={isConvertOpen}
+              onClose={() => setIsConvertOpen(false)}
+              tonBalance={userTonBalance}
+              tonPrice={tonPrice}
+              telegramUser={telegramUser}
+              onSuccess={(tonSpent, starsEarned) => {
+                setUserTonBalance(prev => prev - tonSpent);
+                setUserStarsBalance(prev => prev + starsEarned);
+                setIsConvertOpen(false);
+              }}
+            />
+          )}
         </motion.div>
       </div>
     </AnimatePresence>,
     document.body
   );
+}
+```
 
-  // ConvertModal rendered separately (not inside the portal, to avoid z-index stacking)
+---
+
+## 📝 File 2: New ConvertModal.tsx
+
+**Path:** `bluewave-frontend/components/ui/ConvertModal.tsx`
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowRightLeft, Loader2, CheckCircle2, AlertCircle, Zap } from "lucide-react";
+
+interface ConvertModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  tonBalance: number;
+  tonPrice: number;
+  telegramUser: any;
+  onSuccess?: (tonSpent: number, starsEarned: number) => void;
+}
+
+const STAR_PRICE_USD = 0.013;
+const MIN_STARS = 100;
+
+export default function ConvertModal({
+  isOpen,
+  onClose,
+  tonBalance,
+  tonPrice,
+  telegramUser,
+  onSuccess
+}: ConvertModalProps) {
+  const [amount, setAmount] = useState("");
+  const [convertStatus, setConvertStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [starsPreview, setStarsPreview] = useState(0);
+
+  // Update stars preview when amount changes
+  useEffect(() => {
+    if (amount && tonPrice > 0) {
+      const tonAmount = parseFloat(amount);
+      const usdValue = tonAmount * tonPrice;
+      const stars = Math.floor(usdValue / STAR_PRICE_USD);
+      setStarsPreview(stars);
+    } else {
+      setStarsPreview(0);
+    }
+  }, [amount, tonPrice]);
+
+  const isValidAmount = () => {
+    const tonAmount = parseFloat(amount);
+    if (!tonAmount || tonAmount <= 0) return false;
+    if (tonAmount > tonBalance) return false;
+    if (starsPreview < MIN_STARS) return false;
+    return true;
+  };
+
+  const handleConvert = async () => {
+    setConvertStatus("loading");
+    setErrorMsg("");
+
+    try {
+      const response = await fetch("/api/user/convert_ton_to_stars", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_id: telegramUser.id,
+          ton_amount: parseFloat(amount),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setConvertStatus("error");
+        setErrorMsg(data.error || "Conversion failed");
+        return;
+      }
+
+      setConvertStatus("success");
+      setTimeout(() => {
+        onSuccess?.(data.ton_spent, data.stars_earned);
+        setTimeout(() => {
+          setAmount("");
+          setConvertStatus("idle");
+          onClose();
+        }, 1000);
+      }, 2000);
+    } catch (err) {
+      setConvertStatus("error");
+      setErrorMsg("Network error - please try again");
+    }
+  };
+
+  const minTonNeeded = (MIN_STARS * STAR_PRICE_USD) / tonPrice;
+
   return (
-    <>
-      {portal}
-      {type === "stars" && (
-        <ConvertModal
-          isOpen={isConvertOpen}
-          onClose={() => setIsConvertOpen(false)}
-          tonBalance={userTonBalance}
-          tonPrice={tonPrice}
-          telegramUser={telegramUser}
-          onSuccess={(tonSpent, starsEarned) => {
-            setUserTonBalance(prev => Math.max(0, prev - tonSpent));
-            setIsConvertOpen(false);
-            onSuccess?.(undefined, starsEarned);
-          }}
-        />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-app-bg/80 backdrop-blur-sm"
+          />
+
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] p-8 overflow-hidden shadow-app-shadow"
+          >
+            {/* Background Glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-app-accent/10 blur-[80px] -z-10" />
+
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col gap-6">
+              {/* Header */}
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="w-16 h-16 rounded-full bg-app-accent/10 flex items-center justify-center border-2 border-app-accent/30">
+                  <ArrowRightLeft size={32} className="text-app-accent" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-text-main uppercase tracking-tight">
+                    Convert TON
+                  </h3>
+                  <p className="text-text-sub text-[11px] font-bold uppercase tracking-widest mt-1">
+                    to Bluewave Stars
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Balance Info */}
+              <div className="bg-app-bg/50 border border-app-border rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Available TON</p>
+                  <p className="text-text-main font-black text-lg mt-1">{tonBalance.toFixed(4)} TON</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">USD Value</p>
+                  <p className="text-text-main font-black text-lg mt-1">${(tonBalance * tonPrice).toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label className="text-text-main text-[10px] font-black uppercase tracking-widest block mb-2">
+                  Amount to Convert
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="0.0"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full bg-app-bg/50 border border-app-border rounded-xl px-4 py-3 text-text-main font-mono text-lg placeholder-text-main/40 focus:border-app-accent outline-none transition-colors"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <img src="/ton-transparent.png" alt="TON" className="w-5 h-5" />
+                    <span className="text-text-main font-black text-sm">TON</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Min/Max Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAmount(minTonNeeded.toFixed(4))}
+                  className="flex-1 text-[9px] font-black uppercase tracking-widest py-2 px-3 rounded-lg bg-app-accent/10 border border-app-accent/30 text-app-accent hover:bg-app-accent/20 transition-colors"
+                >
+                  Min ({minTonNeeded.toFixed(4)} TON)
+                </button>
+                <button
+                  onClick={() => setAmount(tonBalance.toFixed(4))}
+                  className="flex-1 text-[9px] font-black uppercase tracking-widest py-2 px-3 rounded-lg bg-app-accent/10 border border-app-accent/30 text-app-accent hover:bg-app-accent/20 transition-colors"
+                >
+                  Max ({tonBalance.toFixed(4)} TON)
+                </button>
+              </div>
+
+              {/* Preview */}
+              {amount && tonPrice > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-app-accent/10 to-purple-500/10 border border-app-accent/20 rounded-2xl p-4"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img src="/ton-transparent.png" alt="TON" className="w-4 h-4" />
+                      <span className="text-text-main font-black text-sm">{parseFloat(amount).toFixed(4)} TON</span>
+                    </div>
+                    <ArrowRightLeft size={16} className="text-app-accent" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-app-accent font-black text-sm">{starsPreview:,} ⭐</span>
+                    </div>
+                  </div>
+                  <div className="text-[9px] font-bold text-text-main/60 uppercase tracking-widest">
+                    @ ${tonPrice.toFixed(2)}/TON = ${(parseFloat(amount) * tonPrice).toFixed(2)} USD
+                  </div>
+                  {starsPreview < MIN_STARS && amount && (
+                    <div className="mt-2 flex items-center gap-1.5 text-amber-400">
+                      <Zap size={12} />
+                      <span className="text-[9px] font-bold uppercase tracking-widest">
+                        Below minimum {MIN_STARS} stars
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Error Message */}
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30"
+                >
+                  <AlertCircle size={16} className="text-red-400 shrink-0" />
+                  <span className="text-red-400 text-[10px] font-bold">{errorMsg}</span>
+                </motion.div>
+              )}
+
+              {/* Status Message */}
+              {convertStatus === "success" && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30"
+                >
+                  <CheckCircle2 size={16} className="text-green-400" />
+                  <span className="text-green-400 text-[10px] font-bold uppercase tracking-widest">Conversion Successful!</span>
+                </motion.div>
+              )}
+
+              {/* Convert Button */}
+              <button
+                onClick={handleConvert}
+                disabled={!isValidAmount() || convertStatus !== "idle"}
+                className={`w-full h-12 font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 ${
+                  !isValidAmount() || convertStatus !== "idle"
+                    ? "bg-app-accent/30 text-app-bg/60 cursor-not-allowed"
+                    : convertStatus === "success"
+                    ? "bg-green-500 text-app-bg"
+                    : "bg-app-accent hover:opacity-90 text-app-bg shadow-app-shadow active:scale-95"
+                }`}
+              >
+                {convertStatus === "loading" && <Loader2 size={16} className="animate-spin" />}
+                {convertStatus === "success" && <CheckCircle2 size={16} />}
+                <span>
+                  {convertStatus === "loading" ? "Converting..." :
+                   convertStatus === "success" ? "Success!" :
+                   "Convert to Stars"}
+                </span>
+              </button>
+
+              {/* Help Text */}
+              <p className="text-[9px] text-text-main/50 text-center font-bold uppercase tracking-widest">
+                Conversion is instant and saves on blockchain fees
+              </p>
+            </div>
+          </motion.div>
+        </div>
       )}
-    </>
+    </AnimatePresence>
   );
 }
+```
+

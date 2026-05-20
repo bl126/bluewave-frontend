@@ -17,6 +17,7 @@
     "@react-three/fiber": "^9.4.0",
     "@react-three/postprocessing": "^3.0.4",
     "@supabase/supabase-js": "^2.80.0",
+    "@ton/core": "^0.63.1",
     "@tonconnect/ui-react": "^2.4.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
