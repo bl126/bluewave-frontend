@@ -75,13 +75,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     revalidateOnFocus: false,
   });
 
-  // Network builders data (only fetched when that mode is active)
-  const { data: networkData, loading: networkLoading } = useApi(
-    isOpen && tg_id && viewMode === "network" ? `/leaderboard/network-builders?tg_id=${tg_id}` : null,
-    { 
+  // Network builders — prefetch when leaderboard opens (instant tab switch via cache)
+  const { data: networkData, error: networkError } = useApi(
+    isOpen && tg_id ? `/leaderboard/network-builders?tg_id=${tg_id}` : null,
+    {
       fallbackData: cachedNetworkData,
-      dedupingInterval: 60000, 
-      revalidateOnFocus: false 
+      dedupingInterval: 60000,
+      revalidateOnFocus: false,
+      keepPreviousData: true,
     }
   );
 
@@ -94,12 +95,14 @@ export default function Leaderboard({ isOpen, onClose, telegramUser, isInline = 
     if (data && !loading && tg_id) {
        window.localStorage.setItem(`bw_leaderboard_cache_${tg_id}`, JSON.stringify(data));
     }
-    if (networkData && !networkLoading && tg_id) {
-       window.localStorage.setItem(`bw_network_leaderboard_cache_${tg_id}`, JSON.stringify(networkData));
+    if (networkData && tg_id) {
+      window.localStorage.setItem(`bw_network_leaderboard_cache_${tg_id}`, JSON.stringify(networkData));
+      setCachedNetworkData(networkData);
     }
-  }, [data, loading, networkData, networkLoading, tg_id]);
+  }, [data, networkData, tg_id]);
 
-  const isLoading = viewMode === "global" ? (!data && !error) : networkLoading;
+  const isLoading =
+    viewMode === "global" ? !data && !error : !networkData && !networkError;
  
   const isUserInTop100 = leaders.some((u: any) => String(u.telegram_id) === String(tg_id));
 

@@ -9,9 +9,10 @@ interface BwaveScanOverlayProps {
     isOpen: boolean;
     onClose: () => void;
     bwId?: string;
+    walletConnected?: boolean;
 }
 
-export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOverlayProps) {
+export default function BwaveScanOverlay({ isOpen, onClose, bwId, walletConnected = false }: BwaveScanOverlayProps) {
     const { theme } = useTheme();
     const [isLoading, setIsLoading] = useState(true);
     const [idCopied, setIdCopied] = useState(false);
@@ -63,9 +64,11 @@ export default function BwaveScanOverlay({ isOpen, onClose, bwId }: BwaveScanOve
                                 <span className="text-xs font-black uppercase tracking-widest leading-none text-cyan-50">BwaveScan</span>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className="text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px] text-cyan-500/50">
-                                        {bwId ? `BW ID: ${bwId}` : "Ecosystem Ledger"}
+                                        {walletConnected && bwId
+                                          ? `BW ID: ${bwId}`
+                                          : "BW ID: NOT ASSIGNED"}
                                     </span>
-                                    {bwId && (
+                                    {walletConnected && bwId && (
                                         <button
                                             onClick={handleCopyId}
                                             className="transition-colors text-cyan-500/40 hover:text-cyan-400"

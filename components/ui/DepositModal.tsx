@@ -289,6 +289,16 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     onClose();
   };
 
+  useEffect(() => {
+    const handleNativeBack = (e: Event) => {
+      if (blockOutsideDismiss) return;
+      e.preventDefault();
+      onClose();
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack, true);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
+  }, [onClose, blockOutsideDismiss]);
+
   const portal = createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-[990] pointer-events-auto">
@@ -298,8 +308,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={tryDismiss}
-          className="absolute inset-0 z-0 bg-app-bg/75 backdrop-blur-md"
-          aria-hidden={false}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute inset-0 z-0 bg-app-bg/75 backdrop-blur-md cursor-default"
         />
 
         {/* Sheet */}

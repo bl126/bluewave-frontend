@@ -1446,6 +1446,16 @@ function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    if (!starGiftOpen) return;
+    const handleNativeBack = (e: Event) => {
+      setStarGiftOpen(false);
+      e.preventDefault();
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+  }, [starGiftOpen]);
+
   const handleAcknowledge = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isAcknowledged) return;
@@ -1491,6 +1501,10 @@ function PostCard({
         onStarBalanceChange(amount);
         onOpenBuyStars?.();
         setStarError(t("explore.gift_star_need_balance"));
+      } else if (res?.error === "INVALID_AMOUNT") {
+        setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        onStarBalanceChange(amount);
+        setStarError(t("explore.gift_star_invalid_amount"));
       } else {
         setLocalStarCount((prev: number) => Math.max(0, prev - amount));
         onStarBalanceChange(amount);

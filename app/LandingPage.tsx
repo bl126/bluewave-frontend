@@ -1058,6 +1058,7 @@ export default function LandingPage() {
         isOpen={isBwaveScanOpen}
         onClose={() => setBwaveScanOpen(false)}
         bwId={telegramUser?.bw_id}
+        walletConnected={!!telegramUser?.wallet_address}
       />
 
       {currentCelebratingRole && (
