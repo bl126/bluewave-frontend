@@ -107,14 +107,14 @@ export default function ConvertModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[1000] pointer-events-auto">
+          {/* Backdrop — blocks background clicks */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-app-bg/80 backdrop-blur-sm"
+            onClick={() => convertStatus !== "pending" && onClose()}
+            className="absolute inset-0 z-0 bg-app-bg/80 backdrop-blur-md"
           />
 
           {/* Modal card */}
@@ -123,7 +123,8 @@ export default function ConvertModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.93, opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] p-8 overflow-hidden shadow-app-shadow"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute left-1/2 top-1/2 z-10 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 bg-app-card border border-app-border rounded-[2.5rem] p-8 overflow-hidden shadow-app-shadow pointer-events-auto"
           >
             {/* Background glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-app-accent/10 blur-[80px] -z-10 pointer-events-none" />

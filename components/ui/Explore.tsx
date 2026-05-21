@@ -1421,7 +1421,6 @@ function PostCard({
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
   const [localStarCount, setLocalStarCount] = useState(post.stars_count || 0);
   const [starError, setStarError] = useState<string | null>(null);
-  const [isGiftingStar, setIsGiftingStar] = useState(false);
   const [starGiftOpen, setStarGiftOpen] = useState(false);
   const [starGiftMode, setStarGiftMode] = useState<StarGiftModalMode>("setup");
   const [giftAmount, setGiftAmount] = useState(1);
@@ -1463,7 +1462,6 @@ function PostCard({
   const openStarGiftFlow = (e: React.MouseEvent) => {
     e.stopPropagation();
     setStarError(null);
-    if (isGiftingStar) return;
     if (post.tg_id === currentUserId) {
       setStarError(t("explore.gift_star_own_post"));
       return;
@@ -1478,13 +1476,7 @@ function PostCard({
     setStarGiftOpen(true);
   };
 
-  const submitStarGift = async (amount: number) => {
-    if ((starsBalance || 0) < amount) {
-      setStarGiftOpen(false);
-      onOpenBuyStars?.();
-      return;
-    }
-    setIsGiftingStar(true);
+  const submitStarGiftInBackground = async (amount: number) => {
     try {
       const res = await postApi("/explore/star", {
         user_id: currentUserId,
@@ -1493,20 +1485,21 @@ function PostCard({
       });
       if (res?.success) {
         saveStarGiftAmount(amount);
-        setLocalStarCount((prev: number) => prev + amount);
-        onStarBalanceChange(-amount);
         onStarGiftSuccess?.();
-        setStarGiftOpen(false);
       } else if (res?.error === "INSUFFICIENT_STARS") {
-        setStarGiftOpen(false);
+        setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        onStarBalanceChange(amount);
         onOpenBuyStars?.();
+        setStarError(t("explore.gift_star_need_balance"));
       } else {
+        setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        onStarBalanceChange(amount);
         setStarError(t("explore.gift_star_failed"));
       }
     } catch {
+      setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+      onStarBalanceChange(amount);
       setStarError(t("explore.gift_star_failed"));
-    } finally {
-      setIsGiftingStar(false);
     }
   };
 
@@ -1516,7 +1509,15 @@ function PostCard({
       setStarGiftMode("confirm");
       return;
     }
-    void submitStarGift(amount);
+    if ((starsBalance || 0) < amount) {
+      setStarGiftOpen(false);
+      onOpenBuyStars?.();
+      return;
+    }
+    setStarGiftOpen(false);
+    setLocalStarCount((prev: number) => prev + amount);
+    onStarBalanceChange(-amount);
+    void submitStarGiftInBackground(amount);
   };
 
   // 🔢 Compact number formatter: 1000 → 1k, 21000 → 21k, 100000 → 100k, 1000000 → 1m
@@ -1815,19 +1816,14 @@ function PostCard({
 
               <button
                 onClick={openStarGiftFlow}
-                disabled={isGiftingStar}
                 title={t("explore.gift_star_hint")}
-                className="flex items-center gap-2 group transition-all disabled:opacity-60"
+                className="flex items-center gap-2 group transition-all"
               >
-                {isGiftingStar ? (
-                  <Loader2 size={16} className="text-amber-400 animate-spin" />
-                ) : (
-                  <Star
-                    size={18}
-                    fill="none"
-                    className="text-amber-400/80 group-hover:text-amber-300 transition-all"
-                  />
-                )}
+                <Star
+                  size={18}
+                  fill="none"
+                  className="text-amber-400/80 group-hover:text-amber-300 transition-all"
+                />
                 <span className="text-[12px] font-bold font-mono text-amber-400/80">
                   {fmt(localStarCount)}
                 </span>
@@ -1873,9 +1869,10 @@ function PostCard({
         recipientName={recipientName}
         starsBalance={starsBalance}
         initialAmount={giftAmount}
-        isSubmitting={isGiftingStar}
+        isSubmitting={false}
         onClose={() => setStarGiftOpen(false)}
         onConfirm={handleStarGiftConfirm}
+        onEditAmount={() => setStarGiftMode("setup")}
       />
     </div>
   );

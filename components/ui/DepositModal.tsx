@@ -282,16 +282,24 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     }
   };
 
+  const blockOutsideDismiss = txStatus === "pending" || txStatus === "success";
+
+  const tryDismiss = () => {
+    if (blockOutsideDismiss) return;
+    onClose();
+  };
+
   const portal = createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[990] flex items-end justify-center">
-        {/* Backdrop */}
+      <div className="fixed inset-0 z-[990] pointer-events-auto">
+        {/* Full-screen shield — blocks taps on Explore / nav behind modal */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-app-bg/60 backdrop-blur-sm"
+          onClick={tryDismiss}
+          className="absolute inset-0 z-0 bg-app-bg/75 backdrop-blur-md"
+          aria-hidden={false}
         />
 
         {/* Sheet */}
@@ -306,9 +314,11 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           dragConstraints={{ top: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info) => {
-            if (info.offset.y > 100) onClose();
+            if (blockOutsideDismiss) return;
+            if (info.offset.y > 100) tryDismiss();
           }}
-          className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[90vh] shadow-app-shadow w-full"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute bottom-0 left-0 right-0 z-10 bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[90vh] shadow-app-shadow w-full pointer-events-auto"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 20px) + 16px)" }}
         >
           {/* Drag Handle */}
@@ -342,7 +352,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               </div>
             </div>
             <button 
-              onClick={onClose} 
+              onClick={onClose}
               className="p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors active:scale-95"
             >
               <X size={18} />

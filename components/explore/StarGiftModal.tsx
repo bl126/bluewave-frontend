@@ -19,6 +19,7 @@ interface StarGiftModalProps {
   isSubmitting?: boolean;
   onClose: () => void;
   onConfirm: (amount: number) => void;
+  onEditAmount?: () => void;
 }
 
 export default function StarGiftModal({
@@ -30,6 +31,7 @@ export default function StarGiftModal({
   isSubmitting = false,
   onClose,
   onConfirm,
+  onEditAmount,
 }: StarGiftModalProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState(initialAmount);
@@ -56,8 +58,8 @@ export default function StarGiftModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[350] bg-black/70 backdrop-blur-md"
-            onClick={onClose}
+            className="fixed inset-0 z-[350] bg-app-bg/80 backdrop-blur-md"
+            aria-hidden
           />
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -66,19 +68,19 @@ export default function StarGiftModal({
             className="fixed inset-0 z-[351] flex items-end sm:items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className="w-full max-w-sm bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl pointer-events-auto"
+              className="w-full max-w-sm bg-app-card border border-app-border rounded-3xl overflow-hidden shadow-app-shadow pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+              <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-app-border">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
                     <Star size={22} className="text-amber-400" fill="currentColor" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-black text-white uppercase tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black text-text-main uppercase tracking-tight">
                       {mode === "setup" ? t("explore.gift_star_setup_title") : t("explore.gift_star_confirm_title")}
                     </h3>
-                    <p className="text-[10px] text-white/50 font-medium mt-0.5 truncate max-w-[200px]">
+                    <p className="text-[10px] text-text-sub font-medium mt-0.5 truncate">
                       {displayName}
                     </p>
                   </div>
@@ -86,15 +88,17 @@ export default function StarGiftModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-2 rounded-xl bg-white/5 text-white/50 hover:text-white"
+                  disabled={isSubmitting}
+                  className="p-2 rounded-xl bg-app-accent/5 border border-app-border text-text-sub hover:text-text-main transition-colors shrink-0"
+                  aria-label={t("explore.gift_star_close")}
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {mode === "setup" ? (
-                <div className="px-5 pb-5 space-y-4">
-                  <p className="text-[11px] text-white/60 leading-relaxed">{t("explore.gift_star_setup_desc")}</p>
+                <div className="px-5 py-5 space-y-4">
+                  <p className="text-[11px] text-text-sub leading-relaxed">{t("explore.gift_star_setup_desc")}</p>
                   <div className="flex flex-wrap gap-2">
                     {STAR_GIFT_PRESETS.map((preset) => (
                       <button
@@ -106,29 +110,36 @@ export default function StarGiftModal({
                           amount === preset
                             ? "bg-amber-500 text-black border-amber-400"
                             : starsBalance < preset
-                              ? "bg-white/5 border-white/5 text-white/25 cursor-not-allowed"
-                              : "bg-white/5 border-white/10 text-amber-200 hover:border-amber-500/40"
+                              ? "bg-app-bg/50 border-app-border text-text-sub/30 cursor-not-allowed"
+                              : "bg-app-accent/5 border-app-border text-text-main hover:border-amber-500/40"
                         }`}
                       >
                         {preset}
                       </button>
                     ))}
                   </div>
-                  <p className="text-[10px] text-white/40">
-                    {t("explore.gift_star_balance_label")}: <span className="text-amber-400 font-bold">{starsBalance}</span>
+                  <p className="text-[10px] text-text-sub">
+                    {t("explore.gift_star_balance_label")}:{" "}
+                    <span className="text-amber-400 font-bold">{starsBalance}</span>
                   </p>
                   <button
                     type="button"
                     disabled={!canAfford || isSubmitting}
                     onClick={() => onConfirm(amount)}
-                    className="w-full py-3.5 rounded-2xl bg-amber-500 text-black font-black uppercase text-xs tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-2xl bg-amber-500 text-black font-black uppercase text-xs tracking-widest disabled:opacity-40 flex items-center justify-center gap-2 hover:bg-amber-400 transition-colors"
                   >
                     {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : t("explore.gift_star_continue_btn")}
                   </button>
                 </div>
               ) : (
-                <div className="px-5 pb-5 space-y-4">
-                  <p className="text-center text-sm text-white/80 leading-relaxed">
+                <div className="px-5 py-5 space-y-4">
+                  <div className="rounded-2xl bg-app-accent/5 border border-app-border px-4 py-3 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">
+                      {t("explore.gift_star_amount_label")}
+                    </p>
+                    <p className="text-2xl font-black text-amber-400">{amount}</p>
+                  </div>
+                  <p className="text-center text-sm text-text-main leading-relaxed">
                     {t("explore.gift_star_confirm_msg")
                       .replace("{{amount}}", String(amount))
                       .replace("{{name}}", displayName)}
@@ -136,17 +147,17 @@ export default function StarGiftModal({
                   <div className="flex gap-3">
                     <button
                       type="button"
-                      onClick={onClose}
                       disabled={isSubmitting}
-                      className="flex-1 py-3.5 rounded-2xl border border-white/15 text-white/70 font-black uppercase text-[10px] tracking-widest"
+                      onClick={() => onEditAmount?.()}
+                      className="flex-1 py-3.5 rounded-2xl border border-app-border bg-app-accent/5 text-text-main font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/10 transition-colors"
                     >
-                      {t("explore.gift_star_undo")}
+                      {t("explore.gift_star_set_btn")}
                     </button>
                     <button
                       type="button"
                       disabled={!canAfford || isSubmitting}
                       onClick={() => onConfirm(amount)}
-                      className="flex-1 py-3.5 rounded-2xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-widest disabled:opacity-40 flex items-center justify-center gap-2"
+                      className="flex-1 py-3.5 rounded-2xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-widest disabled:opacity-40 flex items-center justify-center gap-2 hover:bg-amber-400 transition-colors"
                     >
                       {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : t("explore.gift_star_confirm_btn")}
                     </button>

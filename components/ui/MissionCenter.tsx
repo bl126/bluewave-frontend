@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, Clock, Lock } from "lucide-react";
+import { ArrowLeft, Check, Clock, Lock, Gift } from "lucide-react";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, getApi, postApi } from "@/lib/useApi";
@@ -872,8 +872,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   transition={{ duration: 0.25 }}
                   className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
                 >
-                   <div className={`w-20 h-20 rounded-full ${isHumanVerified ? 'bg-app-accent/10 border-app-border shadow-app-shadow' : 'bg-app-border/20 border-app-border shadow-app-shadow'} flex items-center justify-center`}>
-                    <span className="text-4xl">{isHumanVerified ? '⚡' : '🔒'}</span>
+                   <div className={`w-20 h-20 rounded-full flex items-center justify-center border shadow-app-shadow ${
+                    isHumanVerified
+                      ? "bg-app-accent/10 border-app-border"
+                      : "bg-app-accent/5 border-app-border"
+                  }`}>
+                    {isHumanVerified ? (
+                      <span className="text-4xl">⚡</span>
+                    ) : (
+                      <Lock size={36} className="text-app-accent" strokeWidth={2} />
+                    )}
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("missions.quests.title")}</h3>
@@ -888,15 +896,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                         {t("missions.quests.empty")}
                       </p>
                     ) : (
-                      <>
-                        <p className="text-sm text-text-main/70 leading-relaxed">
-                          {t("missions.quests.lock_desc")}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-text-sub font-semibold border-t border-app-border pt-3">
-                          <Lock size={12} className="text-app-accent" />
-                          {t("missions.quests.lock_hint")}
-                        </div>
-                      </>
+                      <p className="text-sm text-text-sub leading-relaxed">
+                        {t("missions.quests.lock_hint")}
+                      </p>
                     )}
                   </div>
                 </motion.div>
@@ -911,12 +913,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   transition={{ duration: 0.25 }}
                   className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
                 >
-                  <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(249,115,22,0.15)]">
-                    <span className="text-4xl">🎁</span>
+                  <div className="w-20 h-20 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center shadow-app-shadow">
+                    <Gift size={36} className="text-app-accent" strokeWidth={2} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className={`text-xl font-black uppercase tracking-widest text-white`}>{t("missions.earn_drop.title")}</h3>
-                    <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-text-main">{t("missions.earn_drop.title")}</h3>
+                    <div className="inline-block px-3 py-1 rounded-full bg-app-accent/15 border border-app-border text-app-accent text-[10px] font-black tracking-widest uppercase">
                       {t("missions.earn_drop.coming_soon")}
                     </div>
                   </div>
@@ -925,7 +927,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       {t("missions.earn_drop.desc")}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-text-sub font-semibold border-t border-app-border pt-3">
-                      <Clock size={12} className="text-orange-400" />
+                      <Clock size={12} className="text-app-accent" />
                       {t("missions.earn_drop.active_hint")}
                     </div>
                   </div>

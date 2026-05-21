@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info, Lock } from "lucide-react";
+import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info, Lock, Plus } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useApi, getApi, postApi } from "@/lib/useApi";
 import Settings from "./Settings";
@@ -490,36 +490,64 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
 
                     {activeTab === "roles" && (
                       <div className="py-4">
-                        {!user.roles || user.roles.length === 0 ? (
-                          <div className={`flex flex-col items-center justify-center gap-3 py-10 opacity-70`}><ShieldCheck size={40} /><span className="text-xs font-bold uppercase tracking-widest italic">{t("profile.no_roles_unlocked")}</span></div>
-                        ) : (
-                          <div className="grid grid-cols-3 gap-3">
-                            {user.roles.map((role: string) => {
-                              const roleData = findRoleByName(role);
-                              const Icon = roleData?.icon || UserCheck;
-                              const translatedName = t(`roles_list.${role}.name`);
-                              return (
-                                <button key={role} onClick={() => onOpenRoles(role)} className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || 'from-app-accent/5 to-app-accent/5'} border ${roleData?.border || 'border-app-accent/10'} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg`}>
-                                  <div className={`p-2 rounded-full ${roleData?.text?.replace('text-', 'bg-')}/10 ${roleData?.text || 'text-app-accent'}`}>
-                                    {roleData?.image ? <img src={roleData.image} alt={role} className="w-5 h-5 object-contain" /> : <Icon size={18} />}
-                                  </div>
-                                  <span className={`text-[8px] font-black ${roleData?.text || 'text-app-accent'} uppercase tracking-tighter text-center leading-none`}>
-                                    {translatedName.split(' ').map((word: string, i: number) => (<span key={i} className="block">{word}</span>))}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {(user.roles || []).map((role: string) => {
+                            const roleData = findRoleByName(role);
+                            const Icon = roleData?.icon || UserCheck;
+                            const translatedName = t(`roles_list.${role}.name`);
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => onOpenRoles(role)}
+                                className={`group relative aspect-square bg-gradient-to-br ${roleData?.color || "from-app-accent/5 to-app-accent/5"} border ${roleData?.border || "border-app-accent/10"} rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 shadow-lg active:scale-95`}
+                              >
+                                <div className={`p-2 rounded-full ${roleData?.text?.replace("text-", "bg-")}/10 ${roleData?.text || "text-app-accent"}`}>
+                                  {roleData?.image ? (
+                                    <img src={roleData.image} alt={role} className="w-5 h-5 object-contain" />
+                                  ) : (
+                                    <Icon size={18} />
+                                  )}
+                                </div>
+                                <span className={`text-[8px] font-black ${roleData?.text || "text-app-accent"} uppercase tracking-tighter text-center leading-none`}>
+                                  {translatedName.split(" ").map((word: string, i: number) => (
+                                    <span key={i} className="block">
+                                      {word}
+                                    </span>
+                                  ))}
+                                </span>
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            onClick={() => onOpenEcosystemRoles?.()}
+                            className="aspect-square bg-app-bg/30 border border-dashed border-app-border rounded-2xl transition-all flex flex-col items-center justify-center gap-2 p-2 hover:border-app-accent/40 hover:bg-app-accent/5 active:scale-95"
+                          >
+                            <div className="p-2 rounded-full bg-app-accent/10 text-app-accent">
+                              <Plus size={18} strokeWidth={2.5} />
+                            </div>
+                            <span className="text-[8px] font-black text-text-sub uppercase tracking-tighter text-center leading-snug px-1">
+                              {t("profile.get_more_roles")}
+                            </span>
+                          </button>
+                        </div>
+                        {(!user.roles || user.roles.length === 0) && (
+                          <p className="text-center text-[10px] text-text-sub/60 font-bold uppercase tracking-widest mt-4">
+                            {t("profile.no_roles_unlocked")}
+                          </p>
                         )}
                       </div>
                     )}
 
                     {activeTab === "drops" && (
                       <div className={`bg-app-bg/30 border-app-border backdrop-blur-md border rounded-3xl p-8 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center`}>
-                        <div className="w-20 h-20 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shadow-app-shadow"><span className="text-4xl">🎁</span></div>
+                        <div className="w-20 h-20 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center shadow-app-shadow">
+                          <Lock size={32} className="text-app-accent" strokeWidth={2} />
+                        </div>
                         <div className="space-y-2">
                           <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("profile.protocol_drops")}</h3>
-                          <div className="inline-block px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black tracking-widest uppercase">{t("profile.locked")}</div>
+                          <div className="inline-block px-3 py-1 rounded-full bg-app-accent/15 border border-app-border text-app-accent text-[10px] font-black tracking-widest uppercase">{t("profile.locked")}</div>
                         </div>
                         <div className={`bg-app-accent/5 border-app-border border rounded-2xl p-5 space-y-3`}>
                           <p className="text-xs text-text-sub leading-relaxed uppercase tracking-wider">{t("profile.drops_desc")}</p>
