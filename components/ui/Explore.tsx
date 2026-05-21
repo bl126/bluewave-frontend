@@ -45,30 +45,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 import ReferralShareModal from "./ReferralShareModal";
-
-const ADMIN_IDS = [5023869471];
-const BETA_TESTER_IDS: number[] = [
-  8531164706,
-  2008138868,
-  769579042,
-  5511825370,
-  1504247376,
-  5364551821,
-  7834249676
-];
-
-const MOCK_MINI_APPS = [
-  { id: "id-vault", name: "Identity Vault", icon: <Shield size={20} />, color: "from-cyan-500 to-blue-600" },
-  { id: "missions", name: "Missions", icon: <Rocket size={20} />, color: "from-purple-500 to-indigo-600" },
-  { id: "bwavescan", name: "BwaveScan", icon: <Eye size={20} />, color: "from-emerald-500 to-teal-600" },
-  { id: "burner", name: "Signal Burner", icon: <Zap size={20} />, color: "from-orange-500 to-red-600" },
-  { id: "market", name: "Marketplace", icon: <ShoppingCart size={20} />, color: "from-pink-500 to-rose-600" },
-  { id: "gov", name: "Governance", icon: <Vote size={20} />, color: "from-blue-400 to-cyan-500" },
-  { id: "stats", name: "Pulse Stats", icon: <BarChart2 size={20} />, color: "from-amber-400 to-orange-500" },
-  { id: "human", name: "Humanity Check", icon: <UserCheck size={20} />, color: "from-cyan-400 to-teal-500" },
-  { id: "bridge", name: "Wave Bridge", icon: <Share2 size={20} />, color: "from-indigo-400 to-purple-500" },
-  { id: "agent", name: "Blu Agent", icon: <Bot size={20} />, color: "from-zinc-400 to-zinc-600" },
-];
+import { hasExploreBetaAccess } from "@/lib/exploreAccess";
+import { ExploreDiscoverHeader } from "@/components/explore/ExploreDiscoverChrome";
 
 interface ExploreProps {
   isOpen: boolean;
@@ -112,6 +90,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const feedTopRef = useRef<HTMLDivElement>(null);
+  const betaDefaultTabSet = useRef(false);
 
   // Scroll hide/show state
   const [showChrome, setShowChrome] = useState(true);
@@ -334,9 +313,22 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
     }
   };
 
-  const hasAccess = telegramUser?.id ?
-    (ADMIN_IDS.includes(Number(telegramUser.id)) || BETA_TESTER_IDS.includes(Number(telegramUser.id)))
-    : false;
+  const hasAccess = hasExploreBetaAccess(telegramUser?.id);
+
+  useEffect(() => {
+    if (!betaDefaultTabSet.current && hasAccess) {
+      setActiveTab("foryou");
+      betaDefaultTabSet.current = true;
+    }
+  }, [hasAccess]);
+
+  const handleStarBalanceChange = useCallback((delta: number) => {
+    if (!telegramUser?.id) return;
+    const next = Math.max(0, (telegramUser.stars_balance || 0) + delta);
+    window.dispatchEvent(
+      new CustomEvent("updateUser", { detail: { stars_balance: next } })
+    );
+  }, [telegramUser?.id, telegramUser?.stars_balance]);
 
   return (
     <motion.div
@@ -362,12 +354,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed top-20 left-0 right-0 z-[130] border-b border-app-border pointer-events-auto bg-app-bg backdrop-blur-xl"
       >
-        <div className="flex items-center justify-between px-6 pt-2 w-full">
+        <div className="mx-4 mb-2 p-1 rounded-2xl bg-white/5 border border-white/5 flex items-stretch gap-0.5">
           {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabClick(tab)}
-              className={`relative pb-3 flex items-center justify-center transition-all ${activeTab === tab ? "text-app-accent" : "text-text-sub"}`}
+              className={`relative flex-1 py-2.5 px-1 rounded-xl flex items-center justify-center transition-all ${
+                activeTab === tab
+                  ? "bg-app-accent/15 text-app-accent shadow-[inset_0_0_0_1px_rgba(0,230,255,0.25)]"
+                  : "text-text-sub hover:text-text-main"
+              }`}
             >
               {tab === "foryou" && (
                 hasAccess ? (
@@ -397,29 +393,10 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   <Lock size={18} className="text-text-sub" />
                 )
               )}
-              {tab === "leaderboard" && <BarChart2 size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />}
-
-              {activeTab === tab && (
-                <motion.div
-                  layoutId="exploreTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-accent shadow-app-shadow"
-                />
-              )}
+              {tab === "leaderboard" && <BarChart2 size={16} />}
             </button>
           ))}
         </div>
-        <AnimatePresence>
-          {(activeTab === "foryou" || activeTab === "following") && liveUsers && liveUsers.length > 0 && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="w-full shrink-0 overflow-hidden"
-            >
-              <LiveNowTray liveUsers={liveUsers} />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
       {/* New Posts Pill */}
@@ -545,11 +522,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   </div>
                 ) : (
                   <div className="pb-32">
+                    {activeTab === "foryou" && (
+                      <ExploreDiscoverHeader liveUsers={liveUsers} showMiniApps />
+                    )}
                     {pagedPosts.map((post: any) => (
                       <PostCard
                         key={post.id}
                         post={post}
                         currentUserId={telegramUser?.id}
+                        starsBalance={telegramUser?.stars_balance ?? 0}
+                        onStarBalanceChange={handleStarBalanceChange}
                         isConnected={isConnected}
                         onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
                         onRepost={() => mutate()}
@@ -592,8 +574,11 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0, opacity: 0, y: 20 }}
               transition={{ duration: 0.12, ease: "easeInOut" }}
-              whileTap={{ scale: 0.9 }}
+              whileTap={hasAccess ? { scale: 0.9 } : undefined}
+              disabled={!hasAccess}
+              title={hasAccess ? t("explore.new_post_title") : t("explore.beta_post_locked")}
               onClick={() => {
+                if (!hasAccess) return;
                 if (swrUser && !isConnected) {
                   setConnectPrompt(true);
                   setTimeout(() => setConnectPrompt(false), 3000);
@@ -601,10 +586,16 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   setIsPostModalOpen(true);
                 }
               }}
-              className={`w-12 h-12 ${isConnected || !swrUser ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-gray-800 text-gray-500 shadow-none'} rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210]`}
+              className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210] ${
+                !hasAccess
+                  ? "bg-zinc-800/90 text-zinc-600 cursor-not-allowed opacity-50"
+                  : isConnected || !swrUser
+                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+                    : "bg-gray-800 text-gray-500 shadow-none"
+              }`}
             >
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Plus size={26} strokeWidth={3} />
+              {!hasAccess ? <Lock size={22} /> : <Plus size={26} strokeWidth={3} />}
             </motion.button>
           </div>
         )}
@@ -1354,6 +1345,8 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
 function PostCard({
   post,
   currentUserId,
+  starsBalance,
+  onStarBalanceChange,
   isConnected,
   onHide,
   onRepost,
@@ -1363,6 +1356,8 @@ function PostCard({
 }: {
   post: any,
   currentUserId: number,
+  starsBalance: number,
+  onStarBalanceChange: (delta: number) => void,
   isConnected: boolean,
   onHide: () => void,
   onRepost: () => void,
@@ -1375,6 +1370,8 @@ function PostCard({
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
   const [isStarred, setIsStarred] = useState(post.is_starred);
   const [localStarCount, setLocalStarCount] = useState(post.stars_count || 0);
+  const [starError, setStarError] = useState<string | null>(null);
+  const [isGiftingStar, setIsGiftingStar] = useState(false);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
   const [isCopying, setIsCopying] = useState(false);
 
@@ -1409,15 +1406,36 @@ function PostCard({
 
   const handleStar = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // ⭐ Star requires a connected channel (premium action)
-    if (!isConnected) {
-      onConnectRequired();
+    setStarError(null);
+    if (isStarred || isGiftingStar) return;
+    if (post.tg_id === currentUserId) {
+      setStarError(t("explore.gift_star_own_post"));
       return;
     }
-    const newStarred = !isStarred;
-    setIsStarred(newStarred);
-    setLocalStarCount((prev: number) => newStarred ? prev + 1 : Math.max(0, prev - 1));
-    await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
+    if ((starsBalance || 0) < 1) {
+      setStarError(t("explore.gift_star_need_balance"));
+      return;
+    }
+    setIsGiftingStar(true);
+    setIsStarred(true);
+    setLocalStarCount((prev: number) => prev + 1);
+    onStarBalanceChange(-1);
+    try {
+      const res = await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
+      if (res?.error === "INSUFFICIENT_STARS" || res?.success === false) {
+        setIsStarred(false);
+        setLocalStarCount((prev: number) => Math.max(0, prev - 1));
+        onStarBalanceChange(1);
+        setStarError(t("explore.gift_star_need_balance"));
+      }
+    } catch {
+      setIsStarred(false);
+      setLocalStarCount((prev: number) => Math.max(0, prev - 1));
+      onStarBalanceChange(1);
+      setStarError(t("explore.gift_star_failed"));
+    } finally {
+      setIsGiftingStar(false);
+    }
   };
 
   // 🔢 Compact number formatter: 1000 → 1k, 21000 → 21k, 100000 → 100k, 1000000 → 1m
@@ -1558,7 +1576,12 @@ function PostCard({
   };
 
   return (
-    <div className="p-4 flex flex-col gap-1 relative hover:bg-white/[0.01] transition-all items-start cursor-pointer" onClick={onPostClick}>
+    <div
+      className="mx-3 mb-3 rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.04] to-transparent overflow-hidden relative hover:border-cyan-500/20 transition-all cursor-pointer"
+      onClick={onPostClick}
+    >
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400/90 via-cyan-500/40 to-purple-500/30" />
+      <div className="p-4 flex flex-col gap-1 relative items-start pl-5">
       <TrueViewTracker postId={post.id} />
 
       {/* Repost Header */}
@@ -1574,7 +1597,7 @@ function PostCard({
       <div className="flex gap-4 w-full items-start">
         {/* Avatar → direct channel link */}
         <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="shrink-0 relative">
-          <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-lg ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
+          <div className={`w-11 h-11 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-lg ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
             {post.channel?.photo && !imgError ? (
               <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
             ) : (
@@ -1709,24 +1732,35 @@ function PostCard({
                 </button>
               </div>
 
-              {/* Star */}
+              {/* Gift Star — spends 1 from your balance; author receives it */}
               <button
                 onClick={handleStar}
-                className="flex items-center gap-2 group transition-all"
+                disabled={isGiftingStar || isStarred}
+                title={t("explore.gift_star_hint")}
+                className="flex flex-col items-center gap-0.5 group transition-all disabled:opacity-60"
               >
-                <Star
-                  size={18}
-                  fill={isStarred ? "currentColor" : "none"}
-                  className={`transition-all ${
-                    isStarred
-                      ? "text-cyan-400 scale-110"
-                      : "text-cyan-400 group-hover:text-cyan-300"
-                  }`}
-                />
-                <span className={`text-[12px] font-bold font-mono transition-colors ${
-                  isStarred ? "text-cyan-400" : "text-cyan-400 group-hover:text-cyan-300"
-                }`}>
-                  {fmt(localStarCount)}
+                <div className="flex items-center gap-1.5">
+                  {isGiftingStar ? (
+                    <Loader2 size={16} className="text-amber-400 animate-spin" />
+                  ) : (
+                    <Star
+                      size={18}
+                      fill={isStarred ? "currentColor" : "none"}
+                      className={`transition-all ${
+                        isStarred
+                          ? "text-amber-400 scale-110"
+                          : "text-amber-400/80 group-hover:text-amber-300"
+                      }`}
+                    />
+                  )}
+                  <span className={`text-[12px] font-bold font-mono ${
+                    isStarred ? "text-amber-400" : "text-amber-400/80"
+                  }`}>
+                    {fmt(localStarCount)}
+                  </span>
+                </div>
+                <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/70">
+                  {t("explore.gift_star_label")}
                 </span>
               </button>
 
@@ -1757,9 +1791,13 @@ function PostCard({
               </span>
             </div>
           </div>
+          {starError && (
+            <p className="text-[10px] text-amber-400/90 mt-1 font-medium">{starError}</p>
+          )}
         </div>
       </div>
-    </div >
+      </div>
+    </div>
   );
 }
 
@@ -2467,115 +2505,5 @@ function PostDetailModal({
       </motion.div>
     </motion.div>,
     document.body
-  );
-}
-
-function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
-  if (!liveUsers || liveUsers.length === 0) return null;
-
-  return (
-    <div className="w-full border-b border-white/5 bg-black/20 overflow-hidden shrink-0">
-      <div className="flex items-center gap-3 overflow-x-auto custom-scrollbar px-4 pt-3 pb-2 hide-scrollbar">
-        {liveUsers.map((u, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              const handle = u.telegram_channel;
-              if (!handle) return;
-              const clean = handle.replace(/^@/, "");
-              const link = `https://t.me/${clean}`;
-              const twa = (window as any).Telegram?.WebApp;
-              if (twa?.openTelegramLink) {
-                twa.openTelegramLink(link);
-              } else {
-                window.open(link, "_blank");
-              }
-            }}
-            className="flex flex-col items-center gap-1.5 shrink-0 group w-14"
-          >
-            <div className="relative">
-              {/* Outer Ring Animation (Simplified) */}
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-500/30 group-hover:border-cyan-400 transition-all p-0.5 relative z-10 bg-transparent">
-                <div className="w-full h-full rounded-full overflow-hidden border border-white/10 bg-black/40 relative pointer-events-none">
-                  {u.telegram_channel_photo ? (
-                    <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
-                  ) : u.photo_url ? (
-                    <img src={u.photo_url} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-[10px]">
-                      {u.telegram_channel_title?.[0] || u.name?.[0] || u.first_name?.[0] || "U"}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Pulse Shadow */}
-              <div className="absolute inset-0 rounded-full border border-cyan-500/50 animate-[pulse_2s_ease-out_infinite] z-0 pointer-events-none" />
-
-              {/* Minimalist LIVE Badge */}
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-cyan-600 text-black text-[7px] font-black px-1 py-0.5 rounded-[3px] border border-cyan-300 shadow-[0_0_8px_rgba(0,230,255,0.8)] leading-none flex items-center gap-0.5 tracking-tight z-20 pointer-events-none">
-                <span className="w-0.5 h-0.5 rounded-full bg-white animate-pulse" />
-                LIVE
-              </div>
-            </div>
-            <span className="text-[7px] font-black text-white/60 truncate w-12 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight">
-              {u.telegram_channel_title || u.name || u.first_name || "User"}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MiniAppCarousel({ apps }: { apps: any[] }) {
-  return (
-    <div className="w-full py-6 border-y border-white/5 bg-white/[0.01] overflow-hidden">
-      <div className="px-5 mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-           <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/80">Mini Apps</h3>
-        </div>
-        <div className="flex gap-1">
-          <div className="w-1 h-1 rounded-full bg-cyan-500/40" />
-          <div className="w-1 h-1 rounded-full bg-cyan-500/20" />
-        </div>
-      </div>
-      
-      <div 
-        className="flex items-center gap-5 overflow-x-auto custom-scrollbar px-5 pb-2 hide-scrollbar snap-x no-scrollbar"
-        onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-      >
-        {apps.map((app) => (
-          <div 
-            key={app.id} 
-            className="flex flex-col items-center gap-3 shrink-0 snap-center group"
-          >
-            {/* Minimal App Icon with Gradient Ring */}
-            <div className={`w-16 h-16 rounded-full bg-active p-[1.5px] relative group-active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.4)]`}>
-              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${app.color} opacity-40 blur-[2px] transition-opacity group-hover:opacity-100`} />
-              <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
-                {app.icon}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-2.5">
-              <span className="text-[9px] font-black text-white/90 uppercase tracking-widest text-center w-20 truncate">
-                {app.name}
-              </span>
-              
-              <button className="px-3 py-1 bg-white/5 hover:bg-cyan-500 hover:text-black border border-white/10 hover:border-cyan-400 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all shadow-sm active:translate-y-0.5">
-                Open
-              </button>
-            </div>
-          </div>
-        ))}
-        {/* Spacer for end scroll */}
-        <div className="shrink-0 w-5" />
-      </div>
-    </div>
   );
 }
