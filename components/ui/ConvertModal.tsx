@@ -113,7 +113,7 @@ export default function ConvertModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => convertStatus !== "pending" && onClose()}
+            onClick={() => convertStatus === "idle" && onClose()}
             className="absolute inset-0 z-0 bg-app-bg/80 backdrop-blur-md"
           />
 
