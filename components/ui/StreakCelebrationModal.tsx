@@ -37,13 +37,13 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-                    {/* Backdrop */}
+                    {/* Backdrop — no dismiss on tap; claim button only */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-app-bg/90 backdrop-blur-md"
+                        className="absolute inset-0 bg-app-bg/90 backdrop-blur-md pointer-events-auto"
+                        aria-hidden
                     />
 
                     {/* Modal Card */}
@@ -51,7 +51,8 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                         initial={{ scale: 0.8, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.8, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden shadow-app-shadow"
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative z-10 w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden shadow-app-shadow"
                     >
                         {/* Ambient Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-app-accent/10 blur-[80px] rounded-full pointer-events-none" />

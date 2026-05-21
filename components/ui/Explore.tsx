@@ -38,15 +38,26 @@ import {
   User,
   Lock
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
 import ReferralShareModal from "./ReferralShareModal";
 import { hasExploreBetaAccess } from "@/lib/exploreAccess";
-import { ExploreDiscoverHeader } from "@/components/explore/ExploreDiscoverChrome";
+import { LiveNowTray, MiniAppCarousel, MOCK_MINI_APPS } from "@/components/explore/ExploreDiscoverChrome";
+import StarGiftModal, {
+  getSavedStarGiftAmount,
+  hasCompletedStarGiftSetup,
+  saveStarGiftAmount,
+  type StarGiftModalMode,
+} from "@/components/explore/StarGiftModal";
+
+const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
+
+const MINI_APP_INSERT_EVERY = 6;
 
 interface ExploreProps {
   isOpen: boolean;
@@ -64,6 +75,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
   const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [buyStarsOpen, setBuyStarsOpen] = useState(false);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -95,6 +107,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   // Scroll hide/show state
   const [showChrome, setShowChrome] = useState(true);
   const lastScrollY = useRef(0);
+
+  // Restore bottom nav when leaving Explore (scroll hide only applies inside feed)
+  useEffect(() => {
+    if (!isOpen) {
+      setShowChrome(true);
+      lastScrollY.current = 0;
+      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "up" }));
+    }
+  }, [isOpen]);
 
   // Touch/Swipe
   const touchStart = useRef<number | null>(null);
@@ -354,15 +375,13 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed top-20 left-0 right-0 z-[130] border-b border-app-border pointer-events-auto bg-app-bg backdrop-blur-xl"
       >
-        <div className="mx-4 mb-2 p-1 rounded-2xl bg-white/5 border border-white/5 flex items-stretch gap-0.5">
+        <div className="flex items-center justify-between px-6 pt-2 w-full">
           {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabClick(tab)}
-              className={`relative flex-1 py-2.5 px-1 rounded-xl flex items-center justify-center transition-all ${
-                activeTab === tab
-                  ? "bg-app-accent/15 text-app-accent shadow-[inset_0_0_0_1px_rgba(0,230,255,0.25)]"
-                  : "text-text-sub hover:text-text-main"
+              className={`relative pb-3 flex items-center justify-center transition-all ${
+                activeTab === tab ? "text-app-accent" : "text-text-sub"
               }`}
             >
               {tab === "foryou" && (
@@ -393,7 +412,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   <Lock size={18} className="text-text-sub" />
                 )
               )}
-              {tab === "leaderboard" && <BarChart2 size={16} />}
+              {tab === "leaderboard" && (
+                <BarChart2 size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />
+              )}
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="exploreTabUnderline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-accent shadow-app-shadow"
+                />
+              )}
             </button>
           ))}
         </div>
@@ -522,24 +549,29 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                   </div>
                 ) : (
                   <div className="pb-32">
-                    {activeTab === "foryou" && (
-                      <ExploreDiscoverHeader liveUsers={liveUsers} showMiniApps />
+                    {activeTab === "foryou" && liveUsers && liveUsers.length > 0 && (
+                      <LiveNowTray liveUsers={liveUsers} />
                     )}
-                    {pagedPosts.map((post: any) => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        currentUserId={telegramUser?.id}
-                        starsBalance={telegramUser?.stars_balance ?? 0}
-                        onStarBalanceChange={handleStarBalanceChange}
-                        isConnected={isConnected}
-                        onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
-                        onRepost={() => mutate()}
-                        onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
-                        onCommentClick={() => setSelectedPost(post)}
-                        onPostClick={() => setSelectedPost(post)}
-                        onStarGiftSuccess={() => mutateNotifications()}
-                      />
+                    {pagedPosts.map((post: any, index: number) => (
+                      <Fragment key={post.id}>
+                        <PostCard
+                          post={post}
+                          currentUserId={telegramUser?.id}
+                          starsBalance={telegramUser?.stars_balance ?? 0}
+                          onStarBalanceChange={handleStarBalanceChange}
+                          isConnected={isConnected}
+                          onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
+                          onRepost={() => mutate()}
+                          onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
+                          onCommentClick={() => setSelectedPost(post)}
+                          onPostClick={() => setSelectedPost(post)}
+                          onStarGiftSuccess={() => mutateNotifications()}
+                          onOpenBuyStars={() => setBuyStarsOpen(true)}
+                        />
+                        {activeTab === "foryou" && (index + 1) % MINI_APP_INSERT_EVERY === 0 && (
+                          <MiniAppCarousel apps={MOCK_MINI_APPS} />
+                        )}
+                      </Fragment>
                     ))}
                     {hasMore && (
                       <div ref={loadMoreRef} className="flex justify-center py-6">
@@ -712,6 +744,20 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         bwId={swrUser?.bw_id || ""}
         referralLink={swrUser?.referral_link}
       />
+
+      {buyStarsOpen && (
+        <DepositModal
+          type="stars"
+          telegramUser={telegramUser}
+          onClose={() => setBuyStarsOpen(false)}
+          onSuccess={(_ton, starsAdded) => {
+            if (starsAdded) {
+              handleStarBalanceChange(starsAdded);
+            }
+            setBuyStarsOpen(false);
+          }}
+        />
+      )}
 
     </motion.div>
   );
@@ -1354,7 +1400,8 @@ function PostCard({
   onConnectRequired,
   onCommentClick,
   onPostClick,
-  onStarGiftSuccess
+  onStarGiftSuccess,
+  onOpenBuyStars
 }: {
   post: any,
   currentUserId: number,
@@ -1366,15 +1413,18 @@ function PostCard({
   onConnectRequired: () => void,
   onCommentClick: () => void,
   onPostClick: () => void,
-  onStarGiftSuccess?: () => void
+  onStarGiftSuccess?: () => void,
+  onOpenBuyStars?: () => void
 }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
-  const [isStarred, setIsStarred] = useState(post.is_starred);
   const [localStarCount, setLocalStarCount] = useState(post.stars_count || 0);
   const [starError, setStarError] = useState<string | null>(null);
   const [isGiftingStar, setIsGiftingStar] = useState(false);
+  const [starGiftOpen, setStarGiftOpen] = useState(false);
+  const [starGiftMode, setStarGiftMode] = useState<StarGiftModalMode>("setup");
+  const [giftAmount, setGiftAmount] = useState(1);
   const [isReposted, setIsReposted] = useState(post.is_reposted);
   const [isCopying, setIsCopying] = useState(false);
 
@@ -1407,41 +1457,66 @@ function PostCard({
     await postApi("/explore/acknowledge", { user_id: currentUserId, post_id: post.id });
   };
 
-  const handleStar = async (e: React.MouseEvent) => {
+  const recipientName =
+    post.channel?.title || post.user?.name || t("explore.gift_star_recipient_fallback");
+
+  const openStarGiftFlow = (e: React.MouseEvent) => {
     e.stopPropagation();
     setStarError(null);
-    if (isStarred || isGiftingStar) return;
+    if (isGiftingStar) return;
     if (post.tg_id === currentUserId) {
       setStarError(t("explore.gift_star_own_post"));
       return;
     }
     if ((starsBalance || 0) < 1) {
-      setStarError(t("explore.gift_star_need_balance"));
+      onOpenBuyStars?.();
+      return;
+    }
+    const saved = getSavedStarGiftAmount();
+    setGiftAmount(saved);
+    setStarGiftMode(hasCompletedStarGiftSetup() ? "confirm" : "setup");
+    setStarGiftOpen(true);
+  };
+
+  const submitStarGift = async (amount: number) => {
+    if ((starsBalance || 0) < amount) {
+      setStarGiftOpen(false);
+      onOpenBuyStars?.();
       return;
     }
     setIsGiftingStar(true);
-    setIsStarred(true);
-    setLocalStarCount((prev: number) => prev + 1);
-    onStarBalanceChange(-1);
     try {
-      const res = await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
+      const res = await postApi("/explore/star", {
+        user_id: currentUserId,
+        post_id: post.id,
+        amount,
+      });
       if (res?.success) {
+        saveStarGiftAmount(amount);
+        setLocalStarCount((prev: number) => prev + amount);
+        onStarBalanceChange(-amount);
         onStarGiftSuccess?.();
-      }
-      if (res?.error === "INSUFFICIENT_STARS" || res?.success === false) {
-        setIsStarred(false);
-        setLocalStarCount((prev: number) => Math.max(0, prev - 1));
-        onStarBalanceChange(1);
-        setStarError(t("explore.gift_star_need_balance"));
+        setStarGiftOpen(false);
+      } else if (res?.error === "INSUFFICIENT_STARS") {
+        setStarGiftOpen(false);
+        onOpenBuyStars?.();
+      } else {
+        setStarError(t("explore.gift_star_failed"));
       }
     } catch {
-      setIsStarred(false);
-      setLocalStarCount((prev: number) => Math.max(0, prev - 1));
-      onStarBalanceChange(1);
       setStarError(t("explore.gift_star_failed"));
     } finally {
       setIsGiftingStar(false);
     }
+  };
+
+  const handleStarGiftConfirm = (amount: number) => {
+    if (starGiftMode === "setup") {
+      setGiftAmount(amount);
+      setStarGiftMode("confirm");
+      return;
+    }
+    void submitStarGift(amount);
   };
 
   // 🔢 Compact number formatter: 1000 → 1k, 21000 → 21k, 100000 → 100k, 1000000 → 1m
@@ -1738,35 +1813,23 @@ function PostCard({
                 </button>
               </div>
 
-              {/* Gift Star — spends 1 from your balance; author receives it */}
               <button
-                onClick={handleStar}
-                disabled={isGiftingStar || isStarred}
+                onClick={openStarGiftFlow}
+                disabled={isGiftingStar}
                 title={t("explore.gift_star_hint")}
-                className="flex flex-col items-center gap-0.5 group transition-all disabled:opacity-60"
+                className="flex items-center gap-2 group transition-all disabled:opacity-60"
               >
-                <div className="flex items-center gap-1.5">
-                  {isGiftingStar ? (
-                    <Loader2 size={16} className="text-amber-400 animate-spin" />
-                  ) : (
-                    <Star
-                      size={18}
-                      fill={isStarred ? "currentColor" : "none"}
-                      className={`transition-all ${
-                        isStarred
-                          ? "text-amber-400 scale-110"
-                          : "text-amber-400/80 group-hover:text-amber-300"
-                      }`}
-                    />
-                  )}
-                  <span className={`text-[12px] font-bold font-mono ${
-                    isStarred ? "text-amber-400" : "text-amber-400/80"
-                  }`}>
-                    {fmt(localStarCount)}
-                  </span>
-                </div>
-                <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/70">
-                  {t("explore.gift_star_label")}
+                {isGiftingStar ? (
+                  <Loader2 size={16} className="text-amber-400 animate-spin" />
+                ) : (
+                  <Star
+                    size={18}
+                    fill="none"
+                    className="text-amber-400/80 group-hover:text-amber-300 transition-all"
+                  />
+                )}
+                <span className="text-[12px] font-bold font-mono text-amber-400/80">
+                  {fmt(localStarCount)}
                 </span>
               </button>
 
@@ -1803,6 +1866,17 @@ function PostCard({
         </div>
       </div>
       </div>
+
+      <StarGiftModal
+        isOpen={starGiftOpen}
+        mode={starGiftMode}
+        recipientName={recipientName}
+        starsBalance={starsBalance}
+        initialAmount={giftAmount}
+        isSubmitting={isGiftingStar}
+        onClose={() => setStarGiftOpen(false)}
+        onConfirm={handleStarGiftConfirm}
+      />
     </div>
   );
 }

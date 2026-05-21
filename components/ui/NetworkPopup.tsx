@@ -207,25 +207,46 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
                   </div>
                 )}
 
-                {!network?.active?.length && !network?.inactive?.length && !loading && (
-                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                {(() => {
+                  const totalMembers =
+                    (network?.active?.length || 0) + (network?.inactive?.length || 0);
+                  const isEmpty = !loading && totalMembers === 0;
+                  if (!isEmpty) return null;
+                  return (
+                  <div className="flex flex-col items-center justify-center py-8 text-center px-2">
                     <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
                       <Users size={24} className="text-text-sub/20" />
                     </div>
-                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest max-w-[200px] leading-relaxed mb-6">
-                      {t("network.empty_desc")}
+                    <p className="text-text-main text-[10px] font-black uppercase tracking-widest mb-4">
+                      {t("network.empty_title")}
                     </p>
-                    <button 
+                    <div className="w-full space-y-3 mb-6 text-left">
+                      {[
+                        t("network.invite_step_1"),
+                        t("network.invite_step_2"),
+                        t("network.invite_step_3"),
+                      ].map((step, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <span className="text-[9px] font-black text-app-accent shrink-0 mt-0.5">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <p className="text-[10px] text-text-sub font-medium leading-relaxed">{step}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
                       onClick={() => {
                         onClose();
                         onOpenReferral();
                       }}
-                      className="px-6 py-3 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/80 active:scale-95 transition-all shadow-lg"
+                      className="w-full px-6 py-3.5 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/90 active:scale-95 transition-all shadow-lg"
                     >
                       {t("profile.get_link")}
                     </button>
                   </div>
-                )}
+                  );
+                })()}
               </div>
             )}
           </div>

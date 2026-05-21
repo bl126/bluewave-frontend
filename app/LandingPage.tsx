@@ -176,7 +176,7 @@ export default function LandingPage() {
         return;
       }
       if (isStreakCelebrationOpen) {
-        handleClearStreakReward();
+        // Streak reward must be claimed via the modal button — not back or backdrop
         return;
       }
       if (isHumanModalOpen) {
@@ -685,9 +685,10 @@ export default function LandingPage() {
     };
   }, []);
 
-  // 📜 Global Scroll Listener for Navigation
+  // 📜 Global Scroll Listener for Navigation (Explore feed only — reset when Explore closes)
   useEffect(() => {
     const handleScrollDir = (e: any) => {
+      if (!isExploreOpen) return;
       const direction = e.detail;
       if (direction === "down") {
         setIsBottomNavVisible(false);
@@ -697,7 +698,13 @@ export default function LandingPage() {
     };
     window.addEventListener("scrollDirectionChanged" as any, handleScrollDir);
     return () => window.removeEventListener("scrollDirectionChanged" as any, handleScrollDir);
-  }, []);
+  }, [isExploreOpen]);
+
+  useEffect(() => {
+    if (!isExploreOpen) {
+      setIsBottomNavVisible(true);
+    }
+  }, [isExploreOpen]);
 
   const handleClearStreakReward = async () => {
     setIsStreakCelebrationOpen(false);
@@ -1024,10 +1031,7 @@ export default function LandingPage() {
       {/* 🔥 Streak Celebration Modal */}
       <StreakCelebrationModal
         isOpen={isStreakCelebrationOpen}
-        onClose={() => {
-          setIsStreakCelebrationOpen(false);
-          handleClearStreakReward();
-        }}
+        onClose={handleClearStreakReward}
         streakDays={streakCelebrationData.days}
         rewardAmount={streakCelebrationData.reward}
       />
