@@ -552,6 +552,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
             alreadyConnected={user?.telegram_channel || null}
             channelTitle={user?.telegram_channel_title || null}
             channelPhoto={user?.telegram_channel_photo || null}
+            channelStarsReceived={user?.channel_stars_received ?? 0}
           />
           <LevelUpModal level={isNaN(parseInt(level)) ? 1 : parseInt(level)} isOpen={isLevelUpModalOpen} onClose={() => setIsLevelUpModalOpen(false)} />
 

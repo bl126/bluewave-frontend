@@ -538,6 +538,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                         onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
                         onCommentClick={() => setSelectedPost(post)}
                         onPostClick={() => setSelectedPost(post)}
+                        onStarGiftSuccess={() => mutateNotifications()}
                       />
                     ))}
                     {hasMore && (
@@ -1352,7 +1353,8 @@ function PostCard({
   onRepost,
   onConnectRequired,
   onCommentClick,
-  onPostClick
+  onPostClick,
+  onStarGiftSuccess
 }: {
   post: any,
   currentUserId: number,
@@ -1363,7 +1365,8 @@ function PostCard({
   onRepost: () => void,
   onConnectRequired: () => void,
   onCommentClick: () => void,
-  onPostClick: () => void
+  onPostClick: () => void,
+  onStarGiftSuccess?: () => void
 }) {
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
@@ -1422,6 +1425,9 @@ function PostCard({
     onStarBalanceChange(-1);
     try {
       const res = await postApi("/explore/star", { user_id: currentUserId, post_id: post.id });
+      if (res?.success) {
+        onStarGiftSuccess?.();
+      }
       if (res?.error === "INSUFFICIENT_STARS" || res?.success === false) {
         setIsStarred(false);
         setLocalStarCount((prev: number) => Math.max(0, prev - 1));
@@ -1888,6 +1894,7 @@ function NotificationsView({
       case "comment_replied": return <MessageCircle size={18} className="text-cyan-400" />;
       case "comment_liked": return <Heart size={18} fill="currentColor" className="text-cyan-400" />;
       case "new_follower": return <Plus size={18} className="text-cyan-400" />;
+      case "star_gift": return <Star size={18} fill="currentColor" className="text-amber-400" />;
       case "mentioned_in_post":
       case "mentioned_in_comment": return <UserCheck size={18} className="text-cyan-400" />;
       default: return <Bell size={18} className="text-cyan-400" />;
@@ -1904,6 +1911,7 @@ function NotificationsView({
     if (n.type === "comment_replied") return t("notifications.comment_reply_title");
     if (n.type === "comment_liked") return t("notifications.comment_like_title");
     if (n.type === "new_follower") return t("notifications.new_follower") || "New Follower";
+    if (n.type === "star_gift") return t("notifications.star_gift_title");
     if (n.type === "mentioned_in_post") return t("notifications.mentioned_in_post_title");
     if (n.type === "mentioned_in_comment") return t("notifications.mentioned_in_comment_title");
     return t("notifications.notification_type");
@@ -1945,6 +1953,10 @@ function NotificationsView({
     if (n.type === "new_follower") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
       return (t("notifications.new_follower_msg") || "{{name}} followed your channel.").replace("{{name}}", firstName);
+    }
+    if (n.type === "star_gift") {
+      const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";
+      return t("notifications.star_gift_msg").replace("{{name}}", firstName);
     }
     if (n.type === "mentioned_in_post") {
       const firstName = n.from_user?.first_name || n.from_user?.name?.split(" ")[0] || "Someone";

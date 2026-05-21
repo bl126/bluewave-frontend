@@ -256,6 +256,8 @@
     "notification_type": "Notification",
     "broadcast_msg": "Your channel post is broadcasted.",
     "acknowledged_msg": "{{name}} liked your post.",
+    "star_gift_title": "Star gift",
+    "star_gift_msg": "{{name}} gifted you 1 Star on your post.",
     "reposted_msg": "{{name}} reposted your post.",
     "new_follower_msg": "{{name}} followed your channel.",
     "verified_milestone_msg": "{{count}} verified humans liked your post",
@@ -324,6 +326,7 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "Disconnect Channel",
     "disconnect_desc": "Remove this channel from Bluewave protocol.",
+    "channel_stars_received": "Stars received on channel",
     "disconnecting": "Disconnecting..."
   },
   "referral": {

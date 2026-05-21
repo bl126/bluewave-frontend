@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bot, Send, Check, Loader2, ChevronRight } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { postApi } from "@/lib/useApi";
@@ -16,6 +16,7 @@ interface ConnectBluModalProps {
     alreadyConnected?: string | null;
     channelTitle?: string | null;
     channelPhoto?: string | null;
+    channelStarsReceived?: number;
 }
 
 export default function ConnectBluModal({
@@ -26,6 +27,7 @@ export default function ConnectBluModal({
     alreadyConnected,
     channelTitle,
     channelPhoto,
+    channelStarsReceived = 0,
 }: ConnectBluModalProps) {
     const [view, setView] = useState<"main" | "telegram">("main");
     const [channelInput, setChannelInput] = useState("");
@@ -301,6 +303,14 @@ export default function ConnectBluModal({
                                                                         </div>
                                                                     </div>
                                                                     <p className="text-text-sub text-[9px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
+                                                                    {channelStarsReceived > 0 && (
+                                                                        <div className="flex items-center gap-1 mt-1.5">
+                                                                            <Star size={10} className="text-amber-400" fill="currentColor" />
+                                                                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-400/90">
+                                                                                {channelStarsReceived} {t("connect_blu.channel_stars_received")}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                             <button
