@@ -5,8 +5,38 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 
-// Lazy-load so TON Connect hooks only run client-side
-const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
+/** Warm the DepositModal chunk as soon as the mini app is interactive */
+function prefetchDepositModal() {
+    void import("./DepositModal");
+}
+
+function DepositModalSheetSkeleton() {
+    return (
+        <div className="fixed inset-0 z-[990] flex items-end justify-center pointer-events-none">
+            <div className="fixed inset-0 bg-app-bg/40 backdrop-blur-sm" />
+            <div
+                className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] w-full animate-pulse"
+                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 20px) + 16px)" }}
+            >
+                <div className="flex justify-center py-4">
+                    <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+                </div>
+                <div className="px-8 pb-6 space-y-4">
+                    <div className="h-6 w-32 bg-app-accent/10 rounded-lg" />
+                    <div className="h-4 w-24 bg-app-accent/5 rounded" />
+                    <div className="h-28 bg-app-bg/30 border border-app-border rounded-2xl" />
+                    <div className="h-14 bg-app-accent/15 rounded-2xl" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Lazy-load so TON Connect hooks only run client-side; skeleton shows while chunk loads
+const DepositModal = dynamic(() => import("./DepositModal"), {
+    ssr: false,
+    loading: () => <DepositModalSheetSkeleton />,
+});
 
 type BalanceType = "points" | "ton" | "stars";
 
@@ -16,11 +46,7 @@ interface BalancePillProps {
     telegramUser?: any;
 }
 
-import { useTheme } from "@/contexts/ThemeContext";
-
 export default function BalancePill({ balance, isVisible, telegramUser }: BalancePillProps) {
-    const { mounted } = useTheme();
-
     const [isExpanded, setIsExpanded] = useState(false);
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
@@ -33,6 +59,16 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
     const tonBalance = telegramUser?.ton_balance || 0;
     const starBalance = telegramUser?.stars_balance || 0;
     const [tonPrice, setTonPrice] = useState(3.0);
+
+    // Preload deposit modal chunk on mount so first Topup open is instant
+    useEffect(() => {
+        prefetchDepositModal();
+    }, []);
+
+    // Preload again when user expands the pill (likely to tap +)
+    useEffect(() => {
+        if (isExpanded) prefetchDepositModal();
+    }, [isExpanded]);
 
     useEffect(() => {
         const fetchPrice = async () => {
@@ -236,8 +272,10 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
                                     {isExpanded && type !== "points" ? (
                                         <motion.button
                                             whileTap={{ scale: 0.85 }}
+                                            onPointerEnter={prefetchDepositModal}
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                prefetchDepositModal();
                                                 setIsExpanded(false);
                                                 setDepositType(type as "ton" | "stars");
                                             }}

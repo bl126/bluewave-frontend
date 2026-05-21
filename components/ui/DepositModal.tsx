@@ -79,7 +79,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [useCustom, setUseCustom] = useState(true);
   const [txStatus, setTxStatus] = useState<TxStatus>("idle");
-  const [mounted, setMounted] = useState(false);
 
   // Live Wallet Balance states
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -88,8 +87,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   // User app balances (ton_balance, stars_balance)
   const [userTonBalance, setUserTonBalance] = useState<number>(0);
   const [isConvertOpen, setIsConvertOpen] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   // ─── Fetch Live TON Price ────────────────────────────────────────────────
   const fetchPrice = useCallback(async () => {
@@ -205,6 +202,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     ? activeTon > 0 
     : starsToReceive >= MIN_STARS;
 
+  const isTopupBlocked = isWalletMismatch;
+  const isCtaDisabled =
+    txStatus === "pending" ||
+    txStatus === "success" ||
+    isTopupBlocked ||
+    (isWalletConnected && !isValidAmount);
+
   const modalTitle = type === "ton" || type === "ton_direct" ? "Topup TON" : "Buy Stars";
   
   // Set percentage amount of available wallet balance
@@ -223,6 +227,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
   // ─── Send Transaction ────────────────────────────────────────────────────
   const handleTopup = async () => {
+    if (isWalletMismatch) return;
     if (!walletAddress) { tonConnectUI.openModal(); return; }
     if (!isValidAmount || txStatus === "pending") return;
 
@@ -270,8 +275,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     }
   };
 
-  if (!mounted) return null;
-
   const portal = createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-[990] flex items-end justify-center">
@@ -289,7 +292,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          transition={{ type: "spring", damping: 32, stiffness: 420 }}
           drag="y"
           dragControls={dragControls}
           dragListener={false}
@@ -465,11 +468,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       type="number"
                       placeholder="0.0"
                       value={customAmount}
+                      disabled={isWalletMismatch}
                       onChange={(e) => {
                         setCustomAmount(e.target.value);
                         setSelectedPreset(null);
                       }}
-                      className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-main/20 w-full min-w-0"
+                      className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-main/20 w-full min-w-0 disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-app-accent/10 border border-app-border/50 select-none shrink-0">
                       <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
@@ -499,11 +503,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       return (
                         <button
                           key={presetVal}
+                          disabled={isWalletMismatch}
                           onClick={() => {
                             setCustomAmount(String(presetVal));
                             setSelectedPreset(presetVal);
                           }}
-                          className={`py-2.5 rounded-xl border text-xs font-black transition-all ${
+                          className={`py-2.5 rounded-xl border text-xs font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                             isSelected
                               ? "bg-app-accent/20 border-app-accent text-app-accent shadow-[0_0_12px_rgba(0,246,255,0.15)]"
                               : "bg-app-accent/5 border-app-border/50 text-text-main hover:border-app-accent/55"
@@ -548,12 +553,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         return (
                           <button 
                             key={idx}
+                            disabled={isWalletMismatch}
                             onClick={() => {
                               setSelectedPreset(idx);
                               setUseCustom(false);
                               setCustomAmount("");
                             }}
-                            className={`relative flex flex-col p-3.5 rounded-2xl border transition-all text-left ${
+                            className={`relative flex flex-col p-3.5 rounded-2xl border transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed ${
                               isSelected
                                 ? "bg-app-accent/15 border-app-accent shadow-[0_0_15px_rgba(0,246,255,0.15)] text-app-accent"
                                 : "bg-app-accent/5 border-app-border hover:border-app-accent/50 text-text-main"
@@ -588,6 +594,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       step="0.1"
                       placeholder={`Min ${minTon} TON`}
                       value={customAmount}
+                      disabled={isWalletMismatch}
                       onChange={(e) => {
                         setCustomAmount(e.target.value);
                         setUseCustom(true);
@@ -597,7 +604,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         setUseCustom(true);
                         setSelectedPreset(null);
                       }}
-                      className="flex-1 bg-transparent border-none outline-none text-text-main font-bold text-sm placeholder-text-main/20"
+                      className="flex-1 bg-transparent border-none outline-none text-text-main font-bold text-sm placeholder-text-main/20 disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                     {useCustom && tonPrice > 0 && activeTon > 0 && (
                       <span className="text-text-main font-mono shrink-0">${usdValue.toFixed(2)}</span>
@@ -668,12 +675,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             {/* Action Area & CTA */}
             <div className="mt-2 flex flex-col gap-3 shrink-0">
               <motion.button
-                whileTap={{ scale: 0.97 }} 
+                whileTap={isCtaDisabled ? undefined : { scale: 0.97 }}
                 onClick={handleTopup}
-                disabled={txStatus === "pending" || txStatus === "success" || (isWalletConnected && !isValidAmount)}
+                disabled={isCtaDisabled}
                 className={`w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 transition-all shadow-lg ${
                   txStatus === "success" ? "bg-emerald-500 text-white"
                   : txStatus === "error"  ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                  : isTopupBlocked        ? "bg-app-accent/5 border border-amber-500/30 text-amber-400/70 cursor-not-allowed"
                   : !isWalletConnected    ? "bg-app-accent text-app-bg shadow-[0_0_20px_rgba(0,246,255,0.2)]"
                   : !isValidAmount        ? "bg-app-accent/5 border border-app-border text-text-main/40 cursor-not-allowed"
                   : "bg-app-accent text-app-bg shadow-[0_0_25px_rgba(0,246,255,0.25)] hover:opacity-90"
@@ -684,7 +692,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 {txStatus === "error"    && <AlertCircle size={16} />}
                 
                 {txStatus === "idle" && (
-                  !isWalletConnected ? "Connect Wallet to Topup"
+                  isTopupBlocked ? "Connect Registered Wallet"
+                  : !isWalletConnected ? "Connect Wallet to Topup"
                   : !isValidAmount ? (
                       type === "ton" || type === "ton_direct" ? "Enter TON Amount" : `Min ${MIN_STARS} Stars (${minTon} TON)`
                     )
