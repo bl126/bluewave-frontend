@@ -73,8 +73,16 @@ export default function ConvertModal({
     setErrorMsg("");
 
     try {
+      const tgId = telegramUser?.id ?? telegramUser?.tg_id;
+      if (!tgId) {
+        setConvertStatus("error");
+        setErrorMsg("Session error — reopen the app");
+        setTimeout(() => setConvertStatus("idle"), 3000);
+        return;
+      }
+
       const data = await postApi("/user/convert_ton_to_stars", {
-        telegram_id: telegramUser.id,
+        telegram_id: tgId,
         ton_amount: parseFloat(amount),
       });
 

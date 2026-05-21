@@ -5,10 +5,12 @@ import { X, Copy, Bell, Check, Loader2, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNetwork, notifyIndividual } from "@/lib/useApi";
+import { openTelegramProfile } from "@/lib/openTelegramProfile";
 
 interface NetworkMember {
   tg_id: number;
   name: string;
+  username?: string | null;
   photo_url: string | null;
   bw_id: string;
   last_notified_at: string | null;
@@ -253,16 +255,25 @@ function MemberItem({
   const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
+  const openProfile = () => {
+    openTelegramProfile(member.tg_id, member.username);
+  };
+
   return (
     <div className={`p-3 rounded-2xl border flex items-center gap-3 transition-all ${
       active
         ? "bg-app-accent/[0.03] border-app-accent/20"
         : "bg-white/[0.01] border-app-border opacity-70"
     }`}>
-      {/* Avatar */}
-      <div className={`w-10 h-10 rounded-xl overflow-hidden border shrink-0 ${
-        active ? "border-app-accent/30" : "border-app-border"
-      }`}>
+      {/* Avatar — opens Telegram profile */}
+      <button
+        type="button"
+        onClick={openProfile}
+        className={`w-10 h-10 rounded-xl overflow-hidden border shrink-0 active:scale-95 transition-transform ${
+          active ? "border-app-accent/30 ring-1 ring-app-accent/20" : "border-app-border hover:border-app-accent/40"
+        }`}
+        aria-label={`Open ${member.name} on Telegram`}
+      >
         {member.photo_url && !imgError ? (
           <img 
             src={member.photo_url} 
@@ -275,11 +286,17 @@ function MemberItem({
             {(member.name || "U").charAt(0).toUpperCase()}
           </div>
         )}
-      </div>
+      </button>
 
       {/* Info */}
       <div className="flex-1 flex flex-col min-w-0">
-        <span className="text-text-main text-[11px] font-black truncate leading-tight">{member.name}</span>
+        <button
+          type="button"
+          onClick={openProfile}
+          className="text-left text-text-main text-[11px] font-black truncate leading-tight hover:text-app-accent transition-colors"
+        >
+          {member.name}
+        </button>
         <div className="flex items-center gap-1 group mt-0.5">
           <span className="text-text-sub text-[8px] font-mono tracking-tighter">{member.bw_id}</span>
           <button

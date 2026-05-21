@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Loader2, CheckCircle2, AlertCircle, Zap, ChevronRight, RefreshCw, Wallet, ArrowRightLeft } from "lucide-react";
 import { useTonConnectUI, useTonAddress, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import { createPortal } from "react-dom";
-import { postApi } from "@/lib/useApi";
+import { postApi, getApi } from "@/lib/useApi";
 import { beginCell } from "@ton/core";
 import ConvertModal from "./ConvertModal";
 
@@ -85,7 +85,10 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const [balanceLoading, setBalanceLoading] = useState(false);
 
   // User app balances (ton_balance, stars_balance)
-  const [userTonBalance, setUserTonBalance] = useState<number>(0);
+  const [userTonBalance, setUserTonBalance] = useState<number>(() => {
+    const fromProp = parseFloat(String(telegramUser?.ton_balance ?? 0));
+    return Number.isFinite(fromProp) ? fromProp : 0;
+  });
   const [isConvertOpen, setIsConvertOpen] = useState(false);
 
   // ─── Fetch Live TON Price ────────────────────────────────────────────────
@@ -151,16 +154,20 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     return () => clearInterval(interval);
   }, [fetchPrice]);
 
-  // Fetch user's in-app balances (ton_balance, stars_balance)
+  // Fetch fresh in-app TON balance for Buy Stars modal (GET only — POST was failing silently)
   useEffect(() => {
-    if (telegramUser?.id && type === "stars") {
-      postApi(`/user/${telegramUser.id}`, {})
-        .then((res: any) => {
-          setUserTonBalance(parseFloat(res.ton_balance ?? 0) || 0);
-        })
-        .catch(() => {});
-    }
-  }, [telegramUser?.id, type]);
+    if (type !== "stars") return;
+    const tid = telegramUser?.id ?? telegramUser?.tg_id;
+    if (!tid) return;
+
+    getApi(`/user/${tid}`)
+      .then((res: any) => {
+        if (res?.error) return;
+        const bal = parseFloat(res.ton_balance ?? 0);
+        if (Number.isFinite(bal)) setUserTonBalance(bal);
+      })
+      .catch(() => {});
+  }, [telegramUser?.id, telegramUser?.tg_id, telegramUser?.ton_balance, type]);
 
   // DB registered wallet check
   const dbWallet = telegramUser?.wallet_address;
@@ -735,8 +742,15 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
           tonPrice={tonPrice}
           telegramUser={telegramUser}
           onSuccess={(tonSpent, starsEarned) => {
-            setUserTonBalance(prev => Math.max(0, prev - tonSpent));
+            const newTon = Math.max(0, userTonBalance - tonSpent);
+            const newStars = (telegramUser?.stars_balance || 0) + starsEarned;
+            setUserTonBalance(newTon);
             setIsConvertOpen(false);
+            window.dispatchEvent(
+              new CustomEvent("updateUser", {
+                detail: { ton_balance: newTon, stars_balance: newStars },
+              })
+            );
             onSuccess?.(undefined, starsEarned);
           }}
         />
