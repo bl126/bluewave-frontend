@@ -346,6 +346,7 @@ export default function LandingPage() {
             wallet_address: u.wallet_address,
             is_human_verified: !!u.is_human_verified,
             bw_id: u.bw_id,
+            deposit_token: u.deposit_token,
             joined_at: u.joined_at,
             ton_balance: parseFloat(u.ton_balance ?? 0) || 0,
             stars_balance: Number(u.stars_balance ?? 0) || 0,
@@ -486,6 +487,7 @@ export default function LandingPage() {
           inactive_referrals_cache: user.inactive_referrals_cache ?? 0,
           streak: user.streak_days ?? 0,
           bw_id: user.bw_id,
+          deposit_token: user.deposit_token,
           joined_at: user.joined_at,
           wallet_address: user.wallet_address,
           recovery_password_hash: user.recovery_password_hash,
@@ -898,6 +900,13 @@ export default function LandingPage() {
           balance={balance}
           isVisible={!isBwaveScanOpen}
           telegramUser={telegramUser}
+          onGoToProfile={() => {
+            setActiveTab("profile");
+            setProfileOpen(true);
+            setExploreOpen(false);
+            setMissionOpen(false);
+            setMarketOpen(false);
+          }}
         />
       )}
 
@@ -954,6 +963,10 @@ export default function LandingPage() {
               setActiveTab("home");
             }}
             telegramUser={telegramUser}
+            onGoToProfile={() => {
+              setActiveTab("profile");
+              setProfileOpen(true);
+            }}
           />
         )}
         {activeTab === "market" && (

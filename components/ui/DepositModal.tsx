@@ -79,6 +79,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [useCustom, setUseCustom] = useState(true);
   const [txStatus, setTxStatus] = useState<TxStatus>("idle");
+  const [depositNotice, setDepositNotice] = useState<string | null>(null);
 
   // Live Wallet Balance states
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -209,7 +210,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     ? activeTon > 0 
     : starsToReceive >= MIN_STARS;
 
-  const isTopupBlocked = isWalletMismatch;
+  const depositToken = telegramUser?.deposit_token || "";
+  const isTopupBlocked = isWalletMismatch || !dbWallet || !depositToken;
   const isCtaDisabled =
     txStatus === "pending" ||
     txStatus === "success" ||
@@ -232,19 +234,55 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     setSelectedPreset(null);
   };
 
-  // ─── Send Transaction ────────────────────────────────────────────────────
+  const pollBalanceAfterDeposit = async (
+    tid: number,
+    beforeTon: number,
+    beforeStars: number,
+    expectedTon?: number,
+    expectedStars?: number
+  ): Promise<boolean> => {
+    const maxAttempts = 20;
+    const intervalMs = 3000;
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, intervalMs));
+      try {
+        const res = await getApi(`/user/${tid}`);
+        if (res?.error) continue;
+        const ton = parseFloat(res.ton_balance ?? 0);
+        const stars = Number(res.stars_balance ?? 0);
+        const tonOk = expectedTon != null ? ton >= beforeTon + expectedTon - 0.0001 : ton > beforeTon;
+        const starsOk = expectedStars != null ? stars >= beforeStars + expectedStars : stars > beforeStars;
+        if (type === "ton_direct" || type === "ton") {
+          if (tonOk) return true;
+        } else if (starsOk) {
+          return true;
+        }
+      } catch {
+        /* retry */
+      }
+    }
+    return false;
+  };
+
   const handleTopup = async () => {
     if (isWalletMismatch) return;
     if (!walletAddress) { tonConnectUI.openModal(); return; }
+    if (!dbWallet) return;
+    if (!depositToken) return;
     if (!isValidAmount || txStatus === "pending") return;
 
+    setDepositNotice(null);
     setTxStatus("pending");
+    const tid = telegramUser?.id ?? telegramUser?.tg_id;
+    const beforeTon = userTonBalance;
+    const beforeStars = Number(telegramUser?.stars_balance ?? 0);
+
     try {
       const tgId = telegramUser?.id || 0;
       const bwId = telegramUser?.bw_id || "";
-      // Include mode in comment so the monitor knows how to credit
       const mode = type === "ton_direct" ? "ton_direct" : "buy_stars";
-      const commentPayload = `tg_id:${tgId}|bw_id:${bwId}|mode:${mode}`;
+      // token = secret UUID from DB; attacker cannot guess tg_id+bw_id alone
+      const commentPayload = `tg_id:${tgId}|bw_id:${bwId}|token:${depositToken.toLowerCase()}|mode:${mode}`;
 
       // Encode as TON text comment cell and serialize to Base64 Bag of Cells (BoC)
       const cell = beginCell()
@@ -263,19 +301,31 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
       });
 
       setTxStatus("success");
-      // Refresh wallet balance after short delay
-      setTimeout(() => {
-        if (walletAddress) fetchWalletBalance(walletAddress);
-      }, 3000);
-      
-      setTimeout(() => {
-        if (type === "ton_direct") {
+      if (walletAddress) fetchWalletBalance(walletAddress);
+
+      const credited = tid
+        ? await pollBalanceAfterDeposit(
+            Number(tid),
+            beforeTon,
+            beforeStars,
+            type === "ton_direct" || type === "ton" ? activeTon : undefined,
+            type === "stars" ? starsToReceive : undefined
+          )
+        : false;
+
+      if (credited) {
+        if (type === "ton_direct" || type === "ton") {
           onSuccess?.(activeTon, undefined);
         } else {
           onSuccess?.(undefined, starsToReceive);
         }
         onClose();
-      }, 2500);
+      } else {
+        setTxStatus("idle");
+        setDepositNotice(
+          "Payment sent. Balance may take up to a minute to update. Pull to refresh your profile if it does not appear."
+        );
+      }
     } catch (err: any) {
       if (err?.message?.includes("User rejected")) setTxStatus("idle");
       else { setTxStatus("error"); setTimeout(() => setTxStatus("idle"), 3000); }
@@ -404,6 +454,19 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             </div>
 
             {/* Wallet mismatch warning banner (high visibility, clean) */}
+            {!depositToken && (
+              <p className="text-[10px] text-amber-400/90 font-medium px-1 mb-2">
+                Deposit security token missing. Close and reopen the app to refresh your session.
+              </p>
+            )}
+            {!dbWallet && walletAddress && (
+              <p className="text-[10px] text-amber-400/90 font-medium px-1 mb-2">
+                Syncing wallet to your account… wait a moment, then try again.
+              </p>
+            )}
+            {depositNotice && (
+              <p className="text-[10px] text-cyan-400/90 font-medium px-1 mb-2">{depositNotice}</p>
+            )}
             {isWalletMismatch && (
               <motion.div 
                 initial={{ opacity: 0, y: -8 }} 

@@ -38,19 +38,27 @@ const DepositModal = dynamic(() => import("./DepositModal"), {
     loading: () => <DepositModalSheetSkeleton />,
 });
 
+const WalletRequiredBeforeDepositModal = dynamic(
+    () => import("./WalletRequiredBeforeDepositModal"),
+    { ssr: false }
+);
+
 type BalanceType = "points" | "ton" | "stars";
 
 interface BalancePillProps {
     balance: number | null;
     isVisible: boolean;
     telegramUser?: any;
+    onGoToProfile?: () => void;
 }
 
-export default function BalancePill({ balance, isVisible, telegramUser }: BalancePillProps) {
+export default function BalancePill({ balance, isVisible, telegramUser, onGoToProfile }: BalancePillProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
     const [depositType, setDepositType] = useState<"ton" | "stars" | null>(null);
+    const [walletGateOpen, setWalletGateOpen] = useState(false);
+    const [pendingDepositType, setPendingDepositType] = useState<"ton" | "stars" | null>(null);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastScrollYRef = useRef(0);
     const pillRef = useRef<HTMLDivElement>(null);
@@ -277,7 +285,13 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
                                                 e.stopPropagation();
                                                 prefetchDepositModal();
                                                 setIsExpanded(false);
-                                                setDepositType(type as "ton" | "stars");
+                                                const kind = type as "ton" | "stars";
+                                                if (!telegramUser?.wallet_address) {
+                                                    setPendingDepositType(kind);
+                                                    setWalletGateOpen(true);
+                                                    return;
+                                                }
+                                                setDepositType(kind);
                                             }}
                                             className="shrink-0 p-0.5 rounded-md border shadow-app-shadow bg-app-accent/10 border-app-border hover:bg-app-accent/20 active:scale-90 transition-all"
                                         >
@@ -293,6 +307,23 @@ export default function BalancePill({ balance, isVisible, telegramUser }: Balanc
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <WalletRequiredBeforeDepositModal
+                isOpen={walletGateOpen}
+                onClose={() => {
+                    setWalletGateOpen(false);
+                    setPendingDepositType(null);
+                }}
+                onReady={() => {
+                    if (pendingDepositType) {
+                        setDepositType(pendingDepositType);
+                    }
+                    setWalletGateOpen(false);
+                    setPendingDepositType(null);
+                }}
+                onGoToProfile={() => onGoToProfile?.()}
+                telegramUser={telegramUser}
+            />
 
             {/* Deposit Modal — portal rendered at body level */}
             {depositType && (

@@ -42,6 +42,20 @@
     "drops_desc": "Exclusive token deliveries for consistent participants. Keep your signal score high to qualify.",
     "unlocked": "Unlocked"
   },
+  "deposit": {
+    "wallet_required_title": "Connect wallet first",
+    "wallet_required_desc": "Top-ups must come from the same TON wallet shown as Connected on your Profile. Connect there first so your deposit is credited automatically.",
+    "wallet_step_profile": "Open Profile (bottom nav)",
+    "wallet_step_connect": "Tap Connect TON wallet and approve in your wallet app",
+    "wallet_step_connected": "Wait until Profile shows Connected",
+    "wallet_step_topup": "Return here and top up — your deposit will credit in about a minute",
+    "go_to_profile": "Open Profile",
+    "connect_wallet": "Connect TON wallet",
+    "wallet_change_connect": "Change wallet in Ton Connect",
+    "wallet_syncing": "Saving wallet to your profile…",
+    "wallet_sync_failed": "Could not save wallet. Open Profile and connect again.",
+    "wallet_gate_close": "Close"
+  },
   "settings": {
     "title": "Settings",
     "change_name": "Change Name",

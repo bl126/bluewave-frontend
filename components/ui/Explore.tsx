@@ -56,6 +56,10 @@ import StarGiftModal, {
 } from "@/components/explore/StarGiftModal";
 
 const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
+const WalletRequiredBeforeDepositModal = dynamic(
+  () => import("./WalletRequiredBeforeDepositModal"),
+  { ssr: false }
+);
 
 const MINI_APP_INSERT_EVERY = 6;
 
@@ -63,9 +67,10 @@ interface ExploreProps {
   isOpen: boolean;
   onClose: () => void;
   telegramUser: any;
+  onGoToProfile?: () => void;
 }
 
-export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps) {
+export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }: ExploreProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("leaderboard");
@@ -76,6 +81,15 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
   const [isLeaderboardSheetOpen, setIsLeaderboardSheetOpen] = useState(false);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [buyStarsOpen, setBuyStarsOpen] = useState(false);
+  const [buyStarsWalletGateOpen, setBuyStarsWalletGateOpen] = useState(false);
+
+  const tryOpenBuyStars = useCallback(() => {
+    if (!telegramUser?.wallet_address) {
+      setBuyStarsWalletGateOpen(true);
+      return;
+    }
+    setBuyStarsOpen(true);
+  }, [telegramUser?.wallet_address]);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -566,7 +580,7 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
                           onCommentClick={() => setSelectedPost(post)}
                           onPostClick={() => setSelectedPost(post)}
                           onStarGiftSuccess={() => mutateNotifications()}
-                          onOpenBuyStars={() => setBuyStarsOpen(true)}
+                          onOpenBuyStars={tryOpenBuyStars}
                         />
                         {activeTab === "foryou" && (index + 1) % MINI_APP_INSERT_EVERY === 0 && (
                           <MiniAppCarousel apps={MOCK_MINI_APPS} />
@@ -743,6 +757,17 @@ export default function Explore({ isOpen, onClose, telegramUser }: ExploreProps)
         telegramId={telegramUser?.id || null}
         bwId={swrUser?.bw_id || ""}
         referralLink={swrUser?.referral_link}
+      />
+
+      <WalletRequiredBeforeDepositModal
+        isOpen={buyStarsWalletGateOpen}
+        onClose={() => setBuyStarsWalletGateOpen(false)}
+        onReady={() => {
+          setBuyStarsWalletGateOpen(false);
+          setBuyStarsOpen(true);
+        }}
+        onGoToProfile={() => onGoToProfile?.()}
+        telegramUser={telegramUser}
       />
 
       {buyStarsOpen && (
