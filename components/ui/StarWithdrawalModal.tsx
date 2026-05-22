@@ -276,7 +276,7 @@ export default function StarWithdrawalModal({
                         disabled={!walletAddress}
                         className="w-full bg-app-bg border border-app-border rounded-xl px-4 py-3 text-text-main font-black text-lg placeholder:text-text-muted focus:outline-none focus:border-app-accent/50 disabled:opacity-50"
                       />
-                      {parsedAmount > 0 && starTonRate > 0 && (
+                      {parsedAmount > 0 && tonPreview > 0 && (
                         <p className="text-readable-sm mt-2">
                           {t("withdraw.ton_preview").replace("{{ton}}", tonPreview.toFixed(4))}
                         </p>
