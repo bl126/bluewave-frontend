@@ -400,12 +400,18 @@ export default function LandingPage() {
         const startParam = tg?.initDataUnsafe?.start_param;
         let referrerId = null;
         let actionPostId = null;
+        let actionQuestSlug = null;
         if (startParam) {
             if (startParam.startsWith("ref_")) {
                 referrerId = startParam.replace("ref_", "");
             } else if (startParam.startsWith("post_")) {
                 actionPostId = startParam.replace("post_", "");
+            } else if (startParam.startsWith("quest_")) {
+                actionQuestSlug = startParam.replace("quest_", "");
             }
+        }
+        if (actionQuestSlug) {
+            window.localStorage.setItem("bw_pending_quest_slug", actionQuestSlug);
         }
 
         // 📢 Post-link Referral: resolve the post author as the referrer
@@ -696,10 +702,18 @@ export default function LandingPage() {
     };
   }, []);
 
-  // 📜 Global Scroll Listener for Navigation (Explore feed only — reset when Explore closes)
+  const [questDetailOpen, setQuestDetailOpen] = useState(false);
+
+  useEffect(() => {
+    const onQuestDetail = (e: Event) => setQuestDetailOpen(!!(e as CustomEvent).detail);
+    window.addEventListener("questDetailOpen", onQuestDetail);
+    return () => window.removeEventListener("questDetailOpen", onQuestDetail);
+  }, []);
+
+  // 📜 Hide bottom nav on scroll (Explore feed + quest detail)
   useEffect(() => {
     const handleScrollDir = (e: any) => {
-      if (!isExploreOpen) return;
+      if (!isExploreOpen && !questDetailOpen) return;
       const direction = e.detail;
       if (direction === "down") {
         setIsBottomNavVisible(false);
@@ -709,13 +723,30 @@ export default function LandingPage() {
     };
     window.addEventListener("scrollDirectionChanged" as any, handleScrollDir);
     return () => window.removeEventListener("scrollDirectionChanged" as any, handleScrollDir);
-  }, [isExploreOpen]);
+  }, [isExploreOpen, questDetailOpen]);
 
   useEffect(() => {
-    if (!isExploreOpen) {
+    if (!isExploreOpen && !questDetailOpen) {
       setIsBottomNavVisible(true);
     }
-  }, [isExploreOpen]);
+  }, [isExploreOpen, questDetailOpen]);
+
+  // 🔗 Deep link: startapp=quest_{slug} → Mission Center + quest detail
+  useEffect(() => {
+    if (!telegramUser?.id || isLoading) return;
+    const slug = window.localStorage.getItem("bw_pending_quest_slug");
+    if (!slug) return;
+    window.localStorage.removeItem("bw_pending_quest_slug");
+    setActiveTab("missions");
+    setMissionOpen(true);
+    setExploreOpen(false);
+    setMarketOpen(false);
+    setProfileOpen(false);
+    const t = window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("openQuestBySlug", { detail: slug }));
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [telegramUser?.id, isLoading]);
 
   const handleClearStreakReward = async () => {
     setIsStreakCelebrationOpen(false);

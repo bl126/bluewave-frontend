@@ -72,6 +72,10 @@ export async function fetchQuestDetail(questId: string) {
   return getApi(`/quests/${questId}`);
 }
 
+export async function fetchQuestBySlug(slug: string) {
+  return getApi(`/quests/by-slug/${encodeURIComponent(slug)}`);
+}
+
 export async function fetchQuestProgress(questId: string) {
   return getApi(`/quests/${questId}/progress`);
 }

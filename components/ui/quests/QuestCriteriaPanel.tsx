@@ -4,15 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-export interface QuestCriterionCheck {
-  id?: string;
-  label?: string;
-  done?: boolean;
-  detail?: string;
-  current?: number;
-  target?: number;
-}
+import type { QuestCriterionCheck } from "@/lib/questsApi";
 
 const DEFAULT_BOXES = [
   { id: "verified_human", labelKey: "missions.quests.criterion_verified_human" },
@@ -69,7 +61,7 @@ export default function QuestCriteriaPanel({ checks = [] }: QuestCriteriaPanelPr
                   transition={{ duration: 0.22 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-4 pb-4 pt-3 -mt-px rounded-b-2xl border border-t-0 border-app-accent/20 bg-app-accent/[0.04] flex items-start gap-3">
+                  <div className="px-4 pb-4 pt-3 -mt-px rounded-b-2xl border border-t-0 border-app-accent/20 bg-app-accent/[0.04] flex items-start gap-2.5">
                     <CriterionCheckIcon done={done} />
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-bold ${done ? "text-app-accent" : "text-text-sub"}`}>
@@ -77,12 +69,6 @@ export default function QuestCriteriaPanel({ checks = [] }: QuestCriteriaPanelPr
                       </p>
                       {check?.detail && (
                         <p className="text-xs text-text-sub mt-1 leading-relaxed">{check.detail}</p>
-                      )}
-                      {box.id === "lifetime_entropy" && check?.current != null && (
-                        <p className="text-[10px] font-mono text-app-accent/70 mt-2 uppercase tracking-wide">
-                          {Number(check.current).toLocaleString()}
-                          {check.target != null ? ` / ${Number(check.target).toLocaleString()}` : ""}
-                        </p>
                       )}
                     </div>
                   </div>
@@ -99,11 +85,11 @@ export default function QuestCriteriaPanel({ checks = [] }: QuestCriteriaPanelPr
 function CriterionCheckIcon({ done }: { done: boolean }) {
   return (
     <div
-      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-        done ? "bg-cyan-400 border-cyan-300" : "bg-transparent border-app-border"
+      className={`w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0 border ${
+        done ? "bg-cyan-400 border-cyan-300/80" : "bg-transparent border-app-border"
       }`}
     >
-      {done && <Check size={14} className="text-black stroke-[3px]" />}
+      {done && <Check size={9} className="text-black stroke-[3px]" />}
     </div>
   );
 }

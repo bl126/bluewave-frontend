@@ -7,6 +7,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, getApi, postApi } from "@/lib/useApi";
 import { useTheme } from "@/contexts/ThemeContext";
+import { canAdminQuests } from "@/lib/questAccess";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
 import QuestTabPanel from "./quests/QuestTabPanel";
 
@@ -639,7 +640,22 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   // ── Badge Counts ──────────────────────────────────────────
   type TabId = "presence" | "social" | "quest" | "earn";
   const [activeTab, setActiveTab] = useState<TabId>("presence");
+  const [questDetailOpen, setQuestDetailOpen] = useState(false);
   const TABS: TabId[] = ["presence", "social", "quest", "earn"];
+
+  const isQuestAdmin = canAdminQuests(telegram_id);
+  useApi(isOpen && isQuestAdmin ? `/quests?filter=waves` : null, {
+    revalidateOnFocus: false,
+    dedupingInterval: 120000,
+  });
+
+  useEffect(() => {
+    const onQuestDetail = (e: Event) => {
+      setQuestDetailOpen(!!(e as CustomEvent).detail);
+    };
+    window.addEventListener("questDetailOpen", onQuestDetail);
+    return () => window.removeEventListener("questDetailOpen", onQuestDetail);
+  }, []);
 
   const presenceBadge = Array.isArray(presenceMissions) ? (presenceMissions as PresenceMission[]).filter(
     (pm: PresenceMission) => pm.status === "inactive" || pm.status === "completed"
@@ -727,6 +743,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
               (e.currentTarget as any)._touchStartX = e.touches[0].clientX;
             }}
             onTouchEnd={(e) => {
+              if (questDetailOpen) return;
               const startX = (e.currentTarget as any)._touchStartX;
               if (startX === undefined) return;
               const diff = startX - e.changedTouches[0].clientX;
@@ -869,6 +886,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                 <QuestTabPanel
                   telegramUser={telegramUser}
                   isHumanVerified={isHumanVerified}
+                  isMissionOpen={isOpen}
                   onToast={(msg) => {
                     setPopup(msg);
                     setTimeout(() => setPopup(null), 2500);

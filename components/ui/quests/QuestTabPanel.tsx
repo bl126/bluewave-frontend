@@ -1,31 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { canAdminQuests } from "@/lib/questAccess";
 import { useApi } from "@/lib/useApi";
-import type { QuestListItem } from "@/lib/questsApi";
+import { fetchQuestBySlug, type QuestListItem } from "@/lib/questsApi";
 import QuestGlassCard from "./QuestGlassCard";
 import QuestDetailOverlay from "./QuestDetailOverlay";
 
 interface QuestTabPanelProps {
-  telegramUser: { id?: number } | null;
+  telegramUser: { id?: number; roles?: string[]; is_human_verified?: boolean; total_referrals?: number } | null;
   isHumanVerified: boolean;
+  isMissionOpen?: boolean;
   onToast?: (msg: string) => void;
 }
 
-export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }: QuestTabPanelProps) {
+export default function QuestTabPanel({
+  telegramUser,
+  isHumanVerified,
+  isMissionOpen = true,
+  onToast,
+}: QuestTabPanelProps) {
   const { t } = useLanguage();
   const [selectedQuest, setSelectedQuest] = useState<QuestListItem | null>(null);
 
   const isAdmin = canAdminQuests(telegramUser?.id);
-  const { data, loading: isLoading } = useApi(isAdmin ? `/quests?filter=waves` : null, {
-    revalidateOnFocus: true,
-  });
+
+  const { data, loading: isLoading } = useApi(
+    isAdmin && isMissionOpen ? `/quests?filter=waves` : null,
+    { revalidateOnFocus: false, dedupingInterval: 120000 }
+  );
 
   const quests: QuestListItem[] = isAdmin && data && !data.error ? data.quests || [] : [];
+  const showListLoader = isLoading && quests.length === 0;
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("questDetailOpen", { detail: !!selectedQuest }));
+    return () => {
+      if (selectedQuest) {
+        window.dispatchEvent(new CustomEvent("questDetailOpen", { detail: false }));
+      }
+    };
+  }, [selectedQuest]);
+
+  useEffect(() => {
+    const openBySlug = async (e: Event) => {
+      const slug = (e as CustomEvent<string>).detail;
+      if (!slug || !isAdmin) return;
+      const found = quests.find((q) => q.slug === slug);
+      if (found) {
+        setSelectedQuest(found);
+        return;
+      }
+      const res = await fetchQuestBySlug(slug);
+      if (res && !res.error && res.id) {
+        setSelectedQuest(res as QuestListItem);
+      }
+    };
+    window.addEventListener("openQuestBySlug", openBySlug);
+    return () => window.removeEventListener("openQuestBySlug", openBySlug);
+  }, [quests, isAdmin]);
 
   if (!isAdmin) {
     return (
@@ -79,25 +115,21 @@ export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }
         animate={{ opacity: 1, y: 0 }}
         className="space-y-4 pb-8"
       >
-        {isLoading && (
+        {showListLoader && (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 text-app-accent animate-spin" />
           </div>
         )}
 
-        {!isLoading && quests.length === 0 && (
+        {!showListLoader && quests.length === 0 && (
           <div className="py-20 text-center px-6">
             <p className="text-sm text-text-sub italic">{t("missions.quests.admin_empty")}</p>
-            <p className="text-[10px] text-text-sub/60 mt-2 uppercase tracking-widest">
-              {t("missions.quests.admin_empty_hint")}
-            </p>
           </div>
         )}
 
-        {!isLoading &&
-          quests.map((q) => (
-            <QuestGlassCard key={q.id} quest={q} onOpen={() => setSelectedQuest(q)} />
-          ))}
+        {quests.map((q) => (
+          <QuestGlassCard key={q.id} quest={q} onOpen={() => setSelectedQuest(q)} />
+        ))}
       </motion.div>
 
       <AnimatePresence>

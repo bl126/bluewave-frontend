@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchQuestBoardPass, type BoardPassLeader } from "@/lib/questsApi";
+import { QUEST_BOARD_PASS_MOCK } from "./questBoardPassMock";
 
 interface QuestBoardPassProps {
   questId: string;
   myTelegramId?: number;
+  useMockWhenEmpty?: boolean;
 }
 
 function Avatar({ user, isMe }: { user: BoardPassLeader; isMe: boolean }) {
@@ -36,63 +38,75 @@ function rankLabel(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-export default function QuestBoardPass({ questId, myTelegramId }: QuestBoardPassProps) {
+export default function QuestBoardPass({
+  questId,
+  myTelegramId,
+  useMockWhenEmpty = true,
+}: QuestBoardPassProps) {
   const { t } = useLanguage();
   const [leaders, setLeaders] = useState<BoardPassLeader[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetchQuestBoardPass(questId).then((res) => {
       if (!cancelled && res && !res.error) {
         setLeaders(res.leaders || []);
       }
-      if (!cancelled) setLoading(false);
+      if (!cancelled) setFetched(true);
     });
     return () => {
       cancelled = true;
     };
   }, [questId]);
 
+  const isMock = fetched && leaders.length === 0 && useMockWhenEmpty;
+  const display = isMock ? QUEST_BOARD_PASS_MOCK : leaders;
+
   return (
     <div className="flex flex-col gap-4 pt-4 border-t border-app-border/60">
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-1 gap-2">
         <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-app-accent/80">
           {t("missions.quests.board_pass_title")}
         </h3>
-        {!loading && (
-          <span className="text-[9px] font-bold text-text-sub uppercase tracking-widest">
-            {leaders.length} {t("missions.quests.board_pass_minted")}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {isMock && (
+            <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400/60 border border-cyan-400/20 px-2 py-0.5 rounded-full">
+              {t("missions.quests.board_pass_preview")}
+            </span>
+          )}
+          {fetched && (
+            <span className="text-[9px] font-bold text-text-sub uppercase tracking-widest">
+              {display.length} {t("missions.quests.board_pass_minted")}
+            </span>
+          )}
+        </div>
       </div>
 
-      {loading && (
+      {!fetched && (
         <div className="space-y-2 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 rounded-2xl bg-app-accent/5 border border-app-border" />
+            <div key={i} className="h-14 rounded-2xl bg-app-accent/5 border border-app-border" />
           ))}
         </div>
       )}
 
-      {!loading && leaders.length === 0 && (
-        <p className="text-xs text-text-sub italic text-center py-8 px-4">{t("missions.quests.board_pass_empty")}</p>
-      )}
-
-      {!loading &&
-        leaders.map((u, idx) => {
-          const isMe = String(u.telegram_id) === String(myTelegramId);
+      {fetched &&
+        display.map((u, idx) => {
+          const isMe = !isMock && String(u.telegram_id) === String(myTelegramId);
           return (
             <motion.div
-              key={u.telegram_id}
+              key={`${u.telegram_id}-${idx}`}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: Math.min(idx * 0.04, 0.35) }}
               className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-colors
-                ${isMe ? "bg-app-accent/10 border-app-accent/40" : "bg-app-bg/30 border-app-border"}`}
+                ${isMe ? "bg-app-accent/10 border-app-accent/40" : "bg-app-bg/30 border-app-border"}
+                ${isMock ? "opacity-85" : ""}`}
             >
-              <span className={`font-black text-sm w-10 text-center shrink-0 ${isMe ? "text-app-accent" : "text-text-sub"}`}>
+              <span
+                className={`font-black text-sm w-10 text-center shrink-0 ${isMe ? "text-app-accent" : "text-text-sub"}`}
+              >
                 {rankLabel(u.rank)}
               </span>
               <Avatar user={u} isMe={isMe} />
