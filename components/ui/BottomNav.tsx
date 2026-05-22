@@ -94,7 +94,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         )}
 
                         {/* Icon/Avatar Container */}
-                        <div className={`relative z-10 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "scale-110" : "scale-100 opacity-40 group-hover:opacity-60"}`}>
+                        <div className={`relative z-10 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "scale-110" : "scale-100 opacity-75 group-hover:opacity-90"}`}>
                             {tab.idIsProfile ? (
                                 <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all duration-300 
                                 ${isActive ? "border-app-accent shadow-app-shadow" : "border-app-border grayscale"}`}>
@@ -125,7 +125,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                                 </div>
                             )}
 
-                            <span className={`text-[9px] font-black uppercase tracking-tighter transition-all 
+                            <span className={`text-[10px] font-black uppercase tracking-tighter transition-all 
                                ${isActive ? "text-text-main" : "text-text-sub"}`}>
                                 {tab.label}
                             </span>

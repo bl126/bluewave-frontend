@@ -29,9 +29,9 @@ export const MOCK_MINI_APPS = [
 export function ExploreForYouHero() {
   return (
     <div className="mx-4 mt-2 mb-1 rounded-2xl border border-cyan-500/15 bg-gradient-to-br from-cyan-500/10 via-transparent to-purple-500/10 p-4">
-      <p className="text-[9px] font-black uppercase tracking-[0.35em] text-cyan-400/90">Signal network</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-accent-label">Signal network</p>
       <h2 className="text-lg font-black text-text-main mt-1 tracking-tight">Discover channels</h2>
-      <p className="text-[11px] text-text-sub mt-1 leading-relaxed">
+      <p className="text-xs text-text-sub mt-1 leading-relaxed">
         Not a timeline clone — live pulses, mini apps, and channel signals in one place.
       </p>
     </div>
@@ -81,7 +81,7 @@ export function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
                 LIVE
               </div>
             </div>
-            <span className="text-[7px] font-black text-white/60 truncate w-12 text-center group-hover:text-cyan-400 transition-colors uppercase tracking-tight">
+            <span className="text-[10px] font-bold text-text-sub truncate w-14 text-center group-hover:text-app-accent transition-colors uppercase tracking-tight">
               {u.telegram_channel_title || u.name || u.first_name || "User"}
             </span>
           </button>
@@ -97,9 +97,9 @@ export function MiniAppCarousel({ apps }: { apps: typeof MOCK_MINI_APPS }) {
       <div className="px-5 mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-200/80">Wave apps</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-text-main">Wave apps</h3>
         </div>
-        <span className="text-[8px] font-bold uppercase tracking-widest text-text-sub/60">Preview</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Preview</span>
       </div>
 
       <div
@@ -118,13 +118,13 @@ export function MiniAppCarousel({ apps }: { apps: typeof MOCK_MINI_APPS }) {
               </div>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <span className="text-[9px] font-black text-white/90 uppercase tracking-widest text-center w-20 truncate">
+              <span className="text-[11px] font-bold text-text-main uppercase tracking-wide text-center w-20 truncate">
                 {app.name}
               </span>
               <button
                 type="button"
                 disabled
-                className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-text-sub/70 cursor-default"
+                className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wide text-text-muted cursor-default"
               >
                 Soon
               </button>

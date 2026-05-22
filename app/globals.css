@@ -48,6 +48,7 @@
   --color-app-glass: var(--glass-bg);
   --color-text-main: var(--text-main);
   --color-text-sub: var(--text-sub);
+  --color-text-muted: var(--text-muted);
   --color-app-border: var(--border);
   --color-app-accent: var(--accent);
   --color-app-accent-glow: var(--accent-glow);
@@ -64,7 +65,8 @@
   --card-bg: #050505;
   --glass-bg: rgba(0, 0, 0, 0.7);
   --text-main: #FFFFFF;
-  --text-sub: rgba(0, 246, 255, 0.5);
+  --text-sub: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.72);
   --border: rgba(0, 246, 255, 0.2);
   --accent: #00F6FF;
   --accent-glow: rgba(0, 246, 255, 0.2);
@@ -76,7 +78,8 @@
   --card-bg: #242F3D;
   --glass-bg: rgba(23, 33, 43, 0.85);
   --text-main: #F5F5F5;
-  --text-sub: #708499;
+  --text-sub: #D4DEE8;
+  --text-muted: #A8B8C8;
   --border: rgba(255, 255, 255, 0.1);
   --accent: #00F6FF;
   --accent-glow: rgba(0, 246, 255, 0.15);
@@ -88,7 +91,8 @@
   --card-bg: #050505;
   --glass-bg: rgba(0, 0, 0, 0.7);
   --text-main: #FFFFFF;
-  --text-sub: rgba(0, 246, 255, 0.5);
+  --text-sub: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.72);
   --border: rgba(0, 246, 255, 0.2);
   --accent: #00F6FF;
   --accent-glow: rgba(0, 246, 255, 0.2);
@@ -137,6 +141,38 @@
     background-color: var(--app-bg);
     color: var(--text-main);
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Never stack low opacity on readable copy */
+  .text-text-sub {
+    color: var(--text-sub);
+  }
+  .text-text-muted {
+    color: var(--text-muted);
+  }
+}
+
+/* Readable copy — use instead of text-white/30 or text-text-sub/50 */
+@layer utilities {
+  .text-accent-label {
+    color: var(--accent);
+    opacity: 1;
+  }
+  .text-readable-xs {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-sub);
+  }
+  .text-readable-sm {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-sub);
+  }
+  .text-readable-muted {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-muted);
   }
 }
 

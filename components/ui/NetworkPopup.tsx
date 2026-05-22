@@ -215,7 +215,7 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
                   return (
                   <div className="flex flex-col items-center justify-center py-8 text-center px-2">
                     <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
-                      <Users size={24} className="text-text-sub/20" />
+                      <Users size={24} className="text-text-muted" />
                     </div>
                     <p className="text-text-main text-[10px] font-black uppercase tracking-widest mb-4">
                       {t("network.empty_title")}
@@ -322,7 +322,7 @@ function MemberItem({
           <span className="text-text-sub text-[8px] font-mono tracking-tighter">{member.bw_id}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onCopy?.(); }}
-            className={`transition-colors p-1 -m-1 ${isCopied ? "text-app-accent" : "text-text-sub/60 hover:text-text-main"}`}
+            className={`transition-colors p-1 -m-1 ${isCopied ? "text-app-accent" : "text-text-sub hover:text-text-main"}`}
           >
             {isCopied ? <Check size={8} /> : <Copy size={8} />}
           </button>
@@ -336,7 +336,7 @@ function MemberItem({
           disabled={isNotifying || !!countdown}
           className={`px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 h-8 min-w-[70px] justify-center shrink-0 ${
             isNotifying || countdown
-              ? "bg-app-accent/5 border-app-border text-text-sub/30"
+              ? "bg-app-accent/5 border-app-border text-text-muted"
               : "bg-app-accent/10 border-app-accent/30 text-app-accent hover:bg-app-accent/20"
           }`}
         >

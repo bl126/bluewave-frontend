@@ -165,14 +165,14 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                         >
                                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border shadow-lg ${isCompleted || isCurrent
                                                 ? (roleData?.border ? `${roleData.border} bg-app-accent/10 text-app-accent` : "border-app-accent/20 bg-app-accent/10 text-app-accent")
-                                                : "border-app-border bg-app-accent/5 text-text-sub/20"
+                                                : "border-app-border bg-app-accent/5 text-text-muted"
                                                 }`}>
                                                 <lvl.icon size={18} />
                                             </div>
 
                                             <div className="flex-1 flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted || isCurrent ? "text-text-main" : "text-text-sub/40"}`}>
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted || isCurrent ? "text-text-main" : "text-text-sub"}`}>
                                                         {t("level_popup.level")} {lvl.level}
                                                     </span>
                                                     {isCompleted && (
@@ -181,12 +181,12 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span className={`text-[9px] font-bold uppercase tracking-widest ${isCompleted || isCurrent ? "text-app-accent" : "text-text-sub/20"}`}>
+                                                <span className={`text-[9px] font-bold uppercase tracking-widest ${isCompleted || isCurrent ? "text-app-accent" : "text-text-muted"}`}>
                                                     {roleData?.name || lvl.role}
                                                 </span>
                                             </div>
 
-                                            <div className={`transition-transform duration-300 ${isExpanded ? "rotate-180 text-app-accent" : "text-text-sub/20"}`}>
+                                            <div className={`transition-transform duration-300 ${isExpanded ? "rotate-180 text-app-accent" : "text-text-muted"}`}>
                                                 <ChevronDown size={16} />
                                             </div>
                                         </button>
@@ -211,14 +211,14 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                                                             return (
                                                                 <div key={cri.id} className="flex flex-col gap-2">
                                                                     <div className="flex flex-row items-start justify-between gap-3">
-                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-text-sub/60 flex-1 min-w-0 leading-tight">
+                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-text-sub flex-1 min-w-0 leading-tight">
                                                                             {cri.label.includes('.') ? t(cri.label) : cri.label}
                                                                         </span>
                                                                         <div className="flex items-center gap-1.5 shrink-0">
                                                                             {done ? (
                                                                                 <Check size={10} className="text-app-accent" />
                                                                             ) : null}
-                                                                            <span className={`text-[9px] font-mono ${done ? "text-app-accent" : "text-text-sub/30"}`}>
+                                                                            <span className={`text-[9px] font-mono ${done ? "text-app-accent" : "text-text-muted"}`}>
                                                                                 {cri.type === "boolean"
                                                                                     ? (done ? t("level_popup.verified") : t("level_popup.not_yet"))
                                                                                     : cri.type === "default"

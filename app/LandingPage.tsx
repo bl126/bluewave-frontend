@@ -62,6 +62,13 @@ export default function LandingPage() {
     }
   }, []);
 
+  // Preload top-up + withdrawal modals and TON price for instant open
+  useEffect(() => {
+    void import("@/components/ui/DepositModal");
+    void import("@/components/ui/StarWithdrawalModal");
+    void import("@/lib/tonPriceCache").then((m) => m.fetchTonPriceUsd());
+  }, []);
+
   // [CODE: FRONTEND_STATE_MANAGEMENT]
   // 👤 Store Telegram user info
   const [telegramUser, setTelegramUser] = useState<any>(null);
@@ -350,6 +357,7 @@ export default function LandingPage() {
             joined_at: u.joined_at,
             ton_balance: parseFloat(u.ton_balance ?? 0) || 0,
             stars_balance: Number(u.stars_balance ?? 0) || 0,
+            stars_withdrawable: Number(u.stars_withdrawable ?? 0) || 0,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
@@ -500,6 +508,7 @@ export default function LandingPage() {
           streak_recovery_expires_at: user.streak_recovery_expires_at || null,
           ton_balance: parseFloat(user.ton_balance ?? 0) || 0,
           stars_balance: Number(user.stars_balance ?? 0) || 0,
+          stars_withdrawable: Number(user.stars_withdrawable ?? 0) || 0,
         };
 
         setTelegramUser(finalUser);

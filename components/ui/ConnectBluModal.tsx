@@ -142,7 +142,7 @@ export default function ConnectBluModal({
                             <div className="flex items-center justify-between px-6 pt-6 pb-4">
                                 <div>
                                     <h2 className="text-text-main font-black text-lg uppercase tracking-tight">{t("connect_blu.title")}</h2>
-                                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest leading-none mt-1">{t("connect_blu.subtitle")}</p>
+                                    <p className="text-readable-sm font-bold uppercase tracking-wide leading-none mt-1">{t("connect_blu.subtitle")}</p>
                                 </div>
                                 <button onClick={handleClose} className="p-2 rounded-xl bg-app-accent/5 text-text-sub hover:text-app-accent transition-colors">
                                     <X size={18} />
@@ -171,21 +171,21 @@ export default function ConnectBluModal({
                                                 </div>
                                                 <div className="flex-1 text-left">
                                                     <p className="text-text-main font-black text-sm uppercase tracking-wide">{t("connect_blu.connect_tg")}</p>
-                                                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-wider mt-0.5">{t("connect_blu.connect_tg_desc")}</p>
+                                                    <p className="text-readable-sm font-bold uppercase tracking-wide mt-0.5">{t("connect_blu.connect_tg_desc")}</p>
                                                 </div>
                                                 <ChevronRight size={16} className="text-text-sub group-hover:text-app-accent transition-colors" />
                                             </button>
 
                                             {/* Connect X — Coming Soon */}
-                                            <div className="w-full flex items-center gap-4 bg-app-bg/5 border border-app-border rounded-2xl p-4 opacity-50 cursor-not-allowed relative overflow-hidden">
+                                            <div className="w-full flex items-center gap-4 bg-app-bg/5 border border-app-border rounded-2xl p-4 cursor-not-allowed relative overflow-hidden">
                                                 <div className="w-12 h-12 rounded-2xl bg-app-accent/5 border border-app-border flex items-center justify-center shrink-0">
                                                     <svg viewBox="0 0 24 24" aria-hidden="true" className="w-[22px] h-[22px] text-text-sub" fill="currentColor">
                                                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                                                     </svg>
                                                 </div>
                                                 <div className="flex-1 text-left">
-                                                    <p className="text-text-main/50 font-black text-sm uppercase tracking-wide">{t("connect_blu.connect_x")}</p>
-                                                    <p className="text-text-sub text-[10px] font-bold uppercase tracking-wider mt-0.5">{t("connect_blu.social_verification")}</p>
+                                                    <p className="text-text-sub font-black text-sm uppercase tracking-wide">{t("connect_blu.connect_x")}</p>
+                                                    <p className="text-readable-muted font-bold uppercase tracking-wide mt-0.5">{t("connect_blu.social_verification")}</p>
                                                 </div>
                                                 <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-app-accent/5 border border-app-border text-text-sub">
                                                     {t("connect_blu.coming_soon")}
@@ -216,7 +216,7 @@ export default function ConnectBluModal({
                                                     {/* Criteria */}
                                                     <div className="bg-app-accent/5 border border-app-border rounded-2xl p-4 flex flex-col gap-3">
                                                         <p className="text-app-accent text-[10px] font-black uppercase tracking-widest">{t("connect_blu.requirements")}</p>
-                                                        <ul className="space-y-2 text-xs text-text-main/70 font-medium">
+                                                        <ul className="space-y-2 text-xs text-text-sub font-medium">
                                                             <li className="flex items-start gap-2">
                                                                 <span className="text-app-accent font-black">01</span>
                                                                 <span className="flex-1 leading-snug">
@@ -251,8 +251,8 @@ export default function ConnectBluModal({
 
                                                     {/* Benefits */}
                                                     <div className="bg-app-accent/5 border border-app-border rounded-2xl p-4 flex flex-col gap-2">
-                                                        <p className="text-text-sub/40 text-[10px] font-black uppercase tracking-widest">{t("connect_blu.benefits")}</p>
-                                                        <ul className="space-y-1 text-[11px] text-text-sub/50 font-medium">
+                                                        <p className="text-readable-sm font-black uppercase tracking-widest">{t("connect_blu.benefits")}</p>
+                                                        <ul className="space-y-1 text-[11px] text-text-sub font-medium">
                                                             <li>{t("connect_blu.ben_1")}</li>
                                                             <li>{t("connect_blu.ben_2")}</li>
                                                             <li>{t("connect_blu.ben_3")}</li>
@@ -298,20 +298,24 @@ export default function ConnectBluModal({
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <p className="text-text-main font-black text-xs uppercase truncate">{connectedInfo.title}</p>
-                                                                        <div className="p-0.5 rounded-full bg-app-accent/10 border border-app-border opacity-40">
+                                                                        <div className="p-0.5 rounded-full bg-app-accent/10 border border-app-border">
                                                                             <Check size={8} className="text-app-accent" />
                                                                         </div>
                                                                     </div>
-                                                                    <p className="text-text-sub text-[9px] font-bold uppercase tracking-widest truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
-                                                                    {channelStarsReceived > 0 && (
-                                                                        <div className="flex items-center gap-1 mt-1.5">
-                                                                            <Star size={10} className="text-amber-400" fill="currentColor" />
-                                                                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-400/90">
-                                                                                {channelStarsReceived} {t("connect_blu.channel_stars_received")}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
+                                                                    <p className="text-readable-sm font-bold uppercase tracking-wide truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
                                                                 </div>
+                                                                {channelStarsReceived > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => window.dispatchEvent(new CustomEvent("openStarWithdrawal"))}
+                                                                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 hover:bg-amber-500/25 active:scale-95 transition-all"
+                                                                    >
+                                                                        <Star size={12} className="text-amber-400" fill="currentColor" />
+                                                                        <span className="text-amber-300 font-black text-xs tabular-nums">
+                                                                            {channelStarsReceived.toLocaleString()}
+                                                                        </span>
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                             <button
                                                                 onClick={handleDisconnect}
@@ -332,10 +336,10 @@ export default function ConnectBluModal({
                                                     </div>
                                                     <div className="flex flex-col gap-2">
                                                         <h3 className="text-text-main font-black text-base uppercase tracking-wide">{t("connect_blu.verified_humans_only")}</h3>
-                                                        <p className="text-text-sub/50 text-xs leading-relaxed max-w-xs" dangerouslySetInnerHTML={{ __html: t("connect_blu.verified_desc") }} />
+                                                        <p className="text-text-sub text-xs leading-relaxed max-w-xs" dangerouslySetInnerHTML={{ __html: t("connect_blu.verified_desc") }} />
                                                     </div>
                                                     <div className="w-full h-px bg-app-border" />
-                                                    <p className="text-text-sub/30 text-[9px] font-black uppercase tracking-widest">{t("connect_blu.verified_footer")}</p>
+                                                    <p className="text-readable-muted font-bold uppercase tracking-wide">{t("connect_blu.verified_footer")}</p>
                                                 </div>
                                             )}
                                         </motion.div>

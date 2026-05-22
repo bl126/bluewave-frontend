@@ -400,14 +400,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
             >
               {tab === "foryou" && (
                 hasAccess ? (
-                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.foryou")}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{t("explore.tabs.foryou")}</span>
                 ) : (
-                  <Lock size={18} className="text-white/30" />
+                  <Lock size={18} className="text-white/75" />
                 )
               )}
               {tab === "following" && (
                 hasAccess ? (
-                  <span className="text-[10px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>
                 ) : (
                   <Lock size={18} className="text-text-sub" />
                 )
@@ -496,12 +496,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       >
         {/* Main Content Area with Access Control */}
         {(!hasAccess && activeTab !== "leaderboard") ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-40">
-            <div className="w-20 h-20 bg-cyan-500/5 rounded-3xl flex items-center justify-center mb-6 border border-cyan-500/10">
-              <Lock size={32} className="text-cyan-500/30" />
+          <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <div className="w-20 h-20 bg-cyan-500/10 rounded-3xl flex items-center justify-center mb-6 border border-cyan-500/25">
+              <Lock size={32} className="text-app-accent" />
             </div>
-            <h2 className="text-sm font-black text-white/50 uppercase tracking-[0.2em]">Beta Testing Phase</h2>
-            <p className="text-[10px] text-cyan-500/30 mt-2 uppercase tracking-widest italic">Authorized access only</p>
+            <h2 className="text-sm font-black text-text-main uppercase tracking-[0.15em]">Beta Testing Phase</h2>
+            <p className="text-xs text-text-sub mt-2 uppercase tracking-wide">Authorized access only</p>
           </div>
         ) : (
           <AnimatePresence mode="wait">
@@ -1078,7 +1078,7 @@ function PostModal({
                 />
               </svg>
               {content.length > charLimit - 20 && (
-                <span className="absolute text-[8px] font-bold text-white/40">{charLimit - content.length}</span>
+                <span className="absolute text-[8px] font-bold text-white/80">{charLimit - content.length}</span>
               )}
             </div>
             
@@ -1107,7 +1107,7 @@ function PostModal({
             className="fixed inset-0 bg-black/95 z-[300] flex flex-col"
           >
             <div className="flex items-center justify-between p-4 border-b border-white/5">
-              <button onClick={() => setCropIndex(null)} className="text-white/60 text-sm font-bold px-4 py-2 hover:text-white transition-colors">Cancel</button>
+              <button onClick={() => setCropIndex(null)} className="text-white/88 text-sm font-bold px-4 py-2 hover:text-white transition-colors">Cancel</button>
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white">Refine Photo</h4>
               <button onClick={applyCrop} className="px-6 py-2 bg-white text-black rounded-full font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Apply</button>
             </div>
@@ -1130,7 +1130,7 @@ function PostModal({
             </div>
             <div className="p-8 bg-zinc-950 space-y-8 border-t border-white/5">
               <div className="space-y-4">
-                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/80">
                   <span>Pan Offset</span>
                   <span className="text-cyan-500">X: {cropRect.x}% Y: {cropRect.y}%</span>
                 </div>
@@ -1138,7 +1138,7 @@ function PostModal({
                 <input type="range" min="0" max="100" value={cropRect.y} onChange={e => setCropRect(r => ({ ...r, y: Number(e.target.value) }))} className="w-full h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
               </div>
               <div className="space-y-4">
-                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/40">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/80">
                   <span>Zoom Level</span>
                   <span className="text-cyan-500">{cropRect.w}%</span>
                 </div>
@@ -1709,7 +1709,7 @@ function PostCard({
       {(isReposted || post.reposted_by_name) && (
         <div className="flex items-center gap-2 mb-1 ml-10">
           <Repeat2 size={12} className="text-cyan-400/80" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/88">
             {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : "You Reposted"}
           </span>
         </div>
@@ -1741,9 +1741,9 @@ function PostCard({
               <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
             </button>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
+              <span className="text-[10px] text-white/88 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
-                <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/50 hover:text-white">
+                <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/85 hover:text-white">
                   < MoreHorizontal size={14} />
                 </button>
                 <AnimatePresence>
@@ -2137,7 +2137,7 @@ function NotificationsView({
                       {n.from_user.first_name || n.from_user.name?.split(" ")[0] || ""}
                     </p>
                   )}
-                  <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/50" : "text-white/70"}`}>{getMessage(n)}</p>
+                  <p className={`text-[10px] leading-relaxed ${n.is_read ? "text-white/85" : "text-white/70"}`}>{getMessage(n)}</p>
                   {/* Follow-back button for new_follower */}
                   {n.type === "new_follower" && n.from_user?.telegram_channel && (
                     <button
@@ -2165,7 +2165,7 @@ function NotificationsView({
                         }
                       }}
                       className={n.is_followed
-                        ? "mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[9px] font-black uppercase tracking-widest text-white/50 cursor-default"
+                        ? "mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[9px] font-black uppercase tracking-widest text-white/85 cursor-default"
                         : "mt-1.5 flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[9px] font-black uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 active:scale-95 transition-all"
                       }
                     >
@@ -2176,7 +2176,7 @@ function NotificationsView({
                 </div>
                 {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
                 {isMilestone && (
-                  <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
+                  <ChevronDown size={14} className={`text-white/75 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                 )}
               </div>
               <AnimatePresence>
@@ -2191,7 +2191,7 @@ function NotificationsView({
                       {isLoading ? (
                         <div className="flex items-center gap-2 py-1">
                           <Loader2 size={12} className="animate-spin text-cyan-400" />
-                          <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Analyzing interactions</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-white/75">Analyzing interactions</span>
                         </div>
                       ) : interactions.length > 0 ? (
                         interactions.map((human: any, idx: number) => (
@@ -2209,11 +2209,11 @@ function NotificationsView({
                                 </div>
                               )}
                             </div>
-                            <span className="text-[7px] font-bold text-white/30 truncate max-w-[40px] uppercase">{human.name?.split(" ")[0]}</span>
+                            <span className="text-[7px] font-bold text-white/75 truncate max-w-[40px] uppercase">{human.name?.split(" ")[0]}</span>
                           </button>
                         ))
                       ) : (
-                        <span className="text-[8px] font-black uppercase tracking-widest text-white/20">No data found</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-white/70">No data found</span>
                       )}
                     </div>
                   </motion.div>
@@ -2414,7 +2414,7 @@ function PostDetailModal({
                 >
                   {comment.user.name}
                 </button>
-                <span className="text-[9px] text-white/20 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="text-[9px] text-white/70 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               {/* Comment image — show if exists */}
               {comment.media_url && (
@@ -2426,7 +2426,7 @@ function PostDetailModal({
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => handleToggleLike(comment.id)}
-                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/20 hover:text-white"}`}
+                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/70 hover:text-white"}`}
                 >
                   <Heart size={11} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={3} />
                   {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
@@ -2437,7 +2437,7 @@ function PostDetailModal({
                     const input = document.getElementById('comment-input');
                     input?.focus();
                   }}
-                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors"
                 >
                   <MessageCircle size={11} strokeWidth={3} />
                   <span>Reply</span>
@@ -2503,7 +2503,7 @@ function PostDetailModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-white font-black text-[15px] tracking-tight truncate group-hover:text-cyan-400 transition-colors uppercase">{post.channel?.title || post.user?.name}</h4>
-                  <p className="text-[11px] text-white/30 font-mono">@{(post.channel?.handle || post.user?.handle || 'anon').replace(/^@/, '')}</p>
+                  <p className="text-[11px] text-white/75 font-mono">@{(post.channel?.handle || post.user?.handle || 'anon').replace(/^@/, '')}</p>
                 </div>
               </div>
 
@@ -2518,18 +2518,18 @@ function PostDetailModal({
                   <div className="flex items-center gap-8">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
-                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Likes</span>
+                      <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Likes</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
-                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Reposts</span>
+                      <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Reposts</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-sm font-black text-white">{post.views || 0}</span>
-                      <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Views</span>
+                      <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Views</span>
                     </div>
                   </div>
-                  <div className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-tighter">
+                  <div className="text-[10px] font-mono font-bold text-white/75 uppercase tracking-tighter">
                     {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
@@ -2590,7 +2590,7 @@ function PostDetailModal({
                   <X size={10} className="text-white" />
                 </button>
               </div>
-              <span className="text-[10px] text-white/40 font-mono">Image attached</span>
+              <span className="text-[10px] text-white/80 font-mono">Image attached</span>
             </motion.div>
           )}
 

@@ -773,7 +773,7 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
             <div className="flex-1 overflow-y-auto px-6 pb-20 custom-scrollbar">
               <div className="grid grid-cols-2 gap-3 pb-6">
                 {nations.length === 0 ? (
-                  <p className="col-span-2 text-center text-text-sub/50 text-[10px] font-black uppercase tracking-widest py-8">No data</p>
+                  <p className="col-span-2 text-center text-text-sub text-[10px] font-black uppercase tracking-widest py-8">No data</p>
                 ) : (
                   nations.map((n: any) => (
                     <div

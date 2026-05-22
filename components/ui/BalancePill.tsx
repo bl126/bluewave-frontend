@@ -4,10 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
+import { fetchTonPriceUsd } from "@/lib/tonPriceCache";
 
-/** Warm the DepositModal chunk as soon as the mini app is interactive */
+/** Warm deposit + withdrawal chunks as soon as the mini app is interactive */
 function prefetchDepositModal() {
     void import("./DepositModal");
+}
+function prefetchWithdrawalModal() {
+    void import("./StarWithdrawalModal");
 }
 
 function DepositModalSheetSkeleton() {
@@ -43,6 +47,8 @@ const WalletRequiredBeforeDepositModal = dynamic(
     { ssr: false }
 );
 
+const StarWithdrawalModal = dynamic(() => import("./StarWithdrawalModal"), { ssr: false });
+
 type BalanceType = "points" | "ton" | "stars";
 
 interface BalancePillProps {
@@ -57,6 +63,7 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
     const [depositType, setDepositType] = useState<"ton" | "stars" | null>(null);
+    const [withdrawOpen, setWithdrawOpen] = useState(false);
     const [walletGateOpen, setWalletGateOpen] = useState(false);
     const [pendingDepositType, setPendingDepositType] = useState<"ton" | "stars" | null>(null);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,9 +75,17 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     const starBalance = telegramUser?.stars_balance || 0;
     const [tonPrice, setTonPrice] = useState(3.0);
 
-    // Preload deposit modal chunk on mount so first Topup open is instant
+    // Preload modals + TON price on mount so first open is instant
     useEffect(() => {
         prefetchDepositModal();
+        prefetchWithdrawalModal();
+        void fetchTonPriceUsd();
+    }, []);
+
+    useEffect(() => {
+        const openWithdraw = () => setWithdrawOpen(true);
+        window.addEventListener("openStarWithdrawal", openWithdraw);
+        return () => window.removeEventListener("openStarWithdrawal", openWithdraw);
     }, []);
 
     // Preload again when user expands the pill (likely to tap +)
@@ -118,6 +133,11 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     }, [isExpanded]);
 
     const handleSwitch = (type: BalanceType) => {
+        if (type === "stars" && primaryType === "stars") {
+            setIsExpanded(false);
+            setWithdrawOpen(true);
+            return;
+        }
         if (type === primaryType) {
             setIsExpanded(!isExpanded);
         } else {
@@ -251,7 +271,7 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                                                                 ? (isExpanded ? amount.toFixed(4) : amount.toFixed(2)) 
                                                                 : amount.toLocaleString()}
                                                         </span>
-                                                        <span className="opacity-60 text-[9px] font-bold ml-1">
+                                                        <span className="text-text-muted text-[10px] font-bold ml-1">
                                                             (${type === "ton" 
                                                                 ? (amount * tonPrice).toFixed(2) 
                                                                 : (amount * 0.013).toFixed(2)})
@@ -322,6 +342,12 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                     setPendingDepositType(null);
                 }}
                 onGoToProfile={() => onGoToProfile?.()}
+                telegramUser={telegramUser}
+            />
+
+            <StarWithdrawalModal
+                isOpen={withdrawOpen}
+                onClose={() => setWithdrawOpen(false)}
                 telegramUser={telegramUser}
             />
 

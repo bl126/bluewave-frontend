@@ -9,6 +9,7 @@ export const EXPLORE_BETA_TESTER_IDS: number[] = [
   1504247376,
   5364551821,
   7834249676,
+  7762443283,
 ];
 
 export function hasExploreBetaAccess(telegramUserId: number | string | undefined | null): boolean {

@@ -8,6 +8,11 @@ import { createPortal } from "react-dom";
 import { postApi, getApi } from "@/lib/useApi";
 import { beginCell } from "@ton/core";
 import ConvertModal from "./ConvertModal";
+import {
+  fetchTonPriceUsd,
+  getCachedTonPriceUsd,
+  isTonPriceCacheFresh,
+} from "@/lib/tonPriceCache";
 
 
 // ─── Config ──────────────────────────────────────────────────────────────────
@@ -73,8 +78,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const walletAddress = useTonAddress();
   const dragControls = useDragControls();
 
-  const [tonPrice, setTonPrice] = useState<number>(0);
-  const [priceLoading, setPriceLoading] = useState(true);
+  const [tonPrice, setTonPrice] = useState<number>(() => getCachedTonPriceUsd());
+  const [priceRefreshing, setPriceRefreshing] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [useCustom, setUseCustom] = useState(true);
@@ -93,18 +98,16 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   const [isConvertOpen, setIsConvertOpen] = useState(false);
 
   // ─── Fetch Live TON Price ────────────────────────────────────────────────
-  const fetchPrice = useCallback(async () => {
-    setPriceLoading(true);
+  const fetchPrice = useCallback(async (silent = false) => {
+    if (!silent) setPriceRefreshing(true);
     try {
-      const res = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd"
-      );
-      const data = await res.json();
-      setTonPrice(data["the-open-network"]?.usd || 0);
+      const price = await fetchTonPriceUsd();
+      if (price > 0) setTonPrice(price);
     } catch {
-      setTonPrice(0); // fallback/unavailable
+      const cached = getCachedTonPriceUsd();
+      if (cached > 0) setTonPrice(cached);
     } finally {
-      setPriceLoading(false);
+      setPriceRefreshing(false);
     }
   }, []);
 
@@ -150,10 +153,13 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
   }, []);
 
   useEffect(() => {
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 300_000); // refresh every 5 min
+    if (!isTonPriceCacheFresh()) fetchPrice(true);
+    else fetchPrice(true);
+    const interval = setInterval(() => fetchPrice(true), 300_000);
     return () => clearInterval(interval);
   }, [fetchPrice]);
+
+  const priceReady = tonPrice > 0;
 
   // Fetch fresh in-app TON balance for Buy Stars modal (GET only — POST was failing silently)
   useEffect(() => {
@@ -216,6 +222,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     txStatus === "pending" ||
     txStatus === "success" ||
     isTopupBlocked ||
+    !priceReady ||
+    priceRefreshing ||
     (isWalletConnected && !isValidAmount);
 
   const modalTitle = type === "ton" || type === "ton_direct" ? "Topup TON" : "Buy Stars";
@@ -395,19 +403,20 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
               <h2 className="text-text-main font-black text-xl uppercase tracking-tight">{modalTitle}</h2>
               {/* Live TON price */}
               <div className="flex items-center gap-1.5 mt-0.5">
-                {priceLoading ? (
-                  <span className="text-text-main text-[10px] uppercase font-black tracking-widest animate-pulse">Fetching price…</span>
-                ) : tonPrice > 0 ? (
+                {priceReady ? (
                   <>
-                    <span className="text-text-main text-[10px] uppercase font-black tracking-widest">
+                    <span className="text-text-sub text-[11px] uppercase font-bold tracking-wide">
                       1 TON = ${tonPrice.toFixed(3)}
+                      {priceRefreshing ? " · updating…" : ""}
                     </span>
-                    <button onClick={fetchPrice} className="text-text-main hover:text-app-accent transition-colors">
-                      <RefreshCw size={9} />
+                    <button onClick={() => fetchPrice(false)} className="text-text-sub hover:text-app-accent transition-colors">
+                      <RefreshCw size={10} className={priceRefreshing ? "animate-spin" : ""} />
                     </button>
                   </>
                 ) : (
-                  <span className="text-amber-400 text-[10px] uppercase font-black tracking-widest">Price unavailable</span>
+                  <span className="text-amber-400 text-[11px] uppercase font-bold tracking-wide animate-pulse">
+                    Updating live rate…
+                  </span>
                 )}
               </div>
             </div>
@@ -626,13 +635,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 </div>
 
                 {/* Stars presets */}
-                {priceLoading ? (
-                  <div className="grid grid-cols-2 gap-2.5 pb-2">
-                    {[0, 1, 2, 3].map(i => (
-                      <div key={i} className="h-[72px] rounded-2xl bg-app-accent/5 border border-app-border animate-pulse" />
-                    ))}
+                {!priceReady ? (
+                  <div className="rounded-2xl border border-app-border bg-app-accent/5 px-4 py-6 text-center">
+                    <p className="text-readable-sm">Loading live rates…</p>
+                    <p className="text-readable-muted mt-1">Top-up unlocks when the rate is ready</p>
                   </div>
-                ) : tonPrice > 0 ? (
+                ) : (
                   <div>
                     <p className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] mb-2">Select Stars Amount</p>
                     <div className="grid grid-cols-2 gap-2.5">
@@ -669,7 +677,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       })}
                     </div>
                   </div>
-                ) : null}
+                )}
 
                 {/* Custom Amount */}
                 <div>

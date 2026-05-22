@@ -374,7 +374,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                             {user.wallet_address ? (
                                 <>
                                     <span className="text-text-main text-lg font-black">{level}</span>
-                                    <span className="text-text-sub text-[7px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
+                                    <span className="text-text-sub text-[10px] font-black uppercase tracking-widest">{t("profile.level_label")}</span>
                                 </>
                             ) : (
                                 <Lock size={16} className="text-text-sub/30" />
@@ -400,7 +400,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                                         </div>
                                     )}
                                     <span className={`text-xl font-black ${user.recoverable_streak > 0 ? 'text-red-400' : 'text-text-main'}`}>{user.streak_days || 0}</span>
-                                    <span className={`${user.recoverable_streak > 0 ? 'text-red-500/50' : 'text-text-sub/50'} text-[8px] font-black uppercase tracking-widest`}>{t("profile.streak_label")}</span>
+                                    <span className={`${user.recoverable_streak > 0 ? 'text-red-400' : 'text-text-muted'} text-[8px] font-black uppercase tracking-widest`}>{t("profile.streak_label")}</span>
                                 </>
                             ) : (
                                 <Lock size={16} className="text-text-sub/30" />
@@ -460,7 +460,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                           <div className="flex justify-between items-start">
                             <div className="flex flex-col gap-1">
                               <span className="text-text-sub text-[10px] font-black uppercase tracking-[0.2em]">{t("profile.network_builder")}</span>
-                              <p className="text-text-sub/50 text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
+                              <p className="text-text-muted text-[8px] font-bold uppercase leading-tight max-w-[180px]">{t("profile.network_builder_desc")}</p>
                             </div>
                             <button 
                               onClick={() => user.wallet_address ? setIsReferralModalOpen(true) : alert(t("alerts.connect_wallet_ref"))} 
