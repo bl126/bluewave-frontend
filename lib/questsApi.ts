@@ -34,13 +34,34 @@ export interface QuestListItem {
   details_preview?: { short: string; has_more: boolean; full_word_count?: number };
 }
 
+export interface QuestCriterionCheck {
+  id?: string;
+  label?: string;
+  done?: boolean;
+  detail?: string;
+  current?: number;
+  target?: number;
+}
+
 export interface QuestProgress {
   quest_id: string;
   status: string;
-  checks: { id?: string; label?: string; done?: boolean }[];
+  checks: QuestCriterionCheck[];
   eligible: boolean;
   minted: boolean;
   mint_tx_hash?: string;
+  lifetime_entropy?: number;
+}
+
+export interface BoardPassLeader {
+  rank: number;
+  telegram_id: number;
+  name: string;
+  photo_url?: string;
+  bw_id?: string;
+  country_flag?: string;
+  minted_at?: string;
+  wave_index?: number;
 }
 
 export async function fetchQuests(filter: QuestFilter = "waves") {
@@ -65,4 +86,8 @@ export async function toggleQuestSubscribe(questId: string) {
 
 export async function fetchQuestShare(questId: string) {
   return getApi(`/quests/${questId}/share`);
+}
+
+export async function fetchQuestBoardPass(questId: string) {
+  return getApi(`/quests/${questId}/board-pass`);
 }

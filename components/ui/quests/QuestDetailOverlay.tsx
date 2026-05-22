@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoreVertical, ShieldCheck, Share2, Bell, Flag } from "lucide-react";
+import { MoreVertical, Check, Share2, Bell, Flag } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { QuestProgress } from "@/lib/questsApi";
 import {
@@ -14,22 +14,34 @@ import {
   type QuestListItem,
 } from "@/lib/questsApi";
 import QuestDetailsPopup from "./QuestDetailsPopup";
-import QuestCriteriaBar from "./QuestCriteriaBar";
+import QuestCriteriaPanel from "./QuestCriteriaPanel";
+import QuestBoardPass from "./QuestBoardPass";
 
 interface QuestDetailOverlayProps {
   quest: QuestListItem;
+  telegramUser?: { id?: number } | null;
   onClose: () => void;
   onToast?: (msg: string) => void;
 }
 
-export default function QuestDetailOverlay({ quest: questProp, onClose, onToast }: QuestDetailOverlayProps) {
+function VerifiedHostBadge() {
+  return (
+    <span
+      className="inline-flex w-5 h-5 rounded-full bg-cyan-400 items-center justify-center shrink-0 shadow-[0_0_12px_rgba(34,211,238,0.45)]"
+      aria-hidden
+    >
+      <Check size={12} className="text-black stroke-[3px]" />
+    </span>
+  );
+}
+
+export default function QuestDetailOverlay({ quest: questProp, telegramUser, onClose, onToast }: QuestDetailOverlayProps) {
   const { t } = useLanguage();
   const [quest, setQuest] = useState<QuestListItem>(questProp);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [progress, setProgress] = useState<QuestProgress | null>(null);
   const [, setSubscribed] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -54,14 +66,6 @@ export default function QuestDetailOverlay({ quest: questProp, onClose, onToast 
   const preview = quest.details_preview?.short ?? truncateWords(quest.details || quest.summary || "", 100);
   const hasMore = quest.details_preview?.has_more ?? wordCount(quest.details || "") > 100;
   const fullDetails = quest.details || quest.summary || "";
-  const criteriaSummary =
-    (quest.criteria_json as { summary?: string })?.summary ||
-    quest.summary ||
-    t("missions.quests.criteria_default");
-  const requirements = ((quest.criteria_json as { requirements?: unknown[] })?.requirements || []) as {
-    id?: string;
-    label?: string;
-  }[];
 
   useEffect(() => {
     const handleNativeBack = (e: Event) => {
@@ -121,7 +125,9 @@ export default function QuestDetailOverlay({ quest: questProp, onClose, onToast 
     const tg = (window as any).Telegram?.WebApp;
     const text = `${res.share_text || quest.title}\n${res.link}`;
     if (tg?.openTelegramLink) {
-      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(res.link)}&text=${encodeURIComponent(res.share_text || quest.title)}`);
+      tg.openTelegramLink(
+        `https://t.me/share/url?url=${encodeURIComponent(res.link)}&text=${encodeURIComponent(res.share_text || quest.title)}`
+      );
     } else if (navigator.share) {
       try {
         await navigator.share({ title: quest.title, text, url: res.link });
@@ -138,47 +144,39 @@ export default function QuestDetailOverlay({ quest: questProp, onClose, onToast 
   return (
     <>
       <motion.div
-        className="fixed inset-0 z-[130] flex flex-col bg-app-bg/98 backdrop-blur-3xl overflow-y-auto"
+        className="fixed inset-0 z-[130] flex flex-col bg-app-bg/[0.98] backdrop-blur-3xl overflow-y-auto"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
-        initial={{ opacity: 0, x: 24 }}
+        initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 24 }}
+        exit={{ opacity: 0, x: 20 }}
         transition={{ duration: 0.22 }}
       >
-        <div className="px-4 pb-8 max-w-xl mx-auto w-full flex flex-col gap-5">
-          {/* Host row */}
+        <div className="px-4 pb-12 max-w-xl mx-auto w-full flex flex-col gap-6">
+          {/* Host: small circle logo + name + cyan check — one line */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-2xl border border-app-border bg-app-card overflow-hidden shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-9 h-9 rounded-full border border-white/15 bg-app-card overflow-hidden shrink-0">
                 {quest.host_logo_url ? (
                   <img src={quest.host_logo_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-app-accent font-black text-xs">
+                  <div className="w-full h-full flex items-center justify-center text-app-accent font-black text-[10px]">
                     {(quest.host_name || "B").slice(0, 1)}
                   </div>
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-black text-text-main uppercase tracking-tight truncate">
-                    {quest.host_name || "Bluewave"}
-                  </span>
-                  {quest.host_verified && <ShieldCheck size={14} className="text-app-accent shrink-0" />}
-                </div>
-                {quest.nft_tier && (
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-text-sub">
-                    {t("missions.quests.wave_label")} {romanTier(quest.nft_tier)}
-                  </span>
-                )}
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm font-black text-text-main uppercase tracking-tight truncate">
+                  {quest.host_name || "Bluewave"}
+                </span>
+                {quest.host_verified && <VerifiedHostBadge />}
               </div>
             </div>
 
             <div className="relative shrink-0">
               <button
-                ref={menuRef}
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 rounded-full text-text-sub hover:text-app-accent hover:bg-app-accent/10 transition-colors"
@@ -223,39 +221,38 @@ export default function QuestDetailOverlay({ quest: questProp, onClose, onToast 
             </div>
           </div>
 
-          {/* Hero image */}
+          {quest.nft_tier && (
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-cyan-400/80 -mt-3 px-1">
+              {t("missions.quests.wave_label")} {romanTier(quest.nft_tier)}
+            </p>
+          )}
+
           {quest.image_url && (
-            <div className="w-full aspect-[4/3] max-h-[280px] rounded-2xl overflow-hidden border border-app-border">
+            <div className="w-full aspect-[4/3] max-h-[300px] rounded-2xl overflow-hidden border border-white/10 shadow-lg">
               <img src={quest.image_url} alt="" className="w-full h-full object-cover" />
             </div>
           )}
 
-          <h1 className="text-lg font-black text-text-main uppercase tracking-tight leading-tight">{quest.title}</h1>
+          <h1 className="text-xl font-black text-text-main uppercase tracking-tight leading-tight -mt-1">{quest.title}</h1>
 
-          {/* Details */}
           <div className="space-y-2">
-            <p className="text-sm text-text-main/75 leading-relaxed">{preview}</p>
+            <p className="text-sm text-text-main/80 leading-relaxed">{preview}</p>
             {hasMore && (
               <button
                 type="button"
                 onClick={() => setDetailsOpen(true)}
-                className="text-[10px] font-black uppercase tracking-widest text-app-accent hover:underline"
+                className="text-[10px] font-black uppercase tracking-widest text-cyan-400 hover:underline"
               >
                 {t("missions.quests.see_more")}
               </button>
             )}
           </div>
 
-          {/* Criteria */}
-          <QuestCriteriaBar
-            summary={criteriaSummary}
-            requirements={requirements}
-            checks={progress?.checks}
-          />
+          <QuestCriteriaPanel checks={progress?.checks} />
 
           {progress?.minted && (
-            <div className="px-4 py-3 rounded-2xl bg-app-accent/10 border border-app-accent/30 text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-app-accent">
+            <div className="px-4 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 text-center">
+              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
                 {t("missions.quests.minted_badge")}
               </span>
             </div>
@@ -267,6 +264,8 @@ export default function QuestDetailOverlay({ quest: questProp, onClose, onToast 
               </span>
             </div>
           )}
+
+          <QuestBoardPass questId={quest.id} myTelegramId={telegramUser?.id} />
         </div>
       </motion.div>
 

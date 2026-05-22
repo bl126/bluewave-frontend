@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { canAdminQuests } from "@/lib/questAccess";
 import { useApi } from "@/lib/useApi";
-import type { QuestFilter, QuestListItem } from "@/lib/questsApi";
+import type { QuestListItem } from "@/lib/questsApi";
 import QuestGlassCard from "./QuestGlassCard";
 import QuestDetailOverlay from "./QuestDetailOverlay";
 
@@ -16,23 +16,14 @@ interface QuestTabPanelProps {
   onToast?: (msg: string) => void;
 }
 
-const FILTERS: { id: QuestFilter; labelKey: string }[] = [
-  { id: "waves", labelKey: "missions.quests.filter_waves" },
-  { id: "active", labelKey: "missions.quests.filter_active" },
-  { id: "ended", labelKey: "missions.quests.filter_ended" },
-];
-
 export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }: QuestTabPanelProps) {
   const { t } = useLanguage();
-  const [filter, setFilter] = useState<QuestFilter>("waves");
-  const [filterOpen, setFilterOpen] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<QuestListItem | null>(null);
 
   const isAdmin = canAdminQuests(telegramUser?.id);
-  const { data, loading: isLoading, mutate } = useApi(
-    isAdmin ? `/quests?filter=${filter}` : null,
-    { revalidateOnFocus: true }
-  );
+  const { data, loading: isLoading } = useApi(isAdmin ? `/quests?filter=waves` : null, {
+    revalidateOnFocus: true,
+  });
 
   const quests: QuestListItem[] = isAdmin && data && !data.error ? data.quests || [] : [];
 
@@ -86,66 +77,16 @@ export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }
         key="quest-admin"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative space-y-3 pb-24"
+        className="space-y-4 pb-8"
       >
-        {/* Floating filter — quest tab only */}
-        <div
-          className="fixed z-[125] right-4"
-          style={{
-            top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 108px)",
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setFilterOpen(!filterOpen)}
-            className="w-11 h-11 rounded-2xl flex items-center justify-center
-              bg-app-card/80 backdrop-blur-xl border border-white/10 shadow-app-shadow
-              text-app-accent hover:bg-app-accent/10 transition-colors"
-            aria-label={t("missions.quests.filter_menu")}
-          >
-            <Menu size={20} />
-          </button>
-
-          <AnimatePresence>
-            {filterOpen && (
-              <>
-                <div className="fixed inset-0 z-[124]" onClick={() => setFilterOpen(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                  className="absolute right-0 top-full mt-2 z-[126] min-w-[140px] py-1 rounded-xl border border-app-border bg-app-card/95 backdrop-blur-2xl shadow-app-shadow overflow-hidden"
-                >
-                  {FILTERS.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => {
-                        setFilter(f.id);
-                        setFilterOpen(false);
-                        mutate();
-                      }}
-                      className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                        filter === f.id ? "text-app-accent bg-app-accent/10" : "text-text-sub hover:bg-app-accent/5"
-                      }`}
-                    >
-                      {t(f.labelKey)}
-                    </button>
-                  ))}
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
-
         {isLoading && (
-          <div className="flex justify-center py-16">
+          <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 text-app-accent animate-spin" />
           </div>
         )}
 
         {!isLoading && quests.length === 0 && (
-          <div className="py-16 text-center px-6">
+          <div className="py-20 text-center px-6">
             <p className="text-sm text-text-sub italic">{t("missions.quests.admin_empty")}</p>
             <p className="text-[10px] text-text-sub/60 mt-2 uppercase tracking-widest">
               {t("missions.quests.admin_empty_hint")}
@@ -155,11 +96,7 @@ export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }
 
         {!isLoading &&
           quests.map((q) => (
-            <QuestGlassCard
-              key={q.id}
-              quest={q}
-              onOpen={() => setSelectedQuest(q)}
-            />
+            <QuestGlassCard key={q.id} quest={q} onOpen={() => setSelectedQuest(q)} />
           ))}
       </motion.div>
 
@@ -167,6 +104,7 @@ export default function QuestTabPanel({ telegramUser, isHumanVerified, onToast }
         {selectedQuest && (
           <QuestDetailOverlay
             quest={selectedQuest}
+            telegramUser={telegramUser}
             onClose={() => setSelectedQuest(null)}
             onToast={onToast}
           />
