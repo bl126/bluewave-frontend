@@ -10,44 +10,17 @@ import { fetchTonPriceUsd } from "@/lib/tonPriceCache";
 function prefetchDepositModal() {
     void import("./DepositModal");
 }
-function prefetchWithdrawalModal() {
-    void import("./StarWithdrawalModal");
-}
 
-function DepositModalSheetSkeleton() {
-    return (
-        <div className="fixed inset-0 z-[990] flex items-end justify-center pointer-events-none">
-            <div className="fixed inset-0 bg-app-bg/40 backdrop-blur-sm" />
-            <div
-                className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] w-full animate-pulse"
-                style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 20px) + 16px)" }}
-            >
-                <div className="flex justify-center py-4">
-                    <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
-                </div>
-                <div className="px-8 pb-6 space-y-4">
-                    <div className="h-6 w-32 bg-app-accent/10 rounded-lg" />
-                    <div className="h-4 w-24 bg-app-accent/5 rounded" />
-                    <div className="h-28 bg-app-bg/30 border border-app-border rounded-2xl" />
-                    <div className="h-14 bg-app-accent/15 rounded-2xl" />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Lazy-load so TON Connect hooks only run client-side; skeleton shows while chunk loads
+// Lazy-load so TON Connect hooks only run client-side; no loading shell (instant open)
 const DepositModal = dynamic(() => import("./DepositModal"), {
     ssr: false,
-    loading: () => <DepositModalSheetSkeleton />,
+    loading: () => null,
 });
 
 const WalletRequiredBeforeDepositModal = dynamic(
     () => import("./WalletRequiredBeforeDepositModal"),
     { ssr: false }
 );
-
-const StarWithdrawalModal = dynamic(() => import("./StarWithdrawalModal"), { ssr: false });
 
 type BalanceType = "points" | "ton" | "stars";
 
@@ -63,7 +36,6 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     const [primaryType, setPrimaryType] = useState<BalanceType>("points");
     const [isScrollHidden, setIsScrollHidden] = useState(false);
     const [depositType, setDepositType] = useState<"ton" | "stars" | null>(null);
-    const [withdrawOpen, setWithdrawOpen] = useState(false);
     const [walletGateOpen, setWalletGateOpen] = useState(false);
     const [pendingDepositType, setPendingDepositType] = useState<"ton" | "stars" | null>(null);
     const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,14 +50,7 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     // Preload modals + TON price on mount so first open is instant
     useEffect(() => {
         prefetchDepositModal();
-        prefetchWithdrawalModal();
         void fetchTonPriceUsd();
-    }, []);
-
-    useEffect(() => {
-        const openWithdraw = () => setWithdrawOpen(true);
-        window.addEventListener("openStarWithdrawal", openWithdraw);
-        return () => window.removeEventListener("openStarWithdrawal", openWithdraw);
     }, []);
 
     // Preload again when user expands the pill (likely to tap +)
@@ -133,11 +98,6 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
     }, [isExpanded]);
 
     const handleSwitch = (type: BalanceType) => {
-        if (type === "stars" && primaryType === "stars") {
-            setIsExpanded(false);
-            setWithdrawOpen(true);
-            return;
-        }
         if (type === primaryType) {
             setIsExpanded(!isExpanded);
         } else {
@@ -342,12 +302,6 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                     setPendingDepositType(null);
                 }}
                 onGoToProfile={() => onGoToProfile?.()}
-                telegramUser={telegramUser}
-            />
-
-            <StarWithdrawalModal
-                isOpen={withdrawOpen}
-                onClose={() => setWithdrawOpen(false)}
                 telegramUser={telegramUser}
             />
 

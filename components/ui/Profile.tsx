@@ -576,6 +576,7 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
             isOpen={isConnectBluOpen}
             onClose={() => setIsConnectBluOpen(false)}
             telegramId={telegramId}
+            telegramUser={user}
             isHumanVerified={!!user?.is_human_verified}
             alreadyConnected={user?.telegram_channel || null}
             channelTitle={user?.telegram_channel_title || null}

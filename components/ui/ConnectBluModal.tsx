@@ -4,14 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Bot, Send, Check, Loader2, ChevronRight, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { postApi } from "@/lib/useApi";
+import { getApi, postApi } from "@/lib/useApi";
+import { setCachedStarWithdrawalInfo } from "@/lib/starWithdrawalCache";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
+import StarWithdrawalModal from "./StarWithdrawalModal";
 
 interface ConnectBluModalProps {
     isOpen: boolean;
     onClose: () => void;
     telegramId: number | null;
+    telegramUser?: any;
     isHumanVerified: boolean;
     alreadyConnected?: string | null;
     channelTitle?: string | null;
@@ -23,6 +26,7 @@ export default function ConnectBluModal({
     isOpen,
     onClose,
     telegramId,
+    telegramUser,
     isHumanVerified,
     alreadyConnected,
     channelTitle,
@@ -30,6 +34,7 @@ export default function ConnectBluModal({
     channelStarsReceived = 0,
 }: ConnectBluModalProps) {
     const [view, setView] = useState<"main" | "telegram">("main");
+    const [withdrawOpen, setWithdrawOpen] = useState(false);
     const [channelInput, setChannelInput] = useState("");
     const [verifying, setVerifying] = useState(false);
     const [verified, setVerified] = useState(false);
@@ -46,6 +51,17 @@ export default function ConnectBluModal({
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (isOpen) void import("./StarWithdrawalModal");
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen || !telegramId) return;
+        void getApi(`/stars/withdrawal/info?tg_id=${telegramId}`)
+            .then((res) => setCachedStarWithdrawalInfo(telegramId, res))
+            .catch(() => {});
+    }, [isOpen, telegramId]);
 
     // Sync state with props when modal opens or props change
     useEffect(() => {
@@ -304,18 +320,17 @@ export default function ConnectBluModal({
                                                                     </div>
                                                                     <p className="text-readable-sm font-bold uppercase tracking-wide truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
                                                                 </div>
-                                                                {channelStarsReceived > 0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => window.dispatchEvent(new CustomEvent("openStarWithdrawal"))}
-                                                                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 hover:bg-amber-500/25 active:scale-95 transition-all"
-                                                                    >
-                                                                        <Star size={12} className="text-amber-400" fill="currentColor" />
-                                                                        <span className="text-amber-300 font-black text-xs tabular-nums">
-                                                                            {channelStarsReceived.toLocaleString()}
-                                                                        </span>
-                                                                    </button>
-                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setWithdrawOpen(true)}
+                                                                    className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 hover:bg-amber-500/25 active:scale-95 transition-all"
+                                                                    aria-label={t("withdraw.title")}
+                                                                >
+                                                                    <Star size={12} className="text-amber-400" fill="currentColor" />
+                                                                    <span className="text-amber-300 font-black text-xs tabular-nums">
+                                                                        {channelStarsReceived.toLocaleString()}
+                                                                    </span>
+                                                                </button>
                                                             </div>
                                                             <button
                                                                 onClick={handleDisconnect}
@@ -350,6 +365,14 @@ export default function ConnectBluModal({
                     </motion.div>
                 </>
             )}
+            <StarWithdrawalModal
+                isOpen={withdrawOpen}
+                onClose={() => setWithdrawOpen(false)}
+                telegramUser={
+                    telegramUser ??
+                    (telegramId ? { id: telegramId, tg_id: telegramId } : null)
+                }
+            />
         </AnimatePresence>,
         document.body
     );
