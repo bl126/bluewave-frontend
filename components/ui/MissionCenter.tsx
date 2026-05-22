@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useApi, getApi, postApi } from "@/lib/useApi";
 import { useTheme } from "@/contexts/ThemeContext";
 import ClaimBoostPopup, { ClaimBoostData } from "./ClaimBoostPopup";
+import QuestTabPanel from "./quests/QuestTabPanel";
 
 // [CODE: FRONTEND_MISSION_CENTER_TYPES]
 interface MissionCenterProps {
@@ -865,43 +866,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
               {/* QUEST TAB */}
               {activeTab === "quest" && (
-                <motion.div
-                  key="quest"
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.25 }}
-                  className="flex flex-col items-center justify-center pt-12 pb-8 text-center gap-5"
-                >
-                   <div className={`w-20 h-20 rounded-full flex items-center justify-center border shadow-app-shadow ${
-                    isHumanVerified
-                      ? "bg-app-accent/10 border-app-border"
-                      : "bg-app-accent/5 border-app-border"
-                  }`}>
-                    {isHumanVerified ? (
-                      <span className="text-4xl">⚡</span>
-                    ) : (
-                      <Lock size={36} className="text-app-accent" strokeWidth={2} />
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-black text-text-main uppercase tracking-widest">{t("missions.quests.title")}</h3>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase ${isHumanVerified ? 'bg-app-accent/15 border-app-border text-app-accent' : 'bg-app-border/50 border-app-border text-text-sub'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isHumanVerified ? 'bg-app-accent' : 'bg-text-sub'}`} />
-                      {isHumanVerified ? t("missions.quests.verified_human") : t("missions.quests.verified_only")}
-                    </div>
-                  </div>
-                  <div className="max-w-xs bg-app-card border border-app-border rounded-2xl p-5 space-y-3">
-                    {isHumanVerified ? (
-                      <p className="text-sm text-text-main/70 leading-relaxed italic">
-                        {t("missions.quests.empty")}
-                      </p>
-                    ) : (
-                      <p className="text-sm text-text-sub leading-relaxed">
-                        {t("missions.quests.lock_hint")}
-                      </p>
-                    )}
-                  </div>
-                </motion.div>
+                <QuestTabPanel
+                  telegramUser={telegramUser}
+                  isHumanVerified={isHumanVerified}
+                  onToast={(msg) => {
+                    setPopup(msg);
+                    setTimeout(() => setPopup(null), 2500);
+                  }}
+                />
               )}
 
               {/* EARN DROP TAB */}

@@ -1,0 +1,68 @@
+import { getApi, postApi } from "./useApi";
+
+export type QuestFilter = "waves" | "active" | "ended";
+
+export interface QuestCounter {
+  type?: string;
+  label?: string;
+  current?: number;
+  max?: number;
+  days?: number;
+  display?: string;
+}
+
+export interface QuestListItem {
+  id: string;
+  slug: string;
+  category: string;
+  title: string;
+  summary?: string;
+  details?: string;
+  image_url?: string;
+  host_name?: string;
+  host_logo_url?: string;
+  host_verified: boolean;
+  status: string;
+  wave?: number;
+  started_at?: string;
+  ends_at?: string;
+  criteria_json?: Record<string, unknown>;
+  counter_config?: Record<string, unknown>;
+  nft_tier?: number;
+  minted_count?: number;
+  counter?: QuestCounter;
+  details_preview?: { short: string; has_more: boolean; full_word_count?: number };
+}
+
+export interface QuestProgress {
+  quest_id: string;
+  status: string;
+  checks: { id?: string; label?: string; done?: boolean }[];
+  eligible: boolean;
+  minted: boolean;
+  mint_tx_hash?: string;
+}
+
+export async function fetchQuests(filter: QuestFilter = "waves") {
+  return getApi(`/quests?filter=${filter}`);
+}
+
+export async function fetchQuestDetail(questId: string) {
+  return getApi(`/quests/${questId}`);
+}
+
+export async function fetchQuestProgress(questId: string) {
+  return getApi(`/quests/${questId}/progress`);
+}
+
+export async function reportQuest(questId: string, reason?: string) {
+  return postApi(`/quests/${questId}/report`, { reason: reason || "user_report" });
+}
+
+export async function toggleQuestSubscribe(questId: string) {
+  return postApi(`/quests/${questId}/subscribe`, {});
+}
+
+export async function fetchQuestShare(questId: string) {
+  return getApi(`/quests/${questId}/share`);
+}
