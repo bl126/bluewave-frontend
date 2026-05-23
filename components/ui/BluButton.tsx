@@ -34,6 +34,8 @@ interface BluButtonProps {
     socialMissionCount?: number;
     presenceMissionCount?: number;
     onOpenCocoon?: () => void;
+    userAvatarUrl?: string | null;
+    onNavigateToTab?: (tab: "home" | "missions" | "explore" | "market" | "profile") => void;
 }
 
 const DEFAULT_PERSONALITY = "Analytical, confident, and highly knowledgeable about crypto and the Bluewave ecosystem.";
@@ -51,6 +53,13 @@ function formatTokenBalance(value: number | null): string {
     return value.toString();
 }
 
+function formatLifetimeEntropy(value: number): string {
+    if (value >= 10000) {
+        return (value / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return value.toString();
+}
+
 export default function BluButton({ 
     isExpanded = false,
     onToggleExpand,
@@ -59,7 +68,9 @@ export default function BluButton({
     pendingMissionCount = 0,
     socialMissionCount = 0,
     presenceMissionCount = 0,
-    onOpenCocoon
+    onOpenCocoon,
+    userAvatarUrl = null,
+    onNavigateToTab
 }: BluButtonProps) {
     const { theme } = useTheme();
     
@@ -102,6 +113,23 @@ export default function BluButton({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isModelsDropdownOpen]);
+
+    // Close overlays with Escape key on desktop
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                if (isModelsDropdownOpen) {
+                    setIsModelsDropdownOpen(false);
+                } else if (activeModal !== null) {
+                    setActiveModal(null);
+                } else if (isSidebarOpen) {
+                    setIsSidebarOpen(false);
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [activeModal, isSidebarOpen, isModelsDropdownOpen]);
     
     // Custom user token balance
     const [tokenBalance, setTokenBalance] = useState(50);
@@ -256,13 +284,16 @@ export default function BluButton({
         touchStartY.current = e.touches[0].clientY;
     };
 
-    const handleTouchEnd = (e: React.TouchEvent) => {
-        const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-        const deltaY = e.changedTouches[0].clientY - touchStartY.current;
-        if (Math.abs(deltaY) < 55) {
-            if (deltaX > 80 && !isSidebarOpen && touchStartX.current < 80) {
+    const handleTouchMove = (e: React.TouchEvent) => {
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = currentX - touchStartX.current;
+        const deltaY = currentY - touchStartY.current;
+
+        if (Math.abs(deltaY) < 40) {
+            if (deltaX > 35 && !isSidebarOpen && touchStartX.current < 60) {
                 setIsSidebarOpen(true);
-            } else if (deltaX < -80 && isSidebarOpen) {
+            } else if (deltaX < -35 && isSidebarOpen) {
                 setIsSidebarOpen(false);
             }
         }
@@ -501,7 +532,7 @@ export default function BluButton({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
+                        onTouchMove={handleTouchMove}
                         className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden font-sans selection:bg-cyan-500/30"
                     >
                         {/* ──────────────────────────────────────────────────
@@ -510,10 +541,10 @@ export default function BluButton({
                             overlaps Telegram's native back button header.
                            ────────────────────────────────────────────────── */}
                         {/* 🌊 HEADER CONTROLS 🌊 */}
-                        {/* Cocoon Dynamic Island pill — on the level of the telegram back button */}
+                        {/* Cocoon Dynamic Island pill — brought down 10pt (offset from center) */}
                         <div 
                             className="absolute left-1/2 -translate-x-1/2 z-[101]"
-                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2)' }}
+                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2 + 10px)' }}
                         >
                             <motion.button 
                                 initial={{ y: -10, opacity: 0 }}
@@ -535,18 +566,18 @@ export default function BluButton({
                             </motion.button>
                         </div>
 
-                        {/* Top Bar for Sidebar Toggle & Token Pill — 10px below Telegram Back Button level */}
+                        {/* Top Bar for Sidebar Toggle & Token Pill — brought down 8pt (total 18px below Telegram Back Button level) */}
                         <div
                             className="absolute left-0 right-0 z-[101] px-4 flex items-center justify-between pointer-events-none"
-                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 10px)', height: '44px' }}
+                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 18px)', height: '44px' }}
                         >
-                            {/* Left: Sidebar toggle button */}
+                            {/* Left: Edge attached Sidebar toggle block (replaces circle button) */}
                             <button 
                                 onClick={() => setIsSidebarOpen(true)}
-                                className="p-2 rounded-full bg-white/8 border border-white/15 backdrop-blur-xl text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(0,230,255,0.1)] active:scale-95 cursor-pointer pointer-events-auto"
+                                className="absolute left-0 w-6 h-10 rounded-r-lg bg-white/10 border-y border-r border-white/20 backdrop-blur-2xl text-cyan-400 hover:text-white hover:w-7 transition-all duration-300 shadow-[2px_0_10px_rgba(0,0,0,0.5)] active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center"
                                 aria-label="Open sidebar"
                             >
-                                <ArrowRight size={17} className="animate-pulse" />
+                                <ArrowRight size={13} />
                             </button>
 
                             {/* Right: Liquid Glass Token Pill — dims while scrolling */}
@@ -821,28 +852,45 @@ export default function BluButton({
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                                         className="absolute left-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-3 pb-[env(safe-area-inset-bottom,20px)]"
-                                        style={{ top: 'var(--tg-content-safe-area-inset-top, 56px)' }}
+                                        style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 8px)' }}
                                     >
                                         <div className="p-4 border-b border-white/10">
                                             <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
-                                                    <User className="text-cyan-400" size={18} />
+                                                <div className="w-10 h-10 rounded-full overflow-hidden border border-cyan-500/30 flex items-center justify-center bg-cyan-500/10 shrink-0">
+                                                    {userAvatarUrl ? (
+                                                        <img src={userAvatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <User className="text-cyan-400" size={18} />
+                                                    )}
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs font-black tracking-wide">BW ID Registry</div>
-                                                    <div className="text-[10px] text-gray-400 font-semibold font-mono">BW-9872-TG</div>
+                                                    <div className="text-xs font-black tracking-wide text-white">BW ID</div>
+                                                    <div className="text-[10px] text-gray-400 font-semibold font-mono">
+                                                        {telegramUser?.wallet_address ? "BW-9872-TG" : "not assigned"}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="bg-white/5 rounded-xl p-3 border border-white/10 space-y-1">
+                                            <div className="bg-white/5 rounded-xl p-3 border border-white/10 space-y-1.5">
                                                 <div className="flex justify-between items-center text-[10px]">
-                                                    <span className="text-gray-400">Presence Score</span>
-                                                    <span className="text-cyan-400 font-black">89.4</span>
+                                                    <span className="text-gray-400">Lifetime Entropy</span>
+                                                    <span className="text-cyan-400 font-black">
+                                                        {formatLifetimeEntropy((tokenBalance * 150) + 1200)}
+                                                    </span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-[10px]">
                                                     <span className="text-gray-400">TON Wallet</span>
-                                                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                                                        Connected <UserCheck size={10} />
-                                                    </span>
+                                                    {telegramUser?.wallet_address ? (
+                                                        <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                                            Connected <UserCheck size={10} />
+                                                        </span>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => onNavigateToTab?.("profile")}
+                                                            className="px-2 py-0.5 rounded bg-cyan-500 hover:bg-cyan-400 text-black text-[9px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                                                        >
+                                                            Connect
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -927,19 +975,26 @@ export default function BluButton({
                                     transition={{ type: "spring", damping: 30, stiffness: 250 }}
                                     className="absolute inset-0 bg-[#030303] z-50 flex flex-col pt-[58px]"
                                 >
-                                    <div className="shrink-0 h-[48px] px-4 border-b border-white/5 flex items-center justify-between">
-                                        <button
-                                            onClick={() => setActiveModal(null)}
-                                            className="flex items-center gap-1.5 text-xs text-cyan-400 font-bold hover:text-cyan-300 transition-colors cursor-pointer"
-                                        >
-                                            <ArrowLeft size={16} /> Back
-                                        </button>
-                                        <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                                            {activeModal === "tokens" && "Tokens & Topups"}
-                                            {activeModal === "settings" && "Custom Identity"}
-                                        </span>
-                                        <div className="w-12 h-6" />
-                                    </div>
+                                    {activeModal !== "tokens" ? (
+                                        <div className="shrink-0 h-[48px] px-4 border-b border-white/5 flex items-center justify-between">
+                                            {activeModal !== "settings" ? (
+                                                <button
+                                                    onClick={() => setActiveModal(null)}
+                                                    className="flex items-center gap-1.5 text-xs text-cyan-400 font-bold hover:text-cyan-300 transition-colors cursor-pointer"
+                                                >
+                                                    <ArrowLeft size={16} /> Back
+                                                </button>
+                                            ) : (
+                                                <div className="w-12 h-6" />
+                                            )}
+                                            <span className="text-xs font-black uppercase tracking-wider text-gray-400">
+                                                {activeModal === "settings" && "Custom Identity"}
+                                            </span>
+                                            <div className="w-12 h-6" />
+                                        </div>
+                                    ) : (
+                                        <div className="shrink-0 h-4" />
+                                    )}
 
                                     <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar pb-12">
                                         {/* Tokens Topup list */}
