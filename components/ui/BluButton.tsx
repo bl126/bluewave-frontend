@@ -551,9 +551,9 @@ export default function BluButton({
                         transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.3 }}
                         className="fixed z-[86] pointer-events-auto"
                         style={{
-                            left: position.x + 52, // tighter to button
-                            top: position.y + 8, // aligned with button center
-                            maxWidth: 160,
+                            left: position.x + 52,
+                            top: position.y - 8,
+                            maxWidth: 280,
                         }}
                     >
                         {/* Liquid glass card */}
@@ -564,23 +564,28 @@ export default function BluButton({
                             border: '1px solid rgba(255,255,255,0.12)',
                             borderRadius: '14px',
                             boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-                            padding: '9px 11px',
+                            padding: '12px 14px',
                             position: 'relative',
                         }}>
-                            {/* Shimmer top edge */}
-                            <div style={{ position: 'absolute', top: 0, left: '12px', right: '12px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)', borderRadius: '999px' }} />
-                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.88)', fontWeight: 500, lineHeight: 1.4, margin: 0 }}>
+                            {/* BLU INTELLIGENCE header */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00f6ff' }} />
+                                <span style={{ fontSize: '10px', fontWeight: 700, color: '#00f6ff', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                    Blu Intelligence
+                                </span>
+                            </div>
+                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.88)', fontWeight: 400, lineHeight: 1.5, margin: 0 }}>
                                 {welcomeBubble.message}
                             </p>
                             <button
                                 onClick={welcomeBubble.onDismiss}
-                                style={{ display: 'block', marginTop: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                                style={{ display: 'block', marginTop: '8px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.3px' }}
                             >
                                 Dismiss
                             </button>
                         </div>
                         {/* Pointing tail toward the orb */}
-                        <div style={{ position: 'absolute', left: '-6px', top: '10px', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderRight: '6px solid rgba(255,255,255,0.15)' }} />
+                        <div style={{ position: 'absolute', left: '-6px', top: '14px', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderRight: '6px solid rgba(255,255,255,0.15)' }} />
                     </motion.div>
                 )}
             </AnimatePresence>
