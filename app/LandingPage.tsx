@@ -138,6 +138,10 @@ export default function LandingPage() {
   const [socialMissionCount, setSocialMissionCount] = useState(0);
   const [presenceMissionCount, setPresenceMissionCount] = useState(0);
 
+  // 💬 Welcome / Guidance Bubble
+  const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
+  const [welcomeBubbleDismissed, setWelcomeBubbleDismissed] = useState(false);
+
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
@@ -933,6 +937,32 @@ export default function LandingPage() {
     }
   };
 
+  // 💬 Welcome Bubble: show after loading completes, dismiss after 10s
+  useEffect(() => {
+    if (isLoading || welcomeBubbleDismissed || !telegramUser) return;
+    // Only show if no critical modal is already open
+    if (isStreakCelebrationOpen || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || !!currentCelebratingRole || isAIPopupOpen) return;
+    setShowWelcomeBubble(true);
+    const timer = setTimeout(() => {
+      setShowWelcomeBubble(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [isLoading, telegramUser?.id]);
+
+  const handleDismissWelcomeBubble = () => {
+    setShowWelcomeBubble(false);
+    setWelcomeBubbleDismissed(true);
+  };
+
+  // Derive bubble message
+  const isNewUser = !telegramUser?.wallet_address;
+  const totalPending = socialMissionCount + presenceMissionCount;
+  const welcomeBubbleMessage = isNewUser
+    ? "Welcome to the Wave 🌊 Let me guide you on your journey."
+    : totalPending > 0
+      ? `You have ${totalPending} pending mission${totalPending > 1 ? 's' : ''} in ${presenceMissionCount > 0 ? 'presence' : ''}${presenceMissionCount > 0 && socialMissionCount > 0 ? ' & ' : ''}${socialMissionCount > 0 ? 'social' : ''}. Don't miss out!`
+      : null;
+
   return (
     <div className="relative w-screen h-screen overflow-hidden" style={{ backgroundColor: "var(--app-bg)" }}>
       {/* 🌍 Background Globe */}
@@ -955,6 +985,61 @@ export default function LandingPage() {
         />
       )}
 
+      {/* 💬 Welcome / Guidance Liquid Glass Bubble */}
+      <AnimatePresence>
+        {!isLoading && showWelcomeBubble && welcomeBubbleMessage && !isBluExpanded && (
+          <motion.div
+            key="welcome-bubble"
+            initial={{ opacity: 0, y: 20, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.94 }}
+            transition={{ type: "spring", damping: 22, stiffness: 180 }}
+            className="fixed z-[90] left-1/2 -translate-x-1/2 pointer-events-auto"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: '320px', width: 'calc(100vw - 48px)' }}
+          >
+            {/* Liquid glass card */}
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(28px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
+                padding: '14px 16px',
+                position: 'relative',
+              }}
+            >
+              {/* Gradient shimmer line */}
+              <div style={{ position: 'absolute', top: 0, left: '16px', right: '16px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.5), transparent)', borderRadius: '999px' }} />
+              <div className="flex items-start gap-3">
+                {/* Blu avatar pip */}
+                <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400/30 to-blue-600/30 border border-cyan-500/30 flex items-center justify-center">
+                  <span className="text-[8px] font-black tracking-[0.2em] text-cyan-300">BLU</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] text-white/90 font-medium leading-snug">{welcomeBubbleMessage}</p>
+                  {isNewUser && (
+                    <p className="text-[10px] text-cyan-400/80 font-semibold mt-1">Connect your wallet to get started →</p>
+                  )}
+                </div>
+              </div>
+              {/* Dismiss text link */}
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={handleDismissWelcomeBubble}
+                  className="text-[10px] text-gray-500 hover:text-gray-300 font-medium transition-colors cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+            {/* Speech bubble tail */}
+            <div style={{ position: 'absolute', bottom: '-7px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '8px solid rgba(255,255,255,0.09)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 🤖 BLU AI Assistant Button */}
       {!isLoading && !isMaintenanceMode && (
         <BluButton
@@ -966,6 +1051,14 @@ export default function LandingPage() {
           socialMissionCount={socialMissionCount}
           presenceMissionCount={presenceMissionCount}
           onOpenCocoon={() => setCocoonOpen(true)}
+          onNavigateToTab={(tab) => {
+            setActiveTab(tab);
+            setMissionOpen(tab === "missions");
+            setExploreOpen(tab === "explore");
+            setMarketOpen(tab === "market");
+            setProfileOpen(tab === "profile");
+            setIsBluExpanded(false);
+          }}
         />
       )}
 

@@ -145,8 +145,9 @@ export default function BluButton({
     const [settingsPersonality, setSettingsPersonality] = useState(DEFAULT_PERSONALITY);
     const [settingsStyle, setSettingsStyle] = useState(DEFAULT_STYLE);
     
-    // Scroll interaction for top right token pill
+    // Scroll interaction for top right token pill + sidebar button
     const [isPillDimmed, setIsPillDimmed] = useState(false);
+    const [isSidebarButtonHidden, setIsSidebarButtonHidden] = useState(false);
     const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -311,11 +312,13 @@ export default function BluButton({
     // ----------------------------------------------------
     const handleScroll = () => {
         setIsPillDimmed(true);
+        setIsSidebarButtonHidden(true);
         if (scrollTimeoutRef.current) {
             clearTimeout(scrollTimeoutRef.current);
         }
         scrollTimeoutRef.current = setTimeout(() => {
             setIsPillDimmed(false);
+            setIsSidebarButtonHidden(false);
         }, 1000);
     };
 
@@ -548,10 +551,10 @@ export default function BluButton({
                             overlaps Telegram's native back button header.
                            ────────────────────────────────────────────────── */}
                         {/* 🌊 HEADER CONTROLS 🌊 */}
-                        {/* Cocoon Dynamic Island pill — brought down 25pt more (total 35px offset) */}
+                        {/* Cocoon Dynamic Island pill — brought down 40pt total */}
                         <div 
                             className="absolute left-1/2 -translate-x-1/2 z-[101]"
-                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2 + 35px)' }}
+                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2 + 40px)' }}
                         >
                             <motion.button 
                                 initial={{ y: -10, opacity: 0 }}
@@ -573,29 +576,41 @@ export default function BluButton({
                             </motion.button>
                         </div>
 
-                        {/* Left: Edge attached Sidebar toggle block — brought down 10pt too (total 28px below Telegram Back Button level), larger, no arrow icon, animates to follow the sidebar */}
+                        {/* Left: Edge attached Sidebar toggle block — 43px below Telegram Back Button level, hides on scroll, z-[300] so it floats above all modals */}
                         <motion.button 
                             onClick={() => setIsSidebarOpen(prev => !prev)}
-                            animate={{ x: isSidebarOpen ? 280 : 0 }}
+                            animate={{ 
+                                x: isSidebarOpen ? 280 : 0,
+                                opacity: isSidebarButtonHidden && !isSidebarOpen ? 0 : 1,
+                                pointerEvents: isSidebarButtonHidden && !isSidebarOpen ? "none" : "auto"
+                            }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="absolute left-0 w-8 h-16 rounded-r-xl bg-white/10 border-y border-r border-white/20 backdrop-blur-2xl text-cyan-400 hover:text-white shadow-[2px_0_10px_rgba(0,0,0,0.5)] active:scale-95 cursor-pointer z-[101] flex items-center justify-center"
-                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 28px)' }}
+                            className="absolute left-0 w-8 h-16 rounded-r-xl bg-white/10 border-y border-r border-white/20 backdrop-blur-2xl text-cyan-400 hover:text-white shadow-[2px_0_10px_rgba(0,0,0,0.5)] active:scale-95 cursor-pointer z-[300] flex items-center justify-center"
+                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 43px)' }}
                             aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
                         />
 
-                        {/* Right: Liquid Glass Token Pill — brought down 10pt too (total 28px below Telegram Back Button level), kept to the right */}
-                        <div 
-                            className="absolute right-4 z-[101]"
-                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 28px)' }}
-                        >
-                            <div 
-                                onClick={() => setActiveModal("tokens")}
-                                className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
-                            >
-                                <Coins size={12} className="text-amber-400" />
-                                <span className="text-xs font-black tracking-wide text-white">{formatTokenBalance(tokenBalance)}</span>
-                            </div>
-                        </div>
+                        {/* Right: Liquid Glass Token Pill — 43px below Telegram Back Button level, hidden when token modal is open */}
+                        <AnimatePresence>
+                            {activeModal !== "tokens" && (
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: isPillDimmed ? 0.1 : 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute right-4 z-[101]"
+                                    style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 43px)' }}
+                                >
+                                    <div 
+                                        onClick={() => setActiveModal("tokens")}
+                                        className="cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]"
+                                    >
+                                        <Coins size={12} className="text-amber-400" />
+                                        <span className="text-xs font-black tracking-wide text-white">{formatTokenBalance(tokenBalance)}</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* 🌌 BLU MATRIX RAIN (Activates when messaging has started) */}
                         <AnimatePresence>
@@ -840,7 +855,7 @@ export default function BluButton({
                         </div>
 
                         {/* ──────────────────────────────────────────────────
-                            LIQUID GLASS SIDEBAR MENU
+                            LIQUID GLASS SIDEBAR MENU — z-[250] so it overlays token/settings modals
                            ────────────────────────────────────────────────── */}
                         <AnimatePresence>
                             {isSidebarOpen && (
@@ -850,7 +865,7 @@ export default function BluButton({
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
                                         onClick={() => setIsSidebarOpen(false)}
-                                        className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30"
+                                        className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[240]"
                                     />
 
                                     <motion.div
@@ -858,7 +873,7 @@ export default function BluButton({
                                         animate={{ x: 0 }}
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                        className="absolute left-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-3 pb-[env(safe-area-inset-bottom,20px)]"
+                                        className="absolute left-0 bottom-0 w-[280px] bg-[#080808]/95 backdrop-blur-2xl border-r border-white/15 z-[250] flex flex-col pt-3 pb-[env(safe-area-inset-bottom,20px)]"
                                         style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 18px)' }}
                                     >
                                         <div className="p-4 border-b border-white/10">
@@ -971,7 +986,7 @@ export default function BluButton({
                         </AnimatePresence>
 
                         {/* ──────────────────────────────────────────────────
-                            SUB MODAL STACKS
+                            SUB MODAL STACKS — z-[200], sidebar sits above at z-[250]
                            ────────────────────────────────────────────────── */}
                         <AnimatePresence>
                             {activeModal && (
@@ -980,25 +995,10 @@ export default function BluButton({
                                     animate={{ y: 0 }}
                                     exit={{ y: "100%" }}
                                     transition={{ type: "spring", damping: 30, stiffness: 250 }}
-                                    className="absolute inset-0 bg-[#030303] z-50 flex flex-col pt-[58px]"
+                                    className="absolute inset-0 bg-[#030303] z-[200] flex flex-col pt-[58px]"
                                 >
                                     {activeModal !== "tokens" ? (
-                                        <div className="shrink-0 h-[48px] px-4 border-b border-white/5 flex items-center justify-between">
-                                            {activeModal !== "settings" ? (
-                                                <button
-                                                    onClick={() => setActiveModal(null)}
-                                                    className="flex items-center gap-1.5 text-xs text-cyan-400 font-bold hover:text-cyan-300 transition-colors cursor-pointer"
-                                                >
-                                                    <ArrowLeft size={16} /> Back
-                                                </button>
-                                            ) : (
-                                                <div className="w-12 h-6" />
-                                            )}
-                                            <span className="text-xs font-black uppercase tracking-wider text-gray-400">
-                                                {activeModal === "settings" && "Custom Identity"}
-                                            </span>
-                                            <div className="w-12 h-6" />
-                                        </div>
+                                        <div className="shrink-0 h-[48px] px-4 border-b border-white/5 flex items-center" />
                                     ) : (
                                         <div className="shrink-0 h-4" />
                                     )}
