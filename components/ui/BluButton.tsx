@@ -582,45 +582,54 @@ export default function BluButton({
                 {!isExpanded && (welcomeBubble?.message || labBubbleText) && (
                     <motion.div
                         key="orb-bubble"
-                        initial={{ opacity: 0, x: isSnappedToLeft ? -10 : 10, scale: 0.94 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: isSnappedToLeft ? -8 : 8, scale: 0.94 }}
-                        transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.4 }}
+                        initial={{ opacity: 1, scale: 0, x: isSnappedToLeft ? -25 : 25 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 1, scale: 0, x: isSnappedToLeft ? -20 : 20 }}
+                        transition={{ type: "spring", damping: 24, stiffness: 220 }}
                         className="fixed z-[86] pointer-events-auto"
                         style={{
                             left: isSnappedToLeft ? position.x + 60 : position.x - 220,
                             top: position.y - 4,
                             width: 210,
+                            transformOrigin: isSnappedToLeft ? "left 24px" : "right 24px",
                         }}
                     >
-                        {/* Tail pointing toward the BLU orb */}
+                        {/* Real liquid glass tail pointing toward the BLU orb (flicker-free, blurred) */}
                         <div style={{
                             position: 'absolute',
-                            left: isSnappedToLeft ? '-7px' : 'auto',
-                            right: !isSnappedToLeft ? '-7px' : 'auto',
-                            top: '16px',
-                            width: 0,
-                            height: 0,
-                            borderTop: '7px solid transparent',
-                            borderBottom: '7px solid transparent',
-                            borderRight: isSnappedToLeft ? '8px solid rgba(255, 255, 255, 0.06)' : 'none',
-                            borderLeft: !isSnappedToLeft ? '8px solid rgba(255, 255, 255, 0.06)' : 'none',
+                            left: isSnappedToLeft ? '-5px' : 'auto',
+                            right: !isSnappedToLeft ? '-5px' : 'auto',
+                            top: '20px',
+                            width: '10px',
+                            height: '10px',
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            backdropFilter: 'blur(30px) saturate(200%)',
+                            WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+                            borderLeft: isSnappedToLeft ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+                            borderBottom: isSnappedToLeft ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+                            borderRight: !isSnappedToLeft ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+                            borderTop: !isSnappedToLeft ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+                            transform: 'rotate(45deg)',
+                            zIndex: 1,
                         }} />
 
                         {/* Liquid glass card */}
                         <div style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            backdropFilter: 'blur(24px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            backdropFilter: 'blur(30px) saturate(200%)',
+                            WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
                             borderRadius: '14px',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                             padding: '12px 14px',
                             position: 'relative',
                             overflow: 'hidden',
+                            transformStyle: 'preserve-3d',
+                            WebkitTransformStyle: 'preserve-3d',
+                            willChange: 'transform, filter',
                         }}>
                             {/* Subtle inner highlight */}
-                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
 
                             {/* • BLU INTELLIGENCE label */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px' }}>
