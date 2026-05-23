@@ -36,6 +36,11 @@ interface BluButtonProps {
     onOpenCocoon?: () => void;
     userAvatarUrl?: string | null;
     onNavigateToTab?: (tab: "home" | "missions" | "explore" | "market" | "profile") => void;
+    welcomeBubble?: {
+        message: string;
+        isNewUser: boolean;
+        onDismiss: () => void;
+    } | null;
 }
 
 const DEFAULT_PERSONALITY = "Analytical, confident, and highly knowledgeable about crypto and the Bluewave ecosystem.";
@@ -70,7 +75,8 @@ export default function BluButton({
     presenceMissionCount = 0,
     onOpenCocoon,
     userAvatarUrl = null,
-    onNavigateToTab
+    onNavigateToTab,
+    welcomeBubble = null,
 }: BluButtonProps) {
     const { theme } = useTheme();
     
@@ -533,6 +539,51 @@ export default function BluButton({
                     </motion.button>
                 </motion.div>
             </motion.div>
+
+            {/* 💬 Speech bubble — emanating from the blu button */}
+            <AnimatePresence>
+                {!isExpanded && welcomeBubble?.message && (
+                    <motion.div
+                        key="orb-bubble"
+                        initial={{ opacity: 0, x: -8, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -6, scale: 0.92 }}
+                        transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.3 }}
+                        className="fixed z-[86] pointer-events-auto"
+                        style={{
+                            left: position.x + 52, // tighter to button
+                            top: position.y + 8, // aligned with button center
+                            maxWidth: 160,
+                        }}
+                    >
+                        {/* Liquid glass card */}
+                        <div style={{
+                            background: 'rgba(255,255,255,0.04)',
+                            backdropFilter: 'blur(25px) saturate(140%)',
+                            WebkitBackdropFilter: 'blur(25px) saturate(140%)',
+                            border: '1px solid rgba(255,255,255,0.12)',
+                            borderRadius: '14px',
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                            padding: '9px 11px',
+                            position: 'relative',
+                        }}>
+                            {/* Shimmer top edge */}
+                            <div style={{ position: 'absolute', top: 0, left: '12px', right: '12px', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)', borderRadius: '999px' }} />
+                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.88)', fontWeight: 500, lineHeight: 1.4, margin: 0 }}>
+                                {welcomeBubble.message}
+                            </p>
+                            <button
+                                onClick={welcomeBubble.onDismiss}
+                                style={{ display: 'block', marginTop: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                        {/* Pointing tail toward the orb */}
+                        <div style={{ position: 'absolute', left: '-6px', top: '10px', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderRight: '6px solid rgba(255,255,255,0.15)' }} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* 2. REDESIGNED FULL SCREEN COCOON COMMAND CENTER OVERLAY */}
             <AnimatePresence>

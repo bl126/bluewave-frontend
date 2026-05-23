@@ -333,13 +333,6 @@ function GlobeScene({
     return () => { isMounted = false; };
   }, [colors.border, colors.glow, onLoaded]);
 
-  // Logo
-  useEffect(() => {
-    const texture = new THREE.TextureLoader().load("/logo-bluewave.png");
-    texture.colorSpace = THREE.SRGBColorSpace;
-    logoRef.current = new THREE.Mesh(new THREE.CircleGeometry(0.12, 64), new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }));
-  }, []);
-
   return (
     <>
       <ambientLight intensity={colors.ambient} />
