@@ -994,8 +994,8 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.94 }}
             transition={{ type: "spring", damping: 22, stiffness: 180 }}
-            className="fixed z-[90] left-1/2 -translate-x-1/2 pointer-events-auto"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: '320px', width: 'calc(100vw - 48px)' }}
+            className="fixed z-[90] pointer-events-auto"
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 16px)', left: '16px', maxWidth: '320px', width: 'calc(100vw - 48px)' }}
           >
             {/* Liquid glass card */}
             <div
@@ -1035,7 +1035,7 @@ export default function LandingPage() {
               </div>
             </div>
             {/* Speech bubble tail */}
-            <div style={{ position: 'absolute', bottom: '-7px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '8px solid rgba(255,255,255,0.09)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+            <div style={{ position: 'absolute', top: 'calc(100% - 7px)', left: '24px', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '8px solid rgba(255,255,255,0.09)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
           </motion.div>
         )}
       </AnimatePresence>
