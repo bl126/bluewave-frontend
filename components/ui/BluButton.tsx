@@ -162,10 +162,12 @@ export default function BluButton({
     const [position, setPosition] = useState({ x: 8, y: 120 });
     const [isDragging, setIsDragging] = useState(false);
     const [isSnappedToLeft, setIsSnappedToLeft] = useState(true);
-    
+    const [bubblePosition, setBubblePosition] = useState({ top: 0, left: 0 });
+
     const dragStart = useRef({ x: 0, y: 0 });
     const orbStart = useRef({ x: 0, y: 0 });
     const isDraggingDistance = useRef(0);
+    const buttonRef = useRef<HTMLDivElement>(null);
 
     // Gestures touch tracker
     const touchStartX = useRef(0);
@@ -218,7 +220,17 @@ export default function BluButton({
         }
     }, [isSnappedToLeft]);
 
-    // ----------------------------------------------------
+    // Calculate bubble position based on actual button element position
+    useEffect(() => {
+        if (buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const bubbleTop = rect.top + (rect.height / 2) - 24; // center vertically (24 = half height of bubble ~48px)
+            const bubbleLeft = rect.right + 8; // 8px gap to the right
+            setBubblePosition({ top: bubbleTop, left: bubbleLeft });
+        }
+    }, [position]);
+
+    // ------------------------------------
     // INTERCEPT TELEGRAM BACK BUTTON (INTERCEPT STATE FLOW)
     // ----------------------------------------------------
     useEffect(() => {
@@ -495,11 +507,12 @@ export default function BluButton({
     return (
         <>
             {/* 1. THE MINI ORB BUTTON (Circle + BLU Text - Draggable on Home Screen) */}
-            <motion.div 
-                animate={{ 
-                    left: position.x, 
-                    top: position.y 
-                }} 
+            <motion.div
+                ref={buttonRef}
+                animate={{
+                    left: position.x,
+                    top: position.y
+                }}
                 transition={isDragging ? { type: "tween", duration: 0 } : { type: "spring", stiffness: 260, damping: 24 }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -551,8 +564,8 @@ export default function BluButton({
                         transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.3 }}
                         className="fixed z-[86] pointer-events-auto"
                         style={{
-                            left: position.x + 52,
-                            top: position.y - 8,
+                            left: `${bubblePosition.left}px`,
+                            top: `${bubblePosition.top}px`,
                             maxWidth: 280,
                         }}
                     >
