@@ -28,6 +28,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
 import { getApi, postApi, useSync } from "@/lib/useApi";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
+import WalletRelinkOverlay from "@/components/ui/WalletRelinkOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
 import DailyAIPopup from "@/components/ui/DailyAIPopup";
@@ -112,6 +113,9 @@ export default function LandingPage() {
   // 🛡️ Maintenance State
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
 
+  // 🛡️ Wallet Relink State
+  const [isWalletRelinkRequired, setIsWalletRelinkRequired] = useState(false);
+
   // 🏆 Role Celebration State
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
   const [currentCelebratingRole, setCurrentCelebratingRole] = useState<string | null>(null);
@@ -142,7 +146,7 @@ export default function LandingPage() {
   const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
   const [welcomeBubbleDismissed, setWelcomeBubbleDismissed] = useState(false);
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || isWalletRelinkRequired || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -151,7 +155,7 @@ export default function LandingPage() {
     if (!tg?.BackButton) return;
 
     const handleBack = () => {
-      if (isMaintenanceMode) {
+      if (isMaintenanceMode || isWalletRelinkRequired) {
         tg.close();
         return;
       }
@@ -364,9 +368,14 @@ export default function LandingPage() {
             ton_balance: parseFloat(u.ton_balance ?? 0) || 0,
             stars_balance: Number(u.stars_balance ?? 0) || 0,
             stars_withdrawable: Number(u.stars_withdrawable ?? 0) || 0,
+            wallet_relink_required: u.wallet_relink_required || false,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
+
+          if (u.wallet_relink_required) {
+            setIsWalletRelinkRequired(true);
+          }
 
           // 🕒 Enforce 1 second branding delay even with cache
           const elapsed = Date.now() - startupTime;
@@ -471,6 +480,12 @@ export default function LandingPage() {
           return;
         }
 
+        // 3.5 Wallet Relink Check
+        if (user.wallet_relink_required) {
+          setIsWalletRelinkRequired(true);
+          setIsLoading(false);
+        }
+
         // 4. Check for Wallet Activation (The new Unified Gate)
         const isGhost = !user.wallet_address;
         
@@ -522,6 +537,7 @@ export default function LandingPage() {
           ton_balance: parseFloat(user.ton_balance ?? 0) || 0,
           stars_balance: Number(user.stars_balance ?? 0) || 0,
           stars_withdrawable: Number(user.stars_withdrawable ?? 0) || 0,
+          wallet_relink_required: user.wallet_relink_required || false,
         };
 
         setTelegramUser(finalUser);
@@ -1081,6 +1097,41 @@ export default function LandingPage() {
       {/* 🌀 Loading Screen */}
       <AnimatePresence>
         {isMaintenanceMode && <MaintenanceOverlay key="maintenance" />}
+      </AnimatePresence>
+
+      {/* 🛡️ Wallet Relink Locked Screen */}
+      <AnimatePresence>
+        {isWalletRelinkRequired && (
+          <WalletRelinkOverlay
+            key="relink"
+            bwId={telegramUser?.bw_id || ""}
+            onVerified={() => {
+              setIsWalletRelinkRequired(false);
+              
+              // Disconnect active wallet session to force a fresh re-linking
+              try {
+                if (tonConnectUI && tonConnectUI.connected) {
+                  tonConnectUI.disconnect();
+                }
+              } catch (err) {
+                console.error("Error disconnecting wallet during relink:", err);
+              }
+              
+              if (telegramUser) {
+                setTelegramUser((prev: any) => ({
+                  ...prev,
+                  wallet_relink_required: false,
+                  wallet_address: null
+                }));
+              }
+              // Mutate SWR cache
+              if (telegramUser?.id) {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                mutate(`${apiUrl}/api/user/${telegramUser.id}`);
+              }
+            }}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
