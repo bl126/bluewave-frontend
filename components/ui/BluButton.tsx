@@ -553,52 +553,99 @@ export default function BluButton({
                 </motion.div>
             </motion.div>
 
-            {/* 💬 Speech bubble — emanating from the blu button */}
+            {/* 💬 Speech bubble — anchored right of the BLU orb, exact reference design */}
             <AnimatePresence>
                 {!isExpanded && welcomeBubble?.message && (
                     <motion.div
                         key="orb-bubble"
-                        initial={{ opacity: 0, x: -8, scale: 0.9 }}
+                        initial={{ opacity: 0, x: -10, scale: 0.94 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: -6, scale: 0.92 }}
-                        transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.3 }}
+                        exit={{ opacity: 0, x: -8, scale: 0.94 }}
+                        transition={{ type: "spring", damping: 22, stiffness: 200, delay: 0.4 }}
                         className="fixed z-[86] pointer-events-auto"
                         style={{
-                            left: `${bubblePosition.left}px`,
-                            top: `${bubblePosition.top}px`,
-                            maxWidth: 280,
+                            left: position.x + 60,
+                            top: position.y - 4,
+                            width: 210,
                         }}
                     >
-                        {/* Liquid glass card */}
+                        {/* Left-pointing tail toward the BLU orb */}
                         <div style={{
-                            background: 'rgba(255,255,255,0.04)',
-                            backdropFilter: 'blur(25px) saturate(140%)',
-                            WebkitBackdropFilter: 'blur(25px) saturate(140%)',
-                            border: '1px solid rgba(255,255,255,0.12)',
+                            position: 'absolute',
+                            left: '-7px',
+                            top: '16px',
+                            width: 0,
+                            height: 0,
+                            borderTop: '7px solid transparent',
+                            borderBottom: '7px solid transparent',
+                            borderRight: '8px solid rgba(14,30,38,0.93)',
+                        }} />
+
+                        {/* Dark glass card */}
+                        <div style={{
+                            background: 'rgba(14,30,38,0.93)',
+                            backdropFilter: 'blur(20px) saturate(160%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                            border: '1px solid rgba(255,255,255,0.07)',
                             borderRadius: '14px',
-                            boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.55)',
                             padding: '12px 14px',
                             position: 'relative',
+                            overflow: 'hidden',
                         }}>
-                            {/* BLU INTELLIGENCE header */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00f6ff' }} />
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: '#00f6ff', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                            {/* Subtle inner highlight */}
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+
+                            {/* • BLU INTELLIGENCE label */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px' }}>
+                                <div style={{
+                                    width: '7px', height: '7px', borderRadius: '50%',
+                                    background: '#00e8ff',
+                                    boxShadow: '0 0 6px rgba(0,232,255,0.8)',
+                                    flexShrink: 0,
+                                }} />
+                                <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: 700,
+                                    color: '#00e8ff',
+                                    letterSpacing: '0.08em',
+                                    textTransform: 'uppercase',
+                                }}>
                                     Blu Intelligence
                                 </span>
                             </div>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.88)', fontWeight: 400, lineHeight: 1.5, margin: 0 }}>
+
+                            {/* Message body */}
+                            <p style={{
+                                fontSize: '13px',
+                                color: 'rgba(255,255,255,0.90)',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                margin: 0,
+                            }}>
                                 {welcomeBubble.message}
                             </p>
+
+                            {/* DISMISS */}
                             <button
                                 onClick={welcomeBubble.onDismiss}
-                                style={{ display: 'block', marginTop: '8px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.3px' }}
+                                style={{
+                                    display: 'block',
+                                    marginTop: '10px',
+                                    fontSize: '10px',
+                                    color: 'rgba(255,255,255,0.28)',
+                                    fontWeight: 700,
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    cursor: 'pointer',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                }}
                             >
                                 Dismiss
                             </button>
                         </div>
-                        {/* Pointing tail toward the orb */}
-                        <div style={{ position: 'absolute', left: '-6px', top: '14px', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderRight: '6px solid rgba(255,255,255,0.15)' }} />
                     </motion.div>
                 )}
             </AnimatePresence>
