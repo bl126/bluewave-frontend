@@ -40,6 +40,17 @@ const DEFAULT_PERSONALITY = "Analytical, confident, and highly knowledgeable abo
 const DEFAULT_STYLE = "default";
 const DEFAULT_MODEL = "Blu-1.5-Pro";
 
+function formatTokenBalance(value: number | null): string {
+    if (value === null) return "0";
+    if (value >= 1000000) {
+        return (value / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (value >= 1000) {
+        return (value / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return value.toString();
+}
+
 export default function BluButton({ 
     isExpanded = false,
     onToggleExpand,
@@ -74,6 +85,23 @@ export default function BluButton({
     // UI Panels & Navigation inside Expanded Command Center
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeModal, setActiveModal] = useState<"tokens" | "models" | "settings" | null>(null);
+    const [isModelsDropdownOpen, setIsModelsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close models dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsModelsDropdownOpen(false);
+            }
+        }
+        if (isModelsDropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isModelsDropdownOpen]);
     
     // Custom user token balance
     const [tokenBalance, setTokenBalance] = useState(50);
@@ -155,7 +183,10 @@ export default function BluButton({
         if (!isExpanded) return;
         
         const handleNativeBack = (e: Event) => {
-            if (activeModal !== null) {
+            if (isModelsDropdownOpen) {
+                e.preventDefault();
+                setIsModelsDropdownOpen(false);
+            } else if (activeModal !== null) {
                 e.preventDefault();
                 setActiveModal(null);
             } else if (isSidebarOpen) {
@@ -168,7 +199,7 @@ export default function BluButton({
         return () => {
             window.removeEventListener("bwNativeBack", handleNativeBack);
         };
-    }, [isExpanded, activeModal, isSidebarOpen]);
+    }, [isExpanded, activeModal, isSidebarOpen, isModelsDropdownOpen]);
 
     // ----------------------------------------------------
     // POINTER & TOUCH GESTURES
@@ -383,6 +414,7 @@ export default function BluButton({
             return s;
         }));
         setActiveModal(null);
+        setIsModelsDropdownOpen(false);
         setTimeout(() => {
             simulateTypewriterResponse(`System switched active model successfully to **${modelName}**.`);
         }, 350);
@@ -473,57 +505,57 @@ export default function BluButton({
                         className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden font-sans selection:bg-cyan-500/30"
                     >
                         {/* ──────────────────────────────────────────────────
-                            TOP ROW CONTROLS (Sidebar, Dynamic Island Cocoon, Token Pill)
+                            TOP ROW CONTROLS — Below Telegram Back Button
+                            Uses --tg-content-safe-area-inset-top so nothing
+                            overlaps Telegram's native back button header.
                            ────────────────────────────────────────────────── */}
-                        <div className="absolute top-[env(safe-area-inset-top,24px)] left-0 right-0 z-[101] px-4 flex items-center justify-between">
-                            
-                            {/* Left: Sidebar toggle + Close Button (liquid glass) */}
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    className="p-2.5 rounded-full bg-white/5 border border-white/15 backdrop-blur-xl text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(0,230,255,0.1)] active:scale-95 cursor-pointer"
-                                    aria-label="Open sidebar"
-                                >
-                                    <ArrowRight size={18} className="animate-pulse" />
-                                </button>
-                                
-                                <button 
-                                    onClick={() => onToggleExpand?.(false)}
-                                    className="p-2.5 rounded-full bg-white/5 border border-white/15 backdrop-blur-xl text-gray-400 hover:text-white transition-all active:scale-95 cursor-pointer"
-                                    aria-label="Minimize Agent"
-                                >
-                                    <X size={18} />
-                                </button>
-                            </div>
+                        {/* 🌊 HEADER CONTROLS 🌊 */}
+                        {/* Cocoon Dynamic Island pill — on the level of the telegram back button */}
+                        <div 
+                            className="absolute left-1/2 -translate-x-1/2 z-[101]"
+                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2)' }}
+                        >
+                            <motion.button 
+                                initial={{ y: -10, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                                onClick={() => onOpenCocoon?.()}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group cursor-pointer"
+                            >
+                                <img 
+                                    src="/cocoon_egg.webp" 
+                                    alt="Cocoon" 
+                                    loading="eager"
+                                    className="w-4 h-5 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
+                                    onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
+                                />
+                                <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                    Cocoon
+                                </span>
+                            </motion.button>
+                        </div>
 
-                            {/* Center: Slim Cocoon Dynamic Island */}
-                            <div className="absolute left-1/2 -translate-x-1/2">
-                                <motion.button 
-                                    initial={{ y: -20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    onClick={() => onOpenCocoon?.()}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group cursor-pointer"
-                                >
-                                    <img 
-                                        src="/cocoon_egg.webp" 
-                                        alt="Cocoon" 
-                                        loading="eager"
-                                        className="w-5 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
-                                        onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
-                                    />
-                                    <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-                                        Cocoon
-                                    </span>
-                                </motion.button>
-                            </div>
+                        {/* Top Bar for Sidebar Toggle & Token Pill — 10px below Telegram Back Button level */}
+                        <div
+                            className="absolute left-0 right-0 z-[101] px-4 flex items-center justify-between pointer-events-none"
+                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 10px)', height: '44px' }}
+                        >
+                            {/* Left: Sidebar toggle button */}
+                            <button 
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 rounded-full bg-white/8 border border-white/15 backdrop-blur-xl text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(0,230,255,0.1)] active:scale-95 cursor-pointer pointer-events-auto"
+                                aria-label="Open sidebar"
+                            >
+                                <ArrowRight size={17} className="animate-pulse" />
+                            </button>
 
-                            {/* Right: Liquid Glass Token Pill (below tabs/header level, dims on scroll) */}
+                            {/* Right: Liquid Glass Token Pill — dims while scrolling */}
                             <div 
                                 onClick={() => setActiveModal("tokens")}
-                                className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
+                                className={`cursor-pointer pointer-events-auto transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
                             >
                                 <Coins size={12} className="text-amber-400" />
-                                <span className="text-xs font-black tracking-wide text-white">{tokenBalance}</span>
+                                <span className="text-xs font-black tracking-wide text-white">{formatTokenBalance(tokenBalance)}</span>
                             </div>
                         </div>
 
@@ -558,16 +590,16 @@ export default function BluButton({
                                 scale: activeSession.messages.length > 0 ? 0.92 : 1,
                             }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="flex-1 flex flex-col items-center justify-center px-8 absolute inset-0 z-0 pt-20 pointer-events-none"
+                            className="flex-1 flex flex-col items-center justify-center px-8 absolute inset-0 z-0 pointer-events-none"
+                            style={{ paddingTop: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 70px)' }}
                         >
                             {/* Central Asset */}
                             <div className="relative mb-8">
                                 <motion.div 
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
-                                    className="relative w-48 h-48 flex items-center justify-center animate-pulse"
+                                    className="relative w-48 h-48 flex items-center justify-center"
                                 >
-                                    <div className="absolute inset-0 bg-cyan-500/5 blur-[60px] rounded-full" />
                                     <img 
                                         src="/blu_image.webp" 
                                         alt="Blu Orb" 
@@ -599,7 +631,8 @@ export default function BluButton({
                                     onScroll={handleScroll}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="absolute inset-0 pt-[160px] pb-44 px-6 overflow-y-auto z-10 flex flex-col gap-6 custom-scrollbar"
+                                    className="absolute inset-0 pb-44 px-6 overflow-y-auto z-10 flex flex-col gap-6 custom-scrollbar"
+                                    style={{ paddingTop: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 70px)' }}
                                 >
                                     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
                                         {activeSession.messages.map((msg, idx) => (
@@ -607,31 +640,17 @@ export default function BluButton({
                                                 key={idx}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                                className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                             >
-                                                {/* AI Avatar */}
-                                                {msg.role === "ai" && (
-                                                    <div className="shrink-0 w-8 h-8 rounded-full bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center mt-1">
-                                                        <Bot size={14} className="text-cyan-400" />
-                                                    </div>
-                                                )}
-
                                                 {/* Message Bubble */}
                                                 <div
-                                                    className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed relative ${msg.role === "user"
-                                                            ? "bg-white text-black font-semibold rounded-tr-sm self-end shadow-md"
-                                                            : "bg-white/5 text-gray-100 border border-white/10 rounded-tl-sm prose prose-invert prose-p:leading-relaxed prose-a:text-cyan-400 prose-code:text-cyan-300 prose-code:bg-cyan-950/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-headings:text-white marker:text-cyan-500"
+                                                    className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed relative backdrop-blur-md shadow-md ${msg.role === "user"
+                                                            ? "bg-white text-black font-semibold"
+                                                            : "bg-white/5 text-gray-100 border border-white/10 prose prose-invert prose-p:leading-relaxed prose-a:text-cyan-400 prose-code:text-cyan-300 prose-code:bg-cyan-950/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-headings:text-white marker:text-cyan-500"
                                                         }`}
                                                 >
                                                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                 </div>
-
-                                                {/* User Avatar */}
-                                                {msg.role === "user" && (
-                                                    <div className="shrink-0 w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center mt-1">
-                                                        <User size={14} className="text-white" />
-                                                    </div>
-                                                )}
                                             </motion.div>
                                         ))}
 
@@ -640,12 +659,9 @@ export default function BluButton({
                                             <motion.div
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
-                                                className="flex gap-3 justify-start"
+                                                className="flex w-full justify-start"
                                             >
-                                                <div className="shrink-0 w-8 h-8 rounded-full bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center mt-1">
-                                                    <Bot size={14} className="text-cyan-400" />
-                                                </div>
-                                                <div className="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 text-[14px] text-gray-300 max-w-[85%] prose prose-invert leading-relaxed">
+                                                <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-[14px] text-gray-300 max-w-[85%] prose prose-invert leading-relaxed backdrop-blur-md shadow-md">
                                                     <ReactMarkdown>{typingText}</ReactMarkdown>
                                                     <span className="inline-block w-1.5 h-4 ml-1 bg-cyan-400 animate-pulse align-middle" />
                                                 </div>
@@ -698,7 +714,56 @@ export default function BluButton({
                                 </button>
 
                                 {/* Defined Search Bar Container */}
-                                <div className="flex-1 relative flex items-end gap-2 bg-[#121212] border border-white/40 hover:border-white/50 focus-within:border-cyan-500/60 focus-within:ring-1 focus-within:ring-cyan-500/50 rounded-[2rem] p-1.5 pr-2 transition-all shadow-lg">
+                                <div className="flex-1 relative flex items-end gap-2 bg-[#121212]/90 border border-white/40 hover:border-white/50 focus-within:border-cyan-500/60 focus-within:ring-1 focus-within:ring-cyan-500/50 rounded-[2rem] p-1.5 pr-2 transition-all shadow-lg">
+                                    {/* Models Dropdown */}
+                                    <AnimatePresence>
+                                        {isModelsDropdownOpen && (
+                                            <motion.div
+                                                ref={dropdownRef}
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute bottom-full right-2 mb-2 w-64 bg-[#0c0c0c]/90 border border-white/10 backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.9)] rounded-xl z-50 p-2 overflow-hidden flex flex-col text-left"
+                                            >
+                                                <div className="px-2.5 py-1.5 border-b border-white/5 mb-1.5 flex justify-between items-center">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                                                        Select Model
+                                                    </span>
+                                                    <span className="text-[9px] font-bold text-cyan-400 font-mono">
+                                                        {activeSession.model}
+                                                    </span>
+                                                </div>
+                                                <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-1 pr-0.5">
+                                                    {modelsList.map((m) => {
+                                                        const isSelected = activeSession.model === m.name;
+                                                        return (
+                                                            <button
+                                                                key={m.name}
+                                                                onClick={() => handleModelChange(m.name)}
+                                                                className={`w-full px-2.5 py-2 rounded-lg text-left flex items-start justify-between transition-all cursor-pointer ${
+                                                                    isSelected
+                                                                        ? 'bg-cyan-500/10 text-white'
+                                                                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                                                }`}
+                                                            >
+                                                                <div className="space-y-0.5 pr-2">
+                                                                    <div className="text-[11px] font-black">{m.name}</div>
+                                                                    <div className="text-[9px] text-gray-400 leading-tight">{m.desc}</div>
+                                                                </div>
+                                                                {isSelected && (
+                                                                    <div className="w-4 h-4 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 mt-0.5">
+                                                                        <Check size={10} strokeWidth={3} />
+                                                                    </div>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
                                     <textarea
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
@@ -711,8 +776,8 @@ export default function BluButton({
 
                                     {/* Auto badge inside search bar */}
                                     <button
-                                        onClick={() => setActiveModal("models")}
-                                        className="shrink-0 px-2 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[10px] font-black uppercase tracking-wider transition-colors mr-1 self-center cursor-pointer"
+                                        onClick={() => setIsModelsDropdownOpen(prev => !prev)}
+                                        className="shrink-0 px-1.5 py-0.5 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400/90 text-[9px] font-black uppercase tracking-wider transition-colors mr-1 self-center cursor-pointer"
                                     >
                                         Auto
                                     </button>
@@ -755,7 +820,8 @@ export default function BluButton({
                                         animate={{ x: 0 }}
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                        className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-[env(safe-area-inset-top,40px)] pb-[env(safe-area-inset-bottom,20px)]"
+                                        className="absolute left-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-3 pb-[env(safe-area-inset-bottom,20px)]"
+                                        style={{ top: 'var(--tg-content-safe-area-inset-top, 56px)' }}
                                     >
                                         <div className="p-4 border-b border-white/10">
                                             <div className="flex items-center gap-3 mb-3">
@@ -804,7 +870,7 @@ export default function BluButton({
                                             </button>
 
                                             <button
-                                                onClick={() => { setActiveModal("models"); setIsSidebarOpen(false); }}
+                                                onClick={() => { setIsModelsDropdownOpen(true); setIsSidebarOpen(false); }}
                                                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all text-left cursor-pointer"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -870,7 +936,6 @@ export default function BluButton({
                                         </button>
                                         <span className="text-xs font-black uppercase tracking-wider text-gray-400">
                                             {activeModal === "tokens" && "Tokens & Topups"}
-                                            {activeModal === "models" && "LLM Models"}
                                             {activeModal === "settings" && "Custom Identity"}
                                         </span>
                                         <div className="w-12 h-6" />
@@ -924,38 +989,7 @@ export default function BluButton({
                                             </div>
                                         )}
 
-                                        {/* Models Selector list */}
-                                        {activeModal === "models" && (
-                                            <div className="space-y-4">
-                                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Select Active Brain</h3>
-                                                <div className="space-y-2">
-                                                    {modelsList.map((m) => {
-                                                        const isSelected = activeSession.model === m.name;
-                                                        return (
-                                                            <button
-                                                                key={m.name}
-                                                                onClick={() => handleModelChange(m.name)}
-                                                                className={`w-full p-4 rounded-xl border text-left flex items-start justify-between transition-all cursor-pointer ${
-                                                                    isSelected
-                                                                        ? 'bg-cyan-500/10 border-cyan-500/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                                                                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                                                                }`}
-                                                            >
-                                                                <div className="space-y-1">
-                                                                    <div className="text-xs font-black">{m.name}</div>
-                                                                    <div className="text-[11px] text-gray-300">{m.desc}</div>
-                                                                </div>
-                                                                {isSelected && (
-                                                                    <div className="w-5 h-5 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0">
-                                                                        <Check size={12} strokeWidth={3} />
-                                                                    </div>
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        )}
+                                        {/* Models Selector list is handled by the floating dropdown */}
 
                                         {/* Personality settings */}
                                         {activeModal === "settings" && (
