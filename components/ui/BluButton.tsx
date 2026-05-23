@@ -163,6 +163,17 @@ export default function BluButton({
     const [isDragging, setIsDragging] = useState(false);
     const [isSnappedToLeft, setIsSnappedToLeft] = useState(true);
     const [bubblePosition, setBubblePosition] = useState({ top: 0, left: 0 });
+    const [labBubbleText, setLabBubbleText] = useState<string | null>(null);
+    const labBubbleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (labBubbleTimeoutRef.current) {
+                clearTimeout(labBubbleTimeoutRef.current);
+            }
+        };
+    }, []);
+
 
     const dragStart = useRef({ x: 0, y: 0 });
     const orbStart = useRef({ x: 0, y: 0 });
@@ -342,7 +353,10 @@ export default function BluButton({
 
     // 🔓 Access Control Logic: Now open to everyone
     const isAuthorized = true;
+    const ADMIN_IDS = [5023869471];
+    const isAdmin = telegramUser?.id ? ADMIN_IDS.includes(Number(telegramUser.id)) : false;
     const showGreeting = false; // Disable popup greeting if handled via guiding pills
+
 
     // ----------------------------------------------------
     // LOCAL TYPEWRITER SIMULATION
@@ -524,7 +538,17 @@ export default function BluButton({
                     <motion.button
                         onClick={() => { 
                             if (!isAuthorized || isDraggingDistance.current > 6) return;
-                            onToggleExpand?.(true); 
+                            if (isAdmin) {
+                                onToggleExpand?.(true); 
+                            } else {
+                                if (labBubbleTimeoutRef.current) {
+                                    clearTimeout(labBubbleTimeoutRef.current);
+                                }
+                                setLabBubbleText("I'm still in the lab, they are working on my brain.");
+                                labBubbleTimeoutRef.current = setTimeout(() => {
+                                    setLabBubbleText(null);
+                                }, 8000);
+                            }
                         }}
                         whileHover={isAuthorized ? { scale: 1.1, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" } : {}}
                         whileTap={isAuthorized ? { scale: 0.95 } : {}}
@@ -555,7 +579,7 @@ export default function BluButton({
 
             {/* 💬 Speech bubble — anchored right of the BLU orb, exact reference design */}
             <AnimatePresence>
-                {!isExpanded && welcomeBubble?.message && (
+                {!isExpanded && (welcomeBubble?.message || labBubbleText) && (
                     <motion.div
                         key="orb-bubble"
                         initial={{ opacity: 0, x: -10, scale: 0.94 }}
@@ -623,12 +647,12 @@ export default function BluButton({
                                 lineHeight: 1.45,
                                 margin: 0,
                             }}>
-                                {welcomeBubble.message}
+                                {labBubbleText || welcomeBubble?.message}
                             </p>
 
                             {/* DISMISS */}
                             <button
-                                onClick={welcomeBubble.onDismiss}
+                                onClick={labBubbleText ? () => setLabBubbleText(null) : welcomeBubble?.onDismiss}
                                 style={{
                                     display: 'block',
                                     marginTop: '10px',
