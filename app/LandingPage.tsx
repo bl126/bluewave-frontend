@@ -352,6 +352,8 @@ export default function LandingPage() {
             total_referrals: u.total_referrals ?? 0,
             wallet_address: u.wallet_address,
             is_human_verified: !!u.is_human_verified,
+            presence_score: u.presence_score ?? 0,
+            lifetime_entropy: u.lifetime_entropy ?? 0,
             bw_id: u.bw_id,
             deposit_token: u.deposit_token,
             joined_at: u.joined_at,
@@ -507,8 +509,9 @@ export default function LandingPage() {
           recovery_password_hash: user.recovery_password_hash,
           human_verification_pending: user.human_verification_pending || false,
           network_builder_pending: user.network_builder_pending || false,
-          ton_explorer_pending: user.ton_explorer_pending || false,
           is_human_verified: !!user.is_human_verified,
+          presence_score: user.presence_score ?? 0,
+          lifetime_entropy: user.lifetime_entropy ?? 0,
           unread_explore_notifications: data.unread_explore_notifications || 0,
           recoverable_streak: user.recoverable_streak || 0,
           streak_recovery_expires_at: user.streak_recovery_expires_at || null,
@@ -677,6 +680,8 @@ export default function LandingPage() {
         id: newUser.tg_id || prev?.id,
         wallet_address: newUser.wallet_address || prev?.wallet_address,
         is_human_verified: !!newUser.is_human_verified,
+        presence_score: newUser.presence_score !== undefined ? newUser.presence_score : prev?.presence_score,
+        lifetime_entropy: newUser.lifetime_entropy !== undefined ? newUser.lifetime_entropy : prev?.lifetime_entropy,
       }));
       
       if (newUser.points_balance !== undefined) {

@@ -133,6 +133,13 @@ export default function BluButton({
     
     // Custom user token balance
     const [tokenBalance, setTokenBalance] = useState(50);
+
+    // Sync prop balance to local tokenBalance state if it changes
+    useEffect(() => {
+        if (balance !== null) {
+            setTokenBalance(balance);
+        }
+    }, [balance]);
     
     // Settings configuration inputs (applied to active session)
     const [settingsPersonality, setSettingsPersonality] = useState(DEFAULT_PERSONALITY);
@@ -541,10 +548,10 @@ export default function BluButton({
                             overlaps Telegram's native back button header.
                            ────────────────────────────────────────────────── */}
                         {/* 🌊 HEADER CONTROLS 🌊 */}
-                        {/* Cocoon Dynamic Island pill — brought down 10pt (offset from center) */}
+                        {/* Cocoon Dynamic Island pill — brought down 25pt more (total 35px offset) */}
                         <div 
                             className="absolute left-1/2 -translate-x-1/2 z-[101]"
-                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2 + 10px)' }}
+                            style={{ top: 'calc((var(--tg-content-safe-area-inset-top, 56px) - 32px) / 2 + 35px)' }}
                         >
                             <motion.button 
                                 initial={{ y: -10, opacity: 0 }}
@@ -566,24 +573,24 @@ export default function BluButton({
                             </motion.button>
                         </div>
 
-                        {/* Top Bar for Sidebar Toggle & Token Pill — brought down 8pt (total 18px below Telegram Back Button level) */}
-                        <div
-                            className="absolute left-0 right-0 z-[101] px-4 flex items-center justify-between pointer-events-none"
-                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 18px)', height: '44px' }}
-                        >
-                            {/* Left: Edge attached Sidebar toggle block (replaces circle button) */}
-                            <button 
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="absolute left-0 w-6 h-10 rounded-r-lg bg-white/10 border-y border-r border-white/20 backdrop-blur-2xl text-cyan-400 hover:text-white hover:w-7 transition-all duration-300 shadow-[2px_0_10px_rgba(0,0,0,0.5)] active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center"
-                                aria-label="Open sidebar"
-                            >
-                                <ArrowRight size={13} />
-                            </button>
+                        {/* Left: Edge attached Sidebar toggle block — brought down 10pt too (total 28px below Telegram Back Button level), larger, no arrow icon, animates to follow the sidebar */}
+                        <motion.button 
+                            onClick={() => setIsSidebarOpen(prev => !prev)}
+                            animate={{ x: isSidebarOpen ? 280 : 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            className="absolute left-0 w-8 h-16 rounded-r-xl bg-white/10 border-y border-r border-white/20 backdrop-blur-2xl text-cyan-400 hover:text-white shadow-[2px_0_10px_rgba(0,0,0,0.5)] active:scale-95 cursor-pointer z-[101] flex items-center justify-center"
+                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 28px)' }}
+                            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+                        />
 
-                            {/* Right: Liquid Glass Token Pill — dims while scrolling */}
+                        {/* Right: Liquid Glass Token Pill — brought down 10pt too (total 28px below Telegram Back Button level), kept to the right */}
+                        <div 
+                            className="absolute right-4 z-[101]"
+                            style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 28px)' }}
+                        >
                             <div 
                                 onClick={() => setActiveModal("tokens")}
-                                className={`cursor-pointer pointer-events-auto transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
+                                className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
                             >
                                 <Coins size={12} className="text-amber-400" />
                                 <span className="text-xs font-black tracking-wide text-white">{formatTokenBalance(tokenBalance)}</span>
@@ -622,7 +629,7 @@ export default function BluButton({
                             }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
                             className="flex-1 flex flex-col items-center justify-center px-8 absolute inset-0 z-0 pointer-events-none"
-                            style={{ paddingTop: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 70px)' }}
+                            style={{ paddingTop: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 50px)' }}
                         >
                             {/* Central Asset */}
                             <div className="relative mb-8">
@@ -852,13 +859,13 @@ export default function BluButton({
                                         exit={{ x: "-100%" }}
                                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                                         className="absolute left-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-3 pb-[env(safe-area-inset-bottom,20px)]"
-                                        style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 8px)' }}
+                                        style={{ top: 'calc(var(--tg-content-safe-area-inset-top, 56px) + 18px)' }}
                                     >
                                         <div className="p-4 border-b border-white/10">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <div className="w-10 h-10 rounded-full overflow-hidden border border-cyan-500/30 flex items-center justify-center bg-cyan-500/10 shrink-0">
-                                                    {userAvatarUrl ? (
-                                                        <img src={userAvatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+                                                    {(userAvatarUrl || telegramUser?.photo_url) ? (
+                                                        <img src={userAvatarUrl || telegramUser?.photo_url} alt="User Avatar" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <User className="text-cyan-400" size={18} />
                                                     )}
@@ -866,7 +873,7 @@ export default function BluButton({
                                                 <div>
                                                     <div className="text-xs font-black tracking-wide text-white">BW ID</div>
                                                     <div className="text-[10px] text-gray-400 font-semibold font-mono">
-                                                        {telegramUser?.wallet_address ? "BW-9872-TG" : "not assigned"}
+                                                        {telegramUser?.wallet_address ? (telegramUser?.bw_id || "not assigned") : "not assigned"}
                                                     </div>
                                                 </div>
                                             </div>
@@ -874,7 +881,7 @@ export default function BluButton({
                                                 <div className="flex justify-between items-center text-[10px]">
                                                     <span className="text-gray-400">Lifetime Entropy</span>
                                                     <span className="text-cyan-400 font-black">
-                                                        {formatLifetimeEntropy((tokenBalance * 150) + 1200)}
+                                                        {formatLifetimeEntropy(telegramUser?.lifetime_entropy ?? 0)}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-[10px]">
