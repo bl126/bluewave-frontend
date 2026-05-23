@@ -7,6 +7,7 @@ import {
     Wallet, Coins, ChevronDown, X, MessageSquare, PlusCircle, ArrowRight, UserCheck 
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -29,6 +30,8 @@ const DEFAULT_STYLE = "default";
 const DEFAULT_MODEL = "Blu-1.5-Pro";
 
 export default function AgentChat() {
+    const router = useRouter();
+
     // ----------------------------------------------------
     // STATE & REFS
     // ----------------------------------------------------
@@ -101,31 +104,24 @@ export default function AgentChat() {
         if (!tg) return;
 
         const backButton = tg.BackButton;
+        backButton.show();
         
-        if (activeModal !== null) {
-            backButton.show();
-            const handleBackClick = () => {
+        const handleBackClick = () => {
+            if (activeModal !== null) {
                 setActiveModal(null);
-            };
-            backButton.onClick(handleBackClick);
-            return () => {
-                backButton.offClick(handleBackClick);
-                backButton.hide();
-            };
-        } else if (isSidebarOpen) {
-            backButton.show();
-            const handleBackClick = () => {
+            } else if (isSidebarOpen) {
                 setIsSidebarOpen(false);
-            };
-            backButton.onClick(handleBackClick);
-            return () => {
-                backButton.offClick(handleBackClick);
-                backButton.hide();
-            };
-        } else {
+            } else {
+                router.push("/");
+            }
+        };
+
+        backButton.onClick(handleBackClick);
+        return () => {
+            backButton.offClick(handleBackClick);
             backButton.hide();
-        }
-    }, [activeModal, isSidebarOpen]);
+        };
+    }, [activeModal, isSidebarOpen, router]);
 
     // ----------------------------------------------------
     // SCROLL INTERACTION (DIMMING PILL)
@@ -364,13 +360,24 @@ export default function AgentChat() {
                     </div>
                 </div>
 
-                {/* Top Right Liquid Glass Token Pill (below tabs/header level, dims on scroll) */}
-                <div 
-                    onClick={() => setActiveModal("tokens")}
-                    className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
-                >
-                    <Coins size={12} className="text-amber-400" />
-                    <span className="text-xs font-black tracking-wide text-white">{tokenBalance}</span>
+                <div className="flex items-center gap-2">
+                    {/* Top Right Liquid Glass Token Pill (below tabs/header level, dims on scroll) */}
+                    <div 
+                        onClick={() => setActiveModal("tokens")}
+                        className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
+                    >
+                        <Coins size={12} className="text-amber-400" />
+                        <span className="text-xs font-black tracking-wide text-white">{tokenBalance}</span>
+                    </div>
+
+                    {/* Exit button for browsers (takes user back to LandingPage /) */}
+                    <Link 
+                        href="/"
+                        className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                        title="Return to Home"
+                    >
+                        <X size={18} />
+                    </Link>
                 </div>
             </header>
 

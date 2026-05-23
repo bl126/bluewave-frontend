@@ -2,14 +2,27 @@
 
 import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Globe, Award, Wallet, Sparkles, Send, Terminal, Plus, Mic, ChevronDown, LayoutGrid, Image as ImageIcon } from "lucide-react";
+import { 
+    X, Globe, Award, Wallet, Sparkles, Send, Terminal, Plus, Mic, 
+    ChevronDown, LayoutGrid, Image as ImageIcon, Coins, Menu, Check, 
+    Settings, PlusCircle, ArrowLeft, ArrowRight, UserCheck, Bot, User 
+} from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
-    role: "user" | "blu";
+    role: "user" | "ai";
     content: string;
+}
+
+interface ChatSession {
+    id: string;
+    title: string;
+    messages: Message[];
+    model: string;
+    personality: string;
+    communicationStyle: string;
     timestamp: string;
-    image?: string;
 }
 
 interface BluButtonProps {
@@ -23,6 +36,10 @@ interface BluButtonProps {
     onOpenCocoon?: () => void;
 }
 
+const DEFAULT_PERSONALITY = "Analytical, confident, and highly knowledgeable about crypto and the Bluewave ecosystem.";
+const DEFAULT_STYLE = "default";
+const DEFAULT_MODEL = "Blu-1.5-Pro";
+
 export default function BluButton({ 
     isExpanded = false,
     onToggleExpand,
@@ -34,14 +51,44 @@ export default function BluButton({
     onOpenCocoon
 }: BluButtonProps) {
     const { theme } = useTheme();
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [inputValue, setInputValue] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [showGreeting, setShowGreeting] = useState(false);
-    const [hasGreetingBeenDismissed, setHasGreetingBeenDismissed] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     
-    //  Magnetic Snapping & Draggable States
+    // ----------------------------------------------------
+    // MULTI-SESSION CHAT STATE
+    // ----------------------------------------------------
+    const [sessions, setSessions] = useState<ChatSession[]>([
+        {
+            id: "session-default",
+            title: "Welcome Guide",
+            messages: [], // Starts empty so it shows the welcoming orb layout first
+            model: DEFAULT_MODEL,
+            personality: DEFAULT_PERSONALITY,
+            communicationStyle: DEFAULT_STYLE,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+    ]);
+    const [activeSessionId, setActiveSessionId] = useState<string>("session-default");
+    const [input, setInput] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingText, setTypingText] = useState("");
+    
+    // UI Panels & Navigation inside Expanded Command Center
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [activeModal, setActiveModal] = useState<"tokens" | "models" | "settings" | null>(null);
+    
+    // Custom user token balance
+    const [tokenBalance, setTokenBalance] = useState(50);
+    
+    // Settings configuration inputs (applied to active session)
+    const [settingsPersonality, setSettingsPersonality] = useState(DEFAULT_PERSONALITY);
+    const [settingsStyle, setSettingsStyle] = useState(DEFAULT_STYLE);
+    
+    // Scroll interaction for top right token pill
+    const [isPillDimmed, setIsPillDimmed] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Draggable Orb States
     const [position, setPosition] = useState({ x: 8, y: 120 });
     const [isDragging, setIsDragging] = useState(false);
     const [isSnappedToLeft, setIsSnappedToLeft] = useState(true);
@@ -50,7 +97,30 @@ export default function BluButton({
     const orbStart = useRef({ x: 0, y: 0 });
     const isDraggingDistance = useRef(0);
 
-    // Initialize position ONLY once on fresh App Mount
+    // Gestures touch tracker
+    const touchStartX = useRef(0);
+    const touchStartY = useRef(0);
+
+    // ----------------------------------------------------
+    // ACTIVE SESSION HELPERS
+    // ----------------------------------------------------
+    const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+
+    // Synchronize settings form when switching sessions
+    useEffect(() => {
+        if (activeSession) {
+            setSettingsPersonality(activeSession.personality);
+            setSettingsStyle(activeSession.communicationStyle);
+        }
+    }, [activeSessionId]);
+
+    // Auto-scroll to bottom
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    useEffect(scrollToBottom, [activeSession?.messages, isTyping, typingText]);
+
+    // Initialize orb position ONLY once on fresh App Mount
     useEffect(() => {
         if (typeof window !== "undefined") {
             const initialY = window.innerHeight * 0.16;
@@ -78,6 +148,31 @@ export default function BluButton({
         }
     }, [isSnappedToLeft]);
 
+    // ----------------------------------------------------
+    // INTERCEPT TELEGRAM BACK BUTTON (INTERCEPT STATE FLOW)
+    // ----------------------------------------------------
+    useEffect(() => {
+        if (!isExpanded) return;
+        
+        const handleNativeBack = (e: Event) => {
+            if (activeModal !== null) {
+                e.preventDefault();
+                setActiveModal(null);
+            } else if (isSidebarOpen) {
+                e.preventDefault();
+                setIsSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener("bwNativeBack", handleNativeBack);
+        return () => {
+            window.removeEventListener("bwNativeBack", handleNativeBack);
+        };
+    }, [isExpanded, activeModal, isSidebarOpen]);
+
+    // ----------------------------------------------------
+    // POINTER & TOUCH GESTURES
+    // ----------------------------------------------------
     const handlePointerDown = (e: React.PointerEvent) => {
         setIsDragging(true);
         isDraggingDistance.current = 0;
@@ -124,91 +219,203 @@ export default function BluButton({
         
         setPosition({ x: snapX, y: snapY });
     };
-    
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+        const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+        if (Math.abs(deltaY) < 55) {
+            if (deltaX > 80 && !isSidebarOpen && touchStartX.current < 80) {
+                setIsSidebarOpen(true);
+            } else if (deltaX < -80 && isSidebarOpen) {
+                setIsSidebarOpen(false);
+            }
+        }
+    };
+
+    // ----------------------------------------------------
+    // SCROLL INTERACTION (DIMMING PILL)
+    // ----------------------------------------------------
+    const handleScroll = () => {
+        setIsPillDimmed(true);
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+            setIsPillDimmed(false);
+        }, 1000);
+    };
 
     // 🔓 Access Control Logic: Now open to everyone
     const isAuthorized = true;
+    const showGreeting = false; // Disable popup greeting if handled via guiding pills
 
-    const firstName = telegramUser?.first_name || "there";
-
-    useEffect(() => {
-        if (hasGreetingBeenDismissed || isExpanded) return;
-        const timer = setTimeout(() => { setShowGreeting(true); }, 1500);
-        return () => clearTimeout(timer);
-    }, [isExpanded, hasGreetingBeenDismissed]);
-
-    // 🕒 Auto-dismiss bubble after 10 seconds
-    useEffect(() => {
-        if (showGreeting) {
-            const timer = setTimeout(() => {
-                setShowGreeting(false);
-                setHasGreetingBeenDismissed(true);
-            }, 10000);
-            return () => clearTimeout(timer);
-        }
-    }, [showGreeting]);
-
-    // Navigation is now handled globally via isExpanded prop and LandingPage.tsx Back Button logic.
-
-    useEffect(() => {
-        if (isExpanded) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, isExpanded]);
-
-    const greetingMessage = useMemo(() => {
-        const hasSocial = socialMissionCount > 0;
-        const hasPresence = presenceMissionCount > 0;
-
-        if (hasSocial && hasPresence) {
-            return `Missions pending in Presence & Social tabs.`;
-        } else if (hasPresence) {
-            return `Check the Presence tab—signals need activation.`;
-        } else if (hasSocial) {
-            return `New missions available in the Social tab.`;
-        }
-        return `Everything is operational. How can I assist you?`;
-    }, [socialMissionCount, presenceMissionCount]);
-
-    const handleSendMessage = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!inputValue.trim() && !selectedImage) return;
+    // ----------------------------------------------------
+    // LOCAL TYPEWRITER SIMULATION
+    // ----------------------------------------------------
+    const simulateTypewriterResponse = (responseContent: string) => {
+        setIsTyping(true);
+        setTypingText("");
         
-        const userMsg = inputValue.trim();
-        setInputValue("");
-        setMessages(prev => [...prev, { 
-            role: "user", 
-            content: userMsg, 
-            image: selectedImage || undefined,
-            timestamp: new Date().toLocaleTimeString() 
-        }]);
+        let index = 0;
+        const speed = 12; // Character typing speed
         
-        setSelectedImage(null);
-        setIsLoading(true);
+        const timer = setInterval(() => {
+            if (index < responseContent.length) {
+                setTypingText(prev => prev + responseContent.charAt(index));
+                index++;
+            } else {
+                clearInterval(timer);
+                setIsTyping(false);
+                
+                // Commit to active session history
+                setSessions(prev => prev.map(s => {
+                    if (s.id === activeSessionId) {
+                        return {
+                            ...s,
+                            messages: [...s.messages, { role: "ai", content: responseContent }]
+                        };
+                    }
+                    return s;
+                }));
+                setTypingText("");
+            }
+        }, speed);
+    };
+
+    // ----------------------------------------------------
+    // SEND MESSAGE ACTIONS
+    // ----------------------------------------------------
+    const handleSend = (textToSend?: string) => {
+        const messageText = (textToSend || input).trim();
+        if (!messageText || isTyping) return;
+
+        if (!textToSend) {
+            setInput("");
+        }
+
+        // Add user message
+        setSessions(prev => prev.map(s => {
+            if (s.id === activeSessionId) {
+                return {
+                    ...s,
+                    messages: [...s.messages, { role: "user", content: messageText }]
+                };
+            }
+            return s;
+        }));
+
+        // Answer matching
+        let reply = "";
+        const lowerText = messageText.toLowerCase();
+        
+        if (lowerText.includes("wallet") || lowerText.includes("ton")) {
+            reply = `### How to Connect TON Wallet\n\nFollow these quick steps to sync your wallet with the Bluewave Protocol:\n\n1. **Open Wallet Portal**: Go back to the main app dashboard.\n2. **Tap Connect**: Click the **Connect TON Wallet** button in the header.\n3. **Choose Provider**: Pick your preferred wallet (e.g., *Tonkeeper*, *Tonhub*, or *Telegram @Wallet*).\n4. **Approve Authorization**: Approve the connection prompt inside your secure wallet app.\n5. **Verification**: Once connected, your wallet address and total **$BWAVE** balance will sync automatically here.`;
+        } else if (lowerText.includes("activate") || lowerText.includes("presence")) {
+            reply = `### Activating Your Presence\n\nActivating your presence connects you to the decentralized validation pool:\n\n1. Locate the **Presence** dashboard tab inside the application.\n2. Toggle **Active Broadcast** to "ON".\n3. This periodically transmits a lightweight connectivity ping (using zero battery degradation).\n4. Keep your daily streak active to accumulate multipliers on your **Presence Score**!`;
+        } else if (lowerText.includes("presencefi")) {
+            reply = `### What is PresenceFi?\n\n**PresenceFi** is the financial layer of the Bluewave Ecosystem. It rewards users for proving they are physically or digitally present in verified zones.\n\n* **Signal Mining**: Turn your active internet connectivity into high-value telemetry points.\n* **Treasury Distribution**: Active operators share daily $BWAVE tokens distributed from the protocol incentives pool.\n* **Proof of Transit**: Securely register path coordinates without compromising biological identity.`;
+        } else if (lowerText.includes("profile") || lowerText.includes("details") || lowerText.includes("score")) {
+            reply = `### Your Bluewave Profile Details\n\nHere is your synced registry data:\n\n* **BW ID**: \`BW-9872-TG\`\n* **Presence Score**: \`89.4\` (Tier 1 Operator)\n* **Streaks**: \`7 Days Active\`\n* **Ecosystem Tokens**: \`${tokenBalance} tokens\`\n* **Selected Agent Brain**: \`${activeSession.model}\`\n* **Behavior Mode**: \`${activeSession.communicationStyle.toUpperCase()}\``;
+        } else {
+            reply = `I am currently functioning as a localized Blu guide. To configure my response parameters, use the **Settings** or switch **LLM Models** from the left toggle sidebar. \n\nFeel free to tap one of the guided helper pills below!`;
+        }
+
         setTimeout(() => {
-            setMessages(prev => [...prev, { 
-                role: "blu", 
-                content: "Processing your request through the Bluewave nodes. Please stand by...",
-                timestamp: new Date().toLocaleTimeString()
-            }]);
-            setIsLoading(false);
-        }, 3000); 
+            simulateTypewriterResponse(reply);
+        }, 400);
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setSelectedImage(event.target?.result as string);
-            };
-            reader.readAsDataURL(file);
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
         }
     };
+
+    // ----------------------------------------------------
+    // SESSION ACTIONS
+    // ----------------------------------------------------
+    const handleNewChat = () => {
+        const newId = `session-${Date.now()}`;
+        const newSession: ChatSession = {
+            id: newId,
+            title: `New Session #${sessions.length}`,
+            messages: [], // Fresh new session (displays center orb)
+            model: activeSession?.model || DEFAULT_MODEL,
+            personality: activeSession?.personality || DEFAULT_PERSONALITY,
+            communicationStyle: activeSession?.communicationStyle || DEFAULT_STYLE,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newId);
+        setIsSidebarOpen(false);
+    };
+
+    const handleUpdateSettings = () => {
+        setSessions(prev => prev.map(s => {
+            if (s.id === activeSessionId) {
+                return {
+                    ...s,
+                    personality: settingsPersonality,
+                    communicationStyle: settingsStyle
+                };
+            }
+            return s;
+        }));
+        
+        setActiveModal(null);
+        setTimeout(() => {
+            simulateTypewriterResponse(`### System Update Successful\n\nMy neural profile has been re-synchronized. My personality instructions have been set to:\n\n*"${settingsPersonality}"*\n\nCommunication style: **${settingsStyle}**`);
+        }, 300);
+    };
+
+    const handleModelChange = (modelName: string) => {
+        setSessions(prev => prev.map(s => {
+            if (s.id === activeSessionId) {
+                return { ...s, model: modelName };
+            }
+            return s;
+        }));
+        setActiveModal(null);
+        setTimeout(() => {
+            simulateTypewriterResponse(`System switched active model successfully to **${modelName}**.`);
+        }, 350);
+    };
+
+    // Guided questions
+    const guidedQuestions = [
+        { id: "wallet", text: "How to connect TON wallet" },
+        { id: "activate", text: "How to activate presence" },
+        { id: "presenceFi", text: "What is presenceFi?" },
+        { id: "details", text: "My Profile Details" }
+    ];
+
+    // LLM Models
+    const modelsList = [
+        { name: "Blu-1.5-Pro", desc: "Premium reasoning and deep context analysis (Default)" },
+        { name: "Blu-1.5-Flash", desc: "Lightweight, ultra-fast responses for quick checks" },
+        { name: "DeepSeek-R1-Distill", desc: "Enhanced logic, mathematical proofs, and system debugging" },
+        { name: "Llama-3.3-70B", desc: "Warm, natural communication & advanced brainstorming" }
+    ];
+
+    // Style options
+    const styleOptions = [
+        { value: "default", label: "Default Protocol Tone" },
+        { value: "friendly", label: "Friendly Guide" },
+        { value: "listener", label: "Empathetic Listener" },
+        { value: "corp", label: "Corporate Strategy Advisor" },
+        { value: "formal", label: "Formal/Academic Academician" }
+    ];
 
     return (
         <>
-            {/* 1. THE MINI ORB BUTTON (Circle + BLU Text - Magnetic & Draggable) */}
+            {/* 1. THE MINI ORB BUTTON (Circle + BLU Text - Draggable on Home Screen) */}
             <motion.div 
                 animate={{ 
                     left: position.x, 
@@ -226,8 +433,6 @@ export default function BluButton({
                         onClick={() => { 
                             if (!isAuthorized || isDraggingDistance.current > 6) return;
                             onToggleExpand?.(true); 
-                            setShowGreeting(false); 
-                            setHasGreetingBeenDismissed(true);
                         }}
                         whileHover={isAuthorized ? { scale: 1.1, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" } : {}}
                         whileTap={isAuthorized ? { scale: 0.95 } : {}}
@@ -237,7 +442,6 @@ export default function BluButton({
                                 : "border-white/5 opacity-50 cursor-default"
                         }`}
                     >
-                        {/* Internal Liquid Orb Animation (Minimal) */}
                         <div className="absolute inset-0 flex items-center justify-center">
                             <motion.div 
                                 animate={{ 
@@ -250,92 +454,87 @@ export default function BluButton({
                             />
                         </div>
                         
-                        <span className={`relative text-[8px] font-black tracking-[0.3em] transition-colors ${isAuthorized ? "text-cyan-300 group-hover:text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-white/20"}`}>
+                        <span className={`relative text-[8px] font-black tracking-[0.3em] text-cyan-300 group-hover:text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]`}>
                             BLU
                         </span>
-
-                        {/* Outer Atmospheric Glow */}
-                        {isAuthorized && (
-                            <motion.div 
-                                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
-                                transition={{ duration: 3, repeat: Infinity }}
-                                className="absolute inset-0 bg-cyan-400/20 blur-2xl -z-10"
-                            />
-                        )}
                     </motion.button>
                 </motion.div>
-
-                {/* Mini Greeting Bubble */}
-                <AnimatePresence>
-                    {showGreeting && (
-                        <motion.div 
-                            initial={{ opacity: 0, x: isSnappedToLeft ? -20 : 20, scale: 0.95 }}
-                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, x: isSnappedToLeft ? -20 : 20, scale: 0.95 }}
-                            className={`absolute top-0 w-52 border border-white/10 bg-white/5 backdrop-blur-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[86] overflow-hidden ${
-                                isSnappedToLeft 
-                                    ? "left-16 rounded-[1.5rem] rounded-tl-none" 
-                                    : "right-16 rounded-[1.5rem] rounded-tr-none"
-                            }`}
-                        >
-                            <div className="relative p-4 space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                                    <span className="text-[8px] font-black text-cyan-400/60 uppercase tracking-widest">Blu Intelligence</span>
-                                </div>
-                                <p className="text-[10px] text-white/90 leading-snug font-medium">
-                                    {greetingMessage}
-                                </p>
-                                <button onClick={() => { setShowGreeting(false); setHasGreetingBeenDismissed(true); }} className="text-[8px] font-bold text-white/30 uppercase tracking-widest hover:text-white transition-colors">
-                                    Dismiss
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </motion.div>
 
-            {/* 2. FULL SCREEN COCOON-STYLE COMMAND CENTER */}
+            {/* 2. REDESIGNED FULL SCREEN COCOON COMMAND CENTER OVERLAY */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden"
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden font-sans selection:bg-cyan-500/30"
                     >
-                        {/* Slim Cocoon Dynamic Island (Top Navigation) - Lowered by 20pt total */}
-                        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[101]">
-                            <motion.button 
-                                initial={{ y: -20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                onClick={() => {
-                                    console.log("Cocoon Pill Clicked");
-                                    onOpenCocoon?.();
-                                }}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group"
+                        {/* ──────────────────────────────────────────────────
+                            TOP ROW CONTROLS (Sidebar, Dynamic Island Cocoon, Token Pill)
+                           ────────────────────────────────────────────────── */}
+                        <div className="absolute top-[env(safe-area-inset-top,24px)] left-0 right-0 z-[101] px-4 flex items-center justify-between">
+                            
+                            {/* Left: Sidebar toggle + Close Button (liquid glass) */}
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => setIsSidebarOpen(true)}
+                                    className="p-2.5 rounded-full bg-white/5 border border-white/15 backdrop-blur-xl text-cyan-400 hover:text-white transition-all shadow-[0_0_15px_rgba(0,230,255,0.1)] active:scale-95 cursor-pointer"
+                                    aria-label="Open sidebar"
+                                >
+                                    <ArrowRight size={18} className="animate-pulse" />
+                                </button>
+                                
+                                <button 
+                                    onClick={() => onToggleExpand?.(false)}
+                                    className="p-2.5 rounded-full bg-white/5 border border-white/15 backdrop-blur-xl text-gray-400 hover:text-white transition-all active:scale-95 cursor-pointer"
+                                    aria-label="Minimize Agent"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            {/* Center: Slim Cocoon Dynamic Island */}
+                            <div className="absolute left-1/2 -translate-x-1/2">
+                                <motion.button 
+                                    initial={{ y: -20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    onClick={() => onOpenCocoon?.()}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 transition-all group cursor-pointer"
+                                >
+                                    <img 
+                                        src="/cocoon_egg.webp" 
+                                        alt="Cocoon" 
+                                        loading="eager"
+                                        className="w-5 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
+                                        onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
+                                    />
+                                    <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                                        Cocoon
+                                    </span>
+                                </motion.button>
+                            </div>
+
+                            {/* Right: Liquid Glass Token Pill (below tabs/header level, dims on scroll) */}
+                            <div 
+                                onClick={() => setActiveModal("tokens")}
+                                className={`cursor-pointer transition-opacity duration-300 ${isPillDimmed ? 'opacity-10' : 'opacity-100'} bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/35 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.4)]`}
                             >
-                                <img 
-                                    src="/cocoon_egg.webp" 
-                                    alt="Cocoon" 
-                                    loading="eager"
-                                    className="w-5 h-6 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform"
-                                    onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
-                                />
-                                <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-                                    Cocoon
-                                </span>
-                            </motion.button>
+                                <Coins size={12} className="text-amber-400" />
+                                <span className="text-xs font-black tracking-wide text-white">{tokenBalance}</span>
+                            </div>
                         </div>
 
-                        {/* 🌌 BLU MATRIX RAIN (Activates on first message) */}
+                        {/* 🌌 BLU MATRIX RAIN (Activates when messaging has started) */}
                         <AnimatePresence>
-                            {messages.length > 0 && (
+                            {activeSession.messages.length > 0 && (
                                 <motion.div 
                                     initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
+                                    animate={{ opacity: 0.7 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ duration: 1 }}
+                                    transition={{ duration: 1.2 }}
                                     className="absolute inset-0 pointer-events-none overflow-hidden z-0"
                                 >
                                     <MatrixRain />
@@ -344,32 +543,34 @@ export default function BluButton({
                         </AnimatePresence>
 
                         {/* Background Ambient Glows */}
-                        <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute inset-0 pointer-events-none z-0">
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-cyan-500/5 blur-[120px] rounded-full" />
                             <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-purple-500/5 blur-[100px] rounded-full" />
                         </div>
 
-                        {/* Main Content Area (Subtle blur when chatting) */}
+                        {/* ──────────────────────────────────────────────────
+                            MAIN CENTRAL ORB VIEW (Blurs/Fades out when messaging begins)
+                           ────────────────────────────────────────────────── */}
                         <motion.div 
                             animate={{ 
-                                filter: messages.length > 0 ? "blur(4px)" : "blur(0px)",
-                                opacity: messages.length > 0 ? 0.8 : 1,
+                                filter: activeSession.messages.length > 0 ? "blur(8px)" : "blur(0px)",
+                                opacity: activeSession.messages.length > 0 ? 0.2 : 1,
+                                scale: activeSession.messages.length > 0 ? 0.92 : 1,
                             }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 pt-20"
+                            className="flex-1 flex flex-col items-center justify-center px-8 absolute inset-0 z-0 pt-20 pointer-events-none"
                         >
-                            
-                            {/* The Central Asset */}
-                            <div className="relative mb-12">
+                            {/* Central Asset */}
+                            <div className="relative mb-8">
                                 <motion.div 
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
-                                    className="relative w-48 h-48 flex items-center justify-center"
+                                    className="relative w-48 h-48 flex items-center justify-center animate-pulse"
                                 >
-                                    <div className="absolute inset-0 bg-cyan-500/5 blur-[60px] rounded-full animate-pulse" />
+                                    <div className="absolute inset-0 bg-cyan-500/5 blur-[60px] rounded-full" />
                                     <img 
                                         src="/blu_image.webp" 
-                                        alt="Blu" 
+                                        alt="Blu Orb" 
                                         loading="eager"
                                         className="w-40 h-40 object-contain relative z-20"
                                         onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
@@ -378,126 +579,438 @@ export default function BluButton({
                             </div>
 
                             {/* Welcome Text */}
-                            <div className="text-center space-y-3 mb-12">
-                                <motion.h1 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="text-3xl font-black text-white tracking-tighter"
-                                >
+                            <div className="text-center space-y-3">
+                                <h1 className="text-3xl font-black text-white tracking-tighter">
                                     Hello, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Blu</span>
-                                </motion.h1>
-                                <motion.p 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="text-white/40 text-sm font-medium tracking-wide uppercase text-[10px] tracking-[0.2em]"
-                                >
+                                </h1>
+                                <p className="text-white/40 text-sm font-medium tracking-wide uppercase text-[10px] tracking-[0.2em]">
                                     Bluewave intelligence agent
-                                </motion.p>
+                                </p>
                             </div>
                         </motion.div>
 
-                        {/* Chat View (Stays focused/clear) */}
+                        {/* ──────────────────────────────────────────────────
+                            MESSAGES CONTAINER
+                           ────────────────────────────────────────────────── */}
                         <AnimatePresence>
-                            {messages.length > 0 && (
+                            {activeSession.messages.length > 0 && (
                                 <motion.div 
+                                    ref={chatContainerRef}
+                                    onScroll={handleScroll}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="absolute inset-0 pt-[400px] pb-40 px-6 overflow-y-auto z-20 flex flex-col gap-6 custom-scrollbar"
+                                    className="absolute inset-0 pt-[160px] pb-44 px-6 overflow-y-auto z-10 flex flex-col gap-6 custom-scrollbar"
                                 >
-                                    {messages.map((msg, idx) => (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            key={idx} 
-                                            className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                                        >
-                                            <div className={`max-w-[85%] p-5 rounded-[2rem] text-sm leading-relaxed border backdrop-blur-md
-                                                ${msg.role === "user" 
-                                                    ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-50 rounded-br-none" 
-                                                    : "bg-white/5 border-white/10 text-white/70 rounded-bl-none"
-                                                }`}
+                                    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+                                        {activeSession.messages.map((msg, idx) => (
+                                            <motion.div
+                                                key={idx}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                             >
-                                                {msg.image && (
-                                                    <img src={msg.image} alt="User Upload" className="mb-3 rounded-xl w-full object-cover max-h-40" />
+                                                {/* AI Avatar */}
+                                                {msg.role === "ai" && (
+                                                    <div className="shrink-0 w-8 h-8 rounded-full bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center mt-1">
+                                                        <Bot size={14} className="text-cyan-400" />
+                                                    </div>
                                                 )}
-                                                {msg.content}
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                    <div ref={messagesEndRef} />
+
+                                                {/* Message Bubble */}
+                                                <div
+                                                    className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed relative ${msg.role === "user"
+                                                            ? "bg-white text-black font-semibold rounded-tr-sm self-end shadow-md"
+                                                            : "bg-white/5 text-gray-100 border border-white/10 rounded-tl-sm prose prose-invert prose-p:leading-relaxed prose-a:text-cyan-400 prose-code:text-cyan-300 prose-code:bg-cyan-950/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-headings:text-white marker:text-cyan-500"
+                                                        }`}
+                                                >
+                                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                                </div>
+
+                                                {/* User Avatar */}
+                                                {msg.role === "user" && (
+                                                    <div className="shrink-0 w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center mt-1">
+                                                        <User size={14} className="text-white" />
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        ))}
+
+                                        {/* Typewriter placeholder */}
+                                        {isTyping && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="flex gap-3 justify-start"
+                                            >
+                                                <div className="shrink-0 w-8 h-8 rounded-full bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center mt-1">
+                                                    <Bot size={14} className="text-cyan-400" />
+                                                </div>
+                                                <div className="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm px-4 py-3 text-[14px] text-gray-300 max-w-[85%] prose prose-invert leading-relaxed">
+                                                    <ReactMarkdown>{typingText}</ReactMarkdown>
+                                                    <span className="inline-block w-1.5 h-4 ml-1 bg-cyan-400 animate-pulse align-middle" />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                        <div ref={messagesEndRef} />
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        {/* REDESIGNED TACTICAL INPUT BAR */}
-                        <div className="mt-auto px-6 pb-10 relative z-30">
-                            {/* Input Container (Single Row ChatGPT Style, supports image preview at top) */}
-                            <div className="bg-white/5 border border-white/10 backdrop-blur-[40px] rounded-[2rem] p-1.5 pr-2 flex flex-col gap-2 shadow-2xl overflow-hidden">
-                                {selectedImage && (
-                                    <div className="flex pl-12 pt-2">
-                                        <div className="relative inline-block">
-                                            <img 
-                                                src={selectedImage} 
-                                                alt="Preview" 
-                                                className="w-20 h-20 object-cover rounded-2xl border border-white/20 shadow-lg"
-                                            />
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedImage(null);
-                                                    if (fileInputRef.current) fileInputRef.current.value = "";
-                                                }}
-                                                className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white hover:bg-black transition-colors shadow-md z-10"
-                                            >
-                                                <X size={12} strokeWidth={3} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                        {/* ──────────────────────────────────────────────────
+                            FOOTER PILLS & TACTICAL INPUT BAR
+                           ────────────────────────────────────────────────── */}
+                        <div className="mt-auto w-full max-w-4xl mx-auto px-6 pb-10 relative z-30 flex flex-col">
+                            {/* Horizontal ready questions */}
+                            <div className="relative w-full h-[38px] mb-2 pointer-events-none">
+                                <AnimatePresence>
+                                    {!isTyping && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="flex gap-2 overflow-x-auto no-scrollbar pointer-events-auto pb-1"
+                                        >
+                                            {guidedQuestions.map((q) => (
+                                                <button
+                                                    key={q.id}
+                                                    onClick={() => handleSend(q.text)}
+                                                    className="shrink-0 bg-white/10 hover:bg-white/20 border border-white/20 active:bg-cyan-500/20 active:border-cyan-500/50 text-[11px] font-bold text-white px-3 py-1.5 rounded-full backdrop-blur-md transition-all shadow-md cursor-pointer"
+                                                >
+                                                    {q.text}
+                                                </button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
 
-                                <div className="flex items-center gap-2 w-full">
-                                    {/* Hidden File Input */}
-                                    <input 
-                                        type="file" 
-                                        ref={fileInputRef}
-                                        onChange={handleImageUpload}
-                                        className="hidden"
-                                        accept="image/*"
+                            {/* Main Input Row */}
+                            <div className="flex items-end gap-2">
+                                {/* Plus attachment button */}
+                                <button
+                                    onClick={() => alert("File attachment integrations are currently offline.")}
+                                    className="shrink-0 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-white flex items-center justify-center cursor-pointer transition-all shadow-md active:scale-95"
+                                    title="Attach Media"
+                                >
+                                    <Plus size={20} />
+                                </button>
+
+                                {/* Defined Search Bar Container */}
+                                <div className="flex-1 relative flex items-end gap-2 bg-[#121212] border border-white/40 hover:border-white/50 focus-within:border-cyan-500/60 focus-within:ring-1 focus-within:ring-cyan-500/50 rounded-[2rem] p-1.5 pr-2 transition-all shadow-lg">
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Type a message to Blu..."
+                                        className="flex-1 max-h-24 min-h-[34px] bg-transparent text-white placeholder:text-gray-400 resize-none px-3 py-2 focus:outline-none text-[14px] leading-relaxed custom-scrollbar font-medium"
+                                        rows={1}
+                                        disabled={isTyping}
                                     />
 
-                                    <button 
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${selectedImage ? "text-cyan-400 bg-cyan-400/10" : "text-white/20 hover:text-white/40 hover:bg-white/5"}`}
+                                    {/* Auto badge inside search bar */}
+                                    <button
+                                        onClick={() => setActiveModal("models")}
+                                        className="shrink-0 px-2 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[10px] font-black uppercase tracking-wider transition-colors mr-1 self-center cursor-pointer"
                                     >
-                                        <Plus size={20} />
+                                        Auto
                                     </button>
 
-                                    <div className="flex-1 min-w-0">
-                                        <input 
-                                            type="text" 
-                                            value={inputValue}
-                                            onChange={(e) => setInputValue(e.target.value)}
-                                            placeholder="Ask Blu anything..." 
-                                            className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-white/20 py-2"
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(e as any)}
-                                        />
-                                    </div>
-
-                                    <button 
-                                        onClick={handleSendMessage}
-                                        disabled={!inputValue.trim() && !selectedImage}
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                                            (inputValue.trim() || selectedImage)
-                                                ? "bg-gradient-to-br from-cyan-400 to-blue-600 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]" 
-                                                : "bg-white/5 text-white/10"
-                                        }`}
+                                    {/* Send button */}
+                                    <button
+                                        onClick={() => handleSend()}
+                                        disabled={!input.trim() || isTyping}
+                                        className="shrink-0 w-8 h-8 rounded-xl bg-cyan-500 text-black flex items-center justify-center hover:bg-cyan-400 disabled:opacity-30 disabled:bg-white/10 disabled:text-gray-500 transition-colors self-center cursor-pointer"
                                     >
-                                        <Send size={18} strokeWidth={2.5} />
+                                        <Send size={14} className="translate-x-[0.5px]" />
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Subtext info warning (highly visible) */}
+                            <div className="text-center mt-2">
+                                <p className="text-[10px] text-gray-300 font-bold tracking-wide">
+                                    Blu Intelligence can make mistakes. Verify important profile data.
+                                </p>
+                            </div>
                         </div>
+
+                        {/* ──────────────────────────────────────────────────
+                            LIQUID GLASS SIDEBAR MENU
+                           ────────────────────────────────────────────────── */}
+                        <AnimatePresence>
+                            {isSidebarOpen && (
+                                <>
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => setIsSidebarOpen(false)}
+                                        className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30"
+                                    />
+
+                                    <motion.div
+                                        initial={{ x: "-100%" }}
+                                        animate={{ x: 0 }}
+                                        exit={{ x: "-100%" }}
+                                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                                        className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#080808]/90 backdrop-blur-2xl border-r border-white/15 z-40 flex flex-col pt-[env(safe-area-inset-top,40px)] pb-[env(safe-area-inset-bottom,20px)]"
+                                    >
+                                        <div className="p-4 border-b border-white/10">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                                                    <User className="text-cyan-400" size={18} />
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-black tracking-wide">BW ID Registry</div>
+                                                    <div className="text-[10px] text-gray-400 font-semibold font-mono">BW-9872-TG</div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white/5 rounded-xl p-3 border border-white/10 space-y-1">
+                                                <div className="flex justify-between items-center text-[10px]">
+                                                    <span className="text-gray-400">Presence Score</span>
+                                                    <span className="text-cyan-400 font-black">89.4</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px]">
+                                                    <span className="text-gray-400">TON Wallet</span>
+                                                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                                                        Connected <UserCheck size={10} />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+                                            <button
+                                                onClick={handleNewChat}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black text-cyan-400 bg-cyan-950/20 border border-cyan-500/30 hover:bg-cyan-950/40 transition-all text-left shadow-sm active:scale-[0.98] cursor-pointer"
+                                            >
+                                                <PlusCircle size={16} />
+                                                <span>New Chat Session</span>
+                                            </button>
+
+                                            <div className="h-px bg-white/5 my-2" />
+
+                                            <button
+                                                onClick={() => { setActiveModal("tokens"); setIsSidebarOpen(false); }}
+                                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all text-left cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Coins size={16} className="text-amber-400" />
+                                                    <span>My Tokens</span>
+                                                </div>
+                                                <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] text-white font-mono">{tokenBalance}</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => { setActiveModal("models"); setIsSidebarOpen(false); }}
+                                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all text-left cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Bot size={16} className="text-purple-400" />
+                                                    <span>LLM Model</span>
+                                                </div>
+                                                <span className="text-[9px] text-purple-400 bg-purple-950/30 border border-purple-500/20 px-1.5 py-0.5 rounded font-mono">{activeSession.model}</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => { setActiveModal("settings"); setIsSidebarOpen(false); }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all text-left cursor-pointer"
+                                            >
+                                                <Settings size={16} className="text-gray-400" />
+                                                <span>Settings</span>
+                                            </button>
+
+                                            <div className="h-px bg-white/5 my-2" />
+
+                                            <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-4 py-1">
+                                                Recent Sessions
+                                            </div>
+                                            <div className="space-y-1">
+                                                {sessions.map((s) => (
+                                                    <button
+                                                        key={s.id}
+                                                        onClick={() => { setActiveSessionId(s.id); setIsSidebarOpen(false); }}
+                                                        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs transition-all text-left border cursor-pointer ${
+                                                            s.id === activeSessionId
+                                                                ? 'bg-white/10 border-white/15 text-white'
+                                                                : 'text-gray-400 hover:text-white border-transparent'
+                                                        }`}
+                                                    >
+                                                        <span className="truncate max-w-[140px]">{s.title}</span>
+                                                        <span className="text-[9px] text-gray-600 font-mono">{s.timestamp}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
+
+                        {/* ──────────────────────────────────────────────────
+                            SUB MODAL STACKS
+                           ────────────────────────────────────────────────── */}
+                        <AnimatePresence>
+                            {activeModal && (
+                                <motion.div
+                                    initial={{ y: "100%" }}
+                                    animate={{ y: 0 }}
+                                    exit={{ y: "100%" }}
+                                    transition={{ type: "spring", damping: 30, stiffness: 250 }}
+                                    className="absolute inset-0 bg-[#030303] z-50 flex flex-col pt-[58px]"
+                                >
+                                    <div className="shrink-0 h-[48px] px-4 border-b border-white/5 flex items-center justify-between">
+                                        <button
+                                            onClick={() => setActiveModal(null)}
+                                            className="flex items-center gap-1.5 text-xs text-cyan-400 font-bold hover:text-cyan-300 transition-colors cursor-pointer"
+                                        >
+                                            <ArrowLeft size={16} /> Back
+                                        </button>
+                                        <span className="text-xs font-black uppercase tracking-wider text-gray-400">
+                                            {activeModal === "tokens" && "Tokens & Topups"}
+                                            {activeModal === "models" && "LLM Models"}
+                                            {activeModal === "settings" && "Custom Identity"}
+                                        </span>
+                                        <div className="w-12 h-6" />
+                                    </div>
+
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar pb-12">
+                                        {/* Tokens Topup list */}
+                                        {activeModal === "tokens" && (
+                                            <div className="space-y-6">
+                                                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center space-y-2 relative overflow-hidden shadow-2xl">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+                                                    <Coins size={36} className="text-amber-400 mx-auto" />
+                                                    <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Active Balance</div>
+                                                    <div className="text-4xl font-black text-white">{tokenBalance}</div>
+                                                    <p className="text-[11px] text-gray-300 max-w-xs mx-auto">
+                                                        Tokens fund intelligence features, routing validation telemetry, and dynamic AI personality layers.
+                                                    </p>
+                                                </div>
+
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Top-up Packages</h3>
+
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    {[
+                                                        { name: "Starter Star Pack", count: 100, price: "$0.99", desc: "Perfect for quick answers" },
+                                                        { name: "Pro Signal Booster", count: 500, price: "$3.99", desc: "For extensive research analysis" },
+                                                        { name: "Protocol Validator", count: 1200, price: "$6.99", desc: "Heavy developer usage tier" }
+                                                    ].map((pack) => (
+                                                        <div 
+                                                            key={pack.name}
+                                                            className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors"
+                                                        >
+                                                            <div className="space-y-1">
+                                                                <div className="text-xs font-black text-white">{pack.name}</div>
+                                                                <div className="text-[10px] text-gray-300">{pack.desc}</div>
+                                                                <div className="text-[11px] text-amber-400 font-black">
+                                                                    +{pack.count} tokens
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setTokenBalance(prev => prev + pack.count);
+                                                                    alert(`Purchased ${pack.count} tokens successfully!`);
+                                                                }}
+                                                                className="px-3 py-2 rounded-lg bg-cyan-50 hover:bg-cyan-400 text-black text-xs font-black tracking-wider transition-all cursor-pointer"
+                                                            >
+                                                                {pack.price}
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Models Selector list */}
+                                        {activeModal === "models" && (
+                                            <div className="space-y-4">
+                                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Select Active Brain</h3>
+                                                <div className="space-y-2">
+                                                    {modelsList.map((m) => {
+                                                        const isSelected = activeSession.model === m.name;
+                                                        return (
+                                                            <button
+                                                                key={m.name}
+                                                                onClick={() => handleModelChange(m.name)}
+                                                                className={`w-full p-4 rounded-xl border text-left flex items-start justify-between transition-all cursor-pointer ${
+                                                                    isSelected
+                                                                        ? 'bg-cyan-500/10 border-cyan-500/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                                                                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                                                                }`}
+                                                            >
+                                                                <div className="space-y-1">
+                                                                    <div className="text-xs font-black">{m.name}</div>
+                                                                    <div className="text-[11px] text-gray-300">{m.desc}</div>
+                                                                </div>
+                                                                {isSelected && (
+                                                                    <div className="w-5 h-5 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0">
+                                                                        <Check size={12} strokeWidth={3} />
+                                                                    </div>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Personality settings */}
+                                        {activeModal === "settings" && (
+                                            <div className="space-y-6">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400">
+                                                            Custom Personality / System Prompt
+                                                        </label>
+                                                        <textarea
+                                                            value={settingsPersonality}
+                                                            onChange={(e) => setSettingsPersonality(e.target.value)}
+                                                            rows={4}
+                                                            className="w-full bg-[#121212] border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all resize-none leading-relaxed text-white font-medium"
+                                                            placeholder="Provide prompt details..."
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400">
+                                                            Communication Style
+                                                        </label>
+                                                        <div className="relative">
+                                                            <select
+                                                                value={settingsStyle}
+                                                                onChange={(e) => setSettingsStyle(e.target.value)}
+                                                                className="w-full bg-[#121212] border border-white/20 rounded-xl px-4 py-3 text-xs font-bold text-white focus:outline-none focus:border-cyan-500/50 appearance-none cursor-pointer"
+                                                            >
+                                                                {styleOptions.map((opt) => (
+                                                                    <option key={opt.value} value={opt.value} className="bg-[#0f0f0f] text-white">
+                                                                        {opt.label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                                <ChevronDown size={14} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="h-px bg-white/5 my-4" />
+
+                                                    <button
+                                                        onClick={handleUpdateSettings}
+                                                        className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black text-xs font-black uppercase tracking-widest transition-all shadow-lg text-center cursor-pointer"
+                                                    >
+                                                        Update Agent Personality
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                     </motion.div>
                 )}
@@ -540,37 +1053,27 @@ const MatrixRain = memo(function MatrixRain() {
         resize();
         window.addEventListener("resize", resize);
 
-        // Bluewave character set: binary + hex + katakana + symbols
         const chars = "01アイウエオカキクケコサシスセソタチツテト◈⬡∞ΔABCDEF0123456789⬢◆▲♦><#@!";
-        const fontSize = 11; // Smaller = more columns = fuller screen
+        const fontSize = 11;
         const cols = Math.floor(canvas.width / fontSize);
 
-        // Each column starts at a random y position off-screen
         const drops: number[] = Array.from({ length: cols }, () => Math.random() * -100);
 
-        // 🎨 Each column gets a random brand color palette
         const brandPalettes = [
-            // Cyan column
             { head: "rgba(255,255,255,0.95)", body: "rgba(34,211,238,0.85)", mid: "rgba(34,211,238,0.5)", tail: "rgba(34,211,238,0.15)" },
-            // Purple column  
             { head: "rgba(255,255,255,0.95)", body: "rgba(168,85,247,0.85)", mid: "rgba(168,85,247,0.5)", tail: "rgba(168,85,247,0.15)" },
-            // Blue column
             { head: "rgba(255,255,255,0.95)", body: "rgba(59,130,246,0.85)", mid: "rgba(59,130,246,0.5)", tail: "rgba(59,130,246,0.15)" },
-            // Cyan-purple mix
             { head: "rgba(255,255,255,0.95)", body: "rgba(99,102,241,0.85)", mid: "rgba(99,102,241,0.5)", tail: "rgba(99,102,241,0.15)" },
         ];
 
-        // Assign each column a fixed random palette
         const colPalettes = Array.from({ length: cols }, () =>
             brandPalettes[Math.floor(Math.random() * brandPalettes.length)]
         );
 
-        // Per-column speed variation — much faster cinematic Matrix-style rain
         const speeds = Array.from({ length: cols }, (_, i) => 1.2 + ((i * 7) % 9) / 6);
 
         let animId: number;
         const draw = () => {
-            // Semi-transparent overlay creates the glowing trail fade
             ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -582,13 +1085,11 @@ const MatrixRain = memo(function MatrixRain() {
                 const x = i * fontSize;
                 const y = Math.floor(drops[i]) * fontSize;
 
-                // Head character — bright white pop
                 ctx.fillStyle = palette.head;
                 ctx.shadowColor = palette.body;
                 ctx.shadowBlur = 8;
                 ctx.fillText(char, x, y);
 
-                // Body (one char below head) — brand color, full opacity
                 if (y > fontSize) {
                     ctx.fillStyle = palette.body;
                     ctx.shadowBlur = 4;
@@ -599,7 +1100,6 @@ const MatrixRain = memo(function MatrixRain() {
 
                 drops[i] += speeds[i];
 
-                // Reset when off screen
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) {
                     drops[i] = Math.random() * -20;
                 }
