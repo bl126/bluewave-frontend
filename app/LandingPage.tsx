@@ -369,12 +369,17 @@ export default function LandingPage() {
             stars_balance: Number(u.stars_balance ?? 0) || 0,
             stars_withdrawable: Number(u.stars_withdrawable ?? 0) || 0,
             wallet_relink_required: u.wallet_relink_required || false,
+            has_recovery_password: u.has_recovery_password || false,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
 
           if (u.wallet_relink_required) {
             setIsWalletRelinkRequired(true);
+          }
+
+          if (!u.has_recovery_password && u.wallet_address) {
+            setShowRecoveryModal(true);
           }
 
           // 🕒 Enforce 1 second branding delay even with cache
@@ -486,6 +491,12 @@ export default function LandingPage() {
           setIsLoading(false);
         }
 
+        // 3.6 Recovery Password Check (Only if wallet connected)
+        if (!user.has_recovery_password && user.wallet_address) {
+          setShowRecoveryModal(true);
+          setIsLoading(false);
+        }
+
         // 4. Check for Wallet Activation (The new Unified Gate)
         const isGhost = !user.wallet_address;
         
@@ -526,6 +537,7 @@ export default function LandingPage() {
           joined_at: user.joined_at,
           wallet_address: user.wallet_address,
           recovery_password_hash: user.recovery_password_hash,
+          has_recovery_password: user.has_recovery_password || false,
           human_verification_pending: user.human_verification_pending || false,
           network_builder_pending: user.network_builder_pending || false,
           is_human_verified: !!user.is_human_verified,
@@ -1167,7 +1179,14 @@ export default function LandingPage() {
       {/* 🛡️ Recovery Password LOCK SCREEN */}
       <RecoveryPasswordModal
         isOpen={showRecoveryModal}
-        onSuccess={() => setShowRecoveryModal(false)}
+        onSuccess={() => {
+          setShowRecoveryModal(false);
+          setTelegramUser((prev: any) => prev ? { ...prev, has_recovery_password: true } : null);
+          if (telegramUser?.id) {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            mutate(`${apiUrl}/api/user/${telegramUser.id}`, { ...telegramUser, has_recovery_password: true }, false);
+          }
+        }}
         telegramId={telegramUser?.tg_id || 0}
       />
 
