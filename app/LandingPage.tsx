@@ -378,9 +378,9 @@ export default function LandingPage() {
             setIsWalletRelinkRequired(true);
           }
 
-          if (!u.has_recovery_password && u.wallet_address) {
-            setShowRecoveryModal(true);
-          }
+          // NOTE: Recovery password check is intentionally NOT done from cache.
+          // The cache may not have has_recovery_password (old format) and would
+          // incorrectly show the modal for everyone. This check runs after live /init.
 
           // 🕒 Enforce 1 second branding delay even with cache
           const elapsed = Date.now() - startupTime;
