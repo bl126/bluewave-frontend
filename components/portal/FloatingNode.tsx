@@ -13,7 +13,7 @@ export interface NodeItem {
   artName?: string;
   ownerName?: string;
   likes: number;
-  comments: { id: string; user: string; text: string }[];
+  comments: { id: string; user: string; text: string; replies?: { id: string; user: string; text: string }[] }[];
   isTransforming?: boolean;
 }
 
@@ -22,6 +22,17 @@ interface FloatingNodeProps {
   onTapNode: (item: NodeItem) => void;
   onTapCard: (item: NodeItem) => void;
   onUpdatePosition: (id: string, x: number, y: number) => void;
+}
+
+interface Spark {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  decay: number;
 }
 
 export default function FloatingNode({
@@ -34,37 +45,39 @@ export default function FloatingNode({
   const [rotation, setRotation] = useState(0);
   const [isSolving, setIsSolving] = useState(false);
   const [showCard, setShowCard] = useState(item.type === "card");
+  
   const nodeRef = useRef<HTMLDivElement>(null);
-
-  // Generate random static values for float variation
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const floatDelay = useRef(Math.random() * 2);
-  const floatSpeed = useRef(3 + Math.random() * 2);
-  const driftAmount = useRef(10 + Math.random() * 15);
+  const floatSpeed = useRef(4 + Math.random() * 2);
+  const driftAmount = useRef(8 + Math.random() * 10);
+  
+  const sparks = useRef<Spark[]>([]);
 
-  // Trigger transformation animation if item's type changes to 'card' and it is not already showing card
+  // Trigger Transformation block assembly
   useEffect(() => {
     if (item.type === "card" && !showCard) {
       setIsSolving(true);
-      // Play puzzle assembly clicks
       let count = 0;
       const interval = setInterval(() => {
-        spaceAudio.playClick(400 + count * 50);
+        spaceAudio.playClick(350 + count * 60);
         count++;
         if (count > 10) {
           clearInterval(interval);
           setShowCard(true);
           setIsSolving(false);
-          spaceAudio.playClick(800); // final snap sound
+          spaceAudio.playClick(850); // confirm chime
         }
-      }, 100);
+      }, 95);
     }
   }, [item.type, showCard]);
 
-  // Gentle float effect in space
+  // Gentle floating animation
   useEffect(() => {
     controls.start({
       y: [0, driftAmount.current, -driftAmount.current, 0],
-      rotate: [rotation, rotation + 5, rotation - 5, rotation],
+      rotate: [rotation, rotation + 4, rotation - 4, rotation],
       transition: {
         duration: floatSpeed.current,
         repeat: Infinity,
@@ -74,18 +87,102 @@ export default function FloatingNode({
     });
   }, [controls, rotation]);
 
+  // Star Node Particle Spark generator (Drawing Image 2 style particle cloud)
+  useEffect(() => {
+    if (showCard || isSolving) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animFrame: number;
+
+    const spawnSpark = () => {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.random() * 0.7 + 0.2;
+      const size = Math.random() * 2 + 0.5;
+      
+      const colors = [
+        "rgba(253, 224, 71, 1)", // Gold
+        "rgba(249, 115, 22, 1)", // Orange
+        "rgba(255, 255, 255, 1)", // White
+        "rgba(254, 240, 138, 1)" // Pale yellow
+      ];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      return {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size,
+        color,
+        alpha: 1,
+        decay: Math.random() * 0.015 + 0.01
+      };
+    };
+
+    // Pre-populate sparks
+    for (let i = 0; i < 40; i++) {
+      const s = spawnSpark();
+      // stagger initial spark ages
+      s.x += s.vx * 30 * Math.random();
+      s.y += s.vy * 30 * Math.random();
+      s.alpha = Math.random();
+      sparks.current.push(s);
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Update and draw sparkles (Image 2 dust particles)
+      sparks.current.forEach((s, idx) => {
+        s.x += s.vx;
+        s.y += s.vy;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0) {
+          sparks.current[idx] = spawnSpark();
+        } else {
+          ctx.save();
+          ctx.globalAlpha = s.alpha;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size, 0, 2 * Math.PI);
+          ctx.fillStyle = s.color;
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = s.color;
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+
+      // Draw Glowing white core (Solid white circle with glowing aura)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 255, 255, 1)";
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+      ctx.fill();
+      ctx.restore();
+
+      animFrame = requestAnimationFrame(render);
+    };
+    render();
+
+    return () => {
+      cancelAnimationFrame(animFrame);
+    };
+  }, [showCard, isSolving]);
+
   const handleDragEnd = (event: any, info: any) => {
-    // Save new coordinates after dragging
-    const offsetWidth = nodeRef.current?.offsetWidth || 0;
-    const offsetHeight = nodeRef.current?.offsetHeight || 0;
-    
-    // We compute positions relative to the infinite canvas coordinate space
     const newX = item.x + info.offset.x;
     const newY = item.y + info.offset.y;
     onUpdatePosition(item.id, newX, newY);
-    
-    // Randomize a small new angle for post-drag drift
-    setRotation((Math.random() - 0.5) * 15);
+    setRotation((Math.random() - 0.5) * 10);
   };
 
   return (
@@ -99,23 +196,19 @@ export default function FloatingNode({
       animate={controls}
       className="absolute cursor-grab active:cursor-grabbing select-none"
     >
-      {/* 1. STAR NODE LAYER */}
+      {/* 1. UPGRADED STAR NODE CORE (Glow white orb, no text, image 2 particles) */}
       {!showCard && !isSolving && (
-        <motion.div
+        <div
           onClick={() => onTapNode(item)}
-          whileHover={{ scale: 1.2 }}
-          className="relative w-16 h-16 flex items-center justify-center rounded-full bg-blue-950/20 border border-blue-400/40 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all duration-300"
+          className="relative w-24 h-24 flex items-center justify-center -translate-x-[33%] -translate-y-[33%]"
         >
-          {/* Pulsing Star Core */}
-          <div className="w-6 h-6 rounded-full bg-cyan-400 blur-[2px] animate-pulse" />
-          {/* Orbital Ring */}
-          <div className="absolute inset-[-4px] rounded-full border border-dashed border-cyan-400/30 animate-[spin_10s_linear_infinite]" />
-          <div className="absolute inset-[-8px] rounded-full border border-blue-500/10 animate-[spin_15s_linear_infinite_reverse]" />
-          
-          <span className="absolute text-[8px] font-mono tracking-widest text-cyan-300 pointer-events-none uppercase">
-            STAR
-          </span>
-        </motion.div>
+          <canvas
+            ref={canvasRef}
+            width={96}
+            height={96}
+            className="absolute inset-0 pointer-events-none"
+          />
+        </div>
       )}
 
       {/* 2. SOLVING MATRIX BLOCKS TRANSFORMATION */}
@@ -145,17 +238,17 @@ export default function FloatingNode({
         </div>
       )}
 
-      {/* 3. COMPLETED NFT CARD */}
+      {/* 3. NFT CARD (Floating Glassmorphism Card) */}
       {showCard && !isSolving && (
         <motion.div
           onClick={() => onTapCard(item)}
           whileHover={{ scale: 1.05, rotateY: 5, rotateX: -5 }}
           className="w-[140px] h-[190px] rounded-xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/20 hover:border-cyan-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col p-2.5 transition-all duration-300"
         >
-          {/* Glassmorphic border glow highlights */}
+          {/* Glowing highlight */}
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none" />
 
-          {/* NFT Image Preview */}
+          {/* NFT Image */}
           <div className="w-full h-[110px] bg-neutral-900 rounded-lg overflow-hidden relative border border-white/10">
             {item.artUrl ? (
               <img
@@ -168,13 +261,12 @@ export default function FloatingNode({
                 NO ART
               </div>
             )}
-            {/* Owner Label */}
             <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm text-[8px] text-white/80 font-mono border border-white/5">
               @{item.ownerName || "owner"}
             </div>
           </div>
 
-          {/* Name & Stats */}
+          {/* Metadata info */}
           <div className="flex-1 flex flex-col justify-end pt-1">
             <h4 className="text-[11px] font-bold text-white tracking-wide truncate">
               {item.artName || "Untitled"}

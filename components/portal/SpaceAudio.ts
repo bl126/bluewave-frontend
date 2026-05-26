@@ -1,11 +1,17 @@
 class SpaceAudio {
   private ctx: AudioContext | null = null;
-  private humOsc1: OscillatorNode | null = null;
-  private humOsc2: OscillatorNode | null = null;
-  private humFilter: BiquadFilterNode | null = null;
-  private humGain: GainNode | null = null;
+  private currentSource: any = null;
+  
+  // Drone & Hum Nodes
+  private droneOscs: OscillatorNode[] = [];
+  private droneGain: GainNode | null = null;
+  private filterNode: BiquadFilterNode | null = null;
   private lfo: OscillatorNode | null = null;
   private lfoGain: GainNode | null = null;
+
+  // Sound generator timers
+  private crackleInterval: any = null;
+  private rainClickInterval: any = null;
 
   private initCtx() {
     if (!this.ctx) {
@@ -17,204 +23,305 @@ class SpaceAudio {
     }
   }
 
+  public stopAll() {
+    // Clear intervals
+    if (this.crackleInterval) {
+      clearInterval(this.crackleInterval);
+      this.crackleInterval = null;
+    }
+    if (this.rainClickInterval) {
+      clearInterval(this.rainClickInterval);
+      this.rainClickInterval = null;
+    }
+
+    // Stop Oscillators
+    this.droneOscs.forEach(osc => {
+      try { osc.stop(); } catch {}
+    });
+    this.droneOscs = [];
+
+    if (this.lfo) {
+      try { this.lfo.stop(); } catch {}
+      this.lfo = null;
+    }
+
+    // Fade out main gain if exists
+    if (this.droneGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      try {
+        this.droneGain.gain.cancelScheduledValues(now);
+        this.droneGain.gain.setValueAtTime(this.droneGain.gain.value, now);
+        this.droneGain.gain.linearRampToValueAtTime(0, now + 0.8);
+      } catch {}
+    }
+    this.droneGain = null;
+    this.filterNode = null;
+    this.lfoGain = null;
+  }
+
+  // 1. Portal Ring Audio: Deep Cinema Hum + Crackling Sparks
+  public startPortalRingAudio() {
+    this.stopAll();
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    this.droneGain = this.ctx.createGain();
+    this.filterNode = this.ctx.createBiquadFilter();
+    
+    this.droneGain.gain.setValueAtTime(0.001, now);
+    this.droneGain.gain.linearRampToValueAtTime(0.3, now + 1.5); // smooth fade in
+
+    this.filterNode.type = "lowpass";
+    this.filterNode.frequency.setValueAtTime(80, now);
+    this.filterNode.Q.setValueAtTime(4, now);
+
+    // Deep heavy drone (detuned triangle oscillators)
+    const freqs = [55, 55.4, 110, 110.8]; // Detuned A1 and A2
+    freqs.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      osc.type = idx % 2 === 0 ? "triangle" : "sawtooth";
+      osc.frequency.setValueAtTime(freq, now);
+      osc.connect(this.filterNode!);
+      osc.start(now);
+      this.droneOscs.push(osc);
+    });
+
+    // LFO to modulate filter (creates the spatial vibration/resonance)
+    this.lfo = this.ctx.createOscillator();
+    this.lfoGain = this.ctx.createGain();
+    this.lfo.type = "sine";
+    this.lfo.frequency.setValueAtTime(0.25, now); // slow breathing
+    this.lfoGain.gain.setValueAtTime(30, now);
+
+    this.lfo.connect(this.lfoGain);
+    this.lfoGain.connect(this.filterNode.frequency);
+    this.lfo.start(now);
+
+    this.filterNode.connect(this.droneGain);
+    this.droneGain.connect(this.ctx.destination);
+
+    // Crackling Sparks (subtle fire distortion)
+    this.crackleInterval = setInterval(() => {
+      this.playCrackleSpark();
+    }, 150);
+  }
+
+  private playCrackleSpark() {
+    if (!this.ctx || Math.random() > 0.4) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(800 + Math.random() * 1200, now);
+
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(2000, now);
+
+    gain.gain.setValueAtTime(0.005 + Math.random() * 0.008, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
+  // 2. Block Rain Audio: Digital assembly, matrix pop glitch arpeggios
+  public startBlockRainAudio() {
+    this.stopAll();
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    this.droneGain = this.ctx.createGain();
+    this.filterNode = this.ctx.createBiquadFilter();
+
+    this.droneGain.gain.setValueAtTime(0.001, now);
+    this.droneGain.gain.linearRampToValueAtTime(0.15, now + 0.8);
+
+    // High pass filter for glitchy/digital feeling
+    this.filterNode.type = "highpass";
+    this.filterNode.frequency.setValueAtTime(150, now);
+
+    // Deep tech pad
+    const freqs = [146.83, 220, 329.63]; // D3, A3, E4
+    freqs.forEach(freq => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now);
+      osc.connect(this.filterNode!);
+      osc.start(now);
+      this.droneOscs.push(osc);
+    });
+
+    this.filterNode.connect(this.droneGain);
+    this.droneGain.connect(this.ctx.destination);
+
+    // Fast arpeggiated data click rain
+    this.rainClickInterval = setInterval(() => {
+      this.playMatrixClick();
+    }, 45);
+  }
+
+  private playMatrixClick() {
+    if (!this.ctx || Math.random() > 0.8) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = "sine";
+    // Holographic digital pitches
+    const pitches = [600, 800, 1200, 1500, 2000, 2400];
+    const pitch = pitches[Math.floor(Math.random() * pitches.length)];
+    osc.frequency.setValueAtTime(pitch, now);
+
+    gain.gain.setValueAtTime(0.015, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.03);
+  }
+
+  // 3. Space Audio: Deep ambient space drone + floating echoes
+  public startSpaceAudio() {
+    this.stopAll();
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    this.droneGain = this.ctx.createGain();
+    this.filterNode = this.ctx.createBiquadFilter();
+
+    this.droneGain.gain.setValueAtTime(0.001, now);
+    this.droneGain.gain.linearRampToValueAtTime(0.2, now + 3.0); // very slow fade in
+
+    this.filterNode.type = "lowpass";
+    this.filterNode.frequency.setValueAtTime(150, now);
+    this.filterNode.Q.setValueAtTime(1.5, now);
+
+    // Tri-oscillator atmospheric pad (Fmaj7 chord: F2, C3, A3, E4)
+    const freqs = [87.31, 130.81, 220.00, 329.63];
+    freqs.forEach((freq, idx) => {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      osc.type = idx % 2 === 0 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, now);
+      
+      // Add very slow detune sweeps
+      const detuneOsc = this.ctx.createOscillator();
+      const detuneGain = this.ctx.createGain();
+      detuneOsc.frequency.setValueAtTime(0.05 + idx * 0.02, now);
+      detuneGain.gain.setValueAtTime(4, now);
+      detuneOsc.connect(detuneGain);
+      detuneGain.connect(osc.frequency);
+      detuneOsc.start(now);
+      
+      osc.connect(this.filterNode!);
+      osc.start(now);
+      this.droneOscs.push(osc);
+      this.droneOscs.push(detuneOsc); // keep track to stop
+    });
+
+    // Slow filter sweep (cosmic wind)
+    this.lfo = this.ctx.createOscillator();
+    this.lfoGain = this.ctx.createGain();
+    this.lfo.type = "sine";
+    this.lfo.frequency.setValueAtTime(0.08, now); // ultra slow (12.5s cycle)
+    this.lfoGain.gain.setValueAtTime(70, now);
+
+    this.lfo.connect(this.lfoGain);
+    this.lfoGain.connect(this.filterNode.frequency);
+    this.lfo.start(now);
+
+    this.filterNode.connect(this.droneGain);
+    this.droneGain.connect(this.ctx.destination);
+  }
+
+  // Trigger sound effect for portal button click
   public playPortalClick() {
     try {
       this.initCtx();
       if (!this.ctx) return;
-
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
       osc.type = "sine";
-      // An ascending sweeping chirp
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.4);
-
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.4);
-    } catch (e) {
-      console.warn("PortalClick sound failed:", e);
-    }
-  }
-
-  public playHum() {
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      // Avoid double hum
-      if (this.humOsc1) return;
-
-      const now = this.ctx.currentTime;
-      this.humOsc1 = this.ctx.createOscillator();
-      this.humOsc2 = this.ctx.createOscillator();
-      this.humFilter = this.ctx.createBiquadFilter();
-      this.humGain = this.ctx.createGain();
-      this.lfo = this.ctx.createOscillator();
-      this.lfoGain = this.ctx.createGain();
-
-      // Deep space frequencies
-      this.humOsc1.type = "triangle";
-      this.humOsc1.frequency.setValueAtTime(55, now); // A1
-
-      this.humOsc2.type = "sawtooth";
-      this.humOsc2.frequency.setValueAtTime(55.5, now); // slightly detuned
-
-      this.humFilter.type = "lowpass";
-      this.humFilter.frequency.setValueAtTime(120, now);
-      this.humFilter.Q.setValueAtTime(3, now);
-
-      // LFO to make it breathe
-      this.lfo.type = "sine";
-      this.lfo.frequency.setValueAtTime(0.2, now); // very slow 0.2Hz (5s cycle)
-      this.lfoGain.gain.setValueAtTime(40, now); // modulate by 40Hz
-
-      this.humGain.gain.setValueAtTime(0.001, now);
-      this.humGain.gain.linearRampToValueAtTime(0.25, now + 2.0); // smooth fade in
-
-      // Connect LFO
-      this.lfo.connect(this.lfoGain);
-      this.lfoGain.connect(this.humFilter.frequency);
-
-      // Connect oscs
-      this.humOsc1.connect(this.humFilter);
-      this.humOsc2.connect(this.humFilter);
-      this.humFilter.connect(this.humGain);
-      this.humGain.connect(this.ctx.destination);
-
-      // Start all
-      this.lfo.start(now);
-      this.humOsc1.start(now);
-      this.humOsc2.start(now);
-    } catch (e) {
-      console.warn("SpaceHum sound failed:", e);
-    }
-  }
-
-  public stopHum() {
-    try {
-      if (!this.ctx || !this.humGain) return;
-      const now = this.ctx.currentTime;
-      const currentGain = this.humGain.gain.value;
-
-      this.humGain.gain.cancelScheduledValues(now);
-      this.humGain.gain.setValueAtTime(currentGain, now);
-      this.humGain.gain.linearRampToValueAtTime(0.001, now + 1.0); // fade out over 1s
-
-      const osc1 = this.humOsc1;
-      const osc2 = this.humOsc2;
-      const lfoOsc = this.lfo;
-
-      setTimeout(() => {
-        try {
-          osc1?.stop();
-          osc2?.stop();
-          lfoOsc?.stop();
-        } catch {}
-      }, 1100);
-
-      this.humOsc1 = null;
-      this.humOsc2 = null;
-      this.humFilter = null;
-      this.humGain = null;
-      this.lfo = null;
-      this.lfoGain = null;
-    } catch (e) {
-      console.warn("StopHum failed:", e);
-    }
-  }
-
-  public playClick(pitch: number = 440) {
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(pitch, now);
-      
-      // Short blip
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.06);
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  public playDisperse() {
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(80, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 1.2);
-
-      // Lowpass sweeps
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(300, now);
-      filter.frequency.exponentialRampToValueAtTime(80, now + 1.2);
+      osc.frequency.setValueAtTime(100, now);
+      osc.frequency.exponentialRampToValueAtTime(700, now + 0.45);
 
       gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 1.2);
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  public playWhoosh() {
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(300, now);
-      osc.frequency.exponentialRampToValueAtTime(600, now + 0.5);
-
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.1, now + 0.25);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
       osc.start(now);
       osc.stop(now + 0.5);
-    } catch (e) {
-      // ignore
-    }
+    } catch {}
+  }
+
+  // Micro beep clicks when blocks snap into place
+  public playClick(pitch: number = 440) {
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(pitch, now);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.07);
+    } catch {}
+  }
+
+  // Shockwave sweep sound
+  public playDisperse() {
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(90, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 1.5);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(400, now);
+      filter.frequency.exponentialRampToValueAtTime(40, now + 1.5);
+
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 1.5);
+    } catch {}
   }
 }
 
