@@ -32,6 +32,8 @@ import WalletRelinkOverlay from "@/components/ui/WalletRelinkOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
 import DailyAIPopup from "@/components/ui/DailyAIPopup";
+import PortalButton from "@/components/portal/PortalButton";
+import PortalContainer from "@/components/portal/PortalContainer";
 import CocoonOverlay from "@/components/ui/CocoonOverlay";
 import { useTonConnectUI, toUserFriendlyAddress } from "@tonconnect/ui-react";
 
@@ -137,6 +139,9 @@ export default function LandingPage() {
   // 🥚 Cocoon State
   const [isCocoonOpen, setCocoonOpen] = useState(false);
 
+  // 🌀 Portal State
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
+
   // 🎯 Pending Mission Count
   const [pendingMissionCount, setPendingMissionCount] = useState(0);
   const [socialMissionCount, setSocialMissionCount] = useState(0);
@@ -145,6 +150,9 @@ export default function LandingPage() {
   // 💬 Welcome / Guidance Bubble
   const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
   const [welcomeBubbleDismissed, setWelcomeBubbleDismissed] = useState(false);
+
+  const ADMIN_IDS = [5023869471];
+  const isAdmin = telegramUser?.id ? ADMIN_IDS.includes(Number(telegramUser.id)) : (process.env.NODE_ENV === "development");
 
   const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || isWalletRelinkRequired || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
 
@@ -1038,6 +1046,16 @@ export default function LandingPage() {
             onDismiss: handleDismissWelcomeBubble
           } : null}
         />
+      )}
+
+      {/* 🌀 Portal Ring Button */}
+      {!isLoading && !isMaintenanceMode && isAdmin && !isPortalOpen && (
+        <PortalButton onClick={() => setIsPortalOpen(true)} />
+      )}
+
+      {/* 🌀 Portal Space Overlay */}
+      {isPortalOpen && (
+        <PortalContainer onClose={() => setIsPortalOpen(false)} />
       )}
 
       {/* 🧭 Navigation Bar */}
