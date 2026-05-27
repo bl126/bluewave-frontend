@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import PuzzleBoard from "./PuzzleBoard";
-import InfiniteCanvas from "./InfiniteCanvas";
-import FloatingNode, { NodeItem } from "./FloatingNode";
+import { NodeItem } from "./FloatingNode";
 import { spaceAudio } from "./SpaceAudio";
-import { X, Heart, MessageSquare, Send, Sparkles, LogOut, ZoomIn, ZoomOut } from "lucide-react";
+import { X, Heart, MessageSquare, Send, Sparkles, LogOut } from "lucide-react";
+
+// Dynamic import — Three.js must not run during SSR
+const GalaxyScene = dynamic(() => import("./GalaxyScene"), { ssr: false });
 
 interface PortalContainerProps {
   onClose: () => void;
@@ -28,12 +31,16 @@ interface PortalParticle {
   color: string;
   alpha: number;
   decay: number;
+  type: "flame" | "spark" | "ember";
+  angle: number;
+  radius: number;
+  spinSpeed: number;
+  wobbleSeed: number;
 }
 
 export default function PortalContainer({ onClose }: PortalContainerProps) {
   const [status, setStatus] = useState<"portal-ring" | "blackout" | "puzzle" | "space">("portal-ring");
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  // zoom/pan removed — camera is controlled by OrbitControls in the 3D scene
   const [items, setItems] = useState<NodeItem[]>([]);
   
   // Modals / Overlays
@@ -53,6 +60,7 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
   // Portal Ring Canvas elements
   const ringCanvasRef = useRef<HTMLCanvasElement>(null);
   const ringParticles = useRef<PortalParticle[]>([]);
+  const isImploding = useRef(false);
 
   // 1. Core State Machine: Audio control
   useEffect(() => {
@@ -77,13 +85,13 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
   useEffect(() => {
     if (status === "space") {
       const initialNodes: NodeItem[] = [
-        { id: "node-1", type: "node", x: -250, y: -160, likes: 14, comments: [] },
-        { id: "node-2", type: "node", x: 280, y: -200, likes: 9, comments: [] },
+        { id: "node-1", type: "node", x: 0, y: 0, likes: 14, comments: [] },
+        { id: "node-2", type: "node", x: 0, y: 0, likes: 9, comments: [] },
         {
           id: "node-3", 
           type: "node", 
-          x: -320, 
-          y: 200, 
+          x: 0, 
+          y: 0, 
           likes: 38, 
           comments: [
             { 
@@ -94,15 +102,14 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
             }
           ] 
         },
-        { id: "node-4", type: "node", x: 240, y: 170, likes: 22, comments: [] },
-        { id: "node-5", type: "node", x: 0, y: -340, likes: 5, comments: [] },
+        { id: "node-4", type: "node", x: 0, y: 0, likes: 22, comments: [] },
+        { id: "node-5", type: "node", x: 0, y: 0, likes: 5, comments: [] },
       ];
       setItems(initialNodes);
-      setPan({ x: window.innerWidth / 2 - 50, y: window.innerHeight / 2 - 50 });
     }
   }, [status]);
 
-  // Portal Ring Animation Frame (Step 1 Doctor Strange Realistic fire sparks and vortex)
+  // Portal Ring Animation Frame (Doctor Strange Realistic fire sparks and vortex physics)
   useEffect(() => {
     if (status !== "portal-ring") return;
 
@@ -112,6 +119,8 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
     if (!ctx) return;
 
     let animFrame: number;
+    let baseRadius = Math.min(canvas.width, canvas.height) * 0.22;
+    if (baseRadius < 150) baseRadius = 150; // clamp minimum size
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -121,28 +130,54 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
     window.addEventListener("resize", resizeCanvas);
 
     // Particle factory
-    const createParticle = (cx: number, cy: number, radius: number): PortalParticle => {
-      const angle = Math.random() * 2 * Math.PI;
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius;
+    const createParticle = (cx: number, cy: number, radiusVal: number, type: "flame" | "spark" | "ember", angleOverride?: number): PortalParticle => {
+      const angle = angleOverride !== undefined ? angleOverride : Math.random() * 2 * Math.PI;
+      const radius = radiusVal + (Math.random() - 0.5) * 14;
 
-      // Radial speed outward
-      const radialSpeed = Math.random() * 1.5 + 0.5;
-      const spinSpeed = 1.2; // tangential speed
+      let x = cx + Math.cos(angle) * radius;
+      let y = cy + Math.sin(angle) * radius;
 
-      const vx = Math.cos(angle) * radialSpeed - Math.sin(angle) * spinSpeed;
-      const vy = Math.sin(angle) * radialSpeed + Math.cos(angle) * spinSpeed;
+      let vx = 0;
+      let vy = 0;
+      let size = Math.random() * 2 + 1;
+      let alpha = 1.0;
+      let decay = Math.random() * 0.012 + 0.01;
 
-      const size = Math.random() * 3 + 1;
-      
-      // Fire sparks: transition from cyan (hottest center) to orange/red sparks
-      const colors = [
-        "rgba(249, 115, 22, 1)", // Orange
-        "rgba(253, 186, 116, 1)", // Golden orange
-        "rgba(6, 182, 212, 1)", // Hot cyan
-        "rgba(239, 68, 68, 0.9)"  // Red fire spark
-      ];
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      // Color spectrum from hot white center to orange to cool smoky red
+      let color = "rgba(249, 115, 22, 1)"; 
+
+      if (type === "flame") {
+        const rVal = Math.random();
+        if (rVal < 0.12) {
+          color = "rgba(255, 255, 255, 0.95)"; // white hot core
+        } else if (rVal < 0.42) {
+          color = "rgba(253, 224, 71, 0.9)"; // yellow flame
+        } else if (rVal < 0.8) {
+          color = "rgba(249, 115, 22, 0.85)"; // orange
+        } else {
+          color = "rgba(239, 68, 68, 0.7)"; // red rim
+        }
+        size = Math.random() * 4.2 + 1.8;
+        decay = Math.random() * 0.02 + 0.015; // fast decay
+      } else if (type === "spark") {
+        // High tangential velocity with slight outward spread
+        const speedMultiplier = isImploding.current ? 12 : 5;
+        const radialSpeed = Math.random() * 1.5 + 0.5;
+        const tangentialSpeed = speedMultiplier + Math.random() * 4;
+        vx = -Math.sin(angle) * tangentialSpeed + Math.cos(angle) * radialSpeed;
+        vy = Math.cos(angle) * tangentialSpeed + Math.sin(angle) * radialSpeed;
+
+        color = Math.random() > 0.45 ? "rgba(254, 215, 170, 0.95)" : "rgba(253, 224, 71, 0.95)"; // bright yellow/gold
+        size = Math.random() * 1.8 + 0.6;
+        decay = Math.random() * 0.025 + 0.018;
+      } else if (type === "ember") {
+        // Soft float upwards (gravity soot)
+        vx = (Math.random() - 0.5) * 1.2;
+        vy = -Math.random() * 1.6 - 0.6;
+        color = Math.random() > 0.55 ? "rgba(220, 38, 38, 0.65)" : "rgba(115, 115, 115, 0.45)"; // glowing red soot / carbon ash
+        size = Math.random() * 2.5 + 0.8;
+        decay = Math.random() * 0.008 + 0.005; // lives longer
+      }
 
       return {
         x,
@@ -151,54 +186,118 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
         vy,
         size,
         color,
-        alpha: 1,
-        decay: Math.random() * 0.02 + 0.015
+        alpha,
+        decay,
+        type,
+        angle,
+        radius,
+        spinSpeed: (0.028 + Math.random() * 0.022), // circular rotation speed
+        wobbleSeed: Math.random() * 100
       };
     };
 
     const drawRing = () => {
-      // Dark environment backdrop
-      ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+      // Clear with trail-fade to draw natural sparks motion-blur and smoky trails
+      ctx.fillStyle = "rgba(0, 0, 0, 0.16)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      const radius = Math.min(canvas.width, canvas.height) * 0.22; // portal size
 
-      // Swirling center vortex (Step 1)
+      // Handle gravity implosion state
+      if (isImploding.current) {
+        baseRadius = baseRadius * 0.85 - 0.8;
+        if (baseRadius <= 3.5) {
+          spaceAudio.playDisperse();
+          setStatus("blackout");
+          return;
+        }
+      }
+
+      // 1. Draw Volumetric Atmospheric Glow and Refraction Distortion Core
       ctx.save();
-      const gradient = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius);
-      gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
-      gradient.addColorStop(0.3, "rgba(6, 182, 212, 0.2)"); // Cyan aura
-      gradient.addColorStop(0.8, "rgba(249, 115, 22, 0.15)"); // Orange ring glow
-      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.globalCompositeOperation = "screen";
+      const radGlow = baseRadius + 45;
+      const gradient = ctx.createRadialGradient(cx, cy, baseRadius * 0.6, cx, cy, radGlow);
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+      gradient.addColorStop(0.55, "rgba(220, 38, 38, 0.03)"); // faint hot red haze
+      gradient.addColorStop(0.78, "rgba(249, 115, 22, 0.1)");  // orange core
+      gradient.addColorStop(0.92, "rgba(253, 224, 71, 0.14)"); // hot yellow rim
+      gradient.addColorStop(1.0, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctx.arc(cx, cy, radGlow, 0, 2 * Math.PI);
       ctx.fill();
       ctx.restore();
 
-      // Spawn portal ring sparks
-      for (let i = 0; i < 4; i++) {
-        ringParticles.current.push(createParticle(cx, cy, radius));
+      // Soft concentric space warping refraction rings (fluid heat distortion)
+      ctx.save();
+      ctx.strokeStyle = "rgba(253, 186, 116, 0.035)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius + Math.sin(Date.now() * 0.004) * 8, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.restore();
+
+      // 2. Spawn fresh particles dynamically based on current scale
+      const spawnCount = isImploding.current ? 18 : 6;
+      for (let i = 0; i < spawnCount; i++) {
+        ringParticles.current.push(createParticle(cx, cy, baseRadius, "flame"));
       }
 
-      // Draw particles
+      // Occasional spark ejection and floating ash embers
+      if (!isImploding.current) {
+        if (Math.random() > 0.45) {
+          ringParticles.current.push(createParticle(cx, cy, baseRadius, "spark"));
+        }
+        if (Math.random() > 0.6) {
+          ringParticles.current.push(createParticle(cx, cy, baseRadius, "ember"));
+        }
+      } else {
+        // High density sparks ejecting inside imploding singularity
+        for (let i = 0; i < 4; i++) {
+          ringParticles.current.push(createParticle(cx, cy, baseRadius, "spark"));
+        }
+      }
+
+      // 3. Physics update loop and additive render
       ringParticles.current.forEach((p, index) => {
-        p.x += p.vx;
-        p.y += p.vy;
         p.alpha -= p.decay;
 
         if (p.alpha <= 0) {
           ringParticles.current.splice(index, 1);
         } else {
+          // Physics step
+          if (p.type === "flame") {
+            // Rapid orbital spin with gravity pull
+            p.angle += p.spinSpeed * (isImploding.current ? 2.5 : 1.0);
+            p.radius += (baseRadius - p.radius) * 0.16 + Math.sin(p.angle * 4.5 + p.wobbleSeed) * 2.2;
+            p.x = cx + Math.cos(p.angle) * p.radius;
+            p.y = cy + Math.sin(p.angle) * p.radius;
+          } else if (p.type === "spark") {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.96; // drag
+            p.vy *= 0.96;
+            p.vy += 0.07; // gravitational downward arc
+          } else if (p.type === "ember") {
+            p.x += Math.sin(p.wobbleSeed + p.y * 0.015) * 0.55; // atmospheric drift
+            p.y += p.vy; // float upwards
+          }
+
+          // Composite rendering
           ctx.save();
           ctx.globalAlpha = p.alpha;
+          ctx.globalCompositeOperation = p.type === "ember" ? "source-over" : "screen"; // Additive blending for hot fire elements
+          
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI);
           ctx.fillStyle = p.color;
-          ctx.shadowBlur = 8;
+
+          // Glowing shadow mask
+          ctx.shadowBlur = p.type === "flame" ? 14 : p.type === "spark" ? 6 : 0;
           ctx.shadowColor = p.color;
+
           ctx.fill();
           ctx.restore();
         }
@@ -216,8 +315,9 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
   }, [status]);
 
   const handleEnterPortalClick = () => {
+    if (isImploding.current) return;
+    isImploding.current = true;
     spaceAudio.playPortalClick();
-    setStatus("blackout");
   };
 
   const handleUpdatePosition = (id: string, x: number, y: number) => {
@@ -375,7 +475,7 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
           />
         )}
 
-        {/* Phase 4: Infinite Space Canvas */}
+        {/* Phase 4: 3D Galaxy Scene */}
         {status === "space" && (
           <motion.div
             key="space"
@@ -384,22 +484,11 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
             transition={{ duration: 1.2 }}
             className="absolute inset-0 w-full h-full"
           >
-            <InfiniteCanvas
-              zoom={zoom}
-              setZoom={setZoom}
-              pan={pan}
-              setPan={setPan}
-            >
-              {items.map((item) => (
-                <FloatingNode
-                  key={item.id}
-                  item={item}
-                  onTapNode={setSelectedNode}
-                  onTapCard={setSelectedCard}
-                  onUpdatePosition={handleUpdatePosition}
-                />
-              ))}
-            </InfiniteCanvas>
+            <GalaxyScene
+              items={items}
+              onNodeClick={setSelectedNode}
+              onCardClick={setSelectedCard}
+            />
 
             {/* Static HUD Header controls */}
             <div className="absolute top-6 left-6 z-[101] flex items-center gap-4">
@@ -409,25 +498,6 @@ export default function PortalContainer({ onClose }: PortalContainerProps) {
               >
                 <LogOut size={14} />
                 EXIT SPACE
-              </button>
-            </div>
-
-            {/* Zoom HUD */}
-            <div className="absolute bottom-6 right-6 z-[101] flex items-center gap-2 p-1.5 rounded-full border border-white/10 bg-black/60 backdrop-blur-md">
-              <button
-                onClick={() => setZoom(Math.max(zoom / 1.2, 0.3))}
-                className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                <ZoomOut size={16} />
-              </button>
-              <span className="text-[10px] font-mono text-white/80 w-12 text-center">
-                {Math.round(zoom * 100)}%
-              </span>
-              <button
-                onClick={() => setZoom(Math.min(zoom * 1.2, 3))}
-                className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                <ZoomIn size={16} />
               </button>
             </div>
 
