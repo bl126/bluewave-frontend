@@ -25,10 +25,11 @@ interface ProfileProps {
   onOpenRoles: (roleName: string) => void;
   onOpenBwaveScan?: () => void;
   onOpenEcosystemRoles?: () => void;
+  onOpenBugsSuggestions?: () => void;
 }
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
-export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles }: ProfileProps) {
+export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles, onOpenBugsSuggestions }: ProfileProps) {
   const { t, language } = useLanguage();
 
   // Tab State
@@ -561,7 +562,15 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
           </div>
 
           {/* Overlay modals — rendered inside motion.div so they appear above profile */}
-          <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} onOpenLanguage={() => setLanguageOpen(true)} />
+          <Settings 
+            isOpen={settingsOpen} 
+            onClose={() => setSettingsOpen(false)} 
+            onOpenLanguage={() => setLanguageOpen(true)} 
+            onOpenBugsSuggestions={() => {
+              setSettingsOpen(false);
+              onOpenBugsSuggestions?.();
+            }}
+          />
           <LanguageSelector isOpen={languageOpen} onClose={() => setLanguageOpen(false)} />
           <ClaimBoostPopup isOpen={isClaimBoostOpen} data={claimBoostData} onClose={() => setIsClaimBoostOpen(false)} />
           <ReferralShareModal isOpen={isReferralModalOpen} onClose={() => setIsReferralModalOpen(false)} telegramId={telegramId} bwId={user?.bw_id} referralLink={user?.referral_link} />

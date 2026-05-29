@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Globe, Sun, Moon, Zap, Palette } from "lucide-react";
+import { X, User, Globe, Sun, Moon, Zap, Palette, MessageSquare } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -10,9 +10,10 @@ interface SettingsProps {
     isOpen: boolean;
     onClose: () => void;
     onOpenLanguage: () => void;
+    onOpenBugsSuggestions: () => void;
 }
 
-export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsProps) {
+export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenBugsSuggestions }: SettingsProps) {
     const { t } = useLanguage();
     const { theme, setTheme } = useTheme();
 
@@ -68,6 +69,26 @@ export default function Settings({ isOpen, onClose, onOpenLanguage }: SettingsPr
                                     <div>
                                         <div className="text-text-main font-bold text-sm uppercase tracking-tight">{t("settings.language")}</div>
                                         <div className="text-text-sub text-[10px] uppercase font-black tracking-widest">{t("settings.language_desc")}</div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Bugs & Suggestions */}
+                            <button
+                                onClick={() => {
+                                    onClose();
+                                    onOpenBugsSuggestions();
+                                }}
+                                className="w-full bg-app-accent/5 border border-app-border 
+                            rounded-2xl p-4 text-left hover:bg-app-accent/10 transition-all group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-app-accent/10 p-2.5 rounded-xl group-hover:bg-app-accent/20 transition-all">
+                                        <MessageSquare className="w-5 h-5 text-app-accent" />
+                                    </div>
+                                    <div>
+                                        <div className="text-text-main font-bold text-sm uppercase tracking-tight">Bugs & Suggestions</div>
+                                        <div className="text-text-sub text-[10px] uppercase font-black tracking-widest">Report issues or suggest ideas</div>
                                     </div>
                                 </div>
                             </button>

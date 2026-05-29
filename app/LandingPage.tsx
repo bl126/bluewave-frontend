@@ -10,6 +10,7 @@ import Marketplace from "@/components/ui/Marketplace";
 import Profile from "@/components/ui/Profile";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
 import LanguageSelector from "@/components/ui/LanguageSelector";
+import BugsSuggestions from "@/components/ui/BugsSuggestions";
 
 
 import LoadingScreen from "./LoadingScreen";
@@ -139,6 +140,9 @@ export default function LandingPage() {
   // 🥚 Cocoon State
   const [isCocoonOpen, setCocoonOpen] = useState(false);
 
+  // 🐛 Bugs & Suggestions State
+  const [isBugsSuggestionsOpen, setIsBugsSuggestionsOpen] = useState(false);
+
   // 🌀 Portal State
   const [isPortalOpen, setIsPortalOpen] = useState(false);
 
@@ -154,7 +158,7 @@ export default function LandingPage() {
   const ADMIN_IDS = [5023869471];
   const isAdmin = telegramUser?.id ? ADMIN_IDS.includes(Number(telegramUser.id)) : (process.env.NODE_ENV === "development");
 
-  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || isWalletRelinkRequired || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen;
+  const isAnyOverlayOpen = isProfileOpen || isMissionOpen || isExploreOpen || isMarketOpen || isRolesOpen || isBwaveScanOpen || showRecoveryModal || !!selectedRoleData || isHumanModalOpen || isNetworkBuilderModalOpen || isTONModalOpen || isStreakCelebrationOpen || isMaintenanceMode || isWalletRelinkRequired || !!currentCelebratingRole || isAIPopupOpen || isBluExpanded || showLanguageSelector || showTour || isCocoonOpen || isBugsSuggestionsOpen;
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
@@ -174,6 +178,12 @@ export default function LandingPage() {
       if (backEvent.defaultPrevented) return; // Signal intercepted (e.g. by Explore modal)
 
       // 1. Nested Overlays/Modals (Stack-aware early returns)
+      if (isBugsSuggestionsOpen) {
+        setIsBugsSuggestionsOpen(false);
+        setProfileOpen(true);
+        setActiveTab("profile");
+        return;
+      }
       if (selectedRoleData) {
         setSelectedRoleData(null);
         return;
@@ -250,7 +260,7 @@ export default function LandingPage() {
   }, [
     isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode,
     selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
-    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen
+    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen, isBugsSuggestionsOpen
   ]);
 
   // 🔗 Global wallet synchronization listener
@@ -1120,6 +1130,22 @@ export default function LandingPage() {
             onOpenEcosystemRoles={() => {
               setRolesOpen(true);
             }}
+            onOpenBugsSuggestions={() => {
+              setProfileOpen(false);
+              setIsBugsSuggestionsOpen(true);
+            }}
+          />
+        )}
+        {isBugsSuggestionsOpen && (
+          <BugsSuggestions
+            key="bugs-suggestions"
+            isOpen={isBugsSuggestionsOpen}
+            onClose={() => {
+              setIsBugsSuggestionsOpen(false);
+              setProfileOpen(true);
+              setActiveTab("profile");
+            }}
+            telegramUser={telegramUser}
           />
         )}
       </AnimatePresence>
