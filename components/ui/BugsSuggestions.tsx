@@ -49,9 +49,70 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [uploadProgressMsg, setUploadProgressMsg] = useState("");
+  const [pendingSubmission, setPendingSubmission] = useState<{
+    tag: "bug" | "suggestion";
+    headline: string;
+    description: string;
+    media_urls?: string[];
+  } | null>(null);
+  const [showFab, setShowFab] = useState(true);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
+  const touchStart = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Swipe gesture tab change logic
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.targetTouches[0].clientX;
+    touchStartY.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart.current !== null && touchStartY.current !== null) {
+      const diffX = touchStart.current - e.changedTouches[0].clientX;
+      const diffY = touchStartY.current - e.changedTouches[0].clientY;
+      
+      // Make sure it is primarily a horizontal swipe and meets a threshold
+      if (Math.abs(diffX) > 80 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        const tabs: ("all" | "issues" | "suggestions" | "my")[] = ["all", "issues", "suggestions", "my"];
+        const currentIndex = tabs.indexOf(activeTab);
+        
+        if (diffX > 0 && currentIndex < tabs.length - 1) {
+          setActiveTab(tabs[currentIndex + 1]);
+        } else if (diffX < 0 && currentIndex > 0) {
+          setActiveTab(tabs[currentIndex - 1]);
+        }
+      }
+    }
+    touchStart.current = null;
+    touchStartY.current = null;
+  };
+
+  // Hide FAB on scroll down, show on scroll up
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const currentY = scrollContainerRef.current.scrollTop;
+    if (Math.abs(currentY - lastScrollY.current) < 10) return;
+    
+    if (currentY > lastScrollY.current && currentY > 50) {
+      setShowFab(false);
+    } else {
+      setShowFab(true);
+    }
+    lastScrollY.current = currentY;
+  };
+
+  // Keep FAB visible when tab switches
+  useEffect(() => {
+    setShowFab(true);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    lastScrollY.current = 0;
+  }, [activeTab]);
 
   // Status Filter Options
   const statusOptions = [
@@ -186,80 +247,100 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       return;
     }
 
+    const pendingData = {
+      tag: postTag,
+      headline: headline.trim(),
+      description: description.trim(),
+      media_urls: [] as string[]
+    };
+    setPendingSubmission(pendingData);
+
+    const localHeadline = headline.trim();
+    const localDescription = description.trim();
+    const localPostTag = postTag;
+    const localMediaFiles = [...mediaFiles];
+
     setIsSubmitting(true);
     setSubmitError(null);
     setUploadProgressMsg("Uploading attachments...");
 
-    try {
-      const uploadedUrls: string[] = [];
+    // Close the submission form sheet instantly
+    setHeadline("");
+    setDescription("");
+    setMediaFiles([]);
+    setMediaPreviews([]);
+    setIsPostOpen(false);
 
-      // 1. Upload files if any exist
-      for (let i = 0; i < mediaFiles.length; i++) {
-        const file = mediaFiles[i];
-        const ext = file.name.split(".").pop() || "jpg";
-        
-        setUploadProgressMsg(`Uploading file ${i + 1} of ${mediaFiles.length}...`);
+    // Asynchronous background task
+    (async () => {
+      try {
+        const uploadedUrls: string[] = [];
 
-        // Request signed upload URL
-        const urlRes = await postApi("/bugs_suggestions/get_upload_url", {
+        // 1. Upload files if any exist
+        for (let i = 0; i < localMediaFiles.length; i++) {
+          const file = localMediaFiles[i];
+          const ext = file.name.split(".").pop() || "jpg";
+
+          const urlRes = await postApi("/bugs_suggestions/get_upload_url", {
+            tg_id: telegramUser.id,
+            media_ext: ext
+          });
+
+          if (urlRes.error || !urlRes.signed_url) {
+            throw new Error(urlRes.error || "Failed to generate upload URL.");
+          }
+
+          const uploadRes = await fetch(urlRes.signed_url, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bearer ${urlRes.token}`,
+              "Content-Type": file.type,
+            },
+            body: file
+          });
+
+          if (!uploadRes.ok) {
+            throw new Error("Failed to upload file to storage.");
+          }
+
+          uploadedUrls.push(urlRes.public_url);
+        }
+
+        // 2. Submit record to backend
+        const payload = {
           tg_id: telegramUser.id,
-          media_ext: ext
-        });
+          bw_id: telegramUser.bw_id,
+          first_name: telegramUser.first_name || telegramUser.name,
+          username: telegramUser.username,
+          tag: localPostTag,
+          headline: localHeadline,
+          description: localDescription,
+          media_urls: uploadedUrls
+        };
 
-        if (urlRes.error || !urlRes.signed_url) {
-          throw new Error(urlRes.error || "Failed to generate upload URL.");
+        const res = await postApi("/bugs_suggestions", payload);
+        if (res.error) {
+          throw new Error(res.error);
         }
 
-        // Direct upload to Supabase bucket via PUT
-        const uploadRes = await fetch(urlRes.signed_url, {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${urlRes.token}`,
-            "Content-Type": file.type,
-          },
-          body: file
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error("Failed to upload file to storage.");
+        // Success! Reload lists
+        fetchReports();
+      } catch (err: any) {
+        console.error("Background submission error:", err);
+        if (typeof window !== "undefined") {
+          const tg = (window as any).Telegram?.WebApp;
+          if (tg?.showAlert) {
+            tg.showAlert(`Submission failed: ${err.message || "Network error"}`);
+          } else {
+            alert(`Submission failed: ${err.message || "Network error"}`);
+          }
         }
-
-        uploadedUrls.push(urlRes.public_url);
+      } finally {
+        setIsSubmitting(false);
+        setUploadProgressMsg("");
+        setPendingSubmission(null);
       }
-
-      // 2. Submit record to backend
-      setUploadProgressMsg("Saving feedback report...");
-      const payload = {
-        tg_id: telegramUser.id,
-        bw_id: telegramUser.bw_id,
-        first_name: telegramUser.first_name || telegramUser.name,
-        username: telegramUser.username,
-        tag: postTag,
-        headline: headline.trim(),
-        description: description.trim(),
-        media_urls: uploadedUrls
-      };
-
-      const res = await postApi("/bugs_suggestions", payload);
-      if (res.error) {
-        throw new Error(res.error);
-      }
-
-      // Reset form states and close post screen
-      setHeadline("");
-      setDescription("");
-      setMediaFiles([]);
-      setMediaPreviews([]);
-      setIsPostOpen(false);
-      
-      // Reload lists
-      fetchReports();
-    } catch (err: any) {
-      setSubmitError(err.message || "An error occurred during submission.");
-    } finally {
-      setIsSubmitting(false);
-      setUploadProgressMsg("");
-    }
+    })();
   };
 
   // Helper formatting for Status Badges
@@ -369,11 +450,37 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
             </div>
 
             {/* Submissions List Feed */}
-            <div className="flex-1 overflow-y-auto mt-4 pb-24 pr-1 -mr-2 select-none scrollbar-thin">
+            <div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+              className="flex-1 overflow-y-auto mt-4 pb-24 pr-1 -mr-2 select-none scrollbar-thin"
+            >
               {loading ? (
-                <div className="flex flex-col items-center justify-center pt-16 gap-3">
-                  <Loader2 size={24} className="text-app-accent animate-spin" />
-                  <span className="text-[10px] font-black text-text-sub uppercase tracking-wider">Syncing reports...</span>
+                <div className="flex flex-col gap-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-app-card/30 border border-app-border/50 rounded-3xl p-5 flex gap-4 animate-pulse"
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-white/5 border border-app-border/30 shrink-0" />
+                      <div className="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="h-3 w-2/3 bg-white/10 rounded-full" />
+                            <div className="h-4 w-16 bg-white/5 rounded-full" />
+                          </div>
+                          <div className="h-2 w-full bg-white/5 rounded-full mt-2" />
+                          <div className="h-2 w-4/5 bg-white/5 rounded-full mt-1.5" />
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <div className="h-2.5 w-16 bg-white/5 rounded-full" />
+                          <div className="h-2.5 w-12 bg-white/5 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : error ? (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center text-xs text-red-400 font-bold flex flex-col gap-2 items-center">
@@ -381,13 +488,41 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   <span>{error}</span>
                   <button onClick={fetchReports} className="bg-red-500/20 px-4 py-1.5 rounded-full hover:bg-red-500/30 transition-all uppercase tracking-wider text-[9px] mt-1">Retry</button>
                 </div>
-              ) : reports.length === 0 ? (
+              ) : (reports.length === 0 && !pendingSubmission) ? (
                 <div className="text-center py-20 px-6 bg-app-card/30 border border-app-border rounded-[2rem] flex flex-col items-center gap-4">
                   <MessageSquare size={36} className="text-text-sub/20" />
                   <p className="text-xs text-text-sub uppercase font-black tracking-widest">No reports found</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
+                  {pendingSubmission && (
+                    <div className="bg-app-card/40 border border-app-border/50 rounded-3xl p-5 flex gap-4 animate-pulse">
+                      {/* Left: image/thumbnail skeleton */}
+                      <div className="w-16 h-16 rounded-2xl bg-white/5 border border-app-border/30 shrink-0 flex items-center justify-center">
+                        <Loader2 size={16} className="text-app-accent/85 animate-spin" />
+                      </div>
+                      {/* Right: text content skeleton */}
+                      <div className="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          <div className="flex justify-between items-center gap-2">
+                            <span className="text-text-main font-bold text-xs uppercase tracking-tight truncate flex-1">
+                              {pendingSubmission.headline}
+                            </span>
+                            <span className="px-2 py-0.5 border border-app-accent/20 rounded-full text-[8px] uppercase font-black tracking-widest text-app-accent bg-app-accent/5">
+                              Sending...
+                            </span>
+                          </div>
+                          <p className="text-text-muted text-[10px] leading-relaxed mt-1 line-clamp-2">
+                            {pendingSubmission.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between mt-3 text-[8px] font-black uppercase tracking-wider text-text-sub">
+                          <span>@{telegramUser?.username || "anonymous"}</span>
+                          <span>Just now</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {reports.map((report) => {
                     const statusInfo = getStatusStyle(report.status);
                     const isBug = report.tag === "bug";
@@ -460,15 +595,23 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
             </div>
 
             {/* Floating Action Button (+) same position as Explore */}
-            <button
-              onClick={() => {
-                setSubmitError(null);
-                setIsPostOpen(true);
-              }}
-              className="fixed bottom-28 right-6 w-14 h-14 rounded-full bg-app-accent text-app-bg shadow-xl flex items-center justify-center active:scale-95 transition-all z-40 border-2 border-app-border/10"
-            >
-              <Plus size={24} strokeWidth={2.5} />
-            </button>
+            <AnimatePresence>
+              {showFab && (
+                <motion.button
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => {
+                    setSubmitError(null);
+                    setIsPostOpen(true);
+                  }}
+                  className="fixed bottom-28 right-6 w-14 h-14 rounded-full bg-app-accent text-app-bg shadow-xl flex items-center justify-center active:scale-95 transition-all z-40 border-2 border-app-border/10"
+                >
+                  <Plus size={24} strokeWidth={2.5} />
+                </motion.button>
+              )}
+            </AnimatePresence>
 
           </div>
 
@@ -487,16 +630,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                 }}
               >
                 {/* Header */}
-                <div className="h-16 px-6 border-b border-app-border flex justify-between items-center shrink-0">
+                <div className="h-16 px-6 border-b border-app-border flex justify-center items-center shrink-0">
                   <h3 className="text-sm font-black uppercase tracking-wider text-app-accent">
                     New Submission
                   </h3>
-                  <button
-                    onClick={() => setIsPostOpen(false)}
-                    className="p-2 rounded-xl bg-white/5 border border-app-border text-text-sub hover:text-text-main transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
                 </div>
 
                 {/* Form Body */}
