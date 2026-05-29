@@ -465,7 +465,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                 setSubmitError(null);
                 setIsPostOpen(true);
               }}
-              className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-app-accent text-app-bg shadow-xl flex items-center justify-center active:scale-95 transition-all z-40 border-2 border-app-border/10"
+              className="fixed bottom-28 right-6 w-14 h-14 rounded-full bg-app-accent text-app-bg shadow-xl flex items-center justify-center active:scale-95 transition-all z-40 border-2 border-app-border/10"
             >
               <Plus size={24} strokeWidth={2.5} />
             </button>
