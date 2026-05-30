@@ -104,6 +104,17 @@ export default function ConnectBluModal({
         }
     }, [isOpen, alreadyConnected, channelTitle, channelPhoto]);
 
+    // Intercept Telegram native back button when analytics overlay is open
+    useEffect(() => {
+        if (!analyticsOpen) return;
+        const handleNativeBack = (e: Event) => {
+            e.preventDefault();
+            setAnalyticsOpen(false);
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack, true);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
+    }, [analyticsOpen]);
+
     const handleVerify = async () => {
         if (!channelInput.trim() || verifying || verified) return;
         setVerifying(true);
@@ -452,63 +463,29 @@ export default function ConnectBluModal({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 40 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[210] bg-[#030303] text-white flex flex-col overflow-hidden font-sans"
+                        className="fixed inset-0 z-[210] bg-app-bg text-text-main flex flex-col overflow-hidden font-sans"
                         style={{ 
-                            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)", 
+                            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 17px)", 
                             paddingBottom: "env(safe-area-inset-bottom, 0px)" 
                         }}
                     >
-                        {/* Header Controls */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden bg-cyan-500/5 flex items-center justify-center shrink-0">
-                                    {connectedInfo.photo && !imgError ? (
-                                        <img src={connectedInfo.photo} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="text-cyan-400 font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
-                                    )}
-                                </div>
-                                <div className="text-left">
-                                    <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{connectedInfo.title}</h3>
-                                    <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mt-1">Channel Analytics</p>
-                                </div>
+                        {/* Header — avatar + channel name, no X button */}
+                        <div className="flex items-center gap-3 px-6 py-4 border-b border-app-border bg-app-card/40 backdrop-blur-xl">
+                            <div className="w-10 h-10 rounded-full border border-app-border overflow-hidden bg-app-accent/5 flex items-center justify-center shrink-0">
+                                {connectedInfo.photo && !imgError ? (
+                                    <img src={connectedInfo.photo} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-app-accent font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
+                                )}
                             </div>
-                            <button 
-                                onClick={() => setAnalyticsOpen(false)} 
-                                className="p-2.5 rounded-2xl bg-white/5 text-gray-400 hover:text-white transition-colors hover:bg-white/10 animate-none"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        {/* Navigation Tabs */}
-                        <div className="grid grid-cols-4 gap-1 bg-white/5 border-b border-white/5 p-1.5 shrink-0">
-                            {(["signals", "brain", "audience", "monetisation"] as const).map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveAnalyticsTab(tab)}
-                                    className={`py-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 ${
-                                        activeAnalyticsTab === tab 
-                                            ? "bg-cyan-500 text-black shadow-lg" 
-                                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                                    }`}
-                                >
-                                    {tab === "signals" && <BarChart3 size={14} />}
-                                    {tab === "brain" && <Brain size={14} />}
-                                    {tab === "audience" && <Globe2 size={14} />}
-                                    {tab === "monetisation" && <Coins size={14} />}
-                                    <span>
-                                        {tab === "signals" && "Signals"}
-                                        {tab === "brain" && "AI Brain"}
-                                        {tab === "audience" && "Audience"}
-                                        {tab === "monetisation" && "Earn"}
-                                    </span>
-                                </button>
-                            ))}
+                            <div className="text-left">
+                                <h3 className="text-sm font-black uppercase tracking-wider text-text-main leading-none">{connectedInfo.title}</h3>
+                                <p className="text-[10px] font-bold text-app-accent uppercase tracking-widest mt-1">Channel Analytics</p>
+                            </div>
                         </div>
 
                         {/* Content viewport */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                        <div className="flex-1 overflow-y-auto p-6 pb-32 space-y-6">
 
                             {/* === TAB: SIGNALS === */}
                             {activeAnalyticsTab === "signals" && (
@@ -519,47 +496,47 @@ export default function ConnectBluModal({
                                 >
                                     {/* Stats grid */}
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Total Impressions</span>
-                                            <span className="text-2xl font-black text-white tracking-tight">142,504</span>
+                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Impressions</span>
+                                            <span className="text-2xl font-black text-text-main tracking-tight">142,504</span>
                                             <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
                                                 <TrendingUp size={10} /> +14.2% this week
                                             </span>
                                         </div>
-                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Engagement Rate</span>
-                                            <span className="text-2xl font-black text-white tracking-tight">8.62%</span>
+                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Engagement Rate</span>
+                                            <span className="text-2xl font-black text-text-main tracking-tight">8.62%</span>
                                             <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
                                                 <TrendingUp size={10} /> +2.5% this week
                                             </span>
                                         </div>
-                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Signal score</span>
-                                            <span className="text-2xl font-black text-cyan-400 tracking-tight">92 / 100</span>
-                                            <span className="text-[10px] font-medium text-gray-400 mt-1">Excellent activity</span>
+                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Signal score</span>
+                                            <span className="text-2xl font-black text-app-accent tracking-tight">92 / 100</span>
+                                            <span className="text-[10px] font-medium text-text-sub mt-1">Excellent activity</span>
                                         </div>
-                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Total post views</span>
-                                            <span className="text-2xl font-black text-white tracking-tight">84.2K</span>
-                                            <span className="text-[10px] font-medium text-gray-400 mt-1">Across 32 posts</span>
+                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total post views</span>
+                                            <span className="text-2xl font-black text-text-main tracking-tight">84.2K</span>
+                                            <span className="text-[10px] font-medium text-text-sub mt-1">Across 32 posts</span>
                                         </div>
                                     </div>
 
                                     {/* Chart (Elegant CSS Bar representation) */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-4">Signal Distribution (Last 7 Days)</h4>
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-4">Signal Distribution (Last 7 Days)</h4>
                                         <div className="h-32 flex items-end justify-between gap-3 pt-4">
                                             {[45, 60, 52, 75, 90, 82, 95].map((val, idx) => (
                                                 <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                                                    <div className="w-full bg-cyan-955/20 rounded-t-lg relative" style={{ height: "100px" }}>
+                                                    <div className="w-full bg-app-accent/10 rounded-t-lg relative" style={{ height: "100px" }}>
                                                         <motion.div 
                                                             initial={{ height: 0 }} 
                                                             animate={{ height: `${val}%` }} 
                                                             transition={{ delay: idx * 0.05, duration: 0.5 }}
-                                                            className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t-lg shadow-[0_0_10px_rgba(34,211,238,0.2)]"
+                                                            className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-app-accent/80 to-app-accent rounded-t-lg shadow-app-shadow"
                                                         />
                                                     </div>
-                                                    <span className="text-[8px] font-bold text-gray-500">Day {idx + 1}</span>
+                                                    <span className="text-[8px] font-bold text-text-sub">Day {idx + 1}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -575,15 +552,15 @@ export default function ConnectBluModal({
                                     className="space-y-5"
                                 >
                                     {/* Sentiment Indicator */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex items-center justify-between gap-4 text-left">
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex items-center justify-between gap-4 text-left">
                                         <div>
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">AI Audience Sentiment</h4>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">AI Audience Sentiment</h4>
                                             <p className="text-xl font-black text-emerald-400 uppercase tracking-tight">Highly Positive</p>
-                                            <p className="text-[10px] text-gray-400 mt-1">Based on semantic signal analysis of chat replies and reactions.</p>
+                                            <p className="text-[10px] text-text-sub mt-1">Based on semantic signal analysis of chat replies and reactions.</p>
                                         </div>
                                         <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
                                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                                <path className="text-white/5" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                                <path className="text-app-accent/10" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                                 <path className="text-emerald-500" strokeDasharray="92, 100" strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                             </svg>
                                             <div className="absolute font-black text-sm text-emerald-400">92%</div>
@@ -591,40 +568,40 @@ export default function ConnectBluModal({
                                     </div>
 
                                     {/* Sentiment Bar */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
-                                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
+                                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-text-sub">
                                             <span>Positive (92%)</span>
                                             <span>Neutral (6%)</span>
                                             <span>Negative (2%)</span>
                                         </div>
-                                        <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden flex">
+                                        <div className="h-2 w-full rounded-full bg-app-accent/10 overflow-hidden flex">
                                             <div className="bg-emerald-500 h-full" style={{ width: "92%" }} />
-                                            <div className="bg-gray-400 h-full" style={{ width: "6%" }} />
+                                            <div className="bg-text-sub h-full" style={{ width: "6%" }} />
                                             <div className="bg-red-500 h-full" style={{ width: "2%" }} />
                                         </div>
                                     </div>
 
                                     {/* AI Insights Narrative */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4 text-left">
-                                        <div className="flex items-center gap-2 text-cyan-400">
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-6 space-y-4 text-left">
+                                        <div className="flex items-center gap-2 text-app-accent">
                                             <Brain size={16} />
                                             <h4 className="text-[10px] font-black uppercase tracking-widest">Blu Intelligence Report</h4>
                                         </div>
-                                        <p className="text-xs text-gray-300 leading-relaxed font-medium">
+                                        <p className="text-xs text-text-sub leading-relaxed font-medium">
                                             Your broadcasts on decentralized yields and TON web application architectures are generating high-signal reactions. Commentators show specific interest in your streak updates and referrals.
                                         </p>
-                                        <div className="h-px bg-white/5" />
-                                        <ul className="space-y-2 text-[11px] text-gray-400 font-medium">
+                                        <div className="h-px bg-app-border" />
+                                        <ul className="space-y-2 text-[11px] text-text-sub font-medium">
                                             <li className="flex items-start gap-2">
-                                                <span className="text-cyan-400 font-bold">1.</span>
+                                                <span className="text-app-accent font-bold">1.</span>
                                                 <span>Your most impactful post was broadcasted on Tuesday, driving a 34% surge in views.</span>
                                             </li>
                                             <li className="flex items-start gap-2">
-                                                <span className="text-cyan-400 font-bold">2.</span>
+                                                <span className="text-app-accent font-bold">2.</span>
                                                 <span>Visual content (collage layouts) drives 2.4x higher engagement than pure text posts.</span>
                                             </li>
                                             <li className="flex items-start gap-2">
-                                                <span className="text-cyan-400 font-bold">3.</span>
+                                                <span className="text-app-accent font-bold">3.</span>
                                                 <span>Ideal posting window for your subscriber node network is 14:00 - 17:00 UTC.</span>
                                             </li>
                                         </ul>
@@ -640,8 +617,8 @@ export default function ConnectBluModal({
                                     className="space-y-5"
                                 >
                                     {/* Country distribution */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Audience Demographics</h4>
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-2">Audience Demographics</h4>
                                         {[
                                             { name: "Ukraine", val: 38 },
                                             { name: "Russia", val: 22 },
@@ -650,16 +627,16 @@ export default function ConnectBluModal({
                                             { name: "Others", val: 15 }
                                         ].map((item, idx) => (
                                             <div key={idx} className="space-y-1">
-                                                <div className="flex justify-between text-[11px] font-bold text-gray-300">
+                                                <div className="flex justify-between text-[11px] font-bold text-text-sub">
                                                     <span>{item.name}</span>
                                                     <span>{item.val}%</span>
                                                 </div>
-                                                <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+                                                <div className="h-1.5 w-full rounded-full bg-app-accent/10 overflow-hidden">
                                                     <motion.div 
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${item.val}%` }}
                                                         transition={{ duration: 0.6, delay: idx * 0.05 }}
-                                                        className="bg-cyan-500 h-full rounded-full"
+                                                        className="bg-app-accent h-full rounded-full"
                                                     />
                                                 </div>
                                             </div>
@@ -667,8 +644,8 @@ export default function ConnectBluModal({
                                     </div>
 
                                     {/* Audience Interest Breakdown */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-2">User Interests</h4>
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-2">User Interests</h4>
                                         <div className="grid grid-cols-2 gap-3">
                                             {[
                                                 { label: "Yield Farms", weight: "42%" },
@@ -676,9 +653,9 @@ export default function ConnectBluModal({
                                                 { label: "Mini Apps", weight: "18%" },
                                                 { label: "Memes", weight: "12%" }
                                             ].map((item, idx) => (
-                                                <div key={idx} className="bg-black/40 border border-white/5 rounded-2xl p-3 flex flex-col justify-center text-left">
-                                                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{item.label}</span>
-                                                    <span className="text-lg font-black text-white mt-0.5">{item.weight}</span>
+                                                <div key={idx} className="bg-app-bg/40 border border-app-border rounded-2xl p-3 flex flex-col justify-center text-left">
+                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">{item.label}</span>
+                                                    <span className="text-lg font-black text-text-main mt-0.5">{item.weight}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -698,24 +675,24 @@ export default function ConnectBluModal({
                                         <div>
                                             <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] block mb-1">Stars Received</span>
                                             <div className="flex items-baseline gap-2">
-                                                <span className="text-4xl font-black text-white tracking-tight">{channelStarsReceived.toLocaleString()}</span>
+                                                <span className="text-4xl font-black text-text-main tracking-tight">{channelStarsReceived.toLocaleString()}</span>
                                                 <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">Stars</span>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-black/30 border border-white/5 rounded-2xl p-3">
-                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider block">Estimated Payout</span>
-                                                <span className="text-sm font-black text-white">{(channelStarsReceived * 0.015).toFixed(3)} TON</span>
+                                            <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Estimated Payout</span>
+                                                <span className="text-sm font-black text-text-main">{(channelStarsReceived * 0.015).toFixed(3)} TON</span>
                                             </div>
-                                            <div className="bg-black/30 border border-white/5 rounded-2xl p-3">
-                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider block">USD Value</span>
+                                            <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">USD Value</span>
                                                 <span className="text-sm font-black text-emerald-400">${(channelStarsReceived * 0.015 * 6.5).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => setWithdrawOpen(true)}
                                             disabled={channelStarsReceived === 0}
-                                            className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:pointer-events-none transition-colors text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg flex items-center justify-center gap-1.5"
+                                            className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:pointer-events-none transition-colors text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg flex items-center justify-center gap-1.5"
                                         >
                                             <Star size={14} fill="currentColor" />
                                             Withdraw to Wallet
@@ -723,22 +700,22 @@ export default function ConnectBluModal({
                                     </div>
 
                                     {/* Premium subscription config card (FOR TESTING PURPOSES) */}
-                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4 text-left">
+                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-6 space-y-4 text-left">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2.5 text-cyan-400">
-                                                <Crown size={18} className={isPremium ? "text-cyan-400 fill-cyan-400" : "text-gray-500"} />
+                                            <div className="flex items-center gap-2.5 text-app-accent">
+                                                <Crown size={18} className={isPremium ? "text-app-accent fill-current" : "text-text-sub"} />
                                                 <div className="text-left">
-                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-white leading-none">Premium Subscription</h4>
-                                                    <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-wider">Required for reconnection</p>
+                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main leading-none">Premium Subscription</h4>
+                                                    <p className="text-[9px] text-text-sub mt-1 uppercase tracking-wider">Required for reconnection</p>
                                                 </div>
                                             </div>
                                             <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                                isPremium ? "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400" : "bg-white/5 border border-white/10 text-gray-500"
+                                                isPremium ? "bg-app-accent/10 border border-app-accent/30 text-app-accent" : "bg-app-accent/5 border border-app-border text-text-sub"
                                             }`}>
                                                 {isPremium ? "Active" : "Inactive"}
                                             </div>
                                         </div>
-                                        <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
+                                        <p className="text-[11px] text-text-sub leading-relaxed font-medium">
                                             Disconnecting this channel means reconnecting it in the future will require an active Premium Subscription. You can toggle this simulated status below to test reconnection constraints.
                                         </p>
                                         <button
@@ -747,7 +724,7 @@ export default function ConnectBluModal({
                                             className={`w-full py-3 border font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                                                 isPremium 
                                                     ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
-                                                    : "bg-cyan-500 text-black border-cyan-400 hover:bg-cyan-600"
+                                                    : "bg-app-accent text-app-bg border-app-accent hover:brightness-110"
                                             }`}
                                         >
                                             {togglingPremium ? (
@@ -760,6 +737,48 @@ export default function ConnectBluModal({
                                 </motion.div>
                             )}
 
+                        </div>
+
+                        {/* Floating Bottom Navigation Tabs — liquid glassmorphism */}
+                        <div 
+                            className="absolute left-1/2 -translate-x-1/2 z-[215] flex items-center justify-around w-[94%] max-w-md rounded-[2.2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
+                            style={{ bottom: "calc(max(1.5rem, env(safe-area-inset-bottom)) + 10px)" }}
+                        >
+                            {(["signals", "brain", "audience", "monetisation"] as const).map((tab) => {
+                                const isActive = activeAnalyticsTab === tab;
+                                return (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveAnalyticsTab(tab)}
+                                        className="relative flex flex-col items-center justify-center flex-1 py-2 group outline-none"
+                                    >
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="analyticsActivePill"
+                                                className="absolute inset-x-1 inset-y-1 border border-app-border rounded-2xl z-0 bg-app-accent/10"
+                                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                            />
+                                        )}
+                                        <div className={`relative z-10 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
+                                            <div className="relative">
+                                                {isActive && <div className="absolute inset-0 blur-md bg-app-accent/40 rounded-full" />}
+                                                {tab === "signals" && <BarChart3 size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
+                                                {tab === "brain" && <Brain size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
+                                                {tab === "audience" && <Globe2 size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
+                                                {tab === "monetisation" && <Coins size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
+                                            </div>
+                                            <span className={`text-[9px] font-black uppercase tracking-tighter transition-all ${
+                                                isActive ? "text-text-main" : "text-text-sub"
+                                            }`}>
+                                                {tab === "signals" && "Signal"}
+                                                {tab === "brain" && "AI Brain"}
+                                                {tab === "audience" && "Audience"}
+                                                {tab === "monetisation" && "Earn"}
+                                            </span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}
