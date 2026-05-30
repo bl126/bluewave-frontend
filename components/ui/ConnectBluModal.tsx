@@ -54,6 +54,7 @@ export default function ConnectBluModal({
     const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "audience" | "monetisation">("signals");
     const [isPremium, setIsPremium] = useState(false);
     const [togglingPremium, setTogglingPremium] = useState(false);
+    const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null);
 
     useEffect(() => {
         if (telegramUser) {
@@ -88,7 +89,10 @@ export default function ConnectBluModal({
     useEffect(() => {
         if (!isOpen || !telegramId) return;
         void getApi(`/stars/withdrawal/info?tg_id=${telegramId}`)
-            .then((res) => setCachedStarWithdrawalInfo(telegramId, res))
+            .then((res) => {
+                setWithdrawalInfo(res);
+                setCachedStarWithdrawalInfo(telegramId, res);
+            })
             .catch(() => {});
     }, [isOpen, telegramId]);
 
@@ -687,6 +691,28 @@ export default function ConnectBluModal({
                                             <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
                                                 <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">USD Value</span>
                                                 <span className="text-sm font-black text-emerald-400">${(channelStarsReceived * 0.015 * 6.5).toFixed(2)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Lifetime Payout Section */}
+                                        <div className="border-t border-amber-500/10 pt-4 grid grid-cols-2 gap-4">
+                                            <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Lifetime Payout</span>
+                                                <span className="text-sm font-black text-text-main">
+                                                    {withdrawalInfo?.lifetime_payout_ton ? `${withdrawalInfo.lifetime_payout_ton.toFixed(3)} TON` : "0.000 TON"}
+                                                </span>
+                                                {withdrawalInfo?.lifetime_payout_ton ? (
+                                                    <span className="text-[9px] font-bold text-emerald-400 block mt-0.5">
+                                                        ~${(withdrawalInfo.lifetime_payout_ton * (withdrawalInfo.ton_price_usd || 6.5)).toFixed(2)} USD
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Lifetime Withdrawn</span>
+                                                <span className="text-sm font-black text-amber-500">
+                                                    {withdrawalInfo?.lifetime_payout_stars ? withdrawalInfo.lifetime_payout_stars.toLocaleString() : "0"}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-text-sub block mt-0.5">Stars</span>
                                             </div>
                                         </div>
                                         <button
