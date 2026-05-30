@@ -35,7 +35,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   const scrollRef = useRef<HTMLDivElement>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [checks, setChecks] = useState(() => buildLocalQuestChecks(telegramUser, null));
+  const [checks, setChecks] = useState(() => buildLocalQuestChecks(telegramUser, null, null));
   const [progressStatus, setProgressStatus] = useState<{
     eligible?: boolean;
     minted?: boolean;
@@ -66,16 +66,19 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   }, []);
 
   useEffect(() => {
-    // Initial silent sync to check if already minted
-    setChecks(buildLocalQuestChecks(telegramUser, null));
+    // Initial silent sync to check progress and status on open
+    setChecks(buildLocalQuestChecks(telegramUser, null, null));
     fetchQuestProgress(quest.id).then((res) => {
       if (res && !res.error) {
         setProgressStatus({ eligible: res.eligible, minted: res.minted });
         setFarmingDetected(!!res.farming_detected);
         setSuspectedAccounts(res.suspected_accounts || []);
         
-        if (res.minted) {
-          if (res.checks?.length) setChecks(res.checks);
+        if (res.checks?.length) {
+          setChecks(res.checks);
+        }
+        
+        if (res.minted || res.eligible || res.farming_detected) {
           setScanState('done');
           setRevealIndex(999);
         }

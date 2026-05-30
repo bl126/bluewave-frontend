@@ -1074,7 +1074,7 @@ export default function LandingPage() {
       )}
 
       {/* 🧭 Navigation Bar */}
-      {!isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && !isBugsSuggestionsOpen && (
+      {!isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && !isBugsSuggestionsOpen && !questDetailOpen && (
         <BottomNav
           activeTab={activeTab}
           telegramId={telegramUser?.id}
