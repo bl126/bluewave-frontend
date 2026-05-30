@@ -726,7 +726,6 @@ export default function LandingPage() {
       setTelegramUser((prev: any) => ({
         ...prev,
         ...newUser,
-        // Ensure mapping consistency if the backend object differs slightly
         id: newUser.tg_id || prev?.id,
         wallet_address: newUser.wallet_address || prev?.wallet_address,
         is_human_verified: !!newUser.is_human_verified,
@@ -739,6 +738,10 @@ export default function LandingPage() {
       }
     };
 
+    const handleOpenBugsSuggestions = () => {
+      setIsBugsSuggestionsOpen(true);
+    };
+
     window.addEventListener('showStreakCelebration' as any, handleStreakPop);
     window.addEventListener('showStreakRecovery' as any, handleStreakRecoveryPop);
     window.addEventListener('showHumanVerification' as any, handleHumanPop);
@@ -746,6 +749,7 @@ export default function LandingPage() {
     window.addEventListener('showTONExplorer' as any, handleTONPop);
     window.addEventListener('showRecoveryPassword' as any, handleRecoveryPop);
     window.addEventListener('updateUser' as any, handleUpdateUser);
+    window.addEventListener('openBugsSuggestions' as any, handleOpenBugsSuggestions);
     return () => {
       window.removeEventListener('showStreakCelebration' as any, handleStreakPop);
       window.removeEventListener('showStreakRecovery' as any, handleStreakRecoveryPop);
@@ -754,6 +758,7 @@ export default function LandingPage() {
       window.removeEventListener('showTONExplorer' as any, handleTONPop);
       window.removeEventListener('showRecoveryPassword' as any, handleRecoveryPop);
       window.removeEventListener('updateUser' as any, handleUpdateUser);
+      window.removeEventListener('openBugsSuggestions' as any, handleOpenBugsSuggestions);
     };
   }, []);
 

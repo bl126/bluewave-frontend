@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoreVertical, Check, Copy, Flag } from "lucide-react";
+import { MoreVertical, Check, Copy, Flag, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { buildQuestStartappLink } from "@/lib/questDeepLink";
 import { buildLocalQuestChecks } from "@/lib/questLocalChecks";
@@ -41,6 +41,13 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     minted?: boolean;
   }>({});
 
+  // Premium Anti-Farming Scanning States
+  const [scanState, setScanState] = useState<'idle' | 'scanning' | 'revealing' | 'done'>('idle');
+  const [scanStep, setScanStep] = useState(0); // 0, 1, 2 for scanning step texts
+  const [revealIndex, setRevealIndex] = useState(-1);
+  const [farmingDetected, setFarmingDetected] = useState(false);
+  const [suspectedAccounts, setSuspectedAccounts] = useState<string[]>([]);
+
   const fullDetails = quest.details || quest.summary || "";
   const previewMeta = quest.details_preview?.has_more != null
     ? { short: quest.details_preview.short, has_more: quest.details_preview.has_more }
@@ -59,11 +66,19 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   }, []);
 
   useEffect(() => {
+    // Initial silent sync to check if already minted
     setChecks(buildLocalQuestChecks(telegramUser, null));
     fetchQuestProgress(quest.id).then((res) => {
       if (res && !res.error) {
-        if (res.checks?.length) setChecks(res.checks);
         setProgressStatus({ eligible: res.eligible, minted: res.minted });
+        setFarmingDetected(!!res.farming_detected);
+        setSuspectedAccounts(res.suspected_accounts || []);
+        
+        if (res.minted) {
+          if (res.checks?.length) setChecks(res.checks);
+          setScanState('done');
+          setRevealIndex(999);
+        }
       }
     });
   }, [quest.id, telegramUser]);
@@ -88,6 +103,60 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   }, [onClose, detailsOpen, menuOpen]);
 
   const toast = (msg: string) => onToast?.(msg);
+
+  const startEligibilityCheck = async () => {
+    setScanState('scanning');
+    setScanStep(0);
+    setRevealIndex(-1);
+    
+    // Stagger step text animations
+    const timer1 = setTimeout(() => setScanStep(1), 800);
+    const timer2 = setTimeout(() => setScanStep(2), 1600);
+    
+    try {
+      const res = await fetchQuestProgress(quest.id);
+      
+      // Enforce 2.5s scan duration for premium feel
+      setTimeout(() => {
+        setScanState('revealing');
+        
+        if (res && !res.error) {
+          if (res.checks?.length) setChecks(res.checks);
+          setProgressStatus({ eligible: res.eligible, minted: res.minted });
+          setFarmingDetected(!!res.farming_detected);
+          setSuspectedAccounts(res.suspected_accounts || []);
+          
+          let idx = 0;
+          const total = res.checks?.length || 6;
+          const interval = setInterval(() => {
+            setRevealIndex(idx);
+            idx++;
+            if (idx >= total) {
+              clearInterval(interval);
+              setScanState('done');
+              if (res.farming_detected) {
+                toast("Network integrity check failed: Farming suspected!");
+              } else if (res.eligible) {
+                toast("Ledger verification complete: You are eligible!");
+              }
+            }
+          }, 400);
+        } else {
+          setScanState('idle');
+          toast(t("missions.quests.action_failed") || "Verification failed. Try again.");
+        }
+      }, 2500);
+    } catch (err) {
+      setTimeout(() => {
+        setScanState('idle');
+        toast(t("missions.quests.action_failed") || "Verification failed. Try again.");
+      }, 2500);
+    }
+  };
+
+  const handleMintRequest = () => {
+    toast("MINT_NOT_READY — smart contract Phase 3–5. User-paid gas (~0.05–0.2 TON) when live.");
+  };
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -222,26 +291,131 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             )}
           </p>
 
-          <QuestCriteriaPanel checks={checks} />
+          <QuestCriteriaPanel 
+            checks={checks} 
+            animateReveal={scanState === 'revealing' || scanState === 'done'}
+            revealIndex={revealIndex}
+          />
 
           {progressStatus.minted && (
-            <div className="px-4 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
-                {t("missions.quests.minted_badge")}
+            <div className="px-4 py-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/35 text-center shadow-[0_0_15px_rgba(34,211,238,0.08)] animate-in zoom-in-95 duration-250">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+                {t("missions.quests.minted_badge") || "WAVE BADGE MINTED ✓"}
               </span>
             </div>
           )}
-          {progressStatus.eligible && !progressStatus.minted && (
-            <div className="px-4 py-3 rounded-2xl bg-app-accent/5 border border-app-border text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-text-sub">
-                {t("missions.quests.eligible_soon")}
-              </span>
+
+          {!progressStatus.minted && (
+            <div className="space-y-4">
+              {/* 1. Farming Detected Suspicion Card */}
+              {scanState === 'done' && farmingDetected && (
+                <div className="flex flex-col gap-4 p-5 rounded-2xl border border-red-500/30 bg-red-500/[0.03] shadow-[0_0_20px_rgba(239,68,68,0.02)] animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">⚠️</span>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-red-400">
+                      Network Farming Suspected
+                    </h4>
+                  </div>
+                  <p className="text-xs text-text-sub leading-relaxed">
+                    Multiple accounts in your network share matching device fingerprints or network details. Suspected accounts:{" "}
+                    <span className="font-mono font-bold text-red-300">
+                      {suspectedAccounts.join(", ") || "None"}
+                    </span>
+                    . If you think this is a false positive, please{" "}
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent("openBugsSuggestions"))}
+                      className="inline font-bold text-cyan-400 hover:underline underline-offset-2"
+                    >
+                      contact support
+                    </button>{" "}
+                    to open a suggestion ticket immediately.
+                  </p>
+                </div>
+              )}
+
+              {/* 2. Success Eligible Mint Card */}
+              {scanState === 'done' && !farmingDetected && progressStatus.eligible && (
+                <div className="flex flex-col gap-4 p-5 rounded-2xl border border-cyan-400/35 bg-cyan-400/[0.03] shadow-[0_0_20px_rgba(34,211,238,0.05)] animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">🎉</span>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-cyan-400">
+                      You Are Eligible!
+                    </h4>
+                  </div>
+                  <p className="text-xs text-text-sub leading-relaxed">
+                    Your presence signals and network integrity have been fully verified on the ledger. You are authorized to mint your Wave Badge.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleMintRequest}
+                    className="w-full py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_22px_rgba(34,211,238,0.45)] transition-all duration-300"
+                  >
+                    Mint Wave Badge
+                  </button>
+                </div>
+              )}
+
+              {/* 3. Ineligible Failure Card */}
+              {scanState === 'done' && !farmingDetected && !progressStatus.eligible && (
+                <div className="flex flex-col gap-3 p-5 rounded-2xl border border-app-border bg-app-card/25 animate-in fade-in duration-300">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">❌</span>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-text-main">
+                      Quest Ineligible
+                    </h4>
+                  </div>
+                  <p className="text-xs text-text-sub leading-relaxed">
+                    You do not meet all required criteria for this Wave Quest yet. Complete the remaining steps above and try again.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={startEligibilityCheck}
+                    className="w-full py-3 border border-app-border hover:border-app-accent/35 rounded-xl text-[10px] font-black uppercase tracking-widest text-text-sub hover:text-cyan-400 bg-app-card/10 transition-colors"
+                  >
+                    Re-Scan Ledger
+                  </button>
+                </div>
+              )}
+
+              {/* 4. Initial Scan Button */}
+              {scanState === 'idle' && (
+                <button
+                  type="button"
+                  onClick={startEligibilityCheck}
+                  className="w-full py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-[0.18em] shadow-[0_0_15px_rgba(34,211,238,0.18)] hover:shadow-[0_0_25px_rgba(34,211,238,0.32)] transition-all duration-300"
+                >
+                  Check Eligibility
+                </button>
+              )}
             </div>
           )}
 
           <QuestBoardPass questId={quest.id} myTelegramId={telegramUser?.id} />
         </div>
       </motion.div>
+
+      {/* Centered High-Fidelity Scanning Overlay */}
+      {scanState === 'scanning' && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-app-bg/85 backdrop-blur-md">
+          <div className="flex flex-col items-center justify-center p-8 rounded-3xl border border-app-border bg-app-card/75 backdrop-blur-2xl max-w-xs w-full text-center gap-6 shadow-[0_0_50px_rgba(6,182,212,0.15)] animate-in zoom-in-95 duration-200">
+            <div className="relative w-16 h-16 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border border-cyan-500/25 animate-ping" />
+              <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" strokeWidth={2.5} />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-400 animate-pulse">
+                INSPECTING LEDGER DATA
+              </h4>
+              <p className="text-[10px] text-text-sub font-black tracking-wider uppercase leading-relaxed min-h-[30px] flex items-center justify-center px-2">
+                {scanStep === 0 && "VERIFYING PRESENCE SIGNATURES..."}
+                {scanStep === 1 && "ANALYZING REFERRAL NETWORK NODES..."}
+                {scanStep === 2 && "SCANNING DEVICE & IP INTEGRITY..."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <QuestDetailsPopup isOpen={detailsOpen} onClose={() => setDetailsOpen(false)} details={fullDetails} />
     </>
