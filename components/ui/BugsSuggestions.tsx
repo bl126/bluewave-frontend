@@ -40,6 +40,24 @@ function formatResetDuration(resetTimeStr: string): string {
   return `${minutes}m`;
 }
 
+interface CacheEntry {
+  reports: ReportItem[];
+  counts: {
+    all: number;
+    issues: number;
+    suggestions: number;
+    my: number;
+  };
+}
+
+const reportsCache: Record<string, CacheEntry> = {};
+
+function formatCount(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+  return num.toString();
+}
+
 
 export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsSuggestionsProps) {
   const { t } = useLanguage();
@@ -62,9 +80,24 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [reports, setReports] = useState<ReportItem[]>([]);
+  const [counts, setCounts] = useState({ all: 0, issues: 0, suggestions: 0, my: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
+
+  // Pull-to-refresh state
+  const [pullY, setPullY] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Lightbox Media carousel states
+  const [lightboxMedia, setLightboxMedia] = useState<{ urls: string[]; isVideos: boolean[]; currentIndex: number } | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [isDraggingPan, setIsDraggingPan] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const lightboxSwipeStart = useRef<{ x: number; y: number } | null>(null);
+  const [lightboxSlideOffset, setLightboxSlideOffset] = useState(0);
 
   // Post creation state
   const [isPostOpen, setIsPostOpen] = useState(false);
@@ -103,10 +136,37 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const touchStart = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
-  // Swipe gesture tab change logic
+  // Swipe & Pull-to-refresh touch gesture handlers
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = e.targetTouches[0].clientX;
     touchStartY.current = e.targetTouches[0].clientY;
+    
+    // Allow pulling only when scroll is at top and not already refreshing
+    if (scrollContainerRef.current && scrollContainerRef.current.scrollTop === 0 && !isRefreshing) {
+      setIsPulling(true);
+    } else {
+      setIsPulling(false);
+    }
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current !== null && isPulling && !isRefreshing) {
+      const currentY = e.targetTouches[0].clientY;
+      const diffY = currentY - touchStartY.current;
+      
+      if (diffY > 0) {
+        // Dragging down: apply spring resistance
+        const pull = Math.min(80, diffY * 0.45);
+        setPullY(pull);
+        
+        // Prevent bounce scrolling behavior
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      } else {
+        setPullY(0);
+      }
+    }
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
@@ -114,7 +174,15 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       const diffX = touchStart.current - e.changedTouches[0].clientX;
       const diffY = touchStartY.current - e.changedTouches[0].clientY;
       
-      // Make sure it is primarily a horizontal swipe and meets a threshold
+      // 1. Check if it's a Pull-to-refresh action
+      if (isPulling && pullY >= 60) {
+        setIsRefreshing(true);
+        fetchReports(true); // force refresh (ignore cache)
+      } else {
+        setPullY(0);
+      }
+      
+      // 2. Make sure it is primarily a horizontal swipe and meets a threshold
       if (Math.abs(diffX) > 80 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
         const tabs: ("all" | "issues" | "suggestions" | "my")[] = ["all", "issues", "suggestions", "my"];
         const currentIndex = tabs.indexOf(activeTab);
@@ -128,6 +196,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
     }
     touchStart.current = null;
     touchStartY.current = null;
+    setIsPulling(false);
   };
 
   // Hide FAB on scroll down, show on scroll up
@@ -162,12 +231,24 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
     { value: "closed", label: t("bugs_suggestions.status_closed") }
   ];
 
-  // Fetch Reports
-  const fetchReports = async () => {
-    setLoading(true);
-    setError(null);
+  // Fetch Reports with caching (Stale-While-Revalidate)
+  const fetchReports = async (forceRefresh = false) => {
+    const tabParam = activeTab === "issues" ? "issues" : (activeTab === "suggestions" ? "suggestions" : (activeTab === "my" ? "my" : "all"));
+    const cacheKey = `${tabParam}_${selectedStatus || "all"}_${searchQuery}`;
+
+    // Stale-While-Revalidate: load from cache immediately if available
+    if (!forceRefresh && reportsCache[cacheKey]) {
+      setReports(reportsCache[cacheKey].reports);
+      setCounts(reportsCache[cacheKey].counts);
+      setLoading(false);
+      setError(null);
+      // Run background API sync silently
+    } else {
+      setLoading(true);
+      setError(null);
+    }
+
     try {
-      const tabParam = activeTab === "issues" ? "issues" : (activeTab === "suggestions" ? "suggestions" : (activeTab === "my" ? "my" : "all"));
       let url = `/bugs_suggestions?tab=${tabParam}`;
       if (selectedStatus) {
         url += `&status=${selectedStatus}`;
@@ -178,12 +259,16 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       
       const res = await getApi(url);
       if (res.error) {
-        setError(res.error);
+        if (!reportsCache[cacheKey]) {
+          setError(res.error);
+        }
       } else {
-        let data: ReportItem[] = res || [];
+        let reportsList: ReportItem[] = res.reports || [];
+        const resCounts = res.counts || { all: 0, issues: 0, suggestions: 0, my: 0 };
+
         if (activeTab === "all") {
           const statusOrder: Record<ReportItem["status"], number> = { open: 0, fix_coming: 1, fixed: 2, closed: 3 };
-          data = [...data].sort((a, b) => {
+          reportsList = [...reportsList].sort((a, b) => {
             const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 4;
             const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 4;
             if (orderA !== orderB) {
@@ -192,12 +277,24 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
           });
         }
-        setReports(data);
+
+        setReports(reportsList);
+        setCounts(resCounts);
+        
+        // Cache the result
+        reportsCache[cacheKey] = {
+          reports: reportsList,
+          counts: resCounts
+        };
       }
     } catch (err: any) {
-      setError(err.message || "Failed to fetch reports.");
+      if (!reportsCache[cacheKey]) {
+        setError(err.message || "Failed to fetch reports.");
+      }
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+      setPullY(0);
     }
   };
 
@@ -233,6 +330,15 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
     const handleNativeBack = (e: Event) => {
       if (!isOpen) return;
 
+      if (lightboxMedia) {
+        setLightboxMedia(null);
+        setZoomScale(1);
+        setPanPosition({ x: 0, y: 0 });
+        setLightboxSlideOffset(0);
+        e.preventDefault();
+        return;
+      }
+
       if (isPostOpen) {
         setIsPostOpen(false);
         e.preventDefault();
@@ -254,7 +360,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, isPostOpen, selectedReport, statusDropdownOpen]);
+  }, [isOpen, isPostOpen, selectedReport, statusDropdownOpen, lightboxMedia]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -518,10 +624,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                       : "text-text-sub hover:text-text-main hover:bg-app-accent/5"
                   }`}
                 >
-                  {tab === "all" && t("bugs_suggestions.tab_all")}
-                  {tab === "issues" && t("bugs_suggestions.tab_issues")}
-                  {tab === "suggestions" && t("bugs_suggestions.tab_suggestions")}
-                  {tab === "my" && t("bugs_suggestions.tab_my")}
+                  {tab === "all" && `${t("bugs_suggestions.tab_all")} (${formatCount(counts.all)})`}
+                  {tab === "issues" && `${t("bugs_suggestions.tab_issues")} (${formatCount(counts.issues)})`}
+                  {tab === "suggestions" && `${t("bugs_suggestions.tab_suggestions")} (${formatCount(counts.suggestions)})`}
+                  {tab === "my" && `${t("bugs_suggestions.tab_my")} (${formatCount(counts.my)})`}
                 </button>
               ))}
             </div>
@@ -531,9 +637,23 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
               ref={scrollContainerRef}
               onScroll={handleScroll}
               onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
-              className="flex-1 overflow-y-auto mt-4 pb-24 pr-1 -mr-2 select-none scrollbar-thin"
+              className="flex-1 overflow-y-auto mt-4 pb-24 pr-1 -mr-2 select-none scrollbar-thin transition-transform duration-75"
+              style={{ transform: `translateY(${pullY}px)` }}
             >
+              {/* Pull-to-refresh Indicator */}
+              {pullY > 0 && (
+                <div 
+                  style={{ height: `${pullY}px` }} 
+                  className="overflow-hidden transition-all duration-150 flex items-center justify-center bg-app-accent/5 rounded-3xl border border-app-border/30 mb-2 gap-2 text-text-sub"
+                >
+                  <Loader2 size={12} className={`text-app-accent ${isRefreshing || pullY >= 60 ? "animate-spin" : ""}`} />
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    {isRefreshing ? t("bugs_suggestions.refreshing") : pullY >= 60 ? t("bugs_suggestions.release_to_refresh") : t("bugs_suggestions.pull_to_refresh")}
+                  </span>
+                </div>
+              )}
               {loading ? (
                 <div className="flex flex-col gap-3">
                   {[1, 2, 3].map((i) => (
@@ -563,7 +683,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                 <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center text-xs text-red-400 font-bold flex flex-col gap-2 items-center">
                   <AlertCircle size={20} />
                   <span>{error}</span>
-                  <button onClick={fetchReports} className="bg-red-500/20 px-4 py-1.5 rounded-full hover:bg-red-500/30 transition-all uppercase tracking-wider text-[9px] mt-1">Retry</button>
+                  <button onClick={() => fetchReports(true)} className="bg-red-500/20 px-4 py-1.5 rounded-full hover:bg-red-500/30 transition-all uppercase tracking-wider text-[9px] mt-1">Retry</button>
                 </div>
               ) : (reports.length === 0 && !pendingSubmission) ? (
                 <div className="text-center py-20 px-6 bg-app-card/30 border border-app-border rounded-[2rem] flex flex-col items-center gap-4">
@@ -711,29 +831,68 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   <div className="flex-1 overflow-y-auto">
                     {/* Media */}
                     {mediaList.length > 0 && (
-                      <div className="w-full bg-black/40">
+                      <div className="w-full bg-black/40 px-5 pt-3">
                         {mediaList[0].toLowerCase().endsWith(".mp4") || mediaList[0].toLowerCase().endsWith(".mov") ? (
-                          <video
-                            src={mediaList[0]}
-                            controls
-                            className="w-full max-h-72 object-contain"
-                          />
-                        ) : (
-                          <div className={`grid gap-1 ${
-                            mediaList.length === 1 ? "grid-cols-1" :
-                            mediaList.length === 2 ? "grid-cols-2" : "grid-cols-3"
-                          }`}>
-                            {mediaList.map((url, i) => (
-                              <img
-                                key={i}
-                                src={url}
-                                alt={`attachment ${i + 1}`}
-                                className={`w-full object-cover ${
-                                  mediaList.length === 1 ? "max-h-72" : "h-36"
-                                }`}
-                              />
-                            ))}
+                          <div 
+                            onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: 0 })}
+                            className="relative w-full max-h-72 overflow-hidden rounded-2xl border border-app-border bg-app-card cursor-pointer group"
+                          >
+                            <video
+                              src={mediaList[0]}
+                              className="w-full max-h-72 object-contain mx-auto"
+                              muted
+                              playsInline
+                            />
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 flex items-center justify-center transition-all">
+                              <span className="bg-app-accent text-app-bg px-3.5 py-1.5 rounded-full text-[9px] uppercase font-black tracking-wider shadow-lg">Tap to Play Fullscreen</span>
+                            </div>
                           </div>
+                        ) : (
+                          <>
+                            {mediaList.length === 1 ? (
+                              <div 
+                                onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: 0 })}
+                                className="w-full max-h-80 overflow-hidden rounded-2xl border border-app-border cursor-zoom-in bg-app-card"
+                              >
+                                <img src={mediaList[0]} alt="attachment" className="w-full h-full object-contain mx-auto" />
+                              </div>
+                            ) : mediaList.length === 2 ? (
+                              <div className="grid grid-cols-2 gap-2 h-48 overflow-hidden rounded-2xl border border-app-border">
+                                {mediaList.map((url, i) => (
+                                  <div 
+                                    key={i}
+                                    onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: i })}
+                                    className="h-full cursor-zoom-in bg-app-card border-r border-app-border last:border-0"
+                                  >
+                                    <img src={url} alt={`attachment ${i+1}`} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-3 gap-2 h-56 overflow-hidden rounded-2xl border border-app-border">
+                                <div 
+                                  onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: 0 })}
+                                  className="col-span-2 h-full cursor-zoom-in bg-app-card border-r border-app-border"
+                                >
+                                  <img src={mediaList[0]} alt="attachment 1" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex flex-col gap-2 h-full">
+                                  <div 
+                                    onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: 1 })}
+                                    className="w-full h-[calc(50%-4px)] cursor-zoom-in bg-app-card border-b border-app-border"
+                                  >
+                                    <img src={mediaList[1]} alt="attachment 2" className="w-full h-full object-cover" />
+                                  </div>
+                                  <div 
+                                    onClick={() => setLightboxMedia({ urls: mediaList, isVideos: mediaList.map(u => /\.(mp4|mov)$/i.test(u)), currentIndex: 2 })}
+                                    className="w-full h-[calc(50%-4px)] cursor-zoom-in bg-app-card"
+                                  >
+                                    <img src={mediaList[2]} alt="attachment 3" className="w-full h-full object-cover" />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
@@ -993,6 +1152,257 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
               </motion.div>
             )}
+          </AnimatePresence>
+
+          {/* ─── Premium Media Lightbox (Zoom, Pan & Swipe Carousel) ─── */}
+          <AnimatePresence>
+            {lightboxMedia && (() => {
+              const currentUrl = lightboxMedia.urls[lightboxMedia.currentIndex];
+              const currentIsVideo = lightboxMedia.isVideos[lightboxMedia.currentIndex];
+              const totalSlides = lightboxMedia.urls.length;
+              const canGoPrev = lightboxMedia.currentIndex > 0;
+              const canGoNext = lightboxMedia.currentIndex < totalSlides - 1;
+
+              const goToSlide = (index: number) => {
+                setZoomScale(1);
+                setPanPosition({ x: 0, y: 0 });
+                setLightboxSlideOffset(0);
+                setLightboxMedia(prev => prev ? { ...prev, currentIndex: index } : null);
+              };
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[150] bg-black/98 flex flex-col justify-between select-none"
+                  style={{
+                    paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+                    paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)"
+                  }}
+                >
+                  {/* Lightbox Header Controls */}
+                  <div className="h-14 px-6 flex items-center justify-between z-10">
+                    <div className="flex gap-2">
+                      {!currentIsVideo && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setZoomScale(prev => Math.min(4, prev + 0.5))}
+                            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white text-xs font-black uppercase"
+                          >
+                            +
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setZoomScale(prev => {
+                                const newScale = Math.max(1, prev - 0.5);
+                                if (newScale === 1) setPanPosition({ x: 0, y: 0 });
+                                return newScale;
+                              });
+                            }}
+                            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white text-xs font-black uppercase"
+                          >
+                            -
+                          </button>
+                          {zoomScale > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => { setZoomScale(1); setPanPosition({ x: 0, y: 0 }); }}
+                              className="px-3 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white text-[9px] font-black uppercase tracking-wider"
+                            >
+                              Reset
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Slide counter + Close */}
+                    <div className="flex items-center gap-3">
+                      {totalSlides > 1 && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/50">
+                          {lightboxMedia.currentIndex + 1} / {totalSlides}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLightboxMedia(null);
+                          setZoomScale(1);
+                          setPanPosition({ x: 0, y: 0 });
+                          setLightboxSlideOffset(0);
+                        }}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full text-white text-[9px] font-black uppercase tracking-widest transition-all"
+                      >
+                        {t("common.close") || "Close"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Centered Media Content with Swipe */}
+                  <div 
+                    className="flex-1 w-full flex items-center justify-center relative overflow-hidden"
+                    style={{ cursor: zoomScale > 1 ? 'grab' : (totalSlides > 1 ? 'default' : 'default') }}
+                    onMouseDown={(e) => {
+                      if (currentIsVideo) return;
+                      if (zoomScale > 1) {
+                        // Pan mode
+                        setIsDraggingPan(true);
+                        dragStartPos.current = { x: e.clientX - panPosition.x, y: e.clientY - panPosition.y };
+                      } else if (totalSlides > 1) {
+                        // Swipe mode
+                        lightboxSwipeStart.current = { x: e.clientX, y: e.clientY };
+                      }
+                    }}
+                    onMouseMove={(e) => {
+                      if (isDraggingPan) {
+                        setPanPosition({
+                          x: e.clientX - dragStartPos.current.x,
+                          y: e.clientY - dragStartPos.current.y
+                        });
+                      } else if (lightboxSwipeStart.current && zoomScale === 1) {
+                        const diffX = e.clientX - lightboxSwipeStart.current.x;
+                        setLightboxSlideOffset(diffX * 0.6);
+                      }
+                    }}
+                    onMouseUp={(e) => {
+                      setIsDraggingPan(false);
+                      if (lightboxSwipeStart.current && zoomScale === 1) {
+                        const diffX = e.clientX - lightboxSwipeStart.current.x;
+                        if (diffX < -60 && canGoNext) {
+                          goToSlide(lightboxMedia.currentIndex + 1);
+                        } else if (diffX > 60 && canGoPrev) {
+                          goToSlide(lightboxMedia.currentIndex - 1);
+                        } else {
+                          setLightboxSlideOffset(0);
+                        }
+                        lightboxSwipeStart.current = null;
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setIsDraggingPan(false);
+                      if (lightboxSwipeStart.current) {
+                        setLightboxSlideOffset(0);
+                        lightboxSwipeStart.current = null;
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      if (currentIsVideo) return;
+                      const touch = e.touches[0];
+                      if (zoomScale > 1) {
+                        setIsDraggingPan(true);
+                        dragStartPos.current = { x: touch.clientX - panPosition.x, y: touch.clientY - panPosition.y };
+                      } else if (totalSlides > 1) {
+                        lightboxSwipeStart.current = { x: touch.clientX, y: touch.clientY };
+                      }
+                    }}
+                    onTouchMove={(e) => {
+                      if (isDraggingPan) {
+                        const touch = e.touches[0];
+                        setPanPosition({
+                          x: touch.clientX - dragStartPos.current.x,
+                          y: touch.clientY - dragStartPos.current.y
+                        });
+                      } else if (lightboxSwipeStart.current && zoomScale === 1) {
+                        const touch = e.touches[0];
+                        const diffX = touch.clientX - lightboxSwipeStart.current.x;
+                        setLightboxSlideOffset(diffX * 0.6);
+                        if (Math.abs(diffX) > 10 && e.cancelable) {
+                          e.preventDefault();
+                        }
+                      }
+                    }}
+                    onTouchEnd={(e) => {
+                      setIsDraggingPan(false);
+                      if (lightboxSwipeStart.current && zoomScale === 1) {
+                        const touch = e.changedTouches[0];
+                        const diffX = touch.clientX - lightboxSwipeStart.current.x;
+                        if (diffX < -60 && canGoNext) {
+                          goToSlide(lightboxMedia.currentIndex + 1);
+                        } else if (diffX > 60 && canGoPrev) {
+                          goToSlide(lightboxMedia.currentIndex - 1);
+                        } else {
+                          setLightboxSlideOffset(0);
+                        }
+                        lightboxSwipeStart.current = null;
+                      }
+                    }}
+                  >
+                    <div
+                      style={{
+                        transform: currentIsVideo 
+                          ? 'none' 
+                          : zoomScale > 1 
+                            ? `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomScale})`
+                            : `translateX(${lightboxSlideOffset}px)`,
+                        transition: (isDraggingPan || lightboxSwipeStart.current) ? 'none' : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+                      }}
+                      onDoubleClick={() => {
+                        if (currentIsVideo) return;
+                        if (zoomScale > 1) {
+                          setZoomScale(1);
+                          setPanPosition({ x: 0, y: 0 });
+                        } else {
+                          setZoomScale(2);
+                        }
+                      }}
+                      className="w-full max-h-[80vh] flex items-center justify-center"
+                    >
+                      {currentIsVideo ? (
+                        <video
+                          key={currentUrl}
+                          src={currentUrl}
+                          controls
+                          autoPlay
+                          playsInline
+                          className="w-full max-h-[80vh] object-contain shadow-2xl rounded-xl"
+                        />
+                      ) : (
+                        <img
+                          key={currentUrl}
+                          src={currentUrl}
+                          alt="fullscreen zoomable"
+                          className="max-w-full max-h-[75vh] object-contain shadow-2xl rounded-lg pointer-events-none"
+                          draggable={false}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer: Dot indicators + instructions */}
+                  <div className="flex flex-col items-center gap-2 z-10 shrink-0 pb-1">
+                    {totalSlides > 1 && (
+                      <div className="flex items-center gap-2">
+                        {lightboxMedia.urls.map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => goToSlide(i)}
+                            className={`rounded-full transition-all duration-200 ${
+                              i === lightboxMedia.currentIndex
+                                ? 'w-6 h-2 bg-app-accent'
+                                : 'w-2 h-2 bg-white/30 hover:bg-white/50'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div className="h-8 flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-white/40">
+                      {currentIsVideo 
+                        ? "Use player controls" 
+                        : zoomScale > 1 
+                          ? "Drag to pan image" 
+                          : totalSlides > 1 
+                            ? (t("bugs_suggestions.swipe_hint") || "Swipe to browse · Double-tap to zoom")
+                            : "Double-tap to zoom"
+                      }
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
           </AnimatePresence>
 
         </motion.div>

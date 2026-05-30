@@ -660,6 +660,10 @@
     "err_required": "请填写所有必填字段。",
     "err_signed_url": "生成上传链接失败。",
     "err_upload_failed": "上传文件到存储空间失败。",
-    "err_submit_failed": "提交失败: {error}"
+    "err_submit_failed": "提交失败: {error}",
+    "pull_to_refresh": "下拉刷新",
+    "release_to_refresh": "释放刷新",
+    "refreshing": "正在刷新...",
+    "swipe_hint": "滑动浏览 · 双击缩放"
   }
 }

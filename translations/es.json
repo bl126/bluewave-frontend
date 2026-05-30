@@ -661,6 +661,10 @@
     "err_required": "Por favor, complete todos los campos obligatorios.",
     "err_signed_url": "Error al generar la URL de subida.",
     "err_upload_failed": "Error al subir el archivo al almacenamiento.",
-    "err_submit_failed": "Envío fallido: {error}"
+    "err_submit_failed": "Envío fallido: {error}",
+    "pull_to_refresh": "Desliza para actualizar",
+    "release_to_refresh": "Suelta para actualizar",
+    "refreshing": "Actualizando...",
+    "swipe_hint": "Desliza para explorar · Toca dos veces para zoom"
   }
 }

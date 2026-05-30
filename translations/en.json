@@ -767,6 +767,10 @@
     "err_required": "Please fill out all required fields.",
     "err_signed_url": "Failed to generate upload URL.",
     "err_upload_failed": "Failed to upload file to storage.",
-    "err_submit_failed": "Submission failed: {error}"
+    "err_submit_failed": "Submission failed: {error}",
+    "pull_to_refresh": "Pull to refresh",
+    "release_to_refresh": "Release to refresh",
+    "refreshing": "Refreshing...",
+    "swipe_hint": "Swipe to browse · Double-tap to zoom"
   }
 }

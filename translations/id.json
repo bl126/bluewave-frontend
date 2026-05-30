@@ -660,6 +660,10 @@
     "err_required": "Harap isi semua bidang yang diperlukan.",
     "err_signed_url": "Gagal membuat URL unggahan.",
     "err_upload_failed": "Gagal mengunggah file ke penyimpanan.",
-    "err_submit_failed": "Pengiriman gagal: {error}"
+    "err_submit_failed": "Pengiriman gagal: {error}",
+    "pull_to_refresh": "Tarik untuk menyegarkan",
+    "release_to_refresh": "Lepaskan untuk menyegarkan",
+    "refreshing": "Menyegarkan...",
+    "swipe_hint": "Geser untuk menjelajah · Ketuk dua kali untuk zoom"
   }
 }
