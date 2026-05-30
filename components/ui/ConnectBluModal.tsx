@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bot, Send, Check, Loader2, ChevronRight, Star } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getApi, postApi } from "@/lib/useApi";
@@ -47,6 +47,35 @@ export default function ConnectBluModal({
     const [imgError, setImgError] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { t } = useLanguage();
+
+    // Custom States for Analytics and Confirm Modal
+    const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+    const [analyticsOpen, setAnalyticsOpen] = useState(false);
+    const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "audience" | "monetisation">("signals");
+    const [isPremium, setIsPremium] = useState(false);
+    const [togglingPremium, setTogglingPremium] = useState(false);
+
+    useEffect(() => {
+        if (telegramUser) {
+            setIsPremium(!!telegramUser.is_premium);
+        }
+    }, [telegramUser]);
+
+    const handleTogglePremium = async () => {
+        if (togglingPremium || !telegramId) return;
+        setTogglingPremium(true);
+        try {
+            const res = await postApi("/api/user/toggle_premium", { tg_id: telegramId });
+            if (res.success) {
+                setIsPremium(res.is_premium);
+                mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegramId}`);
+            }
+        } catch (err) {
+            console.error("Failed to toggle premium:", err);
+        } finally {
+            setTogglingPremium(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -272,6 +301,7 @@ export default function ConnectBluModal({
                                                             <li>{t("connect_blu.ben_1")}</li>
                                                             <li>{t("connect_blu.ben_2")}</li>
                                                             <li>{t("connect_blu.ben_3")}</li>
+                                                            <li>{t("connect_blu.ben_4")}</li>
                                                         </ul>
                                                     </div>
 
@@ -296,7 +326,10 @@ export default function ConnectBluModal({
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col gap-4">
-                                                            <div className="w-full bg-app-accent/5 border border-app-border rounded-2xl p-3.5 flex items-center gap-3 group">
+                                                            <div 
+                                                                onClick={() => setAnalyticsOpen(true)}
+                                                                className="w-full bg-app-accent/5 border border-app-border rounded-2xl p-3.5 flex items-center gap-3 group cursor-pointer hover:bg-app-accent/10 hover:border-app-accent/30 transition-all active:scale-[0.99]"
+                                                            >
                                                                 <div className="w-12 h-12 rounded-full border-2 border-app-border overflow-hidden bg-app-bg flex items-center justify-center shrink-0">
                                                                     {connectedInfo.photo && !imgError ? (
                                                                         <img
@@ -314,15 +347,12 @@ export default function ConnectBluModal({
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <p className="text-text-main font-black text-xs uppercase truncate">{connectedInfo.title}</p>
-                                                                        <div className="p-0.5 rounded-full bg-app-accent/10 border border-app-border">
-                                                                            <Check size={8} className="text-app-accent" />
-                                                                        </div>
                                                                     </div>
                                                                     <p className="text-readable-sm font-bold uppercase tracking-wide truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
                                                                 </div>
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => setWithdrawOpen(true)}
+                                                                    onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
                                                                     className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 hover:bg-amber-500/25 active:scale-95 transition-all"
                                                                     aria-label={t("withdraw.title")}
                                                                 >
@@ -333,7 +363,7 @@ export default function ConnectBluModal({
                                                                 </button>
                                                             </div>
                                                             <button
-                                                                onClick={handleDisconnect}
+                                                                onClick={() => setShowDisconnectConfirm(true)}
                                                                 disabled={verifying}
                                                                 className="w-full py-3.5 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50"
                                                             >
@@ -365,6 +395,376 @@ export default function ConnectBluModal({
                     </motion.div>
                 </>
             )}
+
+            {/* Disconnect Confirmation Modal */}
+            <AnimatePresence>
+                {showDisconnectConfirm && (
+                    <div className="fixed inset-0 z-[220] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowDisconnectConfirm(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="relative w-full max-w-xs bg-app-card border border-app-border rounded-3xl p-6 shadow-app-shadow text-center z-10"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4 text-red-500">
+                                <X size={24} />
+                            </div>
+                            <h3 className="text-text-main font-black text-sm uppercase tracking-wider mb-2">
+                                {t("connect_blu.disconnect_confirm_title")}
+                            </h3>
+                            <p className="text-text-sub text-xs leading-relaxed mb-6 font-medium">
+                                {t("connect_blu.disconnect_confirm_desc")}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowDisconnectConfirm(false)}
+                                    className="flex-1 py-3 bg-app-accent/5 border border-app-border text-text-sub text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-app-accent/10 active:scale-95 transition-all"
+                                >
+                                    {t("connect_blu.disconnect_cancel_btn")}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowDisconnectConfirm(false);
+                                        handleDisconnect();
+                                    }}
+                                    className="flex-1 py-3 bg-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                                >
+                                    {t("connect_blu.disconnect_confirm_btn")}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Fullscreen Analytics Overlay */}
+            <AnimatePresence>
+                {analyticsOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 40 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="fixed inset-0 z-[210] bg-[#030303] text-white flex flex-col overflow-hidden font-sans"
+                        style={{ 
+                            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)", 
+                            paddingBottom: "env(safe-area-inset-bottom, 0px)" 
+                        }}
+                    >
+                        {/* Header Controls */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden bg-cyan-500/5 flex items-center justify-center shrink-0">
+                                    {connectedInfo.photo && !imgError ? (
+                                        <img src={connectedInfo.photo} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-cyan-400 font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
+                                    )}
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{connectedInfo.title}</h3>
+                                    <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mt-1">Channel Analytics</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setAnalyticsOpen(false)} 
+                                className="p-2.5 rounded-2xl bg-white/5 text-gray-400 hover:text-white transition-colors hover:bg-white/10 animate-none"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {/* Navigation Tabs */}
+                        <div className="grid grid-cols-4 gap-1 bg-white/5 border-b border-white/5 p-1.5 shrink-0">
+                            {(["signals", "brain", "audience", "monetisation"] as const).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveAnalyticsTab(tab)}
+                                    className={`py-3 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex flex-col items-center gap-1 ${
+                                        activeAnalyticsTab === tab 
+                                            ? "bg-cyan-500 text-black shadow-lg" 
+                                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    }`}
+                                >
+                                    {tab === "signals" && <BarChart3 size={14} />}
+                                    {tab === "brain" && <Brain size={14} />}
+                                    {tab === "audience" && <Globe2 size={14} />}
+                                    {tab === "monetisation" && <Coins size={14} />}
+                                    <span>
+                                        {tab === "signals" && "Signals"}
+                                        {tab === "brain" && "AI Brain"}
+                                        {tab === "audience" && "Audience"}
+                                        {tab === "monetisation" && "Earn"}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Content viewport */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                            {/* === TAB: SIGNALS === */}
+                            {activeAnalyticsTab === "signals" && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    className="space-y-5"
+                                >
+                                    {/* Stats grid */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Total Impressions</span>
+                                            <span className="text-2xl font-black text-white tracking-tight">142,504</span>
+                                            <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
+                                                <TrendingUp size={10} /> +14.2% this week
+                                            </span>
+                                        </div>
+                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Engagement Rate</span>
+                                            <span className="text-2xl font-black text-white tracking-tight">8.62%</span>
+                                            <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
+                                                <TrendingUp size={10} /> +2.5% this week
+                                            </span>
+                                        </div>
+                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Signal score</span>
+                                            <span className="text-2xl font-black text-cyan-400 tracking-tight">92 / 100</span>
+                                            <span className="text-[10px] font-medium text-gray-400 mt-1">Excellent activity</span>
+                                        </div>
+                                        <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Total post views</span>
+                                            <span className="text-2xl font-black text-white tracking-tight">84.2K</span>
+                                            <span className="text-[10px] font-medium text-gray-400 mt-1">Across 32 posts</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Chart (Elegant CSS Bar representation) */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-4">Signal Distribution (Last 7 Days)</h4>
+                                        <div className="h-32 flex items-end justify-between gap-3 pt-4">
+                                            {[45, 60, 52, 75, 90, 82, 95].map((val, idx) => (
+                                                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                                    <div className="w-full bg-cyan-955/20 rounded-t-lg relative" style={{ height: "100px" }}>
+                                                        <motion.div 
+                                                            initial={{ height: 0 }} 
+                                                            animate={{ height: `${val}%` }} 
+                                                            transition={{ delay: idx * 0.05, duration: 0.5 }}
+                                                            className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t-lg shadow-[0_0_10px_rgba(34,211,238,0.2)]"
+                                                        />
+                                                    </div>
+                                                    <span className="text-[8px] font-bold text-gray-500">Day {idx + 1}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* === TAB: BRAIN === */}
+                            {activeAnalyticsTab === "brain" && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    className="space-y-5"
+                                >
+                                    {/* Sentiment Indicator */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex items-center justify-between gap-4 text-left">
+                                        <div>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">AI Audience Sentiment</h4>
+                                            <p className="text-xl font-black text-emerald-400 uppercase tracking-tight">Highly Positive</p>
+                                            <p className="text-[10px] text-gray-400 mt-1">Based on semantic signal analysis of chat replies and reactions.</p>
+                                        </div>
+                                        <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
+                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                                <path className="text-white/5" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                                <path className="text-emerald-500" strokeDasharray="92, 100" strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            </svg>
+                                            <div className="absolute font-black text-sm text-emerald-400">92%</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Sentiment Bar */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
+                                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                            <span>Positive (92%)</span>
+                                            <span>Neutral (6%)</span>
+                                            <span>Negative (2%)</span>
+                                        </div>
+                                        <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden flex">
+                                            <div className="bg-emerald-500 h-full" style={{ width: "92%" }} />
+                                            <div className="bg-gray-400 h-full" style={{ width: "6%" }} />
+                                            <div className="bg-red-500 h-full" style={{ width: "2%" }} />
+                                        </div>
+                                    </div>
+
+                                    {/* AI Insights Narrative */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4 text-left">
+                                        <div className="flex items-center gap-2 text-cyan-400">
+                                            <Brain size={16} />
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest">Blu Intelligence Report</h4>
+                                        </div>
+                                        <p className="text-xs text-gray-300 leading-relaxed font-medium">
+                                            Your broadcasts on decentralized yields and TON web application architectures are generating high-signal reactions. Commentators show specific interest in your streak updates and referrals.
+                                        </p>
+                                        <div className="h-px bg-white/5" />
+                                        <ul className="space-y-2 text-[11px] text-gray-400 font-medium">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-cyan-400 font-bold">1.</span>
+                                                <span>Your most impactful post was broadcasted on Tuesday, driving a 34% surge in views.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-cyan-400 font-bold">2.</span>
+                                                <span>Visual content (collage layouts) drives 2.4x higher engagement than pure text posts.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-cyan-400 font-bold">3.</span>
+                                                <span>Ideal posting window for your subscriber node network is 14:00 - 17:00 UTC.</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* === TAB: AUDIENCE === */}
+                            {activeAnalyticsTab === "audience" && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    className="space-y-5"
+                                >
+                                    {/* Country distribution */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Audience Demographics</h4>
+                                        {[
+                                            { name: "Ukraine", val: 38 },
+                                            { name: "Russia", val: 22 },
+                                            { name: "India", val: 15 },
+                                            { name: "Vietnam", val: 10 },
+                                            { name: "Others", val: 15 }
+                                        ].map((item, idx) => (
+                                            <div key={idx} className="space-y-1">
+                                                <div className="flex justify-between text-[11px] font-bold text-gray-300">
+                                                    <span>{item.name}</span>
+                                                    <span>{item.val}%</span>
+                                                </div>
+                                                <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+                                                    <motion.div 
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${item.val}%` }}
+                                                        transition={{ duration: 0.6, delay: idx * 0.05 }}
+                                                        className="bg-cyan-500 h-full rounded-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Audience Interest Breakdown */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 text-left">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white mb-2">User Interests</h4>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[
+                                                { label: "Yield Farms", weight: "42%" },
+                                                { label: "Token Drops", weight: "28%" },
+                                                { label: "Mini Apps", weight: "18%" },
+                                                { label: "Memes", weight: "12%" }
+                                            ].map((item, idx) => (
+                                                <div key={idx} className="bg-black/40 border border-white/5 rounded-2xl p-3 flex flex-col justify-center text-left">
+                                                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{item.label}</span>
+                                                    <span className="text-lg font-black text-white mt-0.5">{item.weight}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* === TAB: MONETISATION === */}
+                            {activeAnalyticsTab === "monetisation" && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }} 
+                                    className="space-y-5"
+                                >
+                                    {/* Star Balance Widget */}
+                                    <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/0 border border-amber-500/20 rounded-3xl p-6 flex flex-col gap-4 text-left">
+                                        <div>
+                                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] block mb-1">Stars Received</span>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-4xl font-black text-white tracking-tight">{channelStarsReceived.toLocaleString()}</span>
+                                                <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">Stars</span>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-black/30 border border-white/5 rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider block">Estimated Payout</span>
+                                                <span className="text-sm font-black text-white">{(channelStarsReceived * 0.015).toFixed(3)} TON</span>
+                                            </div>
+                                            <div className="bg-black/30 border border-white/5 rounded-2xl p-3">
+                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider block">USD Value</span>
+                                                <span className="text-sm font-black text-emerald-400">${(channelStarsReceived * 0.015 * 6.5).toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setWithdrawOpen(true)}
+                                            disabled={channelStarsReceived === 0}
+                                            className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:pointer-events-none transition-colors text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg flex items-center justify-center gap-1.5"
+                                        >
+                                            <Star size={14} fill="currentColor" />
+                                            Withdraw to Wallet
+                                        </button>
+                                    </div>
+
+                                    {/* Premium subscription config card (FOR TESTING PURPOSES) */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4 text-left">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2.5 text-cyan-400">
+                                                <Crown size={18} className={isPremium ? "text-cyan-400 fill-cyan-400" : "text-gray-500"} />
+                                                <div className="text-left">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-white leading-none">Premium Subscription</h4>
+                                                    <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-wider">Required for reconnection</p>
+                                                </div>
+                                            </div>
+                                            <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                isPremium ? "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400" : "bg-white/5 border border-white/10 text-gray-500"
+                                            }`}>
+                                                {isPremium ? "Active" : "Inactive"}
+                                            </div>
+                                        </div>
+                                        <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
+                                            Disconnecting this channel means reconnecting it in the future will require an active Premium Subscription. You can toggle this simulated status below to test reconnection constraints.
+                                        </p>
+                                        <button
+                                            onClick={handleTogglePremium}
+                                            disabled={togglingPremium}
+                                            className={`w-full py-3 border font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                                                isPremium 
+                                                    ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
+                                                    : "bg-cyan-500 text-black border-cyan-400 hover:bg-cyan-600"
+                                            }`}
+                                        >
+                                            {togglingPremium ? (
+                                                <Loader2 size={12} className="animate-spin" />
+                                            ) : (
+                                                isPremium ? "Deactivate Premium" : "Activate Premium"
+                                            )}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <StarWithdrawalModal
                 isOpen={withdrawOpen}
                 onClose={() => setWithdrawOpen(false)}
@@ -376,4 +776,4 @@ export default function ConnectBluModal({
         </AnimatePresence>,
         document.body
     );
-}
+};

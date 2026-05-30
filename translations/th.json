@@ -318,7 +318,14 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "ยกเลิกการเชื่อมต่อช่อง",
     "disconnect_desc": "ลบช่องนี้ออกจากโปรโตคอล Bluewave",
-    "disconnecting": "กำลังยกเลิกการเชื่อมต่อ..."
+    "disconnecting": "กำลังยกเลิกการเชื่อมต่อ...",
+    "ben_4": "• Monetisation",
+    "disconnect_confirm_title": "Disconnect Channel?",
+    "disconnect_confirm_desc": "Do you want to disconnect your channel? Connecting it back will require premium subscription.",
+    "disconnect_confirm_btn": "Yes, Disconnect",
+    "disconnect_cancel_btn": "Cancel",
+    "premium_required": "Premium Required",
+    "premium_required_desc": "Re-connecting a disconnected channel requires a Premium Subscription."
   },
   "roles_overlay": {
     "title": "บทบาทระบบนิเวศ",

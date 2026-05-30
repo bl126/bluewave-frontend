@@ -317,7 +317,14 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "断开频道",
     "disconnect_desc": "从 Bluewave 协议中移除此频道。",
-    "disconnecting": "正在断开..."
+    "disconnecting": "正在断开...",
+    "ben_4": "• Monetisation",
+    "disconnect_confirm_title": "Disconnect Channel?",
+    "disconnect_confirm_desc": "Do you want to disconnect your channel? Connecting it back will require premium subscription.",
+    "disconnect_confirm_btn": "Yes, Disconnect",
+    "disconnect_cancel_btn": "Cancel",
+    "premium_required": "Premium Required",
+    "premium_required_desc": "Re-connecting a disconnected channel requires a Premium Subscription."
   },
   "roles_overlay": {
     "title": "生态系统角色",

@@ -318,7 +318,14 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "Отключить канал",
     "disconnect_desc": "Удалить этот канал из протокола Bluewave.",
-    "disconnecting": "Отключение..."
+    "disconnecting": "Отключение...",
+    "ben_4": "• Монетизация",
+    "disconnect_confirm_title": "Отключить канал?",
+    "disconnect_confirm_desc": "Вы хотите отключить свой канал? Для его повторного подключения потребуется премиум-подписка.",
+    "disconnect_confirm_btn": "Да, отключить",
+    "disconnect_cancel_btn": "Отмена",
+    "premium_required": "Требуется премиум",
+    "premium_required_desc": "Для повторного подключения отключенного канала требуется премиум-подписка."
   },
   "roles_overlay": {
     "title": "Экосистемные Роли",

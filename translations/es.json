@@ -318,7 +318,14 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "Desconectar Canal",
     "disconnect_desc": "Eliminar este canal del protocolo Bluewave.",
-    "disconnecting": "Desconectando..."
+    "disconnecting": "Desconectando...",
+    "ben_4": "• Monetización",
+    "disconnect_confirm_title": "¿Desconectar canal?",
+    "disconnect_confirm_desc": "¿Quieres desconectar tu canal? Volver a conectarlo requerirá una suscripción premium.",
+    "disconnect_confirm_btn": "Sí, desconectar",
+    "disconnect_cancel_btn": "Cancelar",
+    "premium_required": "Premium requerido",
+    "premium_required_desc": "Volver a conectar un canal desconectado requiere una suscripción Premium."
   },
   "roles_overlay": {
     "title": "Roles del Ecosistema",

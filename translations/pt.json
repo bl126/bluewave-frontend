@@ -318,7 +318,14 @@
     "req_1_bot": "@blu_presencebot",
     "disconnect": "Desconectar Canal",
     "disconnect_desc": "Remover este canal do protocolo Bluewave.",
-    "disconnecting": "Desconectando..."
+    "disconnecting": "Desconectando...",
+    "ben_4": "• Monetização",
+    "disconnect_confirm_title": "Desconectar canal?",
+    "disconnect_confirm_desc": "Deseja desconectar seu canal? Conectá-lo novamente exigirá assinatura premium.",
+    "disconnect_confirm_btn": "Sim, desconectar",
+    "disconnect_cancel_btn": "Cancelar",
+    "premium_required": "Premium necessário",
+    "premium_required_desc": "Reconectar um canal desconectado exige uma assinatura Premium."
   },
   "roles_overlay": {
     "title": "Funções do Ecossistema",

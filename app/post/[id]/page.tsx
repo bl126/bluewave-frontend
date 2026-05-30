@@ -6,7 +6,7 @@
 
 import type { Metadata } from "next";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://bluewave-backend-production.up.railway.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://bluewave-backend-wj70.onrender.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://bluewaveprotocol.com";
 const TG_BOT = "Bluewave_Ecosystem_bot";
 const TG_APP = "bluewave";

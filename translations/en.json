@@ -395,7 +395,14 @@
     "disconnect": "Disconnect Channel",
     "disconnect_desc": "Remove this channel from Bluewave protocol.",
     "channel_stars_received": "Stars received on channel",
-    "disconnecting": "Disconnecting..."
+    "disconnecting": "Disconnecting...",
+    "ben_4": "• Monetisation",
+    "disconnect_confirm_title": "Disconnect Channel?",
+    "disconnect_confirm_desc": "Do you want to disconnect your channel? Connecting it back will require premium subscription.",
+    "disconnect_confirm_btn": "Yes, Disconnect",
+    "disconnect_cancel_btn": "Cancel",
+    "premium_required": "Premium Required",
+    "premium_required_desc": "Re-connecting a disconnected channel requires a Premium Subscription."
   },
   "referral": {
     "share_desc": "SHARE THIS CODE TO GROW YOUR HUMAN NETWORK AND EARN $BWAVE REWARDS",
