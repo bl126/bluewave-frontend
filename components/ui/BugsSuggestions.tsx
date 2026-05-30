@@ -3,10 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { 
-  X, Plus, Search, ChevronDown, Check, Loader2, 
-  Image as ImageIcon, Video as VideoIcon, Trash2, MessageSquare, AlertCircle, Calendar 
+  Plus, Search, ChevronDown, Check, Loader2, 
+  Image as ImageIcon, Video as VideoIcon, Trash2, MessageSquare, AlertCircle
 } from "lucide-react";
 import { postApi, getApi } from "@/lib/useApi";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BugsSuggestionsProps {
   isOpen: boolean;
@@ -29,7 +30,32 @@ interface ReportItem {
   created_at: string;
 }
 
+// Helper: format duration remaining until reset (no translations needed — always numeric)
+function formatResetDuration(resetTimeStr: string): string {
+  const diff = new Date(resetTimeStr).getTime() - Date.now();
+  if (diff <= 0) return "a few seconds";
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+
 export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsSuggestionsProps) {
+  const { t } = useLanguage();
+
+  // Translated relative time helper (needs t() from context)
+  const relativeTime = (dateStr: string): string => {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diff = Math.floor((now - then) / 1000);
+    if (diff < 60) return t("bugs_suggestions.just_now");
+    if (diff < 3600) return t("bugs_suggestions.ago_m").replace("{time}", String(Math.floor(diff / 60)));
+    if (diff < 86400) return t("bugs_suggestions.ago_h").replace("{time}", String(Math.floor(diff / 3600)));
+    if (diff < 604800) return t("bugs_suggestions.ago_d").replace("{time}", String(Math.floor(diff / 86400)));
+    return new Date(dateStr).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  };
+
   // Navigation & UI state
   const [activeTab, setActiveTab] = useState<"all" | "issues" | "suggestions" | "my">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +64,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
 
   // Post creation state
   const [isPostOpen, setIsPostOpen] = useState(false);
@@ -56,6 +83,18 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
     media_urls?: string[];
   } | null>(null);
   const [showFab, setShowFab] = useState(true);
+
+  // Rate Limit State
+  const [rateLimit, setRateLimit] = useState<{
+    daily_count: number;
+    daily_limit: number;
+    weekly_count: number;
+    weekly_limit: number;
+    can_submit: boolean;
+    reset_daily: string | null;
+    reset_weekly: string | null;
+  } | null>(null);
+  const [loadingLimits, setLoadingLimits] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,11 +155,11 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
   // Status Filter Options
   const statusOptions = [
-    { value: null, label: "All Statuses" },
-    { value: "open", label: "Open" },
-    { value: "fix_coming", label: "Fix Coming" },
-    { value: "fixed", label: "Fixed" },
-    { value: "closed", label: "Closed" }
+    { value: null, label: t("bugs_suggestions.status_all") },
+    { value: "open", label: t("bugs_suggestions.status_open") },
+    { value: "fix_coming", label: t("bugs_suggestions.status_fix_coming") },
+    { value: "fixed", label: t("bugs_suggestions.status_fixed") },
+    { value: "closed", label: t("bugs_suggestions.status_closed") }
   ];
 
   // Fetch Reports
@@ -141,7 +180,19 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       if (res.error) {
         setError(res.error);
       } else {
-        setReports(res || []);
+        let data: ReportItem[] = res || [];
+        if (activeTab === "all") {
+          const statusOrder: Record<ReportItem["status"], number> = { open: 0, fix_coming: 1, fixed: 2, closed: 3 };
+          data = [...data].sort((a, b) => {
+            const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 4;
+            const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 4;
+            if (orderA !== orderB) {
+              return orderA - orderB;
+            }
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          });
+        }
+        setReports(data);
       }
     } catch (err: any) {
       setError(err.message || "Failed to fetch reports.");
@@ -149,6 +200,27 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       setLoading(false);
     }
   };
+
+  const fetchRateLimits = async () => {
+    if (!telegramUser?.id) return;
+    setLoadingLimits(true);
+    try {
+      const res = await getApi(`/bugs_suggestions/limits?tg_id=${telegramUser.id}`);
+      if (res && !res.error) {
+        setRateLimit(res);
+      }
+    } catch (err) {
+      console.error("Error fetching rate limits:", err);
+    } finally {
+      setLoadingLimits(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isPostOpen) {
+      fetchRateLimits();
+    }
+  }, [isPostOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -162,8 +234,13 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       if (!isOpen) return;
 
       if (isPostOpen) {
-        // If posting interface is open, close it and prevent default (do not close the main bugs overlay)
         setIsPostOpen(false);
+        e.preventDefault();
+        return;
+      }
+
+      if (selectedReport) {
+        setSelectedReport(null);
         e.preventDefault();
         return;
       }
@@ -177,7 +254,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, isPostOpen, statusDropdownOpen]);
+  }, [isOpen, isPostOpen, selectedReport, statusDropdownOpen]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -199,13 +276,13 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
     const hasImage = files.some(file => file.type.startsWith("image/"));
 
     if (hasVideo && hasImage) {
-      alert("Please select either images or a video (do not mix).");
+      alert(t("bugs_suggestions.err_mix"));
       return;
     }
 
     if (hasVideo) {
       if (files.length > 1) {
-        alert("You can only attach 1 video.");
+        alert(t("bugs_suggestions.err_video_limit"));
         return;
       }
       // Mutually exclusive: clear existing previews and replace
@@ -243,7 +320,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!headline.trim() || !description.trim()) {
-      setSubmitError("Please fill out all required fields.");
+      setSubmitError(t("bugs_suggestions.err_required"));
       return;
     }
 
@@ -262,7 +339,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
     setIsSubmitting(true);
     setSubmitError(null);
-    setUploadProgressMsg("Uploading attachments...");
+    setUploadProgressMsg(t("bugs_suggestions.uploading"));
 
     // Close the submission form sheet instantly
     setHeadline("");
@@ -287,7 +364,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
           });
 
           if (urlRes.error || !urlRes.signed_url) {
-            throw new Error(urlRes.error || "Failed to generate upload URL.");
+            throw new Error(urlRes.error || t("bugs_suggestions.err_signed_url"));
           }
 
           const uploadRes = await fetch(urlRes.signed_url, {
@@ -300,7 +377,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
           });
 
           if (!uploadRes.ok) {
-            throw new Error("Failed to upload file to storage.");
+            throw new Error(t("bugs_suggestions.err_upload_failed"));
           }
 
           uploadedUrls.push(urlRes.public_url);
@@ -330,9 +407,9 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
         if (typeof window !== "undefined") {
           const tg = (window as any).Telegram?.WebApp;
           if (tg?.showAlert) {
-            tg.showAlert(`Submission failed: ${err.message || "Network error"}`);
+            tg.showAlert(t("bugs_suggestions.err_submit_failed").replace("{error}", err.message || "Network error"));
           } else {
-            alert(`Submission failed: ${err.message || "Network error"}`);
+            alert(t("bugs_suggestions.err_submit_failed").replace("{error}", err.message || "Network error"));
           }
         }
       } finally {
@@ -347,13 +424,13 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
   const getStatusStyle = (status: ReportItem["status"]) => {
     switch (status) {
       case "open":
-        return { bg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400", label: "Open" };
+        return { bg: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400", label: t("bugs_suggestions.status_open") };
       case "fix_coming":
-        return { bg: "bg-amber-500/10 border-amber-500/30 text-amber-400", label: "Fix Coming" };
+        return { bg: "bg-amber-500/10 border-amber-500/30 text-amber-400", label: t("bugs_suggestions.status_fix_coming") };
       case "fixed":
-        return { bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400", label: "Fixed" };
+        return { bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400", label: t("bugs_suggestions.status_fixed") };
       case "closed":
-        return { bg: "bg-red-500/10 border-red-500/30 text-red-400", label: "Closed" };
+        return { bg: "bg-red-500/10 border-red-500/30 text-red-400", label: t("bugs_suggestions.status_closed") };
       default:
         return { bg: "bg-gray-500/10 border-gray-500/30 text-gray-400", label: status };
     }
@@ -383,7 +460,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search issues and suggestions..."
+                  placeholder={t("bugs_suggestions.search_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent border-none outline-none pl-3 pr-2 py-1 text-xs text-text-main placeholder-text-sub/50 font-medium"
@@ -441,10 +518,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                       : "text-text-sub hover:text-text-main hover:bg-app-accent/5"
                   }`}
                 >
-                  {tab === "all" && "All"}
-                  {tab === "issues" && "Issues"}
-                  {tab === "suggestions" && "Suggestions"}
-                  {tab === "my" && "My Card"}
+                  {tab === "all" && t("bugs_suggestions.tab_all")}
+                  {tab === "issues" && t("bugs_suggestions.tab_issues")}
+                  {tab === "suggestions" && t("bugs_suggestions.tab_suggestions")}
+                  {tab === "my" && t("bugs_suggestions.tab_my")}
                 </button>
               ))}
             </div>
@@ -491,7 +568,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
               ) : (reports.length === 0 && !pendingSubmission) ? (
                 <div className="text-center py-20 px-6 bg-app-card/30 border border-app-border rounded-[2rem] flex flex-col items-center gap-4">
                   <MessageSquare size={36} className="text-text-sub/20" />
-                  <p className="text-xs text-text-sub uppercase font-black tracking-widest">No reports found</p>
+                  <p className="text-xs text-text-sub uppercase font-black tracking-widest">{t("bugs_suggestions.no_reports")}</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -509,7 +586,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                               {pendingSubmission.headline}
                             </span>
                             <span className="px-2 py-0.5 border border-app-accent/20 rounded-full text-[8px] uppercase font-black tracking-widest text-app-accent bg-app-accent/5">
-                              Sending...
+                              {t("bugs_suggestions.sending")}
                             </span>
                           </div>
                           <p className="text-text-muted text-[10px] leading-relaxed mt-1 line-clamp-2">
@@ -518,7 +595,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                         </div>
                         <div className="flex items-center justify-between mt-3 text-[8px] font-black uppercase tracking-wider text-text-sub">
                           <span>@{telegramUser?.username || "anonymous"}</span>
-                          <span>Just now</span>
+                          <span>{t("bugs_suggestions.just_now")}</span>
                         </div>
                       </div>
                     </div>
@@ -526,24 +603,25 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   {reports.map((report) => {
                     const statusInfo = getStatusStyle(report.status);
                     const isBug = report.tag === "bug";
-                    const firstImage = report.media_urls?.[0];
+                    const firstMedia = report.media_urls?.[0];
 
                     return (
-                      <div
+                      <button
                         key={report.id}
-                        className="bg-app-card/60 border border-app-border rounded-3xl p-5 flex gap-4 transition-all duration-300 hover:border-app-accent/20"
+                        onClick={() => setSelectedReport(report)}
+                        className="w-full text-left bg-app-card/60 border border-app-border rounded-3xl p-5 flex gap-4 transition-all duration-200 hover:border-app-accent/20 active:scale-[0.985] active:bg-app-card/80"
                       >
                         {/* Left side: Thumbnail or Tag Icon */}
                         <div className="w-16 h-16 rounded-2xl overflow-hidden border border-app-border flex items-center justify-center bg-app-accent/5 shrink-0">
-                          {firstImage ? (
-                            firstImage.toLowerCase().endsWith(".mp4") || firstImage.toLowerCase().endsWith(".mov") ? (
-                              <video src={firstImage} className="w-full h-full object-cover" muted />
+                          {firstMedia ? (
+                            firstMedia.toLowerCase().endsWith(".mp4") || firstMedia.toLowerCase().endsWith(".mov") ? (
+                              <video src={firstMedia} className="w-full h-full object-cover" muted />
                             ) : (
-                              <img src={firstImage} alt="media" className="w-full h-full object-cover" />
+                              <img src={firstMedia} alt="media" className="w-full h-full object-cover" />
                             )
                           ) : (
                             <div className="text-text-sub/40 font-bold uppercase text-[9px]">
-                              {isBug ? "Bug" : "Idea"}
+                              {isBug ? t("bugs_suggestions.tag_bug_lbl") : t("bugs_suggestions.tag_suggestion_lbl")}
                             </div>
                           )}
                         </div>
@@ -555,7 +633,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                               <h4 className="text-text-main font-bold text-xs uppercase tracking-tight truncate flex-1">
                                 {report.headline}
                               </h4>
-                              <span className={`px-2 py-0.5 border rounded-full text-[8px] uppercase font-black tracking-widest ${statusInfo.bg}`}>
+                              <span className={`px-2 py-0.5 border rounded-full text-[8px] uppercase font-black tracking-widest shrink-0 ${statusInfo.bg}`}>
                                 {statusInfo.label}
                               </span>
                             </div>
@@ -565,29 +643,11 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                           </div>
 
                           <div className="flex items-center justify-between mt-3 text-[8px] font-black uppercase tracking-wider text-text-sub">
-                            <span>@{report.username || "anonymous"}</span>
-                            <div className="flex items-center gap-1.5">
-                              <Calendar size={10} className="text-text-sub/40" />
-                              <span>
-                                {new Date(report.created_at).toLocaleDateString(undefined, {
-                                  day: "numeric",
-                                  month: "short"
-                                })}
-                              </span>
-                            </div>
+                            <span>{report.bw_id || `@${report.username}` || "anonymous"}</span>
+                            <span>{relativeTime(report.created_at)}</span>
                           </div>
-
-                          {/* Admin response message */}
-                          {report.admin_message && (
-                            <div className="mt-3 p-3 bg-app-accent/5 border-l-2 border-app-accent/30 rounded-r-xl">
-                              <div className="text-[8px] font-black text-app-accent uppercase tracking-widest">Team Response</div>
-                              <p className="text-[10px] text-text-sub italic leading-relaxed mt-1">
-                                "{report.admin_message}"
-                              </p>
-                            </div>
-                          )}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -615,6 +675,107 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
 
           </div>
 
+          {/* ─── Card Detail View ─── */}
+          <AnimatePresence>
+            {selectedReport && (() => {
+              const statusInfo = getStatusStyle(selectedReport.status);
+              const mediaList = selectedReport.media_urls || [];
+              return (
+                <motion.div
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "spring", damping: 32, stiffness: 380 }}
+                  className="fixed inset-0 z-[145] bg-app-bg flex flex-col text-text-main overflow-hidden"
+                  style={{
+                    paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+                    paddingBottom: "env(safe-area-inset-bottom, 0px)"
+                  }}
+                >
+                  {/* Header */}
+                  <div className="h-14 px-5 border-b border-app-border flex items-center justify-between shrink-0 mt-[50px]">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`px-2.5 py-1 border rounded-full text-[8px] uppercase font-black tracking-widest shrink-0 ${statusInfo.bg}`}>
+                        {statusInfo.label}
+                      </span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-sub truncate">
+                        {selectedReport.tag === "bug" ? t("bugs_suggestions.tag_bug") : t("bugs_suggestions.tag_suggestion")}
+                      </span>
+                    </div>
+                    <div className="text-[8px] font-black uppercase tracking-wider text-text-sub shrink-0 ml-3">
+                      {relativeTime(selectedReport.created_at)}
+                    </div>
+                  </div>
+
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto">
+                    {/* Media */}
+                    {mediaList.length > 0 && (
+                      <div className="w-full bg-black/40">
+                        {mediaList[0].toLowerCase().endsWith(".mp4") || mediaList[0].toLowerCase().endsWith(".mov") ? (
+                          <video
+                            src={mediaList[0]}
+                            controls
+                            className="w-full max-h-72 object-contain"
+                          />
+                        ) : (
+                          <div className={`grid gap-1 ${
+                            mediaList.length === 1 ? "grid-cols-1" :
+                            mediaList.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                          }`}>
+                            {mediaList.map((url, i) => (
+                              <img
+                                key={i}
+                                src={url}
+                                alt={`attachment ${i + 1}`}
+                                className={`w-full object-cover ${
+                                  mediaList.length === 1 ? "max-h-72" : "h-36"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Body */}
+                    <div className="px-5 py-5 flex flex-col gap-5">
+                      {/* Headline */}
+                      <h2 className="text-base font-black uppercase tracking-tight text-text-main leading-snug">
+                        {selectedReport.headline}
+                      </h2>
+
+                      {/* Description */}
+                      <p className="text-sm text-text-sub leading-relaxed">
+                        {selectedReport.description}
+                      </p>
+
+                      {/* Meta row */}
+                      <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-text-sub border-t border-app-border pt-4">
+                        <span className="text-app-accent">
+                          {selectedReport.bw_id || `@${selectedReport.username}` || "anonymous"}
+                        </span>
+                        <span>{new Date(selectedReport.created_at).toLocaleDateString(undefined, {
+                          day: "numeric", month: "long", year: "numeric"
+                        })}</span>
+                      </div>
+
+                      {/* Admin response */}
+                      {selectedReport.admin_message && (
+                        <div className="p-4 bg-app-accent/5 border border-app-accent/20 rounded-2xl">
+                          <div className="text-[9px] font-black text-app-accent uppercase tracking-widest mb-2">{t("bugs_suggestions.team_response")}</div>
+                          <p className="text-[11px] text-text-sub italic leading-relaxed">
+                            {selectedReport.admin_message}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
+          </AnimatePresence>
+
           {/* Post Creation Full Screen Sheet */}
           <AnimatePresence>
             {isPostOpen && (
@@ -632,12 +793,56 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                 {/* Header */}
                 <div className="h-16 px-6 border-b border-app-border flex justify-center items-center shrink-0">
                   <h3 className="text-sm font-black uppercase tracking-wider text-app-accent">
-                    New Submission
+                    {t("bugs_suggestions.new_submission")}
                   </h3>
                 </div>
 
                 {/* Form Body */}
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-5 select-none">
+                  {loadingLimits ? (
+                    <div className="bg-app-card/30 border border-app-border/50 rounded-2xl p-4 flex items-center justify-center gap-2 animate-pulse">
+                      <Loader2 size={12} className="text-app-accent/80 animate-spin" />
+                      <span className="text-[10px] font-black uppercase tracking-wider text-text-sub">{t("bugs_suggestions.quota_checking")}</span>
+                    </div>
+                  ) : rateLimit ? (
+                    <div className="bg-app-accent/5 border border-app-border rounded-2xl p-4 flex flex-col gap-3">
+                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-sub">
+                        <span>{t("bugs_suggestions.quota_title")}</span>
+                        <span className={rateLimit.can_submit ? "text-emerald-400" : "text-red-400 animate-pulse font-black"}>
+                          {rateLimit.can_submit ? t("bugs_suggestions.quota_active") : t("bugs_suggestions.quota_limit_reached")}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="bg-app-card/40 border border-app-border/40 rounded-xl py-2 px-3 flex flex-col gap-1">
+                          <span className="text-[9px] uppercase font-black tracking-wider text-text-muted">{t("bugs_suggestions.quota_daily")}</span>
+                          <span className={`text-xs font-black ${rateLimit.daily_count >= rateLimit.daily_limit ? "text-red-400" : "text-text-main"}`}>
+                            {rateLimit.daily_count} / {rateLimit.daily_limit}
+                          </span>
+                        </div>
+                        <div className="bg-app-card/40 border border-app-border/40 rounded-xl py-2 px-3 flex flex-col gap-1">
+                          <span className="text-[9px] uppercase font-black tracking-wider text-text-muted">{t("bugs_suggestions.quota_weekly")}</span>
+                          <span className={`text-xs font-black ${rateLimit.weekly_count >= rateLimit.weekly_limit ? "text-red-400" : "text-text-main"}`}>
+                            {rateLimit.weekly_count} / {rateLimit.weekly_limit}
+                          </span>
+                        </div>
+                      </div>
+                      {!rateLimit.can_submit && (
+                        <div className="text-[9px] font-bold text-red-400 leading-normal flex items-start gap-1.5 border-t border-app-border/30 pt-2 mt-1">
+                          <AlertCircle size={12} className="shrink-0 mt-0.5" />
+                          <span>
+                            {rateLimit.daily_count >= rateLimit.daily_limit && rateLimit.reset_daily ? (
+                              t("bugs_suggestions.quota_daily_reached").replace("{time}", formatResetDuration(rateLimit.reset_daily))
+                            ) : rateLimit.weekly_count >= rateLimit.weekly_limit && rateLimit.reset_weekly ? (
+                              t("bugs_suggestions.quota_weekly_reached").replace("{date}", new Date(rateLimit.reset_weekly).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }))
+                            ) : (
+                              t("bugs_suggestions.quota_exceeded")
+                            )}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
                   {submitError && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-[10px] font-bold text-red-400 flex items-center gap-2">
                       <AlertCircle size={14} />
@@ -648,7 +853,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   {/* Tag Toggle: Bug vs Suggestion */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-sub pl-1">
-                      Report Type
+                      {t("bugs_suggestions.report_type")}
                     </label>
                     <div className="flex bg-app-accent/5 border border-app-border rounded-2xl p-1 gap-1">
                       <button
@@ -660,7 +865,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                             : "text-text-sub hover:text-text-main hover:bg-app-accent/5"
                         }`}
                       >
-                        Bug
+                        {t("bugs_suggestions.tag_bug_lbl")}
                       </button>
                       <button
                         type="button"
@@ -671,7 +876,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                             : "text-text-sub hover:text-text-main hover:bg-app-accent/5"
                         }`}
                       >
-                        Suggestion
+                        {t("bugs_suggestions.tag_suggestion_lbl")}
                       </button>
                     </div>
                   </div>
@@ -679,11 +884,11 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   {/* Headline Input */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-sub pl-1">
-                      Headline
+                      {t("bugs_suggestions.headline")}
                     </label>
                     <input
                       type="text"
-                      placeholder="Short summary of the issue or suggestion..."
+                      placeholder={t("bugs_suggestions.headline_placeholder")}
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
                       maxLength={80}
@@ -694,10 +899,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   {/* Description Input */}
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-sub pl-1">
-                      Description
+                      {t("bugs_suggestions.description")}
                     </label>
                     <textarea
-                      placeholder="Details, steps to reproduce, or suggestions on how to improve..."
+                      placeholder={t("bugs_suggestions.description_placeholder")}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={5}
@@ -710,10 +915,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between pl-1">
                       <label className="text-[10px] font-black uppercase tracking-widest text-text-sub">
-                        Attach Media
+                        {t("bugs_suggestions.attach_media")}
                       </label>
                       <span className="text-[8px] font-black uppercase tracking-wider text-text-muted">
-                        Up to 3 images OR 1 video
+                        {t("bugs_suggestions.media_limit")}
                       </span>
                     </div>
 
@@ -760,7 +965,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                           <VideoIcon size={18} />
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-text-sub">
-                          Select Photos or Video
+                          {t("bugs_suggestions.select_media")}
                         </span>
                       </label>
                     )}
@@ -777,10 +982,10 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                     
                     <button
                       type="submit"
-                      disabled={isSubmitting || !headline.trim() || !description.trim()}
+                      disabled={isSubmitting || !headline.trim() || !description.trim() || (rateLimit !== null && !rateLimit.can_submit)}
                       className="w-full h-14 bg-app-accent text-app-bg font-black uppercase text-xs tracking-[0.2em] rounded-2xl shadow-lg active:scale-98 transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                      {isSubmitting ? t("bugs_suggestions.submitting") : t("bugs_suggestions.submit_btn")}
                     </button>
                   </div>
 
