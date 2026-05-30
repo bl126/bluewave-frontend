@@ -1177,7 +1177,7 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                   exit={{ opacity: 0 }}
                   className="fixed inset-0 z-[150] bg-black/98 flex flex-col justify-between select-none"
                   style={{
-                    paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+                    paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 36px)",
                     paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)"
                   }}
                 >
@@ -1219,25 +1219,13 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
                       )}
                     </div>
                     
-                    {/* Slide counter + Close */}
-                    <div className="flex items-center gap-3">
+                    {/* Slide counter */}
+                    <div className="flex items-center">
                       {totalSlides > 1 && (
                         <span className="text-[9px] font-black uppercase tracking-widest text-white/50">
                           {lightboxMedia.currentIndex + 1} / {totalSlides}
                         </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLightboxMedia(null);
-                          setZoomScale(1);
-                          setPanPosition({ x: 0, y: 0 });
-                          setLightboxSlideOffset(0);
-                        }}
-                        className="px-4 py-2 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full text-white text-[9px] font-black uppercase tracking-widest transition-all"
-                      >
-                        {t("common.close") || "Close"}
-                      </button>
                     </div>
                   </div>
 
