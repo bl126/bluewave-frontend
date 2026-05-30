@@ -22,7 +22,7 @@ interface QuestDetailOverlayProps {
 function VerifiedHostBadge() {
   return (
     <span
-      className="inline-flex w-[14px] h-[14px] rounded-[5px] bg-cyan-400 items-center justify-center shrink-0 shadow-[0_0_8px_rgba(34,211,238,0.4)]"
+      className="inline-flex w-[14px] h-[14px] rounded-full bg-cyan-400 items-center justify-center shrink-0 shadow-[0_0_8px_rgba(34,211,238,0.4)]"
       aria-hidden
     >
       <Check size={9} className="text-black stroke-[3px]" />
@@ -410,7 +410,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
               <p className="text-[10px] text-text-sub font-black tracking-wider uppercase leading-relaxed min-h-[30px] flex items-center justify-center px-2">
                 {scanStep === 0 && "VERIFYING PRESENCE SIGNATURES..."}
                 {scanStep === 1 && "ANALYZING REFERRAL NETWORK NODES..."}
-                {scanStep === 2 && "SCANNING DEVICE & IP INTEGRITY..."}
+                {scanStep === 2 && "FINALIZING LEDGER VERIFICATION..."}
               </p>
             </div>
           </div>

@@ -35,7 +35,7 @@ export interface QuestListItem {
 }
 
 export interface QuestCriterionCheck {
-  id?: string;
+  id: string;
   label?: string;
   done?: boolean;
   detail?: string;
@@ -51,6 +51,8 @@ export interface QuestProgress {
   minted: boolean;
   mint_tx_hash?: string;
   lifetime_entropy?: number;
+  farming_detected?: boolean;
+  suspected_accounts?: string[];
 }
 
 export interface BoardPassLeader {

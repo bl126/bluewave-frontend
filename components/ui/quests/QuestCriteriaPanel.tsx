@@ -6,14 +6,14 @@ import { Check, ChevronDown, Loader2, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { QuestCriterionCheck } from "@/lib/questsApi";
 
-const DEFAULT_BOXES = [
-  { id: "verified_human", labelKey: "missions.quests.criterion_verified_human", fallbackLabel: "Verified Human" },
-  { id: "network_builder_badge", labelKey: "missions.quests.criterion_network_builder", fallbackLabel: "Network Builder Badge" },
-  { id: "lifetime_entropy", labelKey: "missions.quests.criterion_entropy", fallbackLabel: "Lifetime Entropy" },
-  { id: "streak_20days", labelKey: "missions.quests.criterion_streak_20days", fallbackLabel: "20-Day Streak" },
-  { id: "network_verified_humans", labelKey: "missions.quests.criterion_network_verified_humans", fallbackLabel: "5 Verified Humans in Network" },
-  { id: "anti_farming_integrity", labelKey: "missions.quests.criterion_anti_farming_integrity", fallbackLabel: "Device & Network Integrity" },
-];
+/* ── Translation lookup table ─────────────────────────────────────────────── */
+const LABEL_KEYS: Record<string, string> = {
+  verified_human: "missions.quests.criterion_verified_human",
+  network_builder_badge: "missions.quests.criterion_network_builder",
+  lifetime_entropy: "missions.quests.criterion_entropy",
+  streak_20days: "missions.quests.criterion_streak_20days",
+  network_verified_humans: "missions.quests.criterion_network_verified_humans",
+};
 
 interface QuestCriteriaPanelProps {
   checks?: QuestCriterionCheck[];
@@ -25,30 +25,28 @@ export default function QuestCriteriaPanel({ checks = [], animateReveal = false,
   const { t } = useLanguage();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const checkById = (id: string) => checks.find((c) => c.id === id);
-
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-app-accent/80 px-1">
         {t("missions.quests.criteria_heading") || "QUEST ELIGIBILITY CRITERIA"}
       </h3>
 
-      {DEFAULT_BOXES.map((box, idx) => {
-        const check = checkById(box.id);
-        const done = !!check?.done;
-        const isOpen = expandedId === box.id;
+      {checks.map((check, idx) => {
+        const done = !!check.done;
+        const isOpen = expandedId === check.id;
 
         // Determine reveal status if animating
         const isRevealed = !animateReveal || revealIndex >= idx;
         const isScanning = animateReveal && revealIndex === idx;
 
-        // Fallback translation helper
-        const translatedLabel = t(box.labelKey);
-        const displayLabel = translatedLabel !== box.labelKey ? translatedLabel : (check?.label || box.fallbackLabel);
+        // Resolve display label (translation → API label → id)
+        const labelKey = LABEL_KEYS[check.id];
+        const translated = labelKey ? t(labelKey) : undefined;
+        const displayLabel = (translated && translated !== labelKey) ? translated : (check.label || check.id);
 
         return (
           <motion.div
-            key={box.id}
+            key={check.id}
             initial={animateReveal ? { opacity: 0, y: 8 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
@@ -57,7 +55,7 @@ export default function QuestCriteriaPanel({ checks = [], animateReveal = false,
             <button
               type="button"
               disabled={!isRevealed}
-              onClick={() => setExpandedId(isOpen ? null : box.id)}
+              onClick={() => setExpandedId(isOpen ? null : check.id)}
               className={`w-full px-4 py-3.5 rounded-2xl border text-left transition-all duration-200
                 ${!isRevealed ? "bg-app-card/10 border-app-border/40 opacity-40 cursor-not-allowed" : ""}
                 ${isOpen ? "bg-app-accent/8 border-app-accent/35 rounded-b-none" : ""}
@@ -107,7 +105,7 @@ export default function QuestCriteriaPanel({ checks = [], animateReveal = false,
                       <p className={`text-xs font-black uppercase tracking-wider ${done ? "text-app-accent" : "text-red-400/90"}`}>
                         {done ? t("missions.quests.criterion_pass") || "CRITERION PASSED" : t("missions.quests.criterion_fail") || "NOT ELIGIBLE"}
                       </p>
-                      {check?.detail && (
+                      {check.detail && (
                         <p className="text-xs text-text-sub mt-1 leading-relaxed">{check.detail}</p>
                       )}
                     </div>
