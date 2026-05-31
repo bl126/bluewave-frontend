@@ -39,7 +39,9 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   const [progressStatus, setProgressStatus] = useState<{
     eligible?: boolean;
     minted?: boolean;
+    wallet_address?: string;
   }>({});
+  const [walletConfirmed, setWalletConfirmed] = useState<boolean>(false);
 
   // Premium Anti-Farming Scanning States
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'revealing' | 'done'>('idle');
@@ -70,7 +72,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     setChecks(buildLocalQuestChecks(telegramUser, null, null));
     fetchQuestProgress(quest.id).then((res) => {
       if (res && !res.error) {
-        setProgressStatus({ eligible: res.eligible, minted: res.minted });
+        setProgressStatus({ eligible: res.eligible, minted: res.minted, wallet_address: res.wallet_address });
         setFarmingDetected(!!res.farming_detected);
         setSuspectedAccounts(res.suspected_accounts || []);
         
@@ -121,11 +123,13 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
       
       // Enforce 2.5s scan duration for premium feel
       setTimeout(() => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
         setScanState('revealing');
         
         if (res && !res.error) {
           if (res.checks?.length) setChecks(res.checks);
-          setProgressStatus({ eligible: res.eligible, minted: res.minted });
+          setProgressStatus({ eligible: res.eligible, minted: res.minted, wallet_address: res.wallet_address });
           setFarmingDetected(!!res.farming_detected);
           setSuspectedAccounts(res.suspected_accounts || []);
           
@@ -151,6 +155,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
       }, 2500);
     } catch (err) {
       setTimeout(() => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
         setScanState('idle');
         toast(t("missions.quests.action_failed") || "Verification failed. Try again.");
       }, 2500);
@@ -346,15 +352,27 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                       You Are Eligible!
                     </h4>
                   </div>
-                  <p className="text-xs text-text-sub leading-relaxed">
-                    Your presence signals and network integrity have been fully verified on the ledger. You are authorized to mint your Wave Badge.
-                  </p>
+                  {progressStatus.wallet_address && (
+                    <p className="text-[10px] text-text-sub">
+                      Connected: <span className="font-mono">{progressStatus.wallet_address.slice(0, 6)}...{progressStatus.wallet_address.slice(-4)}</span>
+                    </p>
+                  )}
+                  <label className="inline-flex items-center space-x-2 mt-2">
+                    <input
+                      type="checkbox"
+                      checked={walletConfirmed}
+                      onChange={e => setWalletConfirmed(e.target.checked)}
+                      className="form-checkbox h-4 w-4 text-cyan-500 border-app-border rounded"
+                    />
+                    <span className="text-xs text-text-sub">I confirm this is my wallet address</span>
+                  </label>
                   <button
                     type="button"
                     onClick={handleMintRequest}
-                    className="w-full py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_22px_rgba(34,211,238,0.45)] transition-all duration-300"
+                    disabled={!walletConfirmed}
+                    className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    Mint Wave Badge
+                    Mint NFT
                   </button>
                 </div>
               )}

@@ -53,6 +53,7 @@ export interface QuestProgress {
   lifetime_entropy?: number;
   farming_detected?: boolean;
   suspected_accounts?: string[];
+  wallet_address?: string;
 }
 
 export interface BoardPassLeader {
