@@ -74,6 +74,11 @@ export default function QuestCriteriaPanel({ checks = [], animateReveal = false,
                   )}
                   <span className={`text-[11px] font-black uppercase tracking-widest truncate ${isScanning ? "text-cyan-400" : "text-text-main"}`}>
                     {displayLabel}
+                    {check.current !== undefined && check.target !== undefined && (
+                      <span className="ml-1.5 text-cyan-400/90 font-mono font-bold text-[10px]">
+                        ({check.current.toLocaleString()}/{check.target.toLocaleString()})
+                      </span>
+                    )}
                   </span>
                 </div>
                 {isRevealed && (

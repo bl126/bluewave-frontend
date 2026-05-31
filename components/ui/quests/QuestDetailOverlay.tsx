@@ -78,7 +78,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
           setChecks(res.checks);
         }
         
-        if (res.minted || res.eligible || res.farming_detected) {
+        if (res.minted) {
           setScanState('done');
           setRevealIndex(999);
         }
