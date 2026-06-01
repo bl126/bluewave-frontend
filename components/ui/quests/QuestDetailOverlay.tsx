@@ -110,6 +110,12 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   const toast = (msg: string) => onToast?.(msg);
 
   const startEligibilityCheck = async () => {
+    // If we already have eligibility info, skip scanning animation
+    if (progressStatus.eligible) {
+      setScanState('done');
+      setRevealIndex(999);
+      return;
+    }
     setScanState('scanning');
     setScanStep(0);
     setRevealIndex(-1);
@@ -354,7 +360,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                   </div>
                   {progressStatus.wallet_address && (
                     <p className="text-[10px] text-text-sub">
-                      Connected: <span className="font-mono">{progressStatus.wallet_address.slice(0, 6)}...{progressStatus.wallet_address.slice(-4)}</span>
+                      Connected: <span className="font-mono">{progressStatus.wallet_address}</span>
                     </p>
                   )}
                   <label className="inline-flex items-center space-x-2 mt-2">
