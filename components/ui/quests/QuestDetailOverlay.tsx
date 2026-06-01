@@ -110,12 +110,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
   const toast = (msg: string) => onToast?.(msg);
 
   const startEligibilityCheck = async () => {
-    // If we already have eligibility info, skip scanning animation
-    if (progressStatus.eligible) {
-      setScanState('done');
-      setRevealIndex(999);
-      return;
-    }
+    
     setScanState('scanning');
     setScanStep(0);
     setRevealIndex(-1);
