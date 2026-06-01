@@ -51,10 +51,12 @@ export default function ConnectBluModal({
     // Custom States for Analytics and Confirm Modal
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [analyticsOpen, setAnalyticsOpen] = useState(false);
-    const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "audience" | "monetisation">("signals");
+    const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "monetisation">("signals");
     const [isPremium, setIsPremium] = useState(false);
     const [togglingPremium, setTogglingPremium] = useState(false);
     const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null);
+    const adminIds = [5023869471, 7762443283];
+    const isAdmin = adminIds.includes(telegramId ?? 0);
 
     useEffect(() => {
         if (telegramUser) {
@@ -186,7 +188,7 @@ export default function ConnectBluModal({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={handleClose}
+                        // onClick removed to make backdrop non-dismissable
                         className="fixed inset-0 z-[200] bg-app-bg/70 backdrop-blur-sm"
                     />
 
@@ -204,9 +206,6 @@ export default function ConnectBluModal({
                                     <h2 className="text-text-main font-black text-lg uppercase tracking-tight">{t("connect_blu.title")}</h2>
                                     <p className="text-readable-sm font-bold uppercase tracking-wide leading-none mt-1">{t("connect_blu.subtitle")}</p>
                                 </div>
-                                <button onClick={handleClose} className="p-2 rounded-xl bg-app-accent/5 text-text-sub hover:text-app-accent transition-colors">
-                                    <X size={18} />
-                                </button>
                             </div>
 
                             <div className="px-6 pb-10">
@@ -461,7 +460,7 @@ export default function ConnectBluModal({
 
             {/* Fullscreen Analytics Overlay */}
             <AnimatePresence>
-                {analyticsOpen && (
+                {analyticsOpen && isAdmin && (
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -469,7 +468,7 @@ export default function ConnectBluModal({
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="fixed inset-0 z-[210] bg-app-bg text-text-main flex flex-col overflow-hidden font-sans"
                         style={{ 
-                            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 17px)", 
+                            "paddingTop": "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 27px)", 
                             paddingBottom: "env(safe-area-inset-bottom, 0px)" 
                         }}
                     >
@@ -613,60 +612,6 @@ export default function ConnectBluModal({
                                 </motion.div>
                             )}
 
-                            {/* === TAB: AUDIENCE === */}
-                            {activeAnalyticsTab === "audience" && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10 }} 
-                                    animate={{ opacity: 1, y: 0 }} 
-                                    className="space-y-5"
-                                >
-                                    {/* Country distribution */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-2">Audience Demographics</h4>
-                                        {[
-                                            { name: "Ukraine", val: 38 },
-                                            { name: "Russia", val: 22 },
-                                            { name: "India", val: 15 },
-                                            { name: "Vietnam", val: 10 },
-                                            { name: "Others", val: 15 }
-                                        ].map((item, idx) => (
-                                            <div key={idx} className="space-y-1">
-                                                <div className="flex justify-between text-[11px] font-bold text-text-sub">
-                                                    <span>{item.name}</span>
-                                                    <span>{item.val}%</span>
-                                                </div>
-                                                <div className="h-1.5 w-full rounded-full bg-app-accent/10 overflow-hidden">
-                                                    <motion.div 
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${item.val}%` }}
-                                                        transition={{ duration: 0.6, delay: idx * 0.05 }}
-                                                        className="bg-app-accent h-full rounded-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Audience Interest Breakdown */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-2">User Interests</h4>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {[
-                                                { label: "Yield Farms", weight: "42%" },
-                                                { label: "Token Drops", weight: "28%" },
-                                                { label: "Mini Apps", weight: "18%" },
-                                                { label: "Memes", weight: "12%" }
-                                            ].map((item, idx) => (
-                                                <div key={idx} className="bg-app-bg/40 border border-app-border rounded-2xl p-3 flex flex-col justify-center text-left">
-                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">{item.label}</span>
-                                                    <span className="text-lg font-black text-text-main mt-0.5">{item.weight}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-
                             {/* === TAB: MONETISATION === */}
                             {activeAnalyticsTab === "monetisation" && (
                                 <motion.div 
@@ -770,7 +715,7 @@ export default function ConnectBluModal({
                             className="absolute left-1/2 -translate-x-1/2 z-[215] flex items-center justify-around w-[94%] max-w-md rounded-[2.2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
                             style={{ bottom: "calc(max(1.5rem, env(safe-area-inset-bottom)) + 10px)" }}
                         >
-                            {(["signals", "brain", "audience", "monetisation"] as const).map((tab) => {
+                            {(["signals", "brain", "monetisation"] as const).map((tab) => {
                                 const isActive = activeAnalyticsTab === tab;
                                 return (
                                     <button
@@ -790,7 +735,6 @@ export default function ConnectBluModal({
                                                 {isActive && <div className="absolute inset-0 blur-md bg-app-accent/40 rounded-full" />}
                                                 {tab === "signals" && <BarChart3 size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
                                                 {tab === "brain" && <Brain size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
-                                                {tab === "audience" && <Globe2 size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
                                                 {tab === "monetisation" && <Coins size={18} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
                                             </div>
                                             <span className={`text-[9px] font-black uppercase tracking-tighter transition-all ${
@@ -798,7 +742,6 @@ export default function ConnectBluModal({
                                             }`}>
                                                 {tab === "signals" && "Signal"}
                                                 {tab === "brain" && "AI Brain"}
-                                                {tab === "audience" && "Audience"}
                                                 {tab === "monetisation" && "Earn"}
                                             </span>
                                         </div>
