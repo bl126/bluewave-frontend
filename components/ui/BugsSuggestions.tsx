@@ -324,6 +324,17 @@ export default function BugsSuggestions({ isOpen, onClose, telegramUser }: BugsS
       fetchReports();
     }
   }, [isOpen, activeTab, selectedStatus, searchQuery]);
+// Preload reports on component mount for instant future opens
+useEffect(() => {
+  // Load default tab data in background without affecting UI state
+  (async () => {
+    try {
+      await fetchReports(true);
+    } catch (e) {
+      console.error('Preload reports error', e);
+    }
+  })();
+}, []);
 
   // Handle Native Back button click via custom event interceptor
   useEffect(() => {
