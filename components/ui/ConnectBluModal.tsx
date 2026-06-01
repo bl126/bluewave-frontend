@@ -121,6 +121,23 @@ export default function ConnectBluModal({
         return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
     }, [analyticsOpen]);
 
+    // Intercept Telegram native back button for modal navigation stack
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleNativeBack = (e: Event) => {
+            e.preventDefault();
+            if (analyticsOpen) {
+                setAnalyticsOpen(false);
+            } else if (view !== "main") {
+                setView("main");
+            } else {
+                onClose();
+            }
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack, true);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
+    }, [isOpen, analyticsOpen, view, onClose]);
+
     const handleVerify = async () => {
         if (!channelInput.trim() || verifying || verified) return;
         setVerifying(true);
