@@ -51,12 +51,26 @@ export default function ConnectBluModal({
     // Custom States for Analytics and Confirm Modal
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [analyticsOpen, setAnalyticsOpen] = useState(false);
+    const [analyticsData, setAnalyticsData] = useState<{
+        subscribers: number;
+        total_posts: number;
+        total_views: number;
+        engagement_rate: number;
+        recent_posts: any[];
+    } | null>(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(false);
     const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "monetisation">("signals");
     const [isPremium, setIsPremium] = useState(false);
     const [togglingPremium, setTogglingPremium] = useState(false);
     const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null);
     const adminIds = [5023869471, 7762443283];
     const isAdmin = adminIds.includes(telegramId ?? 0);
+
+    const formatNumber = (num: number) => {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+        if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+        return num.toString();
+    };
 
     useEffect(() => {
         if (telegramUser) {
@@ -120,6 +134,22 @@ export default function ConnectBluModal({
         window.addEventListener("bwNativeBack", handleNativeBack, true);
         return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
     }, [analyticsOpen]);
+
+    // Fetch channel analytics when analytics overlay opens
+    useEffect(() => {
+        if (!analyticsOpen || !telegramId) return;
+        setLoadingAnalytics(true);
+        getApi(`/api/telegram/channel/analytics/${telegramId}`)
+            .then((res: any) => {
+                setAnalyticsData(res);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch channel analytics:", err);
+            })
+            .finally(() => {
+                setLoadingAnalytics(false);
+            });
+    }, [analyticsOpen, telegramId]);
 
     // Intercept Telegram native back button for modal navigation stack
     useEffect(() => {
@@ -514,53 +544,119 @@ export default function ConnectBluModal({
                                     animate={{ opacity: 1, y: 0 }} 
                                     className="space-y-5"
                                 >
-                                    {/* Stats grid */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Impressions</span>
-                                            <span className="text-2xl font-black text-text-main tracking-tight">142,504</span>
-                                            <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
-                                                <TrendingUp size={10} /> +14.2% this week
-                                            </span>
+                                    {loadingAnalytics ? (
+                                        <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-sub font-medium text-xs">
+                                            <Loader2 className="animate-spin text-app-accent" size={24} />
+                                            <span>Retrieving channel metrics...</span>
                                         </div>
-                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Engagement Rate</span>
-                                            <span className="text-2xl font-black text-text-main tracking-tight">8.62%</span>
-                                            <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 mt-1 justify-start">
-                                                <TrendingUp size={10} /> +2.5% this week
-                                            </span>
-                                        </div>
-                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Signal score</span>
-                                            <span className="text-2xl font-black text-app-accent tracking-tight">92 / 100</span>
-                                            <span className="text-[10px] font-medium text-text-sub mt-1">Excellent activity</span>
-                                        </div>
-                                        <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                            <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total post views</span>
-                                            <span className="text-2xl font-black text-text-main tracking-tight">84.2K</span>
-                                            <span className="text-[10px] font-medium text-text-sub mt-1">Across 32 posts</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Chart (Elegant CSS Bar representation) */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-4">Signal Distribution (Last 7 Days)</h4>
-                                        <div className="h-32 flex items-end justify-between gap-3 pt-4">
-                                            {[45, 60, 52, 75, 90, 82, 95].map((val, idx) => (
-                                                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                                                    <div className="w-full bg-app-accent/10 rounded-t-lg relative" style={{ height: "100px" }}>
-                                                        <motion.div 
-                                                            initial={{ height: 0 }} 
-                                                            animate={{ height: `${val}%` }} 
-                                                            transition={{ delay: idx * 0.05, duration: 0.5 }}
-                                                            className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-app-accent/80 to-app-accent rounded-t-lg shadow-app-shadow"
-                                                        />
-                                                    </div>
-                                                    <span className="text-[8px] font-bold text-text-sub">Day {idx + 1}</span>
+                                    ) : (
+                                        <>
+                                            {/* Stats grid */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Subscribers</span>
+                                                    <span className="text-2xl font-black text-text-main tracking-tight">
+                                                        {analyticsData?.subscribers ? formatNumber(analyticsData.subscribers) : "0"}
+                                                    </span>
+                                                    <span className="text-[10px] font-medium text-text-sub mt-1">From Telegram API</span>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Engagement Rate</span>
+                                                    <span className="text-2xl font-black text-text-main tracking-tight">
+                                                        {analyticsData?.engagement_rate ? `${analyticsData.engagement_rate}%` : "0.00%"}
+                                                    </span>
+                                                    <span className="text-[10px] font-medium text-text-sub mt-1">Based on activity</span>
+                                                </div>
+                                                <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Posts</span>
+                                                    <span className="text-2xl font-black text-app-accent tracking-tight">
+                                                        {analyticsData?.total_posts ? formatNumber(analyticsData.total_posts) : "0"}
+                                                    </span>
+                                                    <span className="text-[10px] font-medium text-text-sub mt-1">From database</span>
+                                                </div>
+                                                <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
+                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Post Views</span>
+                                                    <span className="text-2xl font-black text-text-main tracking-tight">
+                                                        {analyticsData?.total_views ? formatNumber(analyticsData.total_views) : "0"}
+                                                    </span>
+                                                    <span className="text-[10px] font-medium text-text-sub mt-1">
+                                                        Across {analyticsData?.total_posts || 0} posts
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Chart (Elegant CSS Bar representation) */}
+                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-4">Signal Distribution (Last 7 Days)</h4>
+                                                <div className="h-32 flex items-end justify-between gap-3 pt-4">
+                                                    {[45, 60, 52, 75, 90, 82, 95].map((val, idx) => (
+                                                        <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                                            <div className="w-full bg-app-accent/10 rounded-t-lg relative" style={{ height: "100px" }}>
+                                                                <motion.div 
+                                                                    initial={{ height: 0 }} 
+                                                                    animate={{ height: `${val}%` }} 
+                                                                    transition={{ delay: idx * 0.05, duration: 0.5 }}
+                                                                    className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-app-accent/80 to-app-accent rounded-t-lg shadow-app-shadow"
+                                                                />
+                                                            </div>
+                                                            <span className="text-[8px] font-bold text-text-sub">Day {idx + 1}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Recent Posts Section */}
+                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main">Recent Posts</h4>
+                                                    <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider">Latest 10</span>
+                                                </div>
+                                                
+                                                {analyticsData?.recent_posts && analyticsData.recent_posts.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {analyticsData.recent_posts.map((post: any) => (
+                                                            <div 
+                                                                key={post.id} 
+                                                                className="bg-app-card border border-app-border rounded-2xl p-4 flex flex-col gap-2.5 hover:border-app-accent/30 hover:bg-app-accent/[0.02] transition-all active:scale-[0.99] cursor-pointer"
+                                                            >
+                                                                {/* Post Content preview & Media */}
+                                                                <div className="flex items-start justify-between gap-3">
+                                                                    <p className="text-xs text-text-main font-medium leading-relaxed flex-1 line-clamp-2">
+                                                                        {post.content || "No text content"}
+                                                                    </p>
+                                                                    {post.media_url && (
+                                                                        <div className="w-12 h-12 rounded-lg border border-app-border overflow-hidden shrink-0 bg-app-accent/5">
+                                                                            <img src={post.media_url} alt="Post media" className="w-full h-full object-cover" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                
+                                                                {/* Divider */}
+                                                                <div className="h-px bg-app-border/60" />
+                                                                
+                                                                {/* Post Stats & Meta */}
+                                                                <div className="flex items-center justify-between text-[9px] font-bold text-text-sub uppercase tracking-wider">
+                                                                    <div className="flex items-center gap-4">
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Globe2 size={10} /> {formatNumber(post.views_count || 0)} views
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <TrendingUp size={10} /> {post.engagement_rate}% ER
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-[8px]">
+                                                                        {new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-text-sub font-medium py-4 text-center">No posts found for this channel.</p>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                 </motion.div>
                             )}
 
