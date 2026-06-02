@@ -76,6 +76,7 @@ export default function ConnectBluModal({
         recent_posts: any[];
         daily_stats?: any[];
         channel_handle?: string;
+        er_delta_24h?: number;
     } | null>(null);
     const [loadingAnalytics, setLoadingAnalytics] = useState(false);
     const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
@@ -664,12 +665,23 @@ export default function ConnectBluModal({
                                                     <span className="text-[10px] font-medium text-text-sub mt-1">From Telegram API</span>
                                                 </div>
                                                 <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
-                                                    <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Engagement Rate</span>
-                                                    <span className="text-2xl font-black text-text-main tracking-tight">
-                                                        {analyticsData?.engagement_rate ? `${analyticsData.engagement_rate}%` : "0.00%"}
-                                                    </span>
-                                                    <span className="text-[10px] font-medium text-text-sub mt-1">Based on activity</span>
-                                                </div>
+                                                     <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Engagement Rate</span>
+                                                     <div className="flex items-baseline gap-2">
+                                                         <span className="text-2xl font-black text-text-main tracking-tight">
+                                                             {analyticsData?.engagement_rate ? `${analyticsData.engagement_rate}%` : "0.00%"}
+                                                         </span>
+                                                         {analyticsData?.er_delta_24h !== undefined && (
+                                                             <span className={`text-[9px] font-black ${analyticsData.er_delta_24h >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                                                                 {analyticsData.er_delta_24h >= 0 ? "+" : ""}{analyticsData.er_delta_24h}%
+                                                             </span>
+                                                         )}
+                                                     </div>
+                                                     <span className="text-[10px] font-medium text-text-sub mt-1">
+                                                         {analyticsData?.er_delta_24h !== undefined 
+                                                             ? `${analyticsData.er_delta_24h >= 0 ? "Up" : "Down"} in last 24h` 
+                                                             : "Based on activity"}
+                                                     </span>
+                                                 </div>
                                                 <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-1 text-left">
                                                     <span className="text-[9px] font-black text-text-sub uppercase tracking-widest">Total Posts</span>
                                                     <span className="text-2xl font-black text-app-accent tracking-tight">
