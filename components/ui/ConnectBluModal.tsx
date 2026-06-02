@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getApi, postApi } from "@/lib/useApi";
@@ -21,6 +21,23 @@ interface ConnectBluModalProps {
     channelPhoto?: string | null;
     channelStarsReceived?: number;
 }
+
+const getCachedAnalytics = (tgId: number) => {
+    if (typeof window === "undefined") return null;
+    try {
+        const cached = localStorage.getItem(`tg_channel_analytics_${tgId}`);
+        return cached ? JSON.parse(cached) : null;
+    } catch {
+        return null;
+    }
+};
+
+const setCachedAnalytics = (tgId: number, data: any) => {
+    if (typeof window === "undefined") return;
+    try {
+        localStorage.setItem(`tg_channel_analytics_${tgId}`, JSON.stringify(data));
+    } catch {}
+};
 
 export default function ConnectBluModal({
     isOpen,
@@ -57,8 +74,11 @@ export default function ConnectBluModal({
         total_views: number;
         engagement_rate: number;
         recent_posts: any[];
+        daily_stats?: any[];
+        channel_handle?: string;
     } | null>(null);
     const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+    const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
     const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<"signals" | "brain" | "monetisation">("signals");
     const [isPremium, setIsPremium] = useState(false);
     const [togglingPremium, setTogglingPremium] = useState(false);
@@ -70,6 +90,18 @@ export default function ConnectBluModal({
         if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
         if (num >= 1000) return (num / 1000).toFixed(1) + "K";
         return num.toString();
+    };
+
+    // Helper calculations for analytics chart
+    const dailyStats = analyticsData?.daily_stats || [];
+    const maxViews = Math.max(...dailyStats.map((d: any) => d.views), 1);
+    const getDayLabel = (dateStr: string) => {
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString(undefined, { weekday: "short" });
+        } catch {
+            return "";
+        }
     };
 
     useEffect(() => {
@@ -138,10 +170,19 @@ export default function ConnectBluModal({
     // Fetch channel analytics when analytics overlay opens
     useEffect(() => {
         if (!analyticsOpen || !telegramId) return;
-        setLoadingAnalytics(true);
+        
+        const cached = getCachedAnalytics(telegramId);
+        if (cached) {
+            setAnalyticsData(cached);
+            setLoadingAnalytics(false);
+        } else {
+            setLoadingAnalytics(true);
+        }
+
         getApi(`/api/telegram/channel/analytics/${telegramId}`)
             .then((res: any) => {
                 setAnalyticsData(res);
+                setCachedAnalytics(telegramId, res);
             })
             .catch((err) => {
                 console.error("Failed to fetch channel analytics:", err);
@@ -150,6 +191,16 @@ export default function ConnectBluModal({
                 setLoadingAnalytics(false);
             });
     }, [analyticsOpen, telegramId]);
+
+    const handlePostClick = (messageId: number | null) => {
+        const handle = analyticsData?.channel_handle;
+        if (!handle) return;
+        const cleanHandle = handle.startsWith("@") ? handle.slice(1) : handle;
+        const url = messageId 
+            ? `https://t.me/${cleanHandle}/${messageId}` 
+            : `https://t.me/${cleanHandle}`;
+        window.open(url, "_blank");
+    };
 
     // Intercept Telegram native back button for modal navigation stack
     useEffect(() => {
@@ -545,9 +596,61 @@ export default function ConnectBluModal({
                                     className="space-y-5"
                                 >
                                     {loadingAnalytics ? (
-                                        <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-sub font-medium text-xs">
-                                            <Loader2 className="animate-spin text-app-accent" size={24} />
-                                            <span>Retrieving channel metrics...</span>
+                                        <div className="space-y-5 animate-pulse">
+                                            {/* Stats grid skeleton */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {Array.from({ length: 4 }).map((_, idx) => (
+                                                    <div key={idx} className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-2 text-left">
+                                                        <div className="h-2.5 bg-text-sub/20 rounded-full w-2/3" />
+                                                        <div className="h-7 bg-text-main/20 rounded-lg w-1/2 my-1" />
+                                                        <div className="h-2.5 bg-text-sub/10 rounded-full w-1/3" />
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Chart skeleton */}
+                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
+                                                <div className="h-3 bg-text-main/20 rounded-full w-1/3 mb-6" />
+                                                <div className="h-32 flex items-end justify-between gap-3 pt-4">
+                                                    {Array.from({ length: 7 }).map((_, idx) => (
+                                                        <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                                            <div className="w-full bg-app-accent/10 rounded-t-lg h-24 relative overflow-hidden">
+                                                                <div className="absolute bottom-0 inset-x-0 bg-app-accent/20 rounded-t-lg" style={{ height: `${20 + (idx * 10) % 60}%` }} />
+                                                            </div>
+                                                            <div className="h-2 bg-text-sub/20 rounded-full w-2/3" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Recent Posts skeleton */}
+                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="h-3 bg-text-main/20 rounded-full w-1/4" />
+                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/8" />
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {Array.from({ length: 3 }).map((_, idx) => (
+                                                        <div key={idx} className="bg-app-card border border-app-border rounded-2xl p-4 flex flex-col gap-3">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex-1 space-y-2">
+                                                                    <div className="h-3 bg-text-main/20 rounded-full w-11/12" />
+                                                                    <div className="h-3 bg-text-main/20 rounded-full w-4/5" />
+                                                                </div>
+                                                                <div className="w-12 h-12 rounded-lg bg-app-accent/10 shrink-0" />
+                                                            </div>
+                                                            <div className="h-px bg-app-border/60" />
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-4 w-2/3">
+                                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/3" />
+                                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/3" />
+                                                                </div>
+                                                                <div className="h-2.5 bg-text-sub/20 rounded-full w-1/6" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     ) : (
                                         <>
@@ -585,23 +688,33 @@ export default function ConnectBluModal({
                                                 </div>
                                             </div>
 
-                                            {/* Chart (Elegant CSS Bar representation) */}
+                                            {/* Chart (Elegant CSS Bar representation connected to daily_stats) */}
                                             <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-4">Signal Distribution (Last 7 Days)</h4>
                                                 <div className="h-32 flex items-end justify-between gap-3 pt-4">
-                                                    {[45, 60, 52, 75, 90, 82, 95].map((val, idx) => (
-                                                        <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                                                            <div className="w-full bg-app-accent/10 rounded-t-lg relative" style={{ height: "100px" }}>
-                                                                <motion.div 
-                                                                    initial={{ height: 0 }} 
-                                                                    animate={{ height: `${val}%` }} 
-                                                                    transition={{ delay: idx * 0.05, duration: 0.5 }}
-                                                                    className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-app-accent/80 to-app-accent rounded-t-lg shadow-app-shadow"
-                                                                />
+                                                    {dailyStats.map((day: any, idx: number) => {
+                                                        const heightPercent = maxViews > 1 ? (day.views / maxViews) * 100 : 0;
+                                                        return (
+                                                            <div key={day.date || idx} className="flex-1 flex flex-col items-center gap-2">
+                                                                <div className="group relative w-full bg-app-accent/10 rounded-t-lg" style={{ height: "100px" }}>
+                                                                    <motion.div 
+                                                                        initial={{ height: 0 }} 
+                                                                        animate={{ height: `${heightPercent}%` }} 
+                                                                        transition={{ delay: idx * 0.05, duration: 0.5 }}
+                                                                        className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-app-accent/80 to-app-accent rounded-t-lg shadow-app-shadow"
+                                                                    />
+                                                                    {/* Tooltip on hover */}
+                                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center bg-app-card border border-app-accent/20 text-[8px] text-text-main font-bold py-1 px-2 rounded-xl shadow-lg pointer-events-none whitespace-nowrap z-10">
+                                                                        <span>{day.views.toLocaleString()} views</span>
+                                                                        <span className="text-[7px] text-text-sub">{day.posts} post{day.posts !== 1 ? 's' : ''}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <span className="text-[8px] font-bold text-text-sub uppercase">
+                                                                    {getDayLabel(day.date)}
+                                                                </span>
                                                             </div>
-                                                            <span className="text-[8px] font-bold text-text-sub">Day {idx + 1}</span>
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
 
@@ -617,18 +730,30 @@ export default function ConnectBluModal({
                                                         {analyticsData.recent_posts.map((post: any) => (
                                                             <div 
                                                                 key={post.id} 
-                                                                className="bg-app-card border border-app-border rounded-2xl p-4 flex flex-col gap-2.5 hover:border-app-accent/30 hover:bg-app-accent/[0.02] transition-all active:scale-[0.99] cursor-pointer"
+                                                                onClick={() => handlePostClick(post.message_id)}
+                                                                className="bg-app-card border border-app-border rounded-2xl p-4 flex flex-col gap-2.5 hover:border-app-accent/30 hover:bg-app-accent/[0.02] transition-all active:scale-[0.99] cursor-pointer group/card"
                                                             >
                                                                 {/* Post Content preview & Media */}
                                                                 <div className="flex items-start justify-between gap-3">
                                                                     <p className="text-xs text-text-main font-medium leading-relaxed flex-1 line-clamp-2">
                                                                         {post.content || "No text content"}
                                                                     </p>
-                                                                    {post.media_url && (
-                                                                        <div className="w-12 h-12 rounded-lg border border-app-border overflow-hidden shrink-0 bg-app-accent/5">
-                                                                            <img src={post.media_url} alt="Post media" className="w-full h-full object-cover" />
+                                                                    {post.media_url && !failedImages[post.id] ? (
+                                                                        <div className="w-12 h-12 rounded-lg border border-app-border overflow-hidden shrink-0 bg-app-accent/5 relative">
+                                                                            <img 
+                                                                                src={post.media_url} 
+                                                                                alt="Post media" 
+                                                                                className="w-full h-full object-cover" 
+                                                                                onError={() => {
+                                                                                    setFailedImages(prev => ({ ...prev, [post.id]: true }));
+                                                                                }}
+                                                                            />
                                                                         </div>
-                                                                    )}
+                                                                    ) : post.media_url ? (
+                                                                        <div className="w-12 h-12 rounded-lg border border-app-border shrink-0 bg-app-accent/5 flex items-center justify-center text-text-sub">
+                                                                            <ImageOff size={16} />
+                                                                        </div>
+                                                                    ) : null}
                                                                 </div>
                                                                 
                                                                 {/* Divider */}
@@ -644,9 +769,12 @@ export default function ConnectBluModal({
                                                                             <TrendingUp size={10} /> {post.engagement_rate}% ER
                                                                         </span>
                                                                     </div>
-                                                                    <span className="text-[8px]">
-                                                                        {new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                                                                    </span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-[8px]">
+                                                                            {new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                                                        </span>
+                                                                        <ExternalLink size={10} className="text-text-sub/50 group-hover/card:text-app-accent transition-colors" />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         ))}
