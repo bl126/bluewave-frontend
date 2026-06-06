@@ -372,6 +372,7 @@ export default function LandingPage() {
             tg_id: Number(u.tg_id),
             username: u.username,
             first_name: u.name,
+            name: u.name,
             photo_url: u.photo_url || null,
             points_balance: u.points_balance ?? 0,
             referral_earnings_pending: u.referral_earnings_pending ?? 0,
@@ -388,6 +389,13 @@ export default function LandingPage() {
             stars_withdrawable: Number(u.stars_withdrawable ?? 0) || 0,
             wallet_relink_required: u.wallet_relink_required || false,
             has_recovery_password: u.has_recovery_password || false,
+            roles: Array.isArray(u.roles) ? u.roles : [],
+            streak_days: u.streak_days ?? 0,
+            level: u.level || "1",
+            streak: u.streak_days ?? 0,
+            recoverable_streak: u.recoverable_streak ?? 0,
+            streak_recovery_expires_at: u.streak_recovery_expires_at || null,
+            inactive_referrals_cache: u.inactive_referrals_cache ?? 0,
           });
           setBalance(u.points_balance ?? 0);
           setUnreadExploreCount(data.unread_explore_notifications || 0);
@@ -400,13 +408,28 @@ export default function LandingPage() {
           // The cache may not have has_recovery_password (old format) and would
           // incorrectly show the modal for everyone. This check runs after live /init.
 
-          // 🕒 Enforce 1 second branding delay even with cache
+          // ⚡ FAST TRANSITION: Only 300ms branding delay for returning users with cache.
+          // New users (no cache) still get the full 1s branding delay below.
           const elapsed = Date.now() - startupTime;
-          const delay = Math.max(0, 1000 - elapsed);
+          const delay = Math.max(0, 300 - elapsed);
           setTimeout(() => {
             setIsLoading(false);
-            console.log("🚀 INSTANT_STARTUP: Transitioned from cache after branding delay.");
+            console.log("🚀 INSTANT_STARTUP: Transitioned from cache in", Date.now() - startupTime, "ms");
           }, delay);
+
+          // ⭐ SEED SWR in-memory cache from localStorage so Profile/Missions
+          // render instantly even if /init hasn't returned yet.
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+          const tgIdNum = Number(u.tg_id);
+          if (apiUrl && tgIdNum) {
+            mutate(`${apiUrl}/api/user/${tgIdNum}`, u, false);
+            if (data.missions) mutate(`${apiUrl}/api/missions/all/${tgIdNum}`, data.missions, false);
+            if (data.presence) mutate(`${apiUrl}/api/presence/list/${tgIdNum}`, data.presence, false);
+            if (data.leaderboard) {
+              mutate(`${apiUrl}/api/leaderboard`, data.leaderboard, false);
+              mutate(`${apiUrl}/api/leaderboard?tg_id=${tgIdNum}`, data.leaderboard, false);
+            }
+          }
         }
       }
     } catch (e) {
