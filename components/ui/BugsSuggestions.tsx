@@ -27,6 +27,7 @@ interface ReportItem {
   media_urls: string[];
   status: "open" | "fix_coming" | "fixed" | "closed";
   admin_message: string | null;
+  admin_media_urls: string[];
   created_at: string;
 }
 
@@ -931,12 +932,42 @@ useEffect(() => {
                       </div>
 
                       {/* Admin response */}
-                      {selectedReport.admin_message && (
+                      {(selectedReport.admin_message || (selectedReport.admin_media_urls && selectedReport.admin_media_urls.length > 0)) && (
                         <div className="p-4 bg-app-accent/5 border border-app-accent/20 rounded-2xl">
                           <div className="text-[9px] font-black text-app-accent uppercase tracking-widest mb-2">{t("bugs_suggestions.team_response")}</div>
-                          <p className="text-[11px] text-text-sub italic leading-relaxed">
-                            {selectedReport.admin_message}
-                          </p>
+                          {selectedReport.admin_message && (
+                            <p className="text-[11px] text-text-sub italic leading-relaxed">
+                              {selectedReport.admin_message}
+                            </p>
+                          )}
+                          {/* Admin attached images */}
+                          {selectedReport.admin_media_urls && selectedReport.admin_media_urls.length > 0 && (
+                            <div className={`mt-3 grid gap-2 ${
+                              selectedReport.admin_media_urls.length === 1 ? 'grid-cols-1' :
+                              selectedReport.admin_media_urls.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                            }`}>
+                              {selectedReport.admin_media_urls.map((url, i) => {
+                                const isVideo = /\.(mp4|mov|avi)$/i.test(url);
+                                return (
+                                  <div
+                                    key={i}
+                                    onClick={() => setLightboxMedia({
+                                      urls: selectedReport.admin_media_urls,
+                                      isVideos: selectedReport.admin_media_urls.map(u => /\.(mp4|mov|avi)$/i.test(u)),
+                                      currentIndex: i
+                                    })}
+                                    className="rounded-xl overflow-hidden border border-app-accent/15 cursor-zoom-in bg-app-card max-h-40"
+                                  >
+                                    {isVideo ? (
+                                      <video src={url} className="w-full h-full object-cover" muted playsInline />
+                                    ) : (
+                                      <img src={url} alt={`team attachment ${i + 1}`} className="w-full h-full object-cover" />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

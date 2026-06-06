@@ -1919,15 +1919,22 @@ function PostCard({
 
 
 
-function TrueViewTracker({ postId }: { postId: number }) {
+function TrueViewTracker({ postId }: { postId: number | string }) {
   const ref = useRef<HTMLDivElement>(null);
   const viewed = useRef(false);
   useEffect(() => {
     if (viewed.current) return;
+    const isTemp = typeof postId === "string" && postId.startsWith("temp");
+    if (isTemp) return;
+
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !viewed.current) {
         viewed.current = true;
-        postApi("/explore/view", { post_id: postId }).catch(() => { });
+        // Convert to number just in case it is a numeric string
+        const numericId = typeof postId === "string" ? parseInt(postId, 10) : postId;
+        if (!isNaN(numericId)) {
+          postApi("/explore/view", { post_id: numericId }).catch(() => { });
+        }
         observer.disconnect();
       }
     }, { threshold: 0.5 });
