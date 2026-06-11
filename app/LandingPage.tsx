@@ -820,6 +820,10 @@ export default function LandingPage() {
     const slug = window.localStorage.getItem("bw_pending_quest_slug");
     if (!slug) return;
     window.localStorage.removeItem("bw_pending_quest_slug");
+
+    // Cache in global memory so MissionCenter and QuestTabPanel can access it on mount
+    (window as any).bwPendingQuestSlug = slug;
+
     setActiveTab("missions");
     setMissionOpen(true);
     setExploreOpen(false);

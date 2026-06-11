@@ -72,6 +72,22 @@ export default function QuestTabPanel({
   }, [selectedQuest]);
 
   useEffect(() => {
+    const pendingSlug = (window as any).bwPendingQuestSlug;
+    if (pendingSlug && isAdmin) {
+      delete (window as any).bwPendingQuestSlug;
+      (async () => {
+        const found = quests.find((q) => q.slug === pendingSlug);
+        if (found) {
+          setSelectedQuest(found);
+        } else {
+          const res = await fetchQuestBySlug(pendingSlug);
+          if (res && !res.error && res.id) {
+            setSelectedQuest(res as QuestListItem);
+          }
+        }
+      })();
+    }
+
     const openBySlug = async (e: Event) => {
       const slug = (e as CustomEvent<string>).detail;
       if (!slug || !isAdmin) return;

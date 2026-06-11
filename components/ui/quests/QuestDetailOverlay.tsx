@@ -17,24 +17,25 @@ interface QuestDetailOverlayProps {
   onToast?: (msg: string) => void;
 }
 
-/* ── Verified Host Badge (scalloped starburst, cyan bg, thin black check) ─ */
+/* ── Verified Host Badge (premium circular design, cyan bg, white check icon) ── */
 function VerifiedHostBadge() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="w-6 h-6 shrink-0 drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
+      className="w-5 h-5 shrink-0 drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
       aria-hidden
     >
+      {/* Outer glow ring */}
+      <circle cx="12" cy="12" r="11" fill="none" stroke="#22d3ee" strokeWidth="1" className="opacity-40" />
+      {/* Solid body */}
+      <circle cx="12" cy="12" r="9" fill="#22d3ee" />
+      {/* Centered white check icon */}
       <path
-        fill="#22d3ee"
-        d="M12 2c-.4 0-.8.2-1 .5l-.8 1c-.2.3-.5.5-.9.5H7.5c-.5 0-1 .5-1 1v1.8c0 .4-.2.7-.5.9l-1 .8c-.3.2-.5.6-.5 1v2.5c0 .4.2.8.5 1l1 .8c.3.2.5.5.5.9v1.8c0 .5.5 1 1 1h1.8c.4 0 .7.2.9.5l.8 1.1c.2.3.6.5 1 .5h2.4c.4 0 .8-.2 1-.5l.8-1.1c.2-.3.5-.5.9-.5h1.8c.5 0 1-.5 1-1v-1.8c0-.4.2-.7.5-.9l1-.8c.3-.2.5-.6.5-1v-2.5c0-.4-.2-.8-.5-1l-1-.8c-.3-.2-.5-.5-.5-.9V5c0-.5-.5-1-1-1h-1.8c-.4 0-.7-.2-.9-.5l-.8-1.1c-.2-.3-.6-.5-1-.5H12z"
-      />
-      <path
-        stroke="#000000"
-        strokeWidth="2.5"
+        stroke="#ffffff"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M9.5 12.5l2 2 4-4"
+        d="M9.5 11.8l1.8 1.8 3.2-3.2"
         fill="none"
       />
     </svg>
@@ -253,8 +254,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* ═══════════════════ HERO SECTION ═══════════════════ */}
-        {/* Shrunk slightly to h-[210px] to accommodate shifted bottom sheet */}
-        <div className="relative w-full shrink-0 h-[210px]">
+        {/* Height increased to h-[240px] to give visual spacing */}
+        <div className="relative w-full shrink-0 h-[240px]">
           {/* Background Image */}
           {quest.image_url ? (
             <img
@@ -289,8 +290,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             </button>
           </div>
 
-          {/* Centered Content (Title & Tier shifted down/spaced out from bottom sheet) */}
-          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-10 pt-16">
+          {/* Centered Content (pb-12 to push text up and create visual space from bottom sheet) */}
+          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-12 pt-16">
             {/* Title + Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <h1 className="text-lg font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
@@ -309,9 +310,9 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         </div>
 
         {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
-        {/* Curved bottom sheet shifted down to -mt-3 (leaving gap from title/tier) */}
-        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-3 overflow-hidden">
-          {/* ── 3-Column Stats Bar (Unboxed & Spread out: Mint left, Prize Pool center, Dropped right) ── */}
+        {/* Margins adjusted to -mt-1 to push the sheet down, showing cover details and creating spacing */}
+        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-1 overflow-hidden">
+          {/* ── 3-Column Stats Bar (Unboxed & Spread out: Mint left-aligned, Prize Pool centered, Dropped right-aligned) ── */}
           <div className="w-full px-10 pt-6 pb-2 shrink-0">
             <div className="flex items-center justify-between">
               {/* Mint (Left aligned) */}

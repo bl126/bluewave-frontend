@@ -654,7 +654,30 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
       setQuestDetailOpen(!!(e as CustomEvent).detail);
     };
     window.addEventListener("questDetailOpen", onQuestDetail);
-    return () => window.removeEventListener("questDetailOpen", onQuestDetail);
+
+    const handleOpenBySlug = (e: Event) => {
+      const slug = (e as CustomEvent).detail;
+      if (slug) {
+        (window as any).bwPendingQuestSlug = slug;
+      }
+      setActiveTab("quest");
+    };
+    window.addEventListener("openQuestBySlug", handleOpenBySlug);
+
+    if (typeof window !== "undefined") {
+      const localSlug = window.localStorage.getItem("bw_pending_quest_slug");
+      if (localSlug) {
+        (window as any).bwPendingQuestSlug = localSlug;
+        setActiveTab("quest");
+      } else if ((window as any).bwPendingQuestSlug) {
+        setActiveTab("quest");
+      }
+    }
+
+    return () => {
+      window.removeEventListener("questDetailOpen", onQuestDetail);
+      window.removeEventListener("openQuestBySlug", handleOpenBySlug);
+    };
   }, []);
 
   const presenceBadge = Array.isArray(presenceMissions) ? (presenceMissions as PresenceMission[]).filter(
