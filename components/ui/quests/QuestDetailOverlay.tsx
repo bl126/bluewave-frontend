@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { buildQuestStartappLink } from "@/lib/questDeepLink";
 import { buildLocalQuestChecks } from "@/lib/questLocalChecks";
@@ -22,11 +22,21 @@ function VerifiedHostBadge() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="w-[18px] h-[18px] shrink-0 fill-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]"
+      className="w-5 h-5 shrink-0 drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
       aria-hidden
     >
-      <path d="M12 2c-.4 0-.8.2-1 .5l-.8 1c-.2.3-.5.5-.9.5H7.5c-.5 0-1 .5-1 1v1.8c0 .4-.2.7-.5.9l-1 .8c-.3.2-.5.6-.5 1v2.5c0 .4.2.8.5 1l1 .8c.3.2.5.5.5.9v1.8c0 .5.5 1 1 1h1.8c.4 0 .7.2.9.5l.8 1c.2.3.6.5 1 .5h2.4c.4 0 .8-.2 1-.5l.8-1c.2-.3.5-.5.9-.5h1.8c.5 0 1-.5 1-1v-1.8c0-.4.2-.7.5-.9l1-.8c.3-.2.5-.6.5-1v-2.5c0-.4-.2-.8-.5-1l-1-.8c-.3-.2-.5-.5-.5-.9V5c0-.5-.5-1-1-1h-1.8c-.4 0-.7-.2-.9-.5l-.8-1c-.2-.3-.6-.5-1-.5H12z" />
-      <path fill="#000" d="M9.86 15.17L7.42 12.73l-1.18 1.18 3.62 3.62 7.74-7.74-1.18-1.18-6.56 6.56z" />
+      <path
+        fill="#22d3ee"
+        d="M12 2c-.4 0-.8.2-1 .5l-.8 1c-.2.3-.5.5-.9.5H7.5c-.5 0-1 .5-1 1v1.8c0 .4-.2.7-.5.9l-1 .8c-.3.2-.5.6-.5 1v2.5c0 .4.2.8.5 1l1 .8c.3.2.5.5.5.9v1.8c0 .5.5 1 1 1h1.8c.4 0 .7.2.9.5l.8 1.1c.2.3.6.5 1 .5h2.4c.4 0 .8-.2 1-.5l.8-1.1c.2-.3.5-.5.9-.5h1.8c.5 0 1-.5 1-1v-1.8c0-.4.2-.7.5-.9l1-.8c.3-.2.5-.6.5-1v-2.5c0-.4-.2-.8-.5-1l-1-.8c-.3-.2-.5-.5-.5-.9V5c0-.5-.5-1-1-1h-1.8c-.4 0-.7-.2-.9-.5l-.8-1.1c-.2-.3-.6-.5-1-.5H12z"
+      />
+      <path
+        stroke="#000000"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7.5 12.5l3 3 6-6"
+        fill="none"
+      />
     </svg>
   );
 }
@@ -167,6 +177,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             if (idx >= total) {
               clearInterval(interval);
               setScanState('done');
+              setRevealIndex(999); // Instantly flag all items as resolved
               if (res.farming_detected) {
                 toast("Network integrity check failed: Farming suspected!");
               } else if (res.eligible) {
@@ -242,7 +253,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* ═══════════════════ HERO SECTION ═══════════════════ */}
-        <div className="relative w-full shrink-0 h-[260px]">
+        <div className="relative w-full shrink-0 h-[220px]">
           {/* Background Image */}
           {quest.image_url ? (
             <img
@@ -258,28 +269,30 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
           <div className="absolute inset-0 bg-gradient-to-t from-app-bg/90 via-transparent to-transparent" />
 
-          {/* Top Navigation Bar */}
+          {/* Top Navigation Bar (Brought down 5px) */}
           <div
             className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-4"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 17px)",
             }}
           >
-            {/* Share/Forward Button */}
+            {/* Share/Forward Button (iOS/Telegram-style Share Arrow) */}
             <button
               type="button"
               onClick={handleShare}
               className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
             >
-              <ExternalLink size={16} />
+              <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-current text-white shrink-0">
+                <path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
+              </svg>
             </button>
           </div>
 
-          {/* Centered Content (Brought down a bit) */}
-          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-12 pt-20">
+          {/* Centered Content (Lower spacing, smaller title) */}
+          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-8 pt-16">
             {/* Title + Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
-              <h1 className="text-xl font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
+              <h1 className="text-lg font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
                 {quest.title}
               </h1>
               {quest.host_verified && <VerifiedHostBadge />}
@@ -287,35 +300,32 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
 
             {/* NFT Tier */}
             {quest.nft_tier != null && (
-              <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-cyan-400/90 drop-shadow">
+              <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-cyan-400 drop-shadow">
                 {t("missions.quests.wave_label")} {romanTier(quest.nft_tier)}
               </span>
             )}
           </div>
+        </div>
 
-          {/* ── 3-Column Stats Bar (Spread out & Unboxed) ──────── */}
-          <div className="absolute bottom-0 left-0 right-0 z-[6] px-6 pb-0 translate-y-1/2">
-            <div className="flex items-center justify-between px-4">
+        {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
+        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-6 overflow-hidden">
+          {/* ── 3-Column Stats Bar (Unboxed & Spread out inside bottom sheet, high visibility) ── */}
+          <div className="w-full px-10 pt-6 pb-2 shrink-0">
+            <div className="flex items-center justify-between">
               {statsColumns.map((col) => (
                 <div
                   key={col.label}
-                  className="flex-1 flex flex-col items-center justify-center py-2"
+                  className="flex-1 flex flex-col items-center justify-center"
                 >
-                  <span className="text-base font-black text-white drop-shadow-md tracking-tight">{col.value}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-400/80 drop-shadow-sm">{col.label}</span>
+                  <span className="text-base font-black text-text-main tracking-tight">{col.value}</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.15em] text-text-sub">{col.label}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-
-        {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
-        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-1 overflow-hidden">
-          {/* Spacer for stats bar overlap */}
-          <div className="h-6 shrink-0" />
 
           {/* Tab Bar (Minimal, Small Text, No Underline) */}
-          <div className="px-5 pt-4 pb-1 shrink-0">
+          <div className="px-5 pt-3 pb-1 shrink-0">
             <div className="flex items-center justify-between border-b border-white/[0.04] pb-1.5 gap-2">
               {([
                 { id: "board_pass" as DetailTab, label: "Board Pass" },
@@ -331,7 +341,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                     className={`flex-1 py-1 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-all duration-200
                       ${isActive
                         ? "text-app-accent font-black"
-                        : "text-text-sub/50 hover:text-text-main"
+                        : "text-text-sub/75 hover:text-text-main"
                       }`}
                   >
                     {tab.label}
@@ -366,7 +376,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                   <div className="space-y-5 flex-1">
                     <QuestCriteriaPanel
                       checks={checks}
-                      animateReveal={scanState === 'revealing' || scanState === 'done'}
+                      animateReveal={scanState === 'revealing'}
                       revealIndex={revealIndex}
                     />
 
@@ -501,7 +511,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                           </span>
                           {quest.host_verified && <VerifiedHostBadge />}
                         </div>
-                        <span className="text-[10px] text-text-sub/60 font-semibold uppercase tracking-wider">
+                        <span className="text-[10px] text-text-sub/80 font-semibold uppercase tracking-wider">
                           Quest Host
                         </span>
                       </div>
@@ -512,7 +522,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                       <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-app-accent/80">
                         Quest Details
                       </h3>
-                      <p className="text-sm text-text-main/80 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm text-text-main leading-relaxed whitespace-pre-wrap">
                         {fullDetails || "No details available for this quest."}
                       </p>
                     </div>
@@ -520,18 +530,18 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                     {/* Quest Meta */}
                     <div className="space-y-2 pt-2 border-t border-white/[0.06]">
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Category</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/80">Category</span>
                         <span className="text-[11px] font-black uppercase tracking-tight text-text-main">{quest.category || "NFT"}</span>
                       </div>
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Status</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/80">Status</span>
                         <span className={`text-[11px] font-black uppercase tracking-tight ${quest.status === 'active' ? 'text-cyan-400' : 'text-text-sub'}`}>
                           {quest.status || "—"}
                         </span>
                       </div>
                       {quest.started_at && (
                         <div className="flex items-center justify-between py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Started</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/80">Started</span>
                           <span className="text-[11px] font-black text-text-main">
                             {new Date(quest.started_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
                           </span>
@@ -539,7 +549,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                       )}
                       {quest.ends_at && (
                         <div className="flex items-center justify-between py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Ends</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/80">Ends</span>
                           <span className="text-[11px] font-black text-text-main">
                             {new Date(quest.ends_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
                           </span>
@@ -547,7 +557,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                       )}
                       {maxSupply != null && (
                         <div className="flex items-center justify-between py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Total Supply</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/80">Total Supply</span>
                           <span className="text-[11px] font-black text-text-main">{maxSupply.toLocaleString()}</span>
                         </div>
                       )}
