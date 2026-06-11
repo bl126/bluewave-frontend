@@ -52,7 +52,7 @@ export default function QuestTabPanel({
   const { t } = useLanguage();
   const [selectedQuest, setSelectedQuest] = useState<QuestListItem | null>(null);
 
-  const isAdmin = canAdminQuests(telegramUser?.id);
+  const isAdmin = canAdminQuests(telegramUser?.id, (telegramUser as any)?.bw_id);
 
   const { data, loading: isLoading } = useApi(
     isAdmin && isMissionOpen ? `/quests?filter=waves` : null,

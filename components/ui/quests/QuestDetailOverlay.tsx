@@ -22,7 +22,7 @@ function VerifiedHostBadge() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="w-5 h-5 shrink-0 drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
+      className="w-6 h-6 shrink-0 drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
       aria-hidden
     >
       <path
@@ -34,7 +34,7 @@ function VerifiedHostBadge() {
         strokeWidth="3.2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M7.5 12.5l3 3 6-6"
+        d="M9.5 12.5l2 2 4-4"
         fill="none"
       />
     </svg>
@@ -269,27 +269,27 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
           <div className="absolute inset-0 bg-gradient-to-t from-app-bg/90 via-transparent to-transparent" />
 
-          {/* Top Navigation Bar (Brought down 5px) */}
+          {/* Top Navigation Bar (Brought down +10px more -> 27px) */}
           <div
             className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-4"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 17px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 27px)",
             }}
           >
-            {/* Share/Forward Button (iOS/Telegram-style Share Arrow) */}
+            {/* Share/Forward Button (No circle background, just white icon) */}
             <button
               type="button"
               onClick={handleShare}
-              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-white hover:text-white/80 transition-colors"
             >
-              <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-current text-white shrink-0">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current text-white shrink-0">
                 <path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
               </svg>
             </button>
           </div>
 
-          {/* Centered Content (Lower spacing, smaller title) */}
-          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-8 pt-16">
+          {/* Centered Content (Title & Tier shifted down by pb-2 / pt-24) */}
+          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-2 pt-24">
             {/* Title + Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <h1 className="text-lg font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
@@ -308,25 +308,26 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         </div>
 
         {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
-        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-6 overflow-hidden">
-          {/* ── 3-Column Stats Bar (Unboxed & Spread out inside bottom sheet, high visibility) ── */}
-          <div className="w-full px-10 pt-6 pb-2 shrink-0">
-            <div className="flex items-center justify-between">
+        {/* Curved edges bottom sheet brought down to -mt-2 */}
+        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-2 overflow-hidden">
+          {/* ── 3-Column Stats Bar (Unboxed & well-spaced out using px-16/justify-between) ── */}
+          <div className="w-full px-16 pt-6 pb-2 shrink-0">
+            <div className="flex items-center justify-between gap-6">
               {statsColumns.map((col) => (
                 <div
                   key={col.label}
-                  className="flex-1 flex flex-col items-center justify-center"
+                  className="flex flex-col items-center justify-center text-center"
                 >
                   <span className="text-base font-black text-text-main tracking-tight">{col.value}</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.15em] text-text-sub">{col.label}</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-sub">{col.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Tab Bar (Minimal, Small Text, No Underline) */}
+          {/* Tab Bar (Clean and neat like Mission Center tabs) */}
           <div className="px-5 pt-3 pb-1 shrink-0">
-            <div className="flex items-center justify-between border-b border-white/[0.04] pb-1.5 gap-2">
+            <div className="flex items-center justify-between pb-1.5 gap-2">
               {([
                 { id: "board_pass" as DetailTab, label: "Board Pass" },
                 { id: "criteria" as DetailTab, label: "Criteria" },
@@ -338,10 +339,10 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-1 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-all duration-200
+                    className={`relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wide border transition-all duration-200
                       ${isActive
-                        ? "text-app-accent font-black"
-                        : "text-text-sub/75 hover:text-text-main"
+                        ? "bg-app-accent/15 border-app-border text-app-accent shadow-app-shadow"
+                        : "bg-transparent border-app-border text-text-sub hover:border-app-accent/50 hover:text-app-accent"
                       }`}
                   >
                     {tab.label}

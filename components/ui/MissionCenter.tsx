@@ -643,7 +643,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   const [questDetailOpen, setQuestDetailOpen] = useState(false);
   const TABS: TabId[] = ["presence", "social", "quest", "earn"];
 
-  const isQuestAdmin = canAdminQuests(telegram_id);
+  const isQuestAdmin = canAdminQuests(telegram_id, telegramUser?.bw_id);
   useApi(isOpen && isQuestAdmin ? `/quests?filter=waves` : null, {
     revalidateOnFocus: false,
     dedupingInterval: 120000,
