@@ -17,7 +17,7 @@ interface QuestDetailOverlayProps {
   onToast?: (msg: string) => void;
 }
 
-/* ── Verified Host Badge (scalloped starburst, cyan bg, black check) ──── */
+/* ── Verified Host Badge (scalloped starburst, cyan bg, thin black check) ─ */
 function VerifiedHostBadge() {
   return (
     <svg
@@ -31,7 +31,7 @@ function VerifiedHostBadge() {
       />
       <path
         stroke="#000000"
-        strokeWidth="3.2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M9.5 12.5l2 2 4-4"
@@ -253,7 +253,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* ═══════════════════ HERO SECTION ═══════════════════ */}
-        <div className="relative w-full shrink-0 h-[220px]">
+        {/* Shrunk slightly to h-[210px] to accommodate shifted bottom sheet */}
+        <div className="relative w-full shrink-0 h-[210px]">
           {/* Background Image */}
           {quest.image_url ? (
             <img
@@ -288,8 +289,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             </button>
           </div>
 
-          {/* Centered Content (Title & Tier shifted down by pb-2 / pt-24) */}
-          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-2 pt-24">
+          {/* Centered Content (Title & Tier shifted down/spaced out from bottom sheet) */}
+          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-10 pt-16">
             {/* Title + Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <h1 className="text-lg font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
@@ -308,20 +309,28 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         </div>
 
         {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
-        {/* Curved edges bottom sheet brought down to -mt-2 */}
-        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-2 overflow-hidden">
-          {/* ── 3-Column Stats Bar (Unboxed & well-spaced out using px-16/justify-between) ── */}
-          <div className="w-full px-16 pt-6 pb-2 shrink-0">
-            <div className="flex items-center justify-between gap-6">
-              {statsColumns.map((col) => (
-                <div
-                  key={col.label}
-                  className="flex flex-col items-center justify-center text-center"
-                >
-                  <span className="text-base font-black text-text-main tracking-tight">{col.value}</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-sub">{col.label}</span>
-                </div>
-              ))}
+        {/* Curved bottom sheet shifted down to -mt-3 (leaving gap from title/tier) */}
+        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-3 overflow-hidden">
+          {/* ── 3-Column Stats Bar (Unboxed & Spread out: Mint left, Prize Pool center, Dropped right) ── */}
+          <div className="w-full px-10 pt-6 pb-2 shrink-0">
+            <div className="flex items-center justify-between">
+              {/* Mint (Left aligned) */}
+              <div className="flex-1 flex flex-col items-start justify-center text-left">
+                <span className="text-base font-black text-text-main tracking-tight pl-2">{statsColumns[0].value}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-sub pl-2">{statsColumns[0].label}</span>
+              </div>
+
+              {/* Prize Pool (Centered) */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <span className="text-base font-black text-text-main tracking-tight">{statsColumns[1].value}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-sub">{statsColumns[1].label}</span>
+              </div>
+
+              {/* Dropped (Right aligned) */}
+              <div className="flex-1 flex flex-col items-end justify-center text-right">
+                <span className="text-base font-black text-text-main tracking-tight pr-2">{statsColumns[2].value}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-sub pr-2">{statsColumns[2].label}</span>
+              </div>
             </div>
           </div>
 

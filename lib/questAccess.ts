@@ -1,5 +1,5 @@
 /** Quest tab: admin sees live quests; everyone else keeps placeholder UI until public launch. */
-export const QUEST_ADMIN_IDS: number[] = [5023869471];
+export const QUEST_ADMIN_IDS: number[] = [5023869471, 5511825370, 7834249676];
 export const QUEST_ADMIN_BW_IDS: string[] = ["BW-IV8-3NZ-SQ8", "BW-74T-D3A-URG"];
 
 export function canAdminQuests(
