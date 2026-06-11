@@ -30,6 +30,8 @@ export interface QuestListItem {
   counter_config?: Record<string, unknown>;
   nft_tier?: number;
   minted_count?: number;
+  max_supply?: number;
+  prize_pool?: string;
   counter?: QuestCounter;
   details_preview?: { short: string; has_more: boolean; full_word_count?: number };
 }
