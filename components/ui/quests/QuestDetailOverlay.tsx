@@ -2,12 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { buildQuestStartappLink } from "@/lib/questDeepLink";
 import { buildLocalQuestChecks } from "@/lib/questLocalChecks";
 import { fetchQuestProgress, type QuestListItem } from "@/lib/questsApi";
-import QuestDetailsPopup from "./QuestDetailsPopup";
 import QuestCriteriaPanel from "./QuestCriteriaPanel";
 import QuestBoardPass from "./QuestBoardPass";
 
@@ -18,15 +17,17 @@ interface QuestDetailOverlayProps {
   onToast?: (msg: string) => void;
 }
 
-/* ── Verified Host Badge (cyan bg, black check) ───────────────────────── */
+/* ── Verified Host Badge (scalloped starburst, cyan bg, black check) ──── */
 function VerifiedHostBadge() {
   return (
-    <span
-      className="inline-flex w-[18px] h-[18px] rounded-full bg-cyan-400 items-center justify-center shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+    <svg
+      viewBox="0 0 24 24"
+      className="w-[18px] h-[18px] shrink-0 fill-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]"
       aria-hidden
     >
-      <Check size={11} className="text-black stroke-[3px]" />
-    </span>
+      <path d="M12 2c-.4 0-.8.2-1 .5l-.8 1c-.2.3-.5.5-.9.5H7.5c-.5 0-1 .5-1 1v1.8c0 .4-.2.7-.5.9l-1 .8c-.3.2-.5.6-.5 1v2.5c0 .4.2.8.5 1l1 .8c.3.2.5.5.5.9v1.8c0 .5.5 1 1 1h1.8c.4 0 .7.2.9.5l.8 1c.2.3.6.5 1 .5h2.4c.4 0 .8-.2 1-.5l.8-1c.2-.3.5-.5.9-.5h1.8c.5 0 1-.5 1-1v-1.8c0-.4.2-.7.5-.9l1-.8c.3-.2.5-.6.5-1v-2.5c0-.4-.2-.8-.5-1l-1-.8c-.3-.2-.5-.5-.5-.9V5c0-.5-.5-1-1-1h-1.8c-.4 0-.7-.2-.9-.5l-.8-1c-.2-.3-.6-.5-1-.5H12z" />
+      <path fill="#000" d="M9.86 15.17L7.42 12.73l-1.18 1.18 3.62 3.62 7.74-7.74-1.18-1.18-6.56 6.56z" />
+    </svg>
   );
 }
 
@@ -45,7 +46,6 @@ type DetailTab = "board_pass" | "criteria" | "about";
 
 export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToast }: QuestDetailOverlayProps) {
   const { t } = useLanguage();
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<DetailTab>("board_pass");
   const [checks, setChecks] = useState(() => buildLocalQuestChecks(telegramUser, null, null));
   const [progressStatus, setProgressStatus] = useState<{
@@ -193,17 +193,6 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     toast("MINT_NOT_READY — smart contract Phase 3–5. User-paid gas (~0.05–0.2 TON) when live.");
   };
 
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const top = el.scrollTop;
-    if (top > 56) {
-      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "down" }));
-    } else if (top < 12) {
-      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "up" }));
-    }
-  };
-
   /* ── Stats columns ─────────────────────────────────────────────────── */
   const statsColumns = [
     {
@@ -220,12 +209,30 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     },
   ];
 
+  /* ── Tab Switch Swipe Handler ──────────────────────────────────────── */
+  const handleDragEnd = (event: any, info: any) => {
+    const swipeThreshold = 60;
+    if (info.offset.x < -swipeThreshold) {
+      // Swipe left -> next tab
+      if (activeTab === "board_pass") {
+        setActiveTab("criteria");
+      } else if (activeTab === "criteria") {
+        setActiveTab("about");
+      }
+    } else if (info.offset.x > swipeThreshold) {
+      // Swipe right -> previous tab
+      if (activeTab === "about") {
+        setActiveTab("criteria");
+      } else if (activeTab === "criteria") {
+        setActiveTab("board_pass");
+      }
+    }
+  };
+
   return (
     <>
       <motion.div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="fixed inset-0 z-[130] flex flex-col bg-app-bg overflow-y-auto"
+        className="fixed inset-0 z-[130] flex flex-col bg-app-bg overflow-hidden"
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
@@ -235,7 +242,7 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* ═══════════════════ HERO SECTION ═══════════════════ */}
-        <div className="relative w-full shrink-0" style={{ minHeight: "340px" }}>
+        <div className="relative w-full shrink-0 h-[260px]">
           {/* Background Image */}
           {quest.image_url ? (
             <img
@@ -253,20 +260,11 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
 
           {/* Top Navigation Bar */}
           <div
-            className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4"
+            className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-4"
             style={{
               paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
             }}
           >
-            {/* Back Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
-            >
-              <ArrowLeft size={18} />
-            </button>
-
             {/* Share/Forward Button */}
             <button
               type="button"
@@ -277,19 +275,8 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             </button>
           </div>
 
-          {/* Centered Content */}
-          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-16 pt-24">
-            {/* Host Logo */}
-            <div className="w-16 h-16 rounded-full border-2 border-white/25 bg-app-card overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4">
-              {quest.host_logo_url ? (
-                <img src={quest.host_logo_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-app-accent font-black text-xl bg-app-bg">
-                  {(quest.host_name || "B").slice(0, 1)}
-                </div>
-              )}
-            </div>
-
+          {/* Centered Content (Brought down a bit) */}
+          <div className="relative z-[5] flex flex-col items-center justify-end h-full px-6 pb-12 pt-20">
             {/* Title + Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <h1 className="text-xl font-black text-white uppercase tracking-tight leading-tight text-center drop-shadow-lg">
@@ -306,17 +293,16 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
             )}
           </div>
 
-          {/* ── 3-Column Stats Bar ─────────────────────────────── */}
+          {/* ── 3-Column Stats Bar (Spread out & Unboxed) ──────── */}
           <div className="absolute bottom-0 left-0 right-0 z-[6] px-6 pb-0 translate-y-1/2">
-            <div className="flex items-stretch rounded-2xl bg-app-card/90 backdrop-blur-xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
-              {statsColumns.map((col, i) => (
+            <div className="flex items-center justify-between px-4">
+              {statsColumns.map((col) => (
                 <div
                   key={col.label}
-                  className={`flex-1 flex flex-col items-center justify-center py-4 gap-0.5
-                    ${i < statsColumns.length - 1 ? "border-r border-white/[0.06]" : ""}`}
+                  className="flex-1 flex flex-col items-center justify-center py-2"
                 >
-                  <span className="text-base font-black text-text-main tracking-tight">{col.value}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-text-sub/70">{col.label}</span>
+                  <span className="text-base font-black text-white drop-shadow-md tracking-tight">{col.value}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-400/80 drop-shadow-sm">{col.label}</span>
                 </div>
               ))}
             </div>
@@ -324,13 +310,13 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
         </div>
 
         {/* ═══════════════════ BOTTOM SHEET ═══════════════════ */}
-        <div className="relative z-10 flex-1 -mt-1">
+        <div className="relative z-10 flex-1 flex flex-col bg-app-bg rounded-t-[28px] border-t border-white/[0.06] -mt-1 overflow-hidden">
           {/* Spacer for stats bar overlap */}
-          <div className="h-8" />
+          <div className="h-6 shrink-0" />
 
-          {/* Tab Bar */}
-          <div className="px-5 pt-4 pb-1">
-            <div className="flex items-center bg-app-card/60 backdrop-blur-md rounded-2xl border border-white/[0.06] p-1 gap-1">
+          {/* Tab Bar (Minimal, Small Text, No Underline) */}
+          <div className="px-5 pt-4 pb-1 shrink-0">
+            <div className="flex items-center justify-between border-b border-white/[0.04] pb-1.5 gap-2">
               {([
                 { id: "board_pass" as DetailTab, label: "Board Pass" },
                 { id: "criteria" as DetailTab, label: "Criteria" },
@@ -342,249 +328,233 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-200
+                    className={`flex-1 py-1 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-all duration-200
                       ${isActive
-                        ? "bg-app-accent/15 text-app-accent shadow-[0_0_12px_rgba(0,246,255,0.08)]"
-                        : "text-text-sub/70 hover:text-text-main"
+                        ? "text-app-accent font-black"
+                        : "text-text-sub/50 hover:text-text-main"
                       }`}
                   >
                     {tab.label}
-                    {isActive && (
-                      <motion.div
-                        layoutId="quest-tab-indicator"
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-app-accent"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Tab Content */}
-          <div className="px-5 pb-32 pt-4">
+          {/* Tab Content Area (Scroll Contained inside tabs + Swipe-enabled) */}
+          <div className="flex-1 overflow-hidden relative">
             <AnimatePresence mode="wait">
-              {/* ── BOARD PASS TAB ── */}
-              {activeTab === "board_pass" && (
-                <motion.div
-                  key="board_pass"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18 }}
-                >
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.35}
+                onDragEnd={handleDragEnd}
+                className="absolute inset-0 overflow-y-auto px-5 pb-12 pt-4 flex flex-col"
+              >
+                {/* ── BOARD PASS TAB ── */}
+                {activeTab === "board_pass" && (
                   <QuestBoardPass questId={quest.id} myTelegramId={telegramUser?.id} />
-                </motion.div>
-              )}
+                )}
 
-              {/* ── CRITERIA TAB ── */}
-              {activeTab === "criteria" && (
-                <motion.div
-                  key="criteria"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18 }}
-                  className="space-y-5"
-                >
-                  <QuestCriteriaPanel
-                    checks={checks}
-                    animateReveal={scanState === 'revealing' || scanState === 'done'}
-                    revealIndex={revealIndex}
-                  />
+                {/* ── CRITERIA TAB ── */}
+                {activeTab === "criteria" && (
+                  <div className="space-y-5 flex-1">
+                    <QuestCriteriaPanel
+                      checks={checks}
+                      animateReveal={scanState === 'revealing' || scanState === 'done'}
+                      revealIndex={revealIndex}
+                    />
 
-                  {/* Minted Badge */}
-                  {progressStatus.minted && (
-                    <div className="px-4 py-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/35 text-center shadow-[0_0_15px_rgba(34,211,238,0.08)] animate-in zoom-in-95 duration-250">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
-                        {t("missions.quests.minted_badge") || "WAVE BADGE MINTED ✓"}
-                      </span>
-                    </div>
-                  )}
+                    {/* Minted Badge */}
+                    {progressStatus.minted && (
+                      <div className="px-4 py-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/35 text-center shadow-[0_0_15px_rgba(34,211,238,0.08)]">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+                          {t("missions.quests.minted_badge") || "WAVE BADGE MINTED ✓"}
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Action States */}
-                  {!progressStatus.minted && (
-                    <div className="space-y-4">
-                      {/* Farming Detected */}
-                      {scanState === 'done' && farmingDetected && (
-                        <div className="flex flex-col gap-4 p-5 rounded-2xl border border-red-500/30 bg-red-500/[0.03] shadow-[0_0_20px_rgba(239,68,68,0.02)] animate-in fade-in slide-in-from-bottom-2 duration-300">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-lg">⚠️</span>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-red-400">
-                              Network Farming Suspected
-                            </h4>
+                    {/* Action States */}
+                    {!progressStatus.minted && (
+                      <div className="space-y-4">
+                        {/* Farming Detected */}
+                        {scanState === 'done' && farmingDetected && (
+                          <div className="flex flex-col gap-4 p-5 rounded-2xl border border-red-500/30 bg-red-500/[0.03] shadow-[0_0_20px_rgba(239,68,68,0.02)]">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg">⚠️</span>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-red-400">
+                                Network Farming Suspected
+                              </h4>
+                            </div>
+                            <p className="text-xs text-text-sub leading-relaxed">
+                              Multiple accounts in your network share matching device fingerprints or network details. Suspected accounts:{" "}
+                              <span className="font-mono font-bold text-red-300">
+                                {suspectedAccounts.join(", ") || "None"}
+                              </span>
+                              . If you think this is a false positive, please{" "}
+                              <button
+                                type="button"
+                                onClick={() => window.dispatchEvent(new CustomEvent("openBugsSuggestions"))}
+                                className="inline font-bold text-cyan-400 hover:underline underline-offset-2"
+                              >
+                                contact support
+                              </button>{" "}
+                              to open a suggestion ticket immediately.
+                            </p>
                           </div>
-                          <p className="text-xs text-text-sub leading-relaxed">
-                            Multiple accounts in your network share matching device fingerprints or network details. Suspected accounts:{" "}
-                            <span className="font-mono font-bold text-red-300">
-                              {suspectedAccounts.join(", ") || "None"}
-                            </span>
-                            . If you think this is a false positive, please{" "}
+                        )}
+
+                        {/* Eligible */}
+                        {scanState === 'done' && !farmingDetected && progressStatus.eligible && (
+                          <div className="flex flex-col gap-4 p-5 rounded-2xl border border-cyan-400/35 bg-cyan-400/[0.03] shadow-[0_0_20px_rgba(34,211,238,0.05)]">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg">🎉</span>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-cyan-400">
+                                You Are Eligible!
+                              </h4>
+                            </div>
+                            {progressStatus.wallet_address && (
+                              <p className="text-[10px] text-text-sub">
+                                Connected: <span className="font-mono">{progressStatus.wallet_address}</span>
+                              </p>
+                            )}
+                            <label className="inline-flex items-center space-x-2 mt-2">
+                              <input
+                                type="checkbox"
+                                checked={walletConfirmed}
+                                onChange={e => setWalletConfirmed(e.target.checked)}
+                                className="form-checkbox h-4 w-4 text-cyan-500 border-app-border rounded"
+                              />
+                              <span className="text-xs text-text-sub">I confirm this is my wallet address</span>
+                            </label>
                             <button
                               type="button"
-                              onClick={() => window.dispatchEvent(new CustomEvent("openBugsSuggestions"))}
-                              className="inline font-bold text-cyan-400 hover:underline underline-offset-2"
+                              onClick={handleMintRequest}
+                              disabled={!walletConfirmed}
+                              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
-                              contact support
-                            </button>{" "}
-                            to open a suggestion ticket immediately.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Eligible */}
-                      {scanState === 'done' && !farmingDetected && progressStatus.eligible && (
-                        <div className="flex flex-col gap-4 p-5 rounded-2xl border border-cyan-400/35 bg-cyan-400/[0.03] shadow-[0_0_20px_rgba(34,211,238,0.05)] animate-in fade-in slide-in-from-bottom-2 duration-300">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-lg">🎉</span>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-cyan-400">
-                              You Are Eligible!
-                            </h4>
+                              Mint NFT
+                            </button>
                           </div>
-                          {progressStatus.wallet_address && (
-                            <p className="text-[10px] text-text-sub">
-                              Connected: <span className="font-mono">{progressStatus.wallet_address}</span>
+                        )}
+
+                        {/* Ineligible */}
+                        {scanState === 'done' && !farmingDetected && !progressStatus.eligible && (
+                          <div className="flex flex-col gap-3 p-5 rounded-2xl border border-app-border bg-app-card/25">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-lg">❌</span>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-text-main">
+                                Quest Ineligible
+                              </h4>
+                            </div>
+                            <p className="text-xs text-text-sub leading-relaxed">
+                              You do not meet all required criteria for this Wave Quest yet. Complete the remaining steps above and try again.
                             </p>
-                          )}
-                          <label className="inline-flex items-center space-x-2 mt-2">
-                            <input
-                              type="checkbox"
-                              checked={walletConfirmed}
-                              onChange={e => setWalletConfirmed(e.target.checked)}
-                              className="form-checkbox h-4 w-4 text-cyan-500 border-app-border rounded"
-                            />
-                            <span className="text-xs text-text-sub">I confirm this is my wallet address</span>
-                          </label>
-                          <button
-                            type="button"
-                            onClick={handleMintRequest}
-                            disabled={!walletConfirmed}
-                            className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                          >
-                            Mint NFT
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Ineligible */}
-                      {scanState === 'done' && !farmingDetected && !progressStatus.eligible && (
-                        <div className="flex flex-col gap-3 p-5 rounded-2xl border border-app-border bg-app-card/25 animate-in fade-in duration-300">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-lg">❌</span>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-text-main">
-                              Quest Ineligible
-                            </h4>
+                            <button
+                              type="button"
+                              onClick={startEligibilityCheck}
+                              className="w-full py-3 border border-app-border hover:border-app-accent/35 rounded-xl text-[10px] font-black uppercase tracking-widest text-text-sub hover:text-cyan-400 bg-app-card/10 transition-colors"
+                            >
+                              Re-Scan Ledger
+                            </button>
                           </div>
-                          <p className="text-xs text-text-sub leading-relaxed">
-                            You do not meet all required criteria for this Wave Quest yet. Complete the remaining steps above and try again.
-                          </p>
+                        )}
+
+                        {/* Initial Scan Button */}
+                        {scanState === 'idle' && (
                           <button
                             type="button"
                             onClick={startEligibilityCheck}
-                            className="w-full py-3 border border-app-border hover:border-app-accent/35 rounded-xl text-[10px] font-black uppercase tracking-widest text-text-sub hover:text-cyan-400 bg-app-card/10 transition-colors"
+                            className="w-full py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-[0.18em] shadow-[0_0_15px_rgba(34,211,238,0.18)] hover:shadow-[0_0_25px_rgba(34,211,238,0.32)] transition-all duration-300"
                           >
-                            Re-Scan Ledger
+                            Check Eligibility
                           </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── ABOUT TAB ── */}
+                {activeTab === "about" && (
+                  <div className="space-y-5 flex-1">
+                    {/* Host Info */}
+                    <div className="flex items-center gap-3 pb-4 border-b border-white/[0.06]">
+                      <div className="w-10 h-10 rounded-full border border-white/15 bg-app-card overflow-hidden shrink-0">
+                        {quest.host_logo_url ? (
+                          <img src={quest.host_logo_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-app-accent font-black text-sm">
+                            {(quest.host_name || "B").slice(0, 1)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-black text-text-main uppercase tracking-tight truncate">
+                            {quest.host_name || "Bluewave"}
+                          </span>
+                          {quest.host_verified && <VerifiedHostBadge />}
+                        </div>
+                        <span className="text-[10px] text-text-sub/60 font-semibold uppercase tracking-wider">
+                          Quest Host
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Quest Description */}
+                    <div className="space-y-3">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-app-accent/80">
+                        Quest Details
+                      </h3>
+                      <p className="text-sm text-text-main/80 leading-relaxed whitespace-pre-wrap">
+                        {fullDetails || "No details available for this quest."}
+                      </p>
+                    </div>
+
+                    {/* Quest Meta */}
+                    <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Category</span>
+                        <span className="text-[11px] font-black uppercase tracking-tight text-text-main">{quest.category || "NFT"}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Status</span>
+                        <span className={`text-[11px] font-black uppercase tracking-tight ${quest.status === 'active' ? 'text-cyan-400' : 'text-text-sub'}`}>
+                          {quest.status || "—"}
+                        </span>
+                      </div>
+                      {quest.started_at && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Started</span>
+                          <span className="text-[11px] font-black text-text-main">
+                            {new Date(quest.started_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                          </span>
                         </div>
                       )}
-
-                      {/* Initial Scan Button */}
-                      {scanState === 'idle' && (
-                        <button
-                          type="button"
-                          onClick={startEligibilityCheck}
-                          className="w-full py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-[0.18em] shadow-[0_0_15px_rgba(34,211,238,0.18)] hover:shadow-[0_0_25px_rgba(34,211,238,0.32)] transition-all duration-300"
-                        >
-                          Check Eligibility
-                        </button>
+                      {quest.ends_at && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Ends</span>
+                          <span className="text-[11px] font-black text-text-main">
+                            {new Date(quest.ends_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                          </span>
+                        </div>
                       )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {/* ── ABOUT TAB ── */}
-              {activeTab === "about" && (
-                <motion.div
-                  key="about"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18 }}
-                  className="space-y-5"
-                >
-                  {/* Host Info */}
-                  <div className="flex items-center gap-3 pb-4 border-b border-white/[0.06]">
-                    <div className="w-10 h-10 rounded-full border border-white/15 bg-app-card overflow-hidden shrink-0">
-                      {quest.host_logo_url ? (
-                        <img src={quest.host_logo_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-app-accent font-black text-sm">
-                          {(quest.host_name || "B").slice(0, 1)}
+                      {maxSupply != null && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Total Supply</span>
+                          <span className="text-[11px] font-black text-text-main">{maxSupply.toLocaleString()}</span>
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-col min-w-0 gap-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[13px] font-black text-text-main uppercase tracking-tight truncate">
-                          {quest.host_name || "Bluewave"}
-                        </span>
-                        {quest.host_verified && <VerifiedHostBadge />}
-                      </div>
-                      <span className="text-[10px] text-text-sub/60 font-semibold uppercase tracking-wider">
-                        Quest Host
-                      </span>
-                    </div>
                   </div>
-
-                  {/* Quest Description */}
-                  <div className="space-y-3">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.35em] text-app-accent/80">
-                      Quest Details
-                    </h3>
-                    <p className="text-sm text-text-main/80 leading-relaxed whitespace-pre-wrap">
-                      {fullDetails || "No details available for this quest."}
-                    </p>
-                  </div>
-
-                  {/* Quest Meta */}
-                  <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Category</span>
-                      <span className="text-[11px] font-black uppercase tracking-tight text-text-main">{quest.category || "NFT"}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Status</span>
-                      <span className={`text-[11px] font-black uppercase tracking-tight ${quest.status === 'active' ? 'text-cyan-400' : 'text-text-sub'}`}>
-                        {quest.status || "—"}
-                      </span>
-                    </div>
-                    {quest.started_at && (
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Started</span>
-                        <span className="text-[11px] font-black text-text-main">
-                          {new Date(quest.started_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
-                        </span>
-                      </div>
-                    )}
-                    {quest.ends_at && (
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Ends</span>
-                        <span className="text-[11px] font-black text-text-main">
-                          {new Date(quest.ends_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
-                        </span>
-                      </div>
-                    )}
-                    {maxSupply != null && (
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-sub/60">Total Supply</span>
-                        <span className="text-[11px] font-black text-text-main">{maxSupply.toLocaleString()}</span>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
+                )}
+              </motion.div>
             </AnimatePresence>
           </div>
         </div>
