@@ -27,7 +27,7 @@ import NetworkBuilderModal from "@/components/ui/NetworkBuilderModal";
 import { findRoleByName } from "@/lib/roles";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { mutate } from "swr";
-import { getApi, postApi, useSync } from "@/lib/useApi";
+import { getApi, postApi, useSync, useApi } from "@/lib/useApi";
 import MaintenanceOverlay from "@/components/ui/MaintenanceOverlay";
 import WalletRelinkOverlay from "@/components/ui/WalletRelinkOverlay";
 import BalancePill from "@/components/ui/BalancePill";
@@ -977,6 +977,10 @@ export default function LandingPage() {
   // Instead of multiple separate polls, we use a single lightweight endpoint.
   const { data: syncData } = useSync(telegramUser?.id || null);
 
+  const { data: presenceData } = useApi(telegramUser?.id ? `/presence/list/${telegramUser.id}` : null);
+  const { data: missionsData } = useApi(telegramUser?.id ? `/missions/all/${telegramUser.id}` : null);
+  const { data: leaderboardData } = useApi(telegramUser?.id ? `/leaderboard` : null);
+
   useEffect(() => {
     if (!syncData || syncData.error) return;
 
@@ -1006,6 +1010,67 @@ export default function LandingPage() {
       }, false);
     }
   }, [syncData, telegramUser?.id]);
+
+  // 💾 Sync SWR / State updates back to localStorage init cache to prevent "cache flash" on boot
+  useEffect(() => {
+    if (!telegramUser?.id) return;
+    try {
+      const cacheKey = `bw_init_cache_${telegramUser.id}`;
+      const cached = window.localStorage.getItem(cacheKey);
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        let changed = false;
+
+        if (cachedData.profile) {
+          const updatedProfile = {
+            ...cachedData.profile,
+            points_balance: balance ?? telegramUser.points_balance ?? cachedData.profile.points_balance,
+            streak_days: telegramUser.streak ?? telegramUser.streak_days ?? cachedData.profile.streak_days,
+            wallet_address: telegramUser.wallet_address ?? cachedData.profile.wallet_address,
+            photo_url: telegramUser.photo_url ?? cachedData.profile.photo_url,
+            total_referrals: telegramUser.total_referrals ?? cachedData.profile.total_referrals,
+            is_human_verified: telegramUser.is_human_verified ?? cachedData.profile.is_human_verified,
+            roles: telegramUser.roles ?? cachedData.profile.roles,
+            presence_score: telegramUser.presence_score ?? cachedData.profile.presence_score,
+            streak_reward_pending: telegramUser.streak_reward_pending ?? cachedData.profile.streak_reward_pending,
+            human_verification_pending: telegramUser.human_verification_pending ?? cachedData.profile.human_verification_pending,
+            network_builder_pending: telegramUser.network_builder_pending ?? cachedData.profile.network_builder_pending,
+            ton_explorer_pending: telegramUser.ton_explorer_pending ?? cachedData.profile.ton_explorer_pending,
+          };
+          if (JSON.stringify(cachedData.profile) !== JSON.stringify(updatedProfile)) {
+            cachedData.profile = updatedProfile;
+            changed = true;
+          }
+        }
+
+        if (missionsData && JSON.stringify(cachedData.missions) !== JSON.stringify(missionsData)) {
+          cachedData.missions = missionsData;
+          changed = true;
+        }
+
+        if (presenceData && JSON.stringify(cachedData.presence) !== JSON.stringify(presenceData)) {
+          cachedData.presence = presenceData;
+          changed = true;
+        }
+
+        if (leaderboardData && JSON.stringify(cachedData.leaderboard) !== JSON.stringify(leaderboardData)) {
+          cachedData.leaderboard = leaderboardData;
+          changed = true;
+        }
+
+        if (unreadExploreCount !== undefined && cachedData.unread_explore_notifications !== unreadExploreCount) {
+          cachedData.unread_explore_notifications = unreadExploreCount;
+          changed = true;
+        }
+
+        if (changed) {
+          window.localStorage.setItem(cacheKey, JSON.stringify(cachedData));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to sync state to localStorage cache:", e);
+    }
+  }, [telegramUser, balance, missionsData, presenceData, leaderboardData, unreadExploreCount]);
 
   // 🏁 Called when Ecosystem Tour completes
   const handleTourComplete = () => {

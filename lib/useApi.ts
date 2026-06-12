@@ -5,6 +5,7 @@
 import useSWR from "swr";
 import { fetcher, swrConfig, waitForInitData } from "./swrFetcher";
 import { isSessionExpired, setSessionExpired } from "./session";
+import { getDeviceFingerprint } from "./deviceFingerprint";
 
 // [CODE: FRONTEND_POST_API_HELPER]
 // ⭐ Safer POST helper (handles rate-limits + JSON errors)
@@ -32,6 +33,7 @@ export async function postApi(path: string, body: any = {}, options: { method?: 
       headers: {
         "Content-Type": "application/json",
         "x-telegram-init-data": initData || "",
+        "x-device-fingerprint": getDeviceFingerprint(),
       },
       body: JSON.stringify(body),
     });
@@ -77,6 +79,7 @@ export async function getApi(path: string) {
     const res = await fetch(url, {
       headers: {
         "x-telegram-init-data": initData || "",
+        "x-device-fingerprint": getDeviceFingerprint(),
       },
     });
 

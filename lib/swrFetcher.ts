@@ -2,6 +2,7 @@
 // lib/swrFetcher.ts
 import { cacheManager, CACHE_TTL } from "./cacheManager";
 import { isSessionExpired, setSessionExpired } from "./session";
+import { getDeviceFingerprint } from "./deviceFingerprint";
 
 /**
  * ⭐ SILENT RETRY: Wait for Telegram SDK to provide initData.
@@ -58,6 +59,7 @@ export const fetcher = async (url: string) => {
   const res = await fetch(url, {
     headers: {
       "x-telegram-init-data": initData || "",
+      "x-device-fingerprint": getDeviceFingerprint(),
     },
   });
 
