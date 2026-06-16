@@ -36,7 +36,8 @@ import {
   ArrowRight,
   Trophy,
   User,
-  Lock
+  Lock,
+  Search
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -45,6 +46,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApi, postApi, getApi, useSync } from "@/lib/useApi";
 import Leaderboard from "./Leaderboard";
+import ConnectBluModal from "./ConnectBluModal";
 import ReferralShareModal from "./ReferralShareModal";
 import { hasExploreBetaAccess } from "@/lib/exploreAccess";
 import { LiveNowTray, MiniAppCarousel, MOCK_MINI_APPS } from "@/components/explore/ExploreDiscoverChrome";
@@ -73,6 +75,44 @@ interface ExploreProps {
 export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }: ExploreProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
+
+  // New Drawer / Search / Connect Channel states
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
+
+  // Debounced search query logic
+  useEffect(() => {
+    if (!isSearchOpen) {
+      setSearchResults([]);
+      setSearchQuery("");
+      return;
+    }
+    
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    const delayDebounce = setTimeout(() => {
+      getApi(`/explore/feed?tg_id=${telegramUser?.id}&tab=foryou&offset=0&search=${encodeURIComponent(query)}`)
+        .then((res) => {
+          if (Array.isArray(res)) {
+            setSearchResults(res);
+          }
+        })
+        .catch((err) => console.error("Search failed:", err))
+        .finally(() => setIsSearching(false));
+    }, 300);
+    
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, isSearchOpen, telegramUser?.id]);
+
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("leaderboard");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
@@ -241,6 +281,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
   useEffect(() => {
     const handleNativeBack = (e: Event) => {
       if (!isOpen) return;
+      if (isSearchOpen) {
+        setIsSearchOpen(false);
+        e.preventDefault();
+        return;
+      }
       if (isSpeedDialOpen) {
         setIsSpeedDialOpen(false);
         e.preventDefault();
@@ -261,7 +306,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen]);
+  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -371,14 +416,54 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg backdrop-blur-3xl ${(isPostModalOpen || isLeaderboardSheetOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg backdrop-blur-3xl ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen) ? "z-[300]" : "z-[120]"}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 120px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-app-accent/5 blur-[100px] pointer-events-none" />
+
+      {/* ─── Top Header (Avatar + Search Bar) ─── */}
+      <div 
+        className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3 bg-white/5 backdrop-blur-2xl border-b border-white/10"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)"
+        }}
+      >
+        {/* Left Side: Channel Avatar */}
+        <button
+          onClick={() => {
+            if (hasAccess) setIsDrawerOpen(true);
+          }}
+          disabled={!hasAccess}
+          className={`w-10 h-10 rounded-full border border-white/20 overflow-hidden shrink-0 flex items-center justify-center bg-white/5 transition-all ${hasAccess ? "active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+        >
+          {swrUser?.telegram_channel_photo ? (
+            <img 
+              src={swrUser.telegram_channel_photo} 
+              alt="Channel Avatar" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User size={18} className="text-text-sub" />
+          )}
+        </button>
+
+        {/* Right Side: Curved Search Bar */}
+        <button
+          onClick={() => {
+            if (hasAccess) setIsSearchOpen(true);
+          }}
+          disabled={!hasAccess}
+          className={`flex-1 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-between px-4 text-left ${hasAccess ? "cursor-pointer active:scale-[0.98]" : "cursor-not-allowed opacity-50"}`}
+        >
+          <span className="text-text-sub/50 text-xs font-bold uppercase tracking-wider">Search explore...</span>
+          <Search size={16} className="text-text-sub/60" />
+        </button>
+      </div>
 
       {/* ─── Tab Bar (fixed, solid, no floating) ─── */}
       <motion.div
@@ -387,7 +472,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
           opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed top-20 left-0 right-0 z-[130] border-b border-app-border pointer-events-auto bg-app-bg backdrop-blur-xl"
+        className="fixed left-0 right-0 z-[130] border-b border-white/10 pointer-events-auto bg-white/5 backdrop-blur-xl"
+        style={{
+          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)"
+        }}
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
           {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
@@ -783,6 +871,187 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
           }}
         />
       )}
+
+      {/* ─── Left Sidebar Drawer (Liquid Glass) ─── */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDrawerOpen(false)}
+              className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Liquid glass sidebar drawer */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed left-0 top-0 bottom-0 w-[80%] max-w-[320px] z-[250] bg-white/10 backdrop-blur-2xl border-r border-white/10 shadow-2xl flex flex-col justify-between"
+              style={{
+                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)",
+                paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)"
+              }}
+            >
+              {/* Top content */}
+              <div className="px-6 flex flex-col gap-6">
+                {/* Header with Close X */}
+                <div className="flex justify-end">
+                  <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-1.5 rounded-full bg-white/5 border border-white/10 text-text-sub hover:text-white transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Profile/Channel Card */}
+                <div className="flex flex-col items-center text-center gap-4 mt-4">
+                  <div className="w-20 h-20 rounded-full border-2 border-white/20 overflow-hidden bg-white/5 flex items-center justify-center shadow-lg">
+                    {swrUser?.telegram_channel_photo ? (
+                      <img 
+                        src={swrUser.telegram_channel_photo} 
+                        alt="Channel photo" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={36} className="text-text-sub/40" />
+                    )}
+                  </div>
+
+                  {swrUser?.telegram_channel ? (
+                    <div className="flex flex-col gap-1 w-full">
+                      <h3 className="text-text-main font-black text-lg uppercase truncate tracking-tight">
+                        {swrUser.telegram_channel_title || "My Channel"}
+                      </h3>
+                      <p className="text-readable-sm font-bold uppercase tracking-wide text-app-accent truncate">
+                        @{swrUser.telegram_channel.replace("@", "")}
+                      </p>
+                      
+                      {/* Subscriber Count */}
+                      <div className="mt-4 flex items-center justify-center gap-1.5 px-4 py-2 rounded-2xl bg-white/5 border border-white/5 text-xs text-text-sub font-black uppercase tracking-wider">
+                        <BarChart2 size={14} className="text-app-accent" />
+                        <span>{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subscribers</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 w-full">
+                      <h3 className="text-text-main font-black text-sm uppercase tracking-wide">
+                        No connected channel
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setIsDrawerOpen(false);
+                          setIsConnectBluOpen(true);
+                        }}
+                        className="w-full py-3 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg active:scale-95 transition-all"
+                      >
+                        Connect Channel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom section (keep blank as requested, just a small logo/attribution) */}
+              <div className="px-6 text-center">
+                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.25em]">Bluewave Ecosystem</span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Fullscreen Search View ─── */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[320] bg-app-bg flex flex-col"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 56px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)"
+            }}
+          >
+            {/* Search Input Container - Centered and Enlarged, 20px below safe area */}
+            <div className="w-full max-w-md mx-auto px-6 mb-6 shrink-0">
+              <div className="relative flex items-center w-full">
+                <input
+                  type="text"
+                  placeholder="Search Verified Human posts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                  className="w-full bg-white/5 border border-white/15 focus:border-app-accent/50 text-white placeholder-white/30 text-base rounded-2xl py-3 px-5 pr-12 focus:outline-none transition-all font-sans"
+                />
+                {isSearching ? (
+                  <Loader2 size={18} className="absolute right-4 text-app-accent animate-spin" />
+                ) : (
+                  <Search size={18} className="absolute right-4 text-text-sub/50" />
+                )}
+              </div>
+            </div>
+
+            {/* Search Results */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-24">
+              {isSearching && searchResults.length === 0 ? (
+                <div className="flex justify-center items-center py-20">
+                  <Loader2 size={24} className="text-app-accent animate-spin" />
+                </div>
+              ) : searchQuery.trim() === "" ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <Search size={40} className="text-white/10 mb-3" />
+                  <p className="text-xs text-text-muted font-black uppercase tracking-widest">Type to search explore</p>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <p className="text-xs text-text-muted font-black uppercase tracking-widest">No posts found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {searchResults.map((post: any) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      currentUserId={telegramUser?.id}
+                      starsBalance={telegramUser?.stars_balance ?? 0}
+                      onStarBalanceChange={handleStarBalanceChange}
+                      isConnected={isConnected}
+                      onHide={() => setSearchResults(prev => prev.filter((p: any) => p.id !== post.id))}
+                      onRepost={() => mutate()}
+                      onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
+                      onCommentClick={() => setSelectedPost(post)}
+                      onPostClick={() => setSelectedPost(post)}
+                      onStarGiftSuccess={() => mutateNotifications()}
+                      onOpenBuyStars={tryOpenBuyStars}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Connect Channel Modal ─── */}
+      <ConnectBluModal
+        isOpen={isConnectBluOpen}
+        onClose={() => setIsConnectBluOpen(false)}
+        telegramId={telegramUser?.id}
+        telegramUser={swrUser || telegramUser}
+        isHumanVerified={!!swrUser?.is_human_verified}
+        alreadyConnected={swrUser?.telegram_channel || null}
+        channelTitle={swrUser?.telegram_channel_title || null}
+        channelPhoto={swrUser?.telegram_channel_photo || null}
+        channelStarsReceived={swrUser?.channel_stars_received ?? 0}
+      />
 
     </motion.div>
   );

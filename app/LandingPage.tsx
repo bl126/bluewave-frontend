@@ -387,6 +387,7 @@ export default function LandingPage() {
             ton_balance: parseFloat(u.ton_balance ?? 0) || 0,
             stars_balance: Number(u.stars_balance ?? 0) || 0,
             stars_withdrawable: Number(u.stars_withdrawable ?? 0) || 0,
+            telegram_channel_subscribers: Number(u.telegram_channel_subscribers ?? 0) || 0,
             wallet_relink_required: u.wallet_relink_required || false,
             has_recovery_password: u.has_recovery_password || false,
             roles: Array.isArray(u.roles) ? u.roles : [],
@@ -590,6 +591,7 @@ export default function LandingPage() {
           ton_balance: parseFloat(user.ton_balance ?? 0) || 0,
           stars_balance: Number(user.stars_balance ?? 0) || 0,
           stars_withdrawable: Number(user.stars_withdrawable ?? 0) || 0,
+          telegram_channel_subscribers: Number(user.telegram_channel_subscribers ?? 0) || 0,
           wallet_relink_required: user.wallet_relink_required || false,
         };
 
