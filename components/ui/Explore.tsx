@@ -416,9 +416,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg backdrop-blur-3xl ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen) ? "z-[300]" : "z-[120]"}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 120px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
@@ -427,10 +427,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
 
       {/* ─── Top Header (Avatar + Search Bar) ─── */}
       <div 
-        className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3 bg-white/5 backdrop-blur-2xl border-b border-white/10"
+        className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3 bg-app-bg border-b border-app-border"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)"
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 40px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -439,7 +439,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
             if (hasAccess) setIsDrawerOpen(true);
           }}
           disabled={!hasAccess}
-          className={`w-10 h-10 rounded-full border border-white/20 overflow-hidden shrink-0 flex items-center justify-center bg-white/5 transition-all ${hasAccess ? "active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+          className={`w-10 h-10 rounded-full border border-app-border overflow-hidden shrink-0 flex items-center justify-center bg-app-card transition-all ${hasAccess ? "active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-50"}`}
         >
           {swrUser?.telegram_channel_photo ? (
             <img 
@@ -452,16 +452,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
           )}
         </button>
 
-        {/* Right Side: Curved Search Bar */}
+        {/* Right Side: Curved Search Bar (Small, fits like a tab pill, doesn't cross center) */}
         <button
           onClick={() => {
             if (hasAccess) setIsSearchOpen(true);
           }}
           disabled={!hasAccess}
-          className={`flex-1 h-10 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-between px-4 text-left ${hasAccess ? "cursor-pointer active:scale-[0.98]" : "cursor-not-allowed opacity-50"}`}
+          className={`w-28 h-9 rounded-full bg-app-card border border-app-border hover:bg-app-accent/5 transition-all flex items-center justify-between px-3 text-left ${hasAccess ? "cursor-pointer active:scale-95" : "cursor-not-allowed opacity-50"}`}
         >
-          <span className="text-text-sub/50 text-xs font-bold uppercase tracking-wider">Search explore...</span>
-          <Search size={16} className="text-text-sub/60" />
+          <span className="text-text-sub text-[11px] font-black uppercase tracking-wider">Search</span>
+          <Search size={12} className="text-text-sub" />
         </button>
       </div>
 
@@ -472,9 +472,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
           opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed left-0 right-0 z-[130] border-b border-white/10 pointer-events-auto bg-white/5 backdrop-blur-xl"
+        className="fixed left-0 right-0 z-[130] border-b border-app-border pointer-events-auto bg-app-bg"
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)"
+          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
         }}
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
@@ -872,46 +872,36 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
         />
       )}
 
-      {/* ─── Left Sidebar Drawer (Liquid Glass) ─── */}
+      {/* ─── Left Sidebar Drawer (App Theme, Stops at Center, Above Bottom Nav & Balance Pill) ─── */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            {/* Backdrop overlay */}
+            {/* Backdrop overlay (z-index 350 to cover balance pill and bottom nav) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-[350] bg-black/60"
             />
 
-            {/* Liquid glass sidebar drawer */}
+            {/* Sidebar drawer (stops at center: w-[50%], top-0 bottom-0, same theme not glass) */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-[80%] max-w-[320px] z-[250] bg-white/10 backdrop-blur-2xl border-r border-white/10 shadow-2xl flex flex-col justify-between"
+              className="fixed left-0 top-0 bottom-0 w-[50%] z-[360] bg-app-card border-r border-app-border shadow-2xl flex flex-col justify-between"
               style={{
-                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)",
+                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 50px)",
                 paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)"
               }}
             >
               {/* Top content */}
-              <div className="px-6 flex flex-col gap-6">
-                {/* Header with Close X */}
-                <div className="flex justify-end">
-                  <button 
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="p-1.5 rounded-full bg-white/5 border border-white/10 text-text-sub hover:text-white transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                {/* Profile/Channel Card */}
-                <div className="flex flex-col items-center text-center gap-4 mt-4">
-                  <div className="w-20 h-20 rounded-full border-2 border-white/20 overflow-hidden bg-white/5 flex items-center justify-center shadow-lg">
+              <div className="px-4 flex flex-col gap-6">
+                {/* Profile/Channel Card - Fitted left-top below back button, smaller avatar, no X */}
+                <div className="flex flex-col items-start text-left gap-3 mt-4 w-full">
+                  <div className="w-12 h-12 rounded-full border border-app-border overflow-hidden bg-app-bg flex items-center justify-center shadow-md">
                     {swrUser?.telegram_channel_photo ? (
                       <img 
                         src={swrUser.telegram_channel_photo} 
@@ -919,54 +909,54 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <User size={36} className="text-text-sub/40" />
+                      <User size={20} className="text-text-sub/40" />
                     )}
                   </div>
 
                   {swrUser?.telegram_channel ? (
-                    <div className="flex flex-col gap-1 w-full">
-                      <h3 className="text-text-main font-black text-lg uppercase truncate tracking-tight">
+                    <div className="flex flex-col gap-1 w-full overflow-hidden">
+                      <h3 className="text-text-main font-black text-xs uppercase truncate tracking-tight w-full">
                         {swrUser.telegram_channel_title || "My Channel"}
                       </h3>
-                      <p className="text-readable-sm font-bold uppercase tracking-wide text-app-accent truncate">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-app-accent truncate w-full">
                         @{swrUser.telegram_channel.replace("@", "")}
                       </p>
                       
                       {/* Subscriber Count */}
-                      <div className="mt-4 flex items-center justify-center gap-1.5 px-4 py-2 rounded-2xl bg-white/5 border border-white/5 text-xs text-text-sub font-black uppercase tracking-wider">
-                        <BarChart2 size={14} className="text-app-accent" />
-                        <span>{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subscribers</span>
+                      <div className="mt-2 flex items-center gap-1.5 text-[9px] text-text-sub font-black uppercase tracking-wider">
+                        <BarChart2 size={10} className="text-app-accent shrink-0" />
+                        <span className="truncate">{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subs</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-4 w-full">
-                      <h3 className="text-text-main font-black text-sm uppercase tracking-wide">
-                        No connected channel
+                    <div className="flex flex-col items-start gap-3 w-full">
+                      <h3 className="text-text-main font-black text-[10px] uppercase tracking-wide">
+                        No channel
                       </h3>
                       <button
                         onClick={() => {
                           setIsDrawerOpen(false);
                           setIsConnectBluOpen(true);
                         }}
-                        className="w-full py-3 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg active:scale-95 transition-all"
+                        className="w-full py-2 bg-app-accent text-app-bg font-black uppercase text-[9px] tracking-wider rounded-xl shadow-lg active:scale-95 transition-all"
                       >
-                        Connect Channel
+                        Connect
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Bottom section (keep blank as requested, just a small logo/attribution) */}
-              <div className="px-6 text-center">
-                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.25em]">Bluewave Ecosystem</span>
+              {/* Bottom section (keep blank as requested) */}
+              <div className="px-4 text-left">
+                <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Bluewave</span>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* ─── Fullscreen Search View ─── */}
+      {/* ─── Fullscreen Search View (App Theme, Center Input below safe area, no X button) ─── */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div
@@ -976,7 +966,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[320] bg-app-bg flex flex-col"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 56px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
             }}
           >
@@ -985,11 +975,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
               <div className="relative flex items-center w-full">
                 <input
                   type="text"
-                  placeholder="Search Verified Human posts..."
+                  placeholder="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full bg-white/5 border border-white/15 focus:border-app-accent/50 text-white placeholder-white/30 text-base rounded-2xl py-3 px-5 pr-12 focus:outline-none transition-all font-sans"
+                  className="w-full bg-app-card border border-app-border focus:border-app-accent/50 text-white placeholder-text-muted/40 text-base rounded-2xl py-3 px-5 pr-12 focus:outline-none transition-all font-sans"
                 />
                 {isSearching ? (
                   <Loader2 size={18} className="absolute right-4 text-app-accent animate-spin" />
