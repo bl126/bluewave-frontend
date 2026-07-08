@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, X, Loader2, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
+import { Wallet, Loader2, ChevronRight } from "lucide-react";
 import { useTonConnectUI, useTonAddress, toUserFriendlyAddress } from "@tonconnect/ui-react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -30,6 +30,7 @@ export default function WalletRequiredBeforeDepositModal({
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const dragControls = useDragControls();
 
   const tgId = telegramUser?.id ?? telegramUser?.tg_id;
   const dbWallet = telegramUser?.wallet_address;
@@ -95,6 +96,23 @@ export default function WalletRequiredBeforeDepositModal({
     }
   }, [isOpen, dbWallet, onReady, onClose]);
 
+  /* Telegram back button listener */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleBack = () => onClose();
+    window.addEventListener("bwNativeBack", handleBack);
+    return () => window.removeEventListener("bwNativeBack", handleBack);
+  }, [isOpen, onClose]);
+
+  const handleDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (info.offset.y > 100) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
   const handleConnect = () => {
     tonConnectUI.openModal();
   };
@@ -109,84 +127,94 @@ export default function WalletRequiredBeforeDepositModal({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-[995] flex items-center justify-center p-4 pointer-events-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <>
+          {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-app-bg/90 backdrop-blur-md"
+            key="wallet-gate-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm"
             onClick={onClose}
           />
+
+          {/* Bottom Sheet */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 12 }}
-            className="relative w-full max-w-sm bg-app-card border border-app-border rounded-3xl shadow-app-shadow overflow-hidden"
+            key="wallet-gate-sheet"
+            role="dialog"
+            aria-modal="true"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 350 }}
+            drag="y"
+            dragControls={dragControls}
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[80vh] shadow-app-shadow"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-app-border">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+            {/* Drag handle pill */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-text-sub/30" />
+            </div>
+
+            {/* Scrollable content */}
+            <div className="overflow-y-auto pb-24 flex-1">
+              {/* Header */}
+              <div className="px-5 pt-2 pb-3 flex items-center gap-3 border-b border-app-border">
+                <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
                   <Wallet size={22} className="text-app-accent" />
                 </div>
                 <h3 className="text-sm font-black text-text-main uppercase tracking-tight">
                   {t("deposit.wallet_required_title")}
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2 rounded-xl bg-app-accent/5 border border-app-border text-text-sub"
-                aria-label={t("deposit.wallet_gate_close")}
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            <div className="px-5 py-5 space-y-4">
-              <p className="text-[11px] text-text-sub leading-relaxed">
-                {t("deposit.wallet_required_desc")}
-              </p>
-              <ol className="text-[10px] text-text-main space-y-2 list-decimal list-inside font-medium">
-                <li>{t("deposit.wallet_step_profile")}</li>
-                <li>{t("deposit.wallet_step_connect")}</li>
-                <li>{t("deposit.wallet_step_connected")}</li>
-                <li>{t("deposit.wallet_step_topup")}</li>
-              </ol>
+              <div className="px-5 py-5 space-y-4">
+                <p className="text-[11px] text-text-sub leading-relaxed">
+                  {t("deposit.wallet_required_desc")}
+                </p>
+                <ol className="text-[10px] text-text-main space-y-2 list-decimal list-inside font-medium">
+                  <li>{t("deposit.wallet_step_profile")}</li>
+                  <li>{t("deposit.wallet_step_connect")}</li>
+                  <li>{t("deposit.wallet_step_connected")}</li>
+                  <li>{t("deposit.wallet_step_topup")}</li>
+                </ol>
 
-              {syncing && (
-                <div className="flex items-center gap-2 text-cyan-400 text-[10px] font-bold uppercase tracking-wider">
-                  <Loader2 size={14} className="animate-spin" />
-                  {t("deposit.wallet_syncing")}
-                </div>
-              )}
-              {syncError && (
-                <p className="text-[10px] text-red-400 font-medium">{syncError}</p>
-              )}
+                {syncing && (
+                  <div className="flex items-center gap-2 text-cyan-400 text-[10px] font-bold uppercase tracking-wider">
+                    <Loader2 size={14} className="animate-spin" />
+                    {t("deposit.wallet_syncing")}
+                  </div>
+                )}
+                {syncError && (
+                  <p className="text-[10px] text-red-400 font-medium">{syncError}</p>
+                )}
 
-              <button
-                type="button"
-                onClick={handleGoProfile}
-                className="w-full py-3.5 rounded-2xl bg-app-accent text-app-bg font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
-              >
-                {t("deposit.go_to_profile")}
-                <ChevronRight size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={handleConnect}
-                disabled={syncing}
-                className="w-full py-3.5 rounded-2xl border border-app-border bg-app-accent/5 text-text-main font-black uppercase text-[10px] tracking-widest disabled:opacity-50"
-              >
-                {walletAddress
-                  ? t("deposit.wallet_change_connect")
-                  : t("deposit.connect_wallet")}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleGoProfile}
+                  className="w-full py-3.5 rounded-2xl bg-app-accent text-app-bg font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
+                >
+                  {t("deposit.go_to_profile")}
+                  <ChevronRight size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConnect}
+                  disabled={syncing}
+                  className="w-full py-3.5 rounded-2xl border border-app-border bg-app-accent/5 text-text-main font-black uppercase text-[10px] tracking-widest disabled:opacity-50"
+                >
+                  {walletAddress
+                    ? t("deposit.wallet_change_connect")
+                    : t("deposit.connect_wallet")}
+                </button>
+              </div>
             </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>,
     document.body
