@@ -692,7 +692,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   return (
     <>
       <motion.div
-        className="fixed inset-0 z-[120] flex flex-col text-text-main bg-app-bg/95 backdrop-blur-3xl"
+        className={`fixed inset-0 flex flex-col text-text-main bg-app-bg/95 backdrop-blur-3xl transition-all duration-300 ${isClaimBoostOpen || questDetailOpen ? "z-[900]" : "z-[120]"}`}
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}

@@ -416,7 +416,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen || isReferralModalOpen || isConnectBluOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen || isReferralModalOpen || isConnectBluOpen || isDrawerOpen) ? "z-[900]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -876,13 +876,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            {/* Backdrop overlay (z-index 350 to cover balance pill and bottom nav) */}
+            {/* Backdrop overlay (z-index 1008 to cover balance pill and bottom nav) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 z-[350] bg-black/60"
+              className="fixed inset-0 z-[1008] bg-black/60"
             />
 
             {/* Sidebar drawer (stops at center: w-[50%], top-0 bottom-0, same theme not glass) */}
@@ -891,7 +891,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-[50%] z-[360] bg-app-card border-r border-app-border shadow-2xl flex flex-col justify-between"
+              className="fixed left-0 top-0 bottom-0 w-[50%] z-[1009] bg-app-card border-r border-app-border shadow-2xl flex flex-col justify-between"
               style={{
                 paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 50px)",
                 paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)"
@@ -964,7 +964,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[320] bg-app-bg flex flex-col"
+            className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
             style={{
               paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -1258,7 +1258,7 @@ function PostModal({
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="fixed inset-0 z-[200] bg-zinc-950 flex flex-col md:max-w-md md:mx-auto md:relative md:inset-auto md:h-[90vh] md:rounded-[3rem] md:overflow-hidden"
+      className="fixed inset-0 z-[1000] bg-zinc-950 flex flex-col md:max-w-md md:mx-auto md:relative md:inset-auto md:h-[90vh] md:rounded-[3rem] md:overflow-hidden"
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)"
       }}

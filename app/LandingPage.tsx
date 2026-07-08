@@ -33,8 +33,7 @@ import WalletRelinkOverlay from "@/components/ui/WalletRelinkOverlay";
 import BalancePill from "@/components/ui/BalancePill";
 import BluButton from "@/components/ui/BluButton";
 import DailyAIPopup from "@/components/ui/DailyAIPopup";
-import PortalButton from "@/components/portal/PortalButton";
-import PortalContainer from "@/components/portal/PortalContainer";
+
 import CocoonOverlay from "@/components/ui/CocoonOverlay";
 import { useTonConnectUI, toUserFriendlyAddress } from "@tonconnect/ui-react";
 
@@ -157,8 +156,7 @@ export default function LandingPage() {
   // 🐛 Bugs & Suggestions State
   const [isBugsSuggestionsOpen, setIsBugsSuggestionsOpen] = useState(false);
 
-  // 🌀 Portal State
-  const [isPortalOpen, setIsPortalOpen] = useState(false);
+
 
   // 🎯 Pending Mission Count
   const [pendingMissionCount, setPendingMissionCount] = useState(0);
@@ -1145,7 +1143,7 @@ export default function LandingPage() {
       )}
 
       {/* 🤖 BLU AI Assistant Button */}
-      {!isLoading && !isMaintenanceMode && (
+      {!isLoading && !isMaintenanceMode && activeTab === "home" && (
         <BluButton
           isExpanded={isBluExpanded}
           onToggleExpand={setIsBluExpanded}
@@ -1171,15 +1169,7 @@ export default function LandingPage() {
         />
       )}
 
-      {/* 🌀 Portal Ring Button */}
-      {!isLoading && !isMaintenanceMode && isAdmin && !isPortalOpen && (
-        <PortalButton onClick={() => setIsPortalOpen(true)} />
-      )}
 
-      {/* 🌀 Portal Space Overlay */}
-      {isPortalOpen && (
-        <PortalContainer onClose={() => setIsPortalOpen(false)} />
-      )}
 
       {/* 🧭 Navigation Bar */}
       {!isLoading && !isBwaveScanOpen && !isRolesOpen && !isBluExpanded && !isBugsSuggestionsOpen && !questDetailOpen && (
