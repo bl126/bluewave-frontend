@@ -242,7 +242,7 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                                                     <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
                                                         {type === "ton" && (
                                                             <div>
-                                                                <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
+                                                                <img src="/Gram Diamond Mark.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
                                                             </div>
                                                         )}
                                                         {type === "stars" && (

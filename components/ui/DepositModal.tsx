@@ -226,7 +226,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
     priceRefreshing ||
     (isWalletConnected && !isValidAmount);
 
-  const modalTitle = type === "ton" || type === "ton_direct" ? "Topup TON" : "Buy Stars";
+  const modalTitle = type === "ton" || type === "ton_direct" ? "Topup Gram" : "Buy Stars";
   
   // Set percentage amount of available wallet balance
   const handleSetAmountPercent = (percent: number) => {
@@ -406,7 +406,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 {priceReady ? (
                   <>
                     <span className="text-text-sub text-[11px] uppercase font-bold tracking-wide">
-                      1 TON = ${tonPrice.toFixed(3)}
+                      1 Gram = ${tonPrice.toFixed(3)}
                       {priceRefreshing ? " · updating…" : ""}
                     </span>
                     <button onClick={() => fetchPrice(false)} className="text-text-sub hover:text-app-accent transition-colors">
@@ -434,7 +434,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             <div className="flex items-center justify-between text-xs font-bold shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-app-accent/10 flex items-center justify-center border border-app-border">
-                  <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
+                  <img src="/Gram Diamond Mark.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-text-main font-mono tracking-tight">
@@ -575,8 +575,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-main/20 w-full min-w-0 disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-app-accent/10 border border-app-border/50 select-none shrink-0">
-                      <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
-                      <span className="text-text-main font-black text-xs tracking-tight">TON</span>
+                      <img src="/Gram Diamond Mark.png" alt="Gram" className="w-4 h-4 object-contain" />
+                      <span className="text-text-main font-black text-xs tracking-tight">Gram</span>
                     </div>
                   </div>
 
@@ -589,7 +589,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         "$0.0000"
                       )}
                     </span>
-                    <span className="text-text-main/60">Toncoin</span>
+                    <span className="text-text-main/60">Gram</span>
                   </div>
                 </div>
 
@@ -613,7 +613,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                               : "bg-app-accent/5 border-app-border/50 text-text-main hover:border-app-accent/55"
                           }`}
                         >
-                          {presetVal} TON
+                          {presetVal} Gram
                         </button>
                       );
                     })}
@@ -630,7 +630,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   <Zap size={12} className="text-app-accent shrink-0" />
                   <p className="text-text-main text-[10px] font-black uppercase tracking-widest leading-none">
                     Minimum Purchase: <span className="text-app-accent font-black">{MIN_STARS} Stars</span>
-                    {tonPrice > 0 && <span className="text-text-main/70"> · ≈ {minTon} TON (${(minTon * tonPrice).toFixed(2)})</span>}
+                    {tonPrice > 0 && <span className="text-text-main/70"> · ≈ {minTon} Gram (${(minTon * tonPrice).toFixed(2)})</span>}
                   </p>
                 </div>
 
@@ -664,8 +664,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                             }`}
                           >
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <img src="/ton-transparent.png" alt="TON" className="w-3.5 h-3.5 object-contain" />
-                              <span className="font-black text-sm text-text-main">{preset.ton} TON</span>
+                              <img src="/Gram Diamond Mark.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                              <span className="font-black text-sm text-text-main">{preset.ton} Gram</span>
                             </div>
                             <div className="flex items-center gap-1 text-[11px] font-black text-text-main">
                               <StarIcon size={10} />
@@ -685,12 +685,12 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   <div className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
                     useCustom && customAmount ? "border-app-accent bg-app-accent/5" : "border-app-border bg-app-accent/5"
                   }`}>
-                    <img src="/ton-transparent.png" alt="TON" className="w-5 h-5 object-contain shrink-0" />
+                    <img src="/Gram Diamond Mark.png" alt="Gram" className="w-5 h-5 object-contain shrink-0" />
                     <input
                       type="number"
                       min={minTon}
                       step="0.1"
-                      placeholder={`Min ${minTon} TON`}
+                      placeholder={`Min ${minTon} Gram`}
                       value={customAmount}
                       disabled={isWalletMismatch}
                       onChange={(e) => {
@@ -728,8 +728,8 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You send</span>
                             <div className="flex items-center gap-1.5">
-                              <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain" />
-                              <span className="text-text-main font-black text-base">{activeTon} TON</span>
+                              <img src="/Gram Diamond Mark.png" alt="Gram" className="w-4 h-4 object-contain" />
+                              <span className="text-text-main font-black text-base">{activeTon} Gram</span>
                             </div>
                             <span className="text-text-main/90 text-[9px] font-mono">≈ ${usdValue.toFixed(2)} USD</span>
                           </div>
@@ -747,7 +747,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                         <div className="flex items-center gap-2">
                           <AlertCircle size={14} className="text-red-400 shrink-0" />
                           <p className="text-red-400 text-xs font-bold">
-                            Below minimum — need at least {MIN_STARS} Stars ({minTon} TON)
+                            Below minimum — need at least {MIN_STARS} Stars ({minTon} Gram)
                           </p>
                         </div>
                       )}
@@ -763,7 +763,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-app-accent/10 to-purple-500/10 border border-app-accent/30 hover:border-app-accent/60 text-app-accent font-black uppercase tracking-widest text-[11px] transition-all active:scale-95"
                   >
                     <ArrowRightLeft size={14} />
-                    Convert {userTonBalance.toFixed(4)} TON → Stars
+                    Convert {userTonBalance.toFixed(4)} Gram → Stars
                   </motion.button>
                 )}
 
@@ -793,10 +793,10 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   isTopupBlocked ? "Connect Registered Wallet"
                   : !isWalletConnected ? "Connect Wallet to Topup"
                   : !isValidAmount ? (
-                      type === "ton" || type === "ton_direct" ? "Enter TON Amount" : `Min ${MIN_STARS} Stars (${minTon} TON)`
+                      type === "ton" || type === "ton_direct" ? "Enter Gram Amount" : `Min ${MIN_STARS} Stars (${minTon} Gram)`
                     )
                   : (
-                      type === "ton" || type === "ton_direct" ? `Topup ${activeTon} TON` : `Purchase ${starsToReceive.toLocaleString()} Stars`
+                      type === "ton" || type === "ton_direct" ? `Topup ${activeTon} Gram` : `Purchase ${starsToReceive.toLocaleString()} Stars`
                     )
                 )}
                 {txStatus === "pending" && "Waiting for Signature…"}
@@ -808,7 +808,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
 
               <p className="text-center text-[10px] text-text-main/60 font-bold uppercase tracking-wider leading-normal">
                 {type === "ton" || type === "ton_direct" ? (
-                  "TON credited to your in-app balance within ~30s after blockchain confirmation."
+                  "Gram credited to your in-app balance within ~30s after blockchain confirmation."
                 ) : (
                   `Stars credited within ~30s after blockchain confirmation. Rate: $0.013/Star · Min ${MIN_STARS} Stars`
                 )}

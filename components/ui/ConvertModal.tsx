@@ -144,7 +144,7 @@ export default function ConvertModal({
                   <ArrowRightLeft size={32} className="text-app-accent" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-text-main uppercase tracking-tight">Convert TON</h3>
+                  <h3 className="text-2xl font-black text-text-main uppercase tracking-tight">Convert Gram</h3>
                   <p className="text-text-sub text-[11px] font-bold uppercase tracking-widest mt-1">
                     to Bluewave Stars
                   </p>
@@ -154,8 +154,8 @@ export default function ConvertModal({
               {/* Available balance row */}
               <div className="bg-app-bg/50 border border-app-border rounded-2xl p-4 flex items-center justify-between">
                 <div>
-                  <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Available TON</p>
-                  <p className="text-text-main font-black text-lg mt-0.5">{tonBalance.toFixed(4)} TON</p>
+                  <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Available Gram</p>
+                  <p className="text-text-main font-black text-lg mt-0.5">{tonBalance.toFixed(4)} Gram</p>
                 </div>
                 <div className="text-right">
                   <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">USD Value</p>
@@ -179,8 +179,8 @@ export default function ConvertModal({
                     className="w-full bg-app-bg/50 border border-app-border rounded-xl px-4 py-3 pr-20 text-text-main font-mono text-lg placeholder-text-main/40 focus:border-app-accent outline-none transition-colors"
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                    <img src="/ton-transparent.png" alt="TON" className="w-5 h-5" />
-                    <span className="text-text-main font-black text-sm">TON</span>
+                    <img src="/Gram Diamond Mark.png" alt="Gram" className="w-5 h-5" />
+                    <span className="text-text-main font-black text-sm">Gram</span>
                   </div>
                 </div>
               </div>
@@ -191,13 +191,13 @@ export default function ConvertModal({
                   onClick={() => setAmount(minTonNeeded.toFixed(4))}
                   className="flex-1 text-[9px] font-black uppercase tracking-widest py-2 px-3 rounded-lg bg-app-accent/10 border border-app-accent/30 text-app-accent hover:bg-app-accent/20 transition-colors active:scale-95"
                 >
-                  Min ({minTonNeeded.toFixed(4)} TON)
+                  Min ({minTonNeeded.toFixed(4)} Gram)
                 </button>
                 <button
                   onClick={() => setAmount(tonBalance.toFixed(4))}
                   className="flex-1 text-[9px] font-black uppercase tracking-widest py-2 px-3 rounded-lg bg-app-accent/10 border border-app-accent/30 text-app-accent hover:bg-app-accent/20 transition-colors active:scale-95"
                 >
-                  Max ({tonBalance.toFixed(4)} TON)
+                  Max ({tonBalance.toFixed(4)} Gram)
                 </button>
               </div>
 
@@ -212,9 +212,9 @@ export default function ConvertModal({
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <img src="/ton-transparent.png" alt="TON" className="w-4 h-4" />
+                        <img src="/Gram Diamond Mark.png" alt="Gram" className="w-4 h-4" />
                         <span className="text-text-main font-black text-sm">
-                          {parseFloat(amount || "0").toFixed(4)} TON
+                          {parseFloat(amount || "0").toFixed(4)} Gram
                         </span>
                       </div>
                       <ArrowRightLeft size={16} className="text-app-accent" />
@@ -223,7 +223,7 @@ export default function ConvertModal({
                       </div>
                     </div>
                     <div className="text-[9px] font-bold text-text-main/60 uppercase tracking-widest">
-                      @ ${tonPrice.toFixed(2)}/TON = ${(parseFloat(amount || "0") * tonPrice).toFixed(2)} USD
+                      @ ${tonPrice.toFixed(2)}/Gram = ${(parseFloat(amount || "0") * tonPrice).toFixed(2)} USD
                     </div>
                     {starsPreview > 0 && starsPreview < MIN_STARS && (
                       <div className="mt-2 flex items-center gap-1.5 text-amber-400">
@@ -291,7 +291,7 @@ export default function ConvertModal({
 
               {/* Help text */}
               <p className="text-[9px] text-text-main/50 text-center font-bold uppercase tracking-widest">
-                Instant conversion · No blockchain fees · Uses live TON price
+                Instant conversion · No blockchain fees · Uses live Gram price
               </p>
             </div>
           </motion.div>
