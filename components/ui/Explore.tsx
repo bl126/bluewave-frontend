@@ -85,21 +85,42 @@ const VerifiedBadge = () => (
   </svg>
 );
 
-const Tooltip = ({ id, activeId, title, content }: { id: string, activeId: string | null, title: string, content: string }) => (
-  <AnimatePresence>
-    {activeId === id && (
-      <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-        className="fixed left-1/2 -translate-x-1/2 bottom-28 z-[1100] w-64 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-none"
-      >
-        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{title}</p>
-        <p className="text-[9px] leading-relaxed text-white/60 font-semibold">{content}</p>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
+const Tooltip = ({
+  id,
+  activeId,
+  title,
+  content,
+  targetRect
+}: {
+  id: string,
+  activeId: string | null,
+  title: string,
+  content: string,
+  targetRect: DOMRect | null
+}) => {
+  const top = targetRect ? targetRect.top + (targetRect.height / 2) : 0;
+  return (
+    <AnimatePresence>
+      {activeId === id && targetRect && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, x: -10 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          exit={{ opacity: 0, scale: 0.95, x: -10 }}
+          className="fixed z-[1100] w-52 bg-zinc-950/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-3 shadow-2xl pointer-events-none text-left"
+          style={{
+            top: top,
+            transform: "translateY(-50%)",
+            left: "calc(50% + 12px)"
+          }}
+        >
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-zinc-950/95" />
+          <p className="text-[10px] font-black text-white uppercase tracking-widest mb-0.5">{title}</p>
+          <p className="text-[9px] leading-relaxed text-white/50 font-semibold">{content}</p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 function SwapTabComponent() {
   return (
@@ -227,13 +248,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
 
-  const showTooltip = (id: string) => {
+  const showTooltip = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipRect(rect);
     setActiveTooltip(id);
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
     tooltipTimeoutRef.current = setTimeout(() => {
       setActiveTooltip(null);
+      setTooltipRect(null);
     }, 3000);
   };
 
@@ -456,6 +481,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   useEffect(() => {
     const handleNativeBack = (e: Event) => {
       if (!isOpen) return;
+      if (isDrawerOpen) {
+        setIsDrawerOpen(false);
+        e.preventDefault();
+        return;
+      }
       if (isSearchOpen) {
         setIsSearchOpen(false);
         e.preventDefault();
@@ -481,7 +511,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen]);
+  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -600,7 +630,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen || isReferralModalOpen || isConnectBluOpen || isDrawerOpen) ? "z-[900]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${isAnyOverlayActive ? "z-[900]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -1157,7 +1187,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Topics</span>
                   </button>
                   <button
-                    onClick={() => showTooltip("blu-ai")}
+                    onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
@@ -1181,14 +1211,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Swap</span>
                   </button>
                   <button
-                    onClick={() => showTooltip("wave-tools")}
+                    onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <Zap size={16} className="text-white shrink-0" />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Wave Tools</span>
                   </button>
                   <button
-                    onClick={() => showTooltip("ai-studio")}
+                    onClick={(e) => showTooltip("ai-studio", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
@@ -1213,7 +1243,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Analytics</span>
                   </button>
                   <button
-                    onClick={() => showTooltip("premium")}
+                    onClick={(e) => showTooltip("premium", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <VerifiedBadge />
@@ -1349,10 +1379,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       </AnimatePresence>
 
       {/* ─── Tooltips ─── */}
-      <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." />
-      <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" />
-      <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" />
-      <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" />
+      <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." targetRect={tooltipRect} />
+      <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" targetRect={tooltipRect} />
 
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
