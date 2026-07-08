@@ -90,6 +90,20 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [isBwaveScanOpen, setBwaveScanOpen] = useState(false);
 
+  // Lazy-loaded persistent tabs tracker
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["home"]));
+
+  useEffect(() => {
+    if (activeTab && activeTab !== "home") {
+      setVisitedTabs((prev) => {
+        if (prev.has(activeTab)) return prev;
+        const next = new Set(prev);
+        next.add(activeTab);
+        return next;
+      });
+    }
+  }, [activeTab]);
+
   // 🔐 Recovery Password State
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
 
@@ -1186,55 +1200,98 @@ export default function LandingPage() {
         />
       )}
 
-      {/* 🎯 Overlays (Lazy-rendered to save API calls) */}
-      <AnimatePresence mode="sync">
-        {activeTab === "missions" && (
-          <MissionCenter
-            key="missions"
-            isOpen={isMissionOpen}
-            onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
-            telegramUser={telegramUser}
-            isHumanVerified={!!telegramUser?.is_human_verified}
-          />
+      {/* 🎯 Overlays (Lazy-rendered and persistent to prevent cash/render flash) */}
+      <div className="absolute inset-0 pointer-events-none">
+        {visitedTabs.has("missions") && (
+          <div 
+            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              pointerEvents: activeTab === "missions" ? "auto" : "none",
+              opacity: activeTab === "missions" ? 1 : 0,
+              transform: activeTab === "missions" ? "translateY(0)" : "translateY(15px)",
+              zIndex: activeTab === "missions" ? 120 : -10
+            }}
+          >
+            <MissionCenter
+              isOpen={isMissionOpen}
+              onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
+              telegramUser={telegramUser}
+              isHumanVerified={!!telegramUser?.is_human_verified}
+            />
+          </div>
         )}
-        {activeTab === "explore" && (
-          <Explore
-            key="explore"
-            isOpen={isExploreOpen}
-            onClose={() => {
-              setExploreOpen(false);
-              setActiveTab("home");
+
+        {visitedTabs.has("explore") && (
+          <div 
+            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              pointerEvents: activeTab === "explore" ? "auto" : "none",
+              opacity: activeTab === "explore" ? 1 : 0,
+              transform: activeTab === "explore" ? "translateY(0)" : "translateY(15px)",
+              zIndex: activeTab === "explore" ? 120 : -10
             }}
-            telegramUser={telegramUser}
-            onGoToProfile={() => {
-              setActiveTab("profile");
-              setProfileOpen(true);
-            }}
-          />
+          >
+            <Explore
+              isOpen={isExploreOpen}
+              onClose={() => {
+                setExploreOpen(false);
+                setActiveTab("home");
+              }}
+              telegramUser={telegramUser}
+              onGoToProfile={() => {
+                setActiveTab("profile");
+                setProfileOpen(true);
+              }}
+            />
+          </div>
         )}
-        {activeTab === "market" && (
-          <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
+
+        {visitedTabs.has("market") && (
+          <div 
+            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              pointerEvents: activeTab === "market" ? "auto" : "none",
+              opacity: activeTab === "market" ? 1 : 0,
+              transform: activeTab === "market" ? "translateY(0)" : "translateY(15px)",
+              zIndex: activeTab === "market" ? 120 : -10
+            }}
+          >
+            <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
+          </div>
         )}
-        {activeTab === "profile" && (
-          <Profile
-            key="profile"
-            isOpen={isProfileOpen}
-            onClose={() => { setProfileOpen(false); setActiveTab("home"); }}
-            telegramUser={telegramUser}
-            onOpenRoles={(roleName: string) => {
-              const role = findRoleByName(roleName);
-              if (role) setSelectedRoleData(role);
+
+        {visitedTabs.has("profile") && (
+          <div 
+            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              pointerEvents: activeTab === "profile" ? "auto" : "none",
+              opacity: activeTab === "profile" ? 1 : 0,
+              transform: activeTab === "profile" ? "translateY(0)" : "translateY(15px)",
+              zIndex: activeTab === "profile" ? 120 : -10
             }}
-            onOpenBwaveScan={() => setBwaveScanOpen(true)}
-            onOpenEcosystemRoles={() => {
-              setRolesOpen(true);
-            }}
-            onOpenBugsSuggestions={() => {
-              setProfileOpen(false);
-              setIsBugsSuggestionsOpen(true);
-            }}
-          />
+          >
+            <Profile
+              isOpen={isProfileOpen}
+              onClose={() => { setProfileOpen(false); setActiveTab("home"); }}
+              telegramUser={telegramUser}
+              onOpenRoles={(roleName: string) => {
+                const role = findRoleByName(roleName);
+                if (role) setSelectedRoleData(role);
+              }}
+              onOpenBwaveScan={() => setBwaveScanOpen(true)}
+              onOpenEcosystemRoles={() => {
+                setRolesOpen(true);
+              }}
+              onOpenBugsSuggestions={() => {
+                setProfileOpen(false);
+                setIsBugsSuggestionsOpen(true);
+              }}
+            />
+          </div>
         )}
+      </div>
+
+      <AnimatePresence>
         {isBugsSuggestionsOpen && (
           <BugsSuggestions
             key="bugs-suggestions"
