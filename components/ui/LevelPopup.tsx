@@ -109,36 +109,34 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
         return parseInt(user.level) >= levelNum;
     };
 
+    // Stack registration
     useEffect(() => {
         if (!isOpen) return;
-
-        const handleBack = () => {
-            onClose();
-        };
-
         if (typeof window !== "undefined") {
-            (window as any).bwBackStack = (window as any).bwBackStack || [];
-            (window as any).bwBackStack.push(handleBack);
+            (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+            (window as any).bwActiveSheets.push("level_popup");
         }
-
-        const handleNativeBack = (e: Event) => {
-            const stack = (window as any).bwBackStack || [];
-            if (stack[stack.length - 1] === handleBack) {
-                e.preventDefault();
-                handleBack();
-            }
-        };
-
-        window.addEventListener("bwNativeBack", handleNativeBack);
-
         return () => {
-            window.removeEventListener("bwNativeBack", handleNativeBack);
             if (typeof window !== "undefined") {
-                (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
-                    (item: any) => item !== handleBack
+                (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+                    (id: string) => id !== "level_popup"
                 );
             }
         };
+    }, [isOpen]);
+
+    // Back listener
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleNativeBack = (e: Event) => {
+            const activeSheets = (window as any).bwActiveSheets || [];
+            if (activeSheets[activeSheets.length - 1] === "level_popup") {
+                e.preventDefault();
+                onClose();
+            }
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack);
     }, [isOpen, onClose]);
 
     return (
@@ -168,7 +166,7 @@ export default function LevelPopup({ isOpen, onClose, user }: LevelPopupProps) {
                         onDragEnd={(_, info) => {
                             if (info.offset.y > 100) onClose();
                         }}
-                        className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+                        className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[85vh] shadow-app-shadow text-text-main"
                     >
                         {/* Drag Handle */}
                         <div

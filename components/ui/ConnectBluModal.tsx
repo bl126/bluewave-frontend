@@ -197,46 +197,79 @@ export default function ConnectBluModal({
         window.open(url, "_blank");
     };
 
-    // Intercept Telegram native back button for modal navigation stack
+    // Stack registrations
+    useEffect(() => {
+        if (!isOpen) return;
+        if (typeof window !== "undefined") {
+            (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+            (window as any).bwActiveSheets.push("connect_blu_main");
+        }
+        return () => {
+            if (typeof window !== "undefined") {
+                (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+                    (id: string) => id !== "connect_blu_main"
+                );
+            }
+        };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!showDisconnectConfirm) return;
+        if (typeof window !== "undefined") {
+            (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+            (window as any).bwActiveSheets.push("connect_blu_confirm");
+        }
+        return () => {
+            if (typeof window !== "undefined") {
+                (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+                    (id: string) => id !== "connect_blu_confirm"
+                );
+            }
+        };
+    }, [showDisconnectConfirm]);
+
+    useEffect(() => {
+        if (!analyticsOpen) return;
+        if (typeof window !== "undefined") {
+            (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+            (window as any).bwActiveSheets.push("connect_blu_analytics");
+        }
+        return () => {
+            if (typeof window !== "undefined") {
+                (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+                    (id: string) => id !== "connect_blu_analytics"
+                );
+            }
+        };
+    }, [analyticsOpen]);
+
+    // Back listener
     useEffect(() => {
         if (!isOpen) return;
 
-        const handleBack = () => {
-            if (analyticsOpen) {
-                setAnalyticsOpen(false);
-            } else if (showDisconnectConfirm) {
-                setShowDisconnectConfirm(false);
-            } else if (view !== "main") {
-                setView("main");
-            } else {
-                onClose();
-            }
-        };
-
-        if (typeof window !== "undefined") {
-            (window as any).bwBackStack = (window as any).bwBackStack || [];
-            (window as any).bwBackStack.push(handleBack);
-        }
-
         const handleNativeBack = (e: Event) => {
-            const stack = (window as any).bwBackStack || [];
-            if (stack[stack.length - 1] === handleBack) {
+            const activeSheets = (window as any).bwActiveSheets || [];
+            const top = activeSheets[activeSheets.length - 1];
+
+            if (top === "connect_blu_analytics") {
                 e.preventDefault();
-                handleBack();
+                setAnalyticsOpen(false);
+            } else if (top === "connect_blu_confirm") {
+                e.preventDefault();
+                setShowDisconnectConfirm(false);
+            } else if (top === "connect_blu_main") {
+                e.preventDefault();
+                if (view !== "main") {
+                    setView("main");
+                } else {
+                    onClose();
+                }
             }
         };
 
         window.addEventListener("bwNativeBack", handleNativeBack, true);
-
-        return () => {
-            window.removeEventListener("bwNativeBack", handleNativeBack, true);
-            if (typeof window !== "undefined") {
-                (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
-                    (item: any) => item !== handleBack
-                );
-            }
-        };
-    }, [isOpen, analyticsOpen, showDisconnectConfirm, view, onClose]);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
+    }, [isOpen, view, onClose]);
 
     const handleVerify = async () => {
         if (!channelInput.trim() || verifying || verified) return;

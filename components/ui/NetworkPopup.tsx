@@ -89,36 +89,34 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
     return () => clearInterval(interval);
   }, [network]);
 
+  // Stack registration
   useEffect(() => {
     if (!isOpen) return;
-
-    const handleBack = () => {
-      onClose();
-    };
-
     if (typeof window !== "undefined") {
-      (window as any).bwBackStack = (window as any).bwBackStack || [];
-      (window as any).bwBackStack.push(handleBack);
+      (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+      (window as any).bwActiveSheets.push("network_popup");
     }
-
-    const handleNativeBack = (e: Event) => {
-      const stack = (window as any).bwBackStack || [];
-      if (stack[stack.length - 1] === handleBack) {
-        e.preventDefault();
-        handleBack();
-      }
-    };
-
-    window.addEventListener("bwNativeBack", handleNativeBack);
-
     return () => {
-      window.removeEventListener("bwNativeBack", handleNativeBack);
       if (typeof window !== "undefined") {
-        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
-          (item: any) => item !== handleBack
+        (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+          (id: string) => id !== "network_popup"
         );
       }
     };
+  }, [isOpen]);
+
+  // Back listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleNativeBack = (e: Event) => {
+      const activeSheets = (window as any).bwActiveSheets || [];
+      if (activeSheets[activeSheets.length - 1] === "network_popup") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
   }, [isOpen, onClose]);
 
   const handleCopy = (bwId: string) => {

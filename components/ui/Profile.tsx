@@ -66,36 +66,34 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuDragControls = useDragControls();
 
+  // Stack registration
   useEffect(() => {
     if (!menuOpen) return;
-
-    const handleBack = () => {
-      setMenuOpen(false);
-    };
-
     if (typeof window !== "undefined") {
-      (window as any).bwBackStack = (window as any).bwBackStack || [];
-      (window as any).bwBackStack.push(handleBack);
+      (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+      (window as any).bwActiveSheets.push("profile_menu");
     }
-
-    const handleNativeBack = (e: Event) => {
-      const stack = (window as any).bwBackStack || [];
-      if (stack[stack.length - 1] === handleBack) {
-        e.preventDefault();
-        handleBack();
-      }
-    };
-
-    window.addEventListener("bwNativeBack", handleNativeBack);
-
     return () => {
-      window.removeEventListener("bwNativeBack", handleNativeBack);
       if (typeof window !== "undefined") {
-        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
-          (item: any) => item !== handleBack
+        (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+          (id: string) => id !== "profile_menu"
         );
       }
     };
+  }, [menuOpen]);
+
+  // Back listener
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleNativeBack = (e: Event) => {
+      const activeSheets = (window as any).bwActiveSheets || [];
+      if (activeSheets[activeSheets.length - 1] === "profile_menu") {
+        e.preventDefault();
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
   }, [menuOpen]);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]

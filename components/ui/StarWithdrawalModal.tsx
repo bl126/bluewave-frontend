@@ -255,37 +255,35 @@ export default function StarWithdrawalModal({
     onClose();
   };
 
+  // Stack registration
   useEffect(() => {
     if (!isOpen) return;
-
-    const handleBack = () => {
-      if (submitting) return;
-      onClose();
-    };
-
     if (typeof window !== "undefined") {
-      (window as any).bwBackStack = (window as any).bwBackStack || [];
-      (window as any).bwBackStack.push(handleBack);
+      (window as any).bwActiveSheets = (window as any).bwActiveSheets || [];
+      (window as any).bwActiveSheets.push("withdrawal");
     }
-
-    const handleNativeBack = (e: Event) => {
-      const stack = (window as any).bwBackStack || [];
-      if (stack[stack.length - 1] === handleBack) {
-        e.preventDefault();
-        handleBack();
-      }
-    };
-
-    window.addEventListener("bwNativeBack", handleNativeBack, true);
-
     return () => {
-      window.removeEventListener("bwNativeBack", handleNativeBack, true);
       if (typeof window !== "undefined") {
-        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
-          (item: any) => item !== handleBack
+        (window as any).bwActiveSheets = ((window as any).bwActiveSheets || []).filter(
+          (id: string) => id !== "withdrawal"
         );
       }
     };
+  }, [isOpen]);
+
+  // Back listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleNativeBack = (e: Event) => {
+      const activeSheets = (window as any).bwActiveSheets || [];
+      if (activeSheets[activeSheets.length - 1] === "withdrawal") {
+        if (submitting) return;
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack, true);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
   }, [isOpen, onClose, submitting]);
 
   if (!mounted) return null;
