@@ -1207,9 +1207,9 @@ export default function LandingPage() {
             className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
               pointerEvents: activeTab === "missions" ? "auto" : "none",
+              visibility: activeTab === "missions" ? "visible" : "hidden",
               opacity: activeTab === "missions" ? 1 : 0,
-              transform: activeTab === "missions" ? "translateY(0)" : "translateY(15px)",
-              zIndex: activeTab === "missions" ? 120 : -10
+              transform: activeTab === "missions" ? "translateY(0)" : "translateY(15px)"
             }}
           >
             <MissionCenter
@@ -1226,9 +1226,9 @@ export default function LandingPage() {
             className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
               pointerEvents: activeTab === "explore" ? "auto" : "none",
+              visibility: activeTab === "explore" ? "visible" : "hidden",
               opacity: activeTab === "explore" ? 1 : 0,
-              transform: activeTab === "explore" ? "translateY(0)" : "translateY(15px)",
-              zIndex: activeTab === "explore" ? 120 : -10
+              transform: activeTab === "explore" ? "translateY(0)" : "translateY(15px)"
             }}
           >
             <Explore
@@ -1251,9 +1251,9 @@ export default function LandingPage() {
             className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
               pointerEvents: activeTab === "market" ? "auto" : "none",
+              visibility: activeTab === "market" ? "visible" : "hidden",
               opacity: activeTab === "market" ? 1 : 0,
-              transform: activeTab === "market" ? "translateY(0)" : "translateY(15px)",
-              zIndex: activeTab === "market" ? 120 : -10
+              transform: activeTab === "market" ? "translateY(0)" : "translateY(15px)"
             }}
           >
             <Marketplace key="market" isOpen={isMarketOpen} onClose={() => { setMarketOpen(false); setActiveTab("home"); }} telegramUser={telegramUser} />
@@ -1265,9 +1265,9 @@ export default function LandingPage() {
             className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
               pointerEvents: activeTab === "profile" ? "auto" : "none",
+              visibility: activeTab === "profile" ? "visible" : "hidden",
               opacity: activeTab === "profile" ? 1 : 0,
-              transform: activeTab === "profile" ? "translateY(0)" : "translateY(15px)",
-              zIndex: activeTab === "profile" ? 120 : -10
+              transform: activeTab === "profile" ? "translateY(0)" : "translateY(15px)"
             }}
           >
             <Profile
