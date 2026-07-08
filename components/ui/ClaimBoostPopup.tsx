@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Flame, Star, CheckCircle2, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -94,11 +95,13 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
 
   if (!data) return null;
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-app-bg/90 backdrop-blur-md overflow-hidden"
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-app-bg/90 backdrop-blur-md overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -229,6 +232,7 @@ export default function ClaimBoostPopup({ isOpen, data, onClose }: ClaimBoostPop
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

@@ -94,7 +94,6 @@ export default function LandingPage() {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["home"]));
 
   // Overlay states from tabs to handle z-index context escalation
-  const [missionsOverlayActive, setMissionsOverlayActive] = useState(false);
   const [exploreOverlayActive, setExploreOverlayActive] = useState(false);
   const [profileOverlayActive, setProfileOverlayActive] = useState(false);
 
@@ -1202,9 +1201,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 pointer-events-none">
         {visitedTabs.has("missions") && (
           <div 
-            className={`absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              missionsOverlayActive ? "z-[1000]" : "z-[120]"
-            }`}
+            className="absolute inset-0 z-[120] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
               pointerEvents: activeTab === "missions" ? "auto" : "none",
               visibility: activeTab === "missions" ? "visible" : "hidden",
@@ -1217,7 +1214,6 @@ export default function LandingPage() {
               onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
               telegramUser={telegramUser}
               isHumanVerified={!!telegramUser?.is_human_verified}
-              onOverlayStateChange={setMissionsOverlayActive}
             />
           </div>
         )}
