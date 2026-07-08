@@ -63,6 +63,10 @@ const WalletRequiredBeforeDepositModal = dynamic(
   () => import("./WalletRequiredBeforeDepositModal"),
   { ssr: false }
 );
+const StarWithdrawalModal = dynamic(
+  () => import("./StarWithdrawalModal"),
+  { ssr: false }
+);
 
 const MINI_APP_INSERT_EVERY = 6;
 
@@ -251,6 +255,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [activeSearchTab, setActiveSearchTab] = useState("Topics");
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
@@ -331,7 +336,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     isLeaderboardSheetOpen ||
     isReferralModalOpen ||
     buyStarsOpen ||
-    buyStarsWalletGateOpen
+    buyStarsWalletGateOpen ||
+    withdrawOpen
   );
 
   useEffect(() => {
@@ -1099,6 +1105,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         />
       )}
 
+      {withdrawOpen && (
+        <StarWithdrawalModal
+          isOpen={withdrawOpen}
+          onClose={() => setWithdrawOpen(false)}
+          telegramUser={telegramUser}
+        />
+      )}
+
       {/* ─── Left Sidebar Drawer (App Theme, Stops at Center, Above Bottom Nav & Balance Pill) ─── */}
       <AnimatePresence>
         {isDrawerOpen && (
@@ -1225,6 +1239,28 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   >
                     <AnimatedAIIcon />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">AI Studio</span>
+                  </button>
+                </div>
+
+                <div className="h-px bg-white/[0.05] my-1" />
+
+                {/* Section 2.5: Star Pill */}
+                <div className="flex flex-col gap-1">
+                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Earn</div>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      setWithdrawOpen(true);
+                    }}
+                    className="flex items-center justify-between py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full border border-amber-500/20 bg-amber-500/5 shadow-[0_0_10px_rgba(245,158,11,0.05)]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Star size={16} className="text-amber-400 shrink-0" fill="currentColor" />
+                      <span className="text-white text-[11px] font-black uppercase tracking-widest">Withdraw Stars</span>
+                    </div>
+                    <span className="text-amber-400 font-mono text-[10px] font-black mr-1">
+                      {(swrUser?.stars_balance ?? 0).toLocaleString()}
+                    </span>
                   </button>
                 </div>
 

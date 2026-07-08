@@ -342,12 +342,6 @@ export default function StarWithdrawalModal({
                 >
                   <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
                 </button>
-                <button
-                  onClick={tryDismiss}
-                  className="p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors active:scale-95"
-                >
-                  <X size={18} />
-                </button>
               </div>
             </div>
 
@@ -460,12 +454,12 @@ export default function StarWithdrawalModal({
                       </div>
                       <ArrowRight size={18} className="text-app-accent shrink-0" />
                       <div className="flex items-center gap-1.5 min-w-0 justify-end">
-                        <img src="/ton-transparent.png" alt="TON" className="w-4 h-4 object-contain shrink-0" />
+                        <img src="/Gram Diamond Mark.png" alt="Gram" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-app-accent font-black text-lg tabular-nums">
                           {priceReady ? tonPreview.toFixed(4) : "—"}
                         </span>
                         <span className="text-readable-muted text-[10px] font-black uppercase shrink-0">
-                          TON
+                          Gram
                         </span>
                       </div>
                     </div>

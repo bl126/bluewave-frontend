@@ -420,12 +420,6 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                 )}
               </div>
             </div>
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors active:scale-95"
-            >
-              <X size={18} />
-            </button>
           </div>
 
           {/* Content Wrapper */}
