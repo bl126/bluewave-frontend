@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, MoreVertical, Wallet, ArrowLeft, Eye, EyeOff, Copy, Check, Award, ShieldCheck, UserCheck, Flame, Info, Lock, Plus } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useApi, getApi, postApi } from "@/lib/useApi";
@@ -64,6 +64,39 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   const [isNetworkPopupOpen, setIsNetworkPopupOpen] = useState(false);
   const [prevLevel, setPrevLevel] = useState<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuDragControls = useDragControls();
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleBack = () => {
+      setMenuOpen(false);
+    };
+
+    if (typeof window !== "undefined") {
+      (window as any).bwBackStack = (window as any).bwBackStack || [];
+      (window as any).bwBackStack.push(handleBack);
+    }
+
+    const handleNativeBack = (e: Event) => {
+      const stack = (window as any).bwBackStack || [];
+      if (stack[stack.length - 1] === handleBack) {
+        e.preventDefault();
+        handleBack();
+      }
+    };
+
+    window.addEventListener("bwNativeBack", handleNativeBack);
+
+    return () => {
+      window.removeEventListener("bwNativeBack", handleNativeBack);
+      if (typeof window !== "undefined") {
+        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
+          (item: any) => item !== handleBack
+        );
+      }
+    };
+  }, [menuOpen]);
 
   // [CODE: FRONTEND_TELEGRAM_ID_MANAGEMENT]
   const [telegramId, setTelegramId] = useState<number | null>(telegramUser?.id || null);
@@ -343,17 +376,67 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
                   <AnimatePresence>
                     {menuOpen && (
                       <>
-                        <motion.div className="fixed inset-0 z-[140]" onClick={() => setMenuOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+                        {/* Backdrop — above nav */}
+                        <motion.div 
+                          className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm" 
+                          onClick={() => setMenuOpen(false)} 
+                          initial={{ opacity: 0 }} 
+                          animate={{ opacity: 1 }} 
+                          exit={{ opacity: 0 }} 
+                        />
+                        {/* Bottom Sheet */}
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="fixed z-[150] w-44 border border-app-border rounded-xl shadow-app-shadow overflow-hidden bg-app-card/90 backdrop-blur-2xl"
-                          style={{ top: menuButtonRef.current ? menuButtonRef.current.getBoundingClientRect().bottom + 8 : 'auto', right: '24px' }}
+                          initial={{ y: "100%" }}
+                          animate={{ y: 0 }}
+                          exit={{ y: "100%" }}
+                          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                          drag="y"
+                          dragControls={menuDragControls}
+                          dragListener={false}
+                          dragConstraints={{ top: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(_, info) => {
+                            if (info.offset.y > 100) setMenuOpen(false);
+                          }}
+                          className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
                         >
-                          <button onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} className={`w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border`}>{t("menu.ecosystem_roles")}</button>
-                          <button onClick={() => { setMenuOpen(false); onOpenBwaveScan?.(); }} className={`w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors border-b border-app-border`}>{t("menu.presence_ledger")}</button>
-                          <button onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} className={`w-full text-left px-4 py-3 text-xs text-text-main hover:bg-app-accent/10 transition-colors`}>{t("settings.title")}</button>
+                          {/* Drag Handle */}
+                          <div
+                            onPointerDown={(e) => menuDragControls.start(e)}
+                            className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none"
+                          >
+                            <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+                          </div>
+
+                          <div className="px-8 pb-4">
+                            <h3 className="text-app-accent text-sm font-black uppercase tracking-[0.2em] mb-1">
+                              Menu
+                            </h3>
+                            <p className="text-text-sub text-[10px] font-bold uppercase tracking-widest">
+                              Protocol Actions
+                            </p>
+                          </div>
+
+                          <div className="px-6 pb-24 flex flex-col gap-2.5">
+                            <button 
+                              onClick={() => { setMenuOpen(false); onOpenEcosystemRoles?.(); }} 
+                              className="w-full text-left px-5 py-4 text-sm font-bold uppercase tracking-wide text-text-main hover:bg-app-accent/10 transition-colors border border-app-border rounded-2xl bg-app-accent/5"
+                            >
+                              {t("menu.ecosystem_roles")}
+                            </button>
+                            <button 
+                              onClick={() => { setMenuOpen(false); onOpenBwaveScan?.(); }} 
+                              className="w-full text-left px-5 py-4 text-sm font-bold uppercase tracking-wide text-text-main hover:bg-app-accent/10 transition-colors border border-app-border rounded-2xl bg-app-accent/5"
+                            >
+                              {t("menu.presence_ledger")}
+                            </button>
+                            <button 
+                              onClick={() => { setSettingsOpen(true); setMenuOpen(false); }} 
+                              className="w-full text-left px-5 py-4 text-sm font-bold uppercase tracking-wide text-text-main hover:bg-app-accent/10 transition-colors border border-app-border rounded-2xl bg-app-accent/5"
+                            >
+                              {t("settings.title")}
+                            </button>
+                          </div>
                         </motion.div>
                       </>
                     )}

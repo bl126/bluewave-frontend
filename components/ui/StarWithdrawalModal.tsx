@@ -256,15 +256,36 @@ export default function StarWithdrawalModal({
   };
 
   useEffect(() => {
-    const handleNativeBack = (e: Event) => {
+    if (!isOpen) return;
+
+    const handleBack = () => {
       if (submitting) return;
-      e.preventDefault();
       onClose();
     };
-    if (isOpen) {
-      window.addEventListener("bwNativeBack", handleNativeBack, true);
+
+    if (typeof window !== "undefined") {
+      (window as any).bwBackStack = (window as any).bwBackStack || [];
+      (window as any).bwBackStack.push(handleBack);
     }
-    return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
+
+    const handleNativeBack = (e: Event) => {
+      const stack = (window as any).bwBackStack || [];
+      if (stack[stack.length - 1] === handleBack) {
+        e.preventDefault();
+        handleBack();
+      }
+    };
+
+    window.addEventListener("bwNativeBack", handleNativeBack, true);
+
+    return () => {
+      window.removeEventListener("bwNativeBack", handleNativeBack, true);
+      if (typeof window !== "undefined") {
+        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
+          (item: any) => item !== handleBack
+        );
+      }
+    };
   }, [isOpen, onClose, submitting]);
 
   if (!mounted) return null;

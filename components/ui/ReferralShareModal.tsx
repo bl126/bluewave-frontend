@@ -1,9 +1,9 @@
 // Component for sharing referral links and QR codes
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Share2, Copy, Check } from "lucide-react";
-import { useState, useRef } from "react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { Share2, Copy, Check } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import QRCode from "react-qr-code";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -21,6 +21,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     const qrRef = useRef<HTMLDivElement>(null);
     const link = referralLink || `https://t.me/Bluewave_Ecosystem_bot/bluewave?startapp=ref_${telegramId}`;
     const { t } = useLanguage();
+    const dragControls = useDragControls();
 
     const SHARE_CAPTION = `${t("referral.share_caption")}\n${link}`;
 
@@ -30,17 +31,40 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         setTimeout(() => setCopied(false), 2000);
     };
 
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleBack = () => {
+            onClose();
+        };
+
+        if (typeof window !== "undefined") {
+            (window as any).bwBackStack = (window as any).bwBackStack || [];
+            (window as any).bwBackStack.push(handleBack);
+        }
+
+        const handleNativeBack = (e: Event) => {
+            const stack = (window as any).bwBackStack || [];
+            if (stack[stack.length - 1] === handleBack) {
+                e.preventDefault();
+                handleBack();
+            }
+        };
+
+        window.addEventListener("bwNativeBack", handleNativeBack);
+
+        return () => {
+            window.removeEventListener("bwNativeBack", handleNativeBack);
+            if (typeof window !== "undefined") {
+                (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
+                    (item: any) => item !== handleBack
+                );
+            }
+        };
+    }, [isOpen, onClose]);
+
     /**
-     * Builds a branded share card:
-     *  ┌───────────────────────────────┐
-     *  │  BLUEWAVE                      │
-     *  │  ┌──── QR CODE ────┐          │
-     *  │  │                  │          │
-     *  │  └──────────────────┘          │
-     *  │  Scan me to join the           │
-     *  │  human presence layer          │
-     *  │  bwId                          │
-     *  └───────────────────────────────┘
+     * Builds a branded share card
      */
     const buildShareImage = async (): Promise<Blob | null> => {
         const svg = qrRef.current?.querySelector("svg");
@@ -123,6 +147,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
         ctx.lineTo(qrX + qrSize, qrY + qrSize - rr);
         ctx.quadraticCurveTo(qrX + qrSize, qrY + qrSize, qrX + qrSize - rr, qrY + qrSize);
         ctx.lineTo(qrX + rr, qrY + qrSize);
+        ctx.quadraticCurveTo(qrX, qrY + qrSize, qrX, qrY + qrSize - rr);
         ctx.quadraticCurveTo(qrX, qrY + qrSize, qrX, qrY + qrSize - rr);
         ctx.lineTo(qrX, qrY + rr);
         ctx.quadraticCurveTo(qrX, qrY, qrX + rr, qrY);
@@ -207,28 +232,42 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
     return (
         <AnimatePresence>
             {isOpen && (
-                <motion.div
-                    className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-app-bg/80 backdrop-blur-md"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                >
+                <>
+                    {/* Backdrop — above nav */}
                     <motion.div
-                        className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] p-8 overflow-hidden shadow-app-shadow"
-                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                        animate={{ scale: 1, y: 0, opacity: 1 }}
-                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    >
-                        {/* Exit Button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-6 right-6 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 text-app-accent transition-colors z-10"
-                        >
-                            <X size={20} />
-                        </button>
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm"
+                    />
 
-                        <div className="flex flex-col items-center gap-8">
+                    {/* Sheet — above nav */}
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        drag="y"
+                        dragControls={dragControls}
+                        dragListener={false}
+                        dragConstraints={{ top: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y > 100) onClose();
+                        }}
+                        className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+                    >
+                        {/* Drag Handle */}
+                        <div
+                            onPointerDown={(e) => dragControls.start(e)}
+                            className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none"
+                        >
+                            <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="flex-1 overflow-y-auto px-8 pb-24 custom-scrollbar flex flex-col items-center gap-8">
                             {/* BW ID Header */}
                             <div className="text-center space-y-1 mt-2">
                                 <h2 className="text-2xl font-black text-text-main uppercase tracking-tight">{bwId}</h2>
@@ -277,7 +316,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                             </div>
                         </div>
                     </motion.div>
-                </motion.div>
+                </>
             )}
         </AnimatePresence>
     );

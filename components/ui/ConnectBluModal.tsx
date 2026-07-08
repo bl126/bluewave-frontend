@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -64,6 +64,9 @@ export default function ConnectBluModal({
     const [imgError, setImgError] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { t } = useLanguage();
+    const dragControls = useDragControls();
+    const confirmDragControls = useDragControls();
+    const analyticsDragControls = useDragControls();
 
     // Custom States for Analytics and Confirm Modal
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
@@ -157,16 +160,7 @@ export default function ConnectBluModal({
         }
     }, [isOpen, alreadyConnected, channelTitle, channelPhoto]);
 
-    // Intercept Telegram native back button when analytics overlay is open
-    useEffect(() => {
-        if (!analyticsOpen) return;
-        const handleNativeBack = (e: Event) => {
-            e.preventDefault();
-            setAnalyticsOpen(false);
-        };
-        window.addEventListener("bwNativeBack", handleNativeBack, true);
-        return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
-    }, [analyticsOpen]);
+
 
     // Fetch channel analytics when analytics overlay opens
     useEffect(() => {
@@ -206,19 +200,43 @@ export default function ConnectBluModal({
     // Intercept Telegram native back button for modal navigation stack
     useEffect(() => {
         if (!isOpen) return;
-        const handleNativeBack = (e: Event) => {
-            e.preventDefault();
+
+        const handleBack = () => {
             if (analyticsOpen) {
                 setAnalyticsOpen(false);
+            } else if (showDisconnectConfirm) {
+                setShowDisconnectConfirm(false);
             } else if (view !== "main") {
                 setView("main");
             } else {
                 onClose();
             }
         };
+
+        if (typeof window !== "undefined") {
+            (window as any).bwBackStack = (window as any).bwBackStack || [];
+            (window as any).bwBackStack.push(handleBack);
+        }
+
+        const handleNativeBack = (e: Event) => {
+            const stack = (window as any).bwBackStack || [];
+            if (stack[stack.length - 1] === handleBack) {
+                e.preventDefault();
+                handleBack();
+            }
+        };
+
         window.addEventListener("bwNativeBack", handleNativeBack, true);
-        return () => window.removeEventListener("bwNativeBack", handleNativeBack, true);
-    }, [isOpen, analyticsOpen, view, onClose]);
+
+        return () => {
+            window.removeEventListener("bwNativeBack", handleNativeBack, true);
+            if (typeof window !== "undefined") {
+                (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
+                    (item: any) => item !== handleBack
+                );
+            }
+        };
+    }, [isOpen, analyticsOpen, showDisconnectConfirm, view, onClose]);
 
     const handleVerify = async () => {
         if (!channelInput.trim() || verifying || verified) return;
@@ -282,32 +300,50 @@ export default function ConnectBluModal({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop — above nav */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        // onClick removed to make backdrop non-dismissable
-                        className="fixed inset-0 z-[200] bg-app-bg/70 backdrop-blur-sm"
+                        onClick={handleClose}
+                        className="fixed inset-0 z-[998] bg-app-bg/70 backdrop-blur-sm"
                     />
 
-                    {/* Modal */}
+                    {/* Sheet — above nav */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="fixed inset-0 z-[201] flex items-center justify-center p-6 pointer-events-none"
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        drag="y"
+                        dragControls={dragControls}
+                        dragListener={false}
+                        dragConstraints={{ top: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y > 100) handleClose();
+                        }}
+                        className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main pointer-events-auto"
                     >
-                        <div className="w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden shadow-app-shadow pointer-events-auto">
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                                <div>
-                                    <h2 className="text-text-main font-black text-lg uppercase tracking-tight">{t("connect_blu.title")}</h2>
-                                    <p className="text-readable-sm font-bold uppercase tracking-wide leading-none mt-1">{t("connect_blu.subtitle")}</p>
-                                </div>
-                            </div>
+                        {/* Drag Handle */}
+                        <div
+                            onPointerDown={(e) => dragControls.start(e)}
+                            className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none shrink-0"
+                        >
+                            <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+                        </div>
 
-                            <div className="px-6 pb-10">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 pb-4 shrink-0">
+                            <div>
+                                <h2 className="text-text-main font-black text-lg uppercase tracking-tight">{t("connect_blu.title")}</h2>
+                                <p className="text-readable-sm font-bold uppercase tracking-wide leading-none mt-1">{t("connect_blu.subtitle")}</p>
+                            </div>
+                        </div>
+
+                        {/* Scroll Content */}
+                        <div className="flex-1 overflow-y-auto pb-24 custom-scrollbar">
+                            <div className="px-6">
                                 <AnimatePresence mode="wait">
 
                                     {/* === MAIN VIEW === */}
@@ -512,21 +548,40 @@ export default function ConnectBluModal({
             {/* Disconnect Confirmation Modal */}
             <AnimatePresence>
                 {showDisconnectConfirm && (
-                    <div className="fixed inset-0 z-[220] flex items-center justify-center p-6">
+                    <>
+                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowDisconnectConfirm(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            className="fixed inset-0 z-[1008] bg-black/60 backdrop-blur-sm"
                         />
+                        {/* Sheet */}
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="relative w-full max-w-xs bg-app-card border border-app-border rounded-3xl p-6 shadow-app-shadow text-center z-10"
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            drag="y"
+                            dragControls={confirmDragControls}
+                            dragListener={false}
+                            dragConstraints={{ top: 0 }}
+                            dragElastic={0.2}
+                            onDragEnd={(_, info) => {
+                                if (info.offset.y > 100) setShowDisconnectConfirm(false);
+                            }}
+                            className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow p-6 text-center text-text-main"
                         >
-                            <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4 text-red-500">
+                            {/* Drag Handle */}
+                            <div
+                                onPointerDown={(e) => confirmDragControls.start(e)}
+                                className="w-full flex justify-center py-2 cursor-grab active:cursor-grabbing touch-none shrink-0"
+                            >
+                                <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+                            </div>
+
+                            <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4 text-red-500 mt-2 shrink-0">
                                 <X size={24} />
                             </div>
                             <h3 className="text-text-main font-black text-sm uppercase tracking-wider mb-2">
@@ -535,7 +590,7 @@ export default function ConnectBluModal({
                             <p className="text-text-sub text-xs leading-relaxed mb-6 font-medium">
                                 {t("connect_blu.disconnect_confirm_desc")}
                             </p>
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 pb-8">
                                 <button
                                     onClick={() => setShowDisconnectConfirm(false)}
                                     className="flex-1 py-3 bg-app-accent/5 border border-app-border text-text-sub text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-app-accent/10 active:scale-95 transition-all"
@@ -553,7 +608,7 @@ export default function ConnectBluModal({
                                 </button>
                             </div>
                         </motion.div>
-                    </div>
+                    </>
                 )}
             </AnimatePresence>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Copy, Bell, Check, Loader2, Users } from "lucide-react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { Copy, Bell, Check, Loader2, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNetwork, notifyIndividual } from "@/lib/useApi";
@@ -27,6 +27,7 @@ const NOTIFY_COOLDOWN = 4 * 60 * 60 * 1000; // 4 hours in ms
 
 export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferral }: NetworkPopupProps) {
   const { t } = useLanguage();
+  const dragControls = useDragControls();
   
   // ⚡ Instant Loading Logic: Use localStorage cache as fallback
   const [cachedData, setCachedData] = useState<any>(() => {
@@ -88,6 +89,38 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
     return () => clearInterval(interval);
   }, [network]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleBack = () => {
+      onClose();
+    };
+
+    if (typeof window !== "undefined") {
+      (window as any).bwBackStack = (window as any).bwBackStack || [];
+      (window as any).bwBackStack.push(handleBack);
+    }
+
+    const handleNativeBack = (e: Event) => {
+      const stack = (window as any).bwBackStack || [];
+      if (stack[stack.length - 1] === handleBack) {
+        e.preventDefault();
+        handleBack();
+      }
+    };
+
+    window.addEventListener("bwNativeBack", handleNativeBack);
+
+    return () => {
+      window.removeEventListener("bwNativeBack", handleNativeBack);
+      if (typeof window !== "undefined") {
+        (window as any).bwBackStack = ((window as any).bwBackStack || []).filter(
+          (item: any) => item !== handleBack
+        );
+      }
+    };
+  }, [isOpen, onClose]);
+
   const handleCopy = (bwId: string) => {
     navigator.clipboard.writeText(bwId);
     setCopiedId(bwId);
@@ -111,147 +144,158 @@ export default function NetworkPopup({ isOpen, onClose, telegramId, onOpenReferr
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-[150] bg-app-bg/80 backdrop-blur-md flex items-center justify-center p-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      >
-        <motion.div
-          className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden flex flex-col max-h-[60vh] shadow-app-shadow"
-          initial={{ scale: 0.9, y: 20, opacity: 0 }}
-          animate={{ scale: 1, y: 0, opacity: 1 }}
-          exit={{ scale: 0.9, y: 20, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Exit Button */}
-          <button
+      {isOpen && (
+        <>
+          {/* Backdrop — above nav */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 border border-app-border transition-colors z-10"
-          >
-            <X size={16} className="text-text-main" />
-          </button>
+            className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm"
+          />
 
-          {/* Header */}
-          <div className="p-4 pt-8 flex flex-col items-center border-b border-app-border text-center">
-            <h2 className="text-text-main text-lg font-black uppercase tracking-tight">{t("network.title")}</h2>
-            <div className="flex gap-4 mt-2">
-              <div className="flex flex-col">
-                <span className="text-app-accent text-[10px] font-black leading-none">{(network?.active?.length || 0) + (network?.inactive?.length || 0)}</span>
-                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.total_members")}</span>
-              </div>
-              <div className="w-[1px] h-4 bg-app-border self-center" />
-              <div className="flex flex-col">
-                <span className="text-app-accent text-[10px] font-black leading-none">{network?.active?.length || 0}</span>
-                <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.active_now")}</span>
+          {/* Sheet — above nav */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            drag="y"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100) onClose();
+            }}
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+          >
+            {/* Drag Handle */}
+            <div
+              onPointerDown={(e) => dragControls.start(e)}
+              className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing touch-none"
+            >
+              <div className="w-12 h-1.5 bg-app-border/50 rounded-full" />
+            </div>
+
+            {/* Header */}
+            <div className="p-4 flex flex-col items-center border-b border-app-border text-center">
+              <h2 className="text-text-main text-lg font-black uppercase tracking-tight">{t("network.title")}</h2>
+              <div className="flex gap-4 mt-2">
+                <div className="flex flex-col">
+                  <span className="text-app-accent text-[10px] font-black leading-none">{(network?.active?.length || 0) + (network?.inactive?.length || 0)}</span>
+                  <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.total_members")}</span>
+                </div>
+                <div className="w-[1px] h-4 bg-app-border self-center" />
+                <div className="flex flex-col">
+                  <span className="text-app-accent text-[10px] font-black leading-none">{network?.active?.length || 0}</span>
+                  <span className="text-text-sub text-[6px] font-bold uppercase tracking-widest mt-0.5">{t("network.active_now")}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-            {loading && !network ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Loader2 className="animate-spin text-app-accent" size={32} />
-                <span className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Gathering Signals...</span>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-6">
-                {/* Active Section */}
-                {(network?.active?.length > 0) && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-app-accent animate-pulse" />
-                      <span className="text-text-main text-[10px] font-black uppercase tracking-widest">{t("network.active")}</span>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 pb-24 custom-scrollbar">
+              {loading && !network ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3">
+                  <Loader2 className="animate-spin text-app-accent" size={32} />
+                  <span className="text-text-sub text-[10px] font-bold uppercase tracking-widest">Gathering Signals...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {/* Active Section */}
+                  {(network?.active?.length > 0) && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2 px-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-app-accent animate-pulse" />
+                        <span className="text-text-main text-[10px] font-black uppercase tracking-widest">{t("network.active")}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {network.active.map((member: NetworkMember) => (
+                          <MemberItem 
+                            key={member.tg_id} 
+                            member={member} 
+                            active 
+                            onCopy={() => handleCopy(member.bw_id)}
+                            isCopied={copiedId === member.bw_id}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      {network.active.map((member: NetworkMember) => (
-                        <MemberItem 
-                          key={member.tg_id} 
-                          member={member} 
-                          active 
-                          onCopy={() => handleCopy(member.bw_id)}
-                          isCopied={copiedId === member.bw_id}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Inactive Section */}
-                {(network?.inactive?.length > 0) && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-text-sub/30" />
-                      <span className="text-text-sub text-[10px] font-black uppercase tracking-widest">{t("network.inactive")}</span>
+                  {/* Inactive Section */}
+                  {(network?.inactive?.length > 0) && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2 px-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-text-sub/30" />
+                        <span className="text-text-sub text-[10px] font-black uppercase tracking-widest">{t("network.inactive")}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {network.inactive.map((member: NetworkMember) => (
+                          <MemberItem
+                            key={member.tg_id}
+                            member={member}
+                            isNotifying={notifyingIds.has(member.tg_id)}
+                            countdown={countdowns[member.tg_id]}
+                            onNotify={() => handleNotify(member.tg_id)}
+                            onCopy={() => handleCopy(member.bw_id)}
+                            isCopied={copiedId === member.bw_id}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      {network.inactive.map((member: NetworkMember) => (
-                        <MemberItem
-                          key={member.tg_id}
-                          member={member}
-                          isNotifying={notifyingIds.has(member.tg_id)}
-                          countdown={countdowns[member.tg_id]}
-                          onNotify={() => handleNotify(member.tg_id)}
-                          onCopy={() => handleCopy(member.bw_id)}
-                          isCopied={copiedId === member.bw_id}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {(() => {
-                  const totalMembers =
-                    (network?.active?.length || 0) + (network?.inactive?.length || 0);
-                  const isEmpty = !loading && totalMembers === 0;
-                  if (!isEmpty) return null;
-                  return (
-                  <div className="flex flex-col items-center justify-center py-8 text-center px-2">
-                    <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
-                      <Users size={24} className="text-text-muted" />
+                  {(() => {
+                    const totalMembers =
+                      (network?.active?.length || 0) + (network?.inactive?.length || 0);
+                    const isEmpty = !loading && totalMembers === 0;
+                    if (!isEmpty) return null;
+                    return (
+                    <div className="flex flex-col items-center justify-center py-8 text-center px-2">
+                      <div className="w-16 h-16 rounded-full bg-app-accent/5 border border-app-border flex items-center justify-center mb-4">
+                        <Users size={24} className="text-text-muted" />
+                      </div>
+                      <p className="text-text-main text-[10px] font-black uppercase tracking-widest mb-4">
+                        {t("network.empty_title")}
+                      </p>
+                      <div className="w-full space-y-3 mb-6 text-left">
+                        {[
+                          t("network.invite_step_1"),
+                          t("network.invite_step_2"),
+                          t("network.invite_step_3"),
+                        ].map((step, i) => (
+                          <div key={i} className="flex items-start gap-2.5">
+                            <span className="text-[9px] font-black text-app-accent shrink-0 mt-0.5">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <p className="text-[10px] text-text-sub font-medium leading-relaxed">{step}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onOpenReferral();
+                        }}
+                        className="w-full px-6 py-3.5 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/90 active:scale-95 transition-all shadow-lg"
+                      >
+                        {t("profile.get_link")}
+                      </button>
                     </div>
-                    <p className="text-text-main text-[10px] font-black uppercase tracking-widest mb-4">
-                      {t("network.empty_title")}
-                    </p>
-                    <div className="w-full space-y-3 mb-6 text-left">
-                      {[
-                        t("network.invite_step_1"),
-                        t("network.invite_step_2"),
-                        t("network.invite_step_3"),
-                      ].map((step, i) => (
-                        <div key={i} className="flex items-start gap-2.5">
-                          <span className="text-[9px] font-black text-app-accent shrink-0 mt-0.5">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <p className="text-[10px] text-text-sub font-medium leading-relaxed">{step}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onOpenReferral();
-                      }}
-                      className="w-full px-6 py-3.5 bg-app-accent text-app-bg rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-app-accent/90 active:scale-95 transition-all shadow-lg"
-                    >
-                      {t("profile.get_link")}
-                    </button>
-                  </div>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
     </AnimatePresence>
   );
 }
