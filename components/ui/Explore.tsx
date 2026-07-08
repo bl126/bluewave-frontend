@@ -238,6 +238,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const { t } = useLanguage();
   const { theme } = useTheme();
 
+  // Fetch Current User (for channel connection status and wallet checks)
+  const { data: swrUser } = useApi(telegramUser?.id ? `/user/${telegramUser.id}` : null);
+  const isConnected = !!swrUser?.telegram_channel;
+
   // New Drawer / Search / Connect Channel states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -308,12 +312,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [buyStarsWalletGateOpen, setBuyStarsWalletGateOpen] = useState(false);
 
   const tryOpenBuyStars = useCallback(() => {
-    if (!telegramUser?.wallet_address) {
+    if (!swrUser?.wallet_address) {
       setBuyStarsWalletGateOpen(true);
       return;
     }
     setBuyStarsOpen(true);
-  }, [telegramUser?.wallet_address]);
+  }, [swrUser?.wallet_address]);
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -383,9 +387,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isPostingBackground, setIsPostingBackground] = useState(false);
   const [connectPrompt, setConnectPrompt] = useState(false);
 
-  // Fetch Current User (for channel connection status)
-  const { data: swrUser } = useApi(telegramUser?.id ? `/user/${telegramUser.id}` : null);
-  const isConnected = !!swrUser?.telegram_channel;
+
 
   // Fetch Notifications (pre-load on mount)
   const { data: notifications, mutate: mutateNotifications } = useApi(
@@ -878,7 +880,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           isConnected={isConnected}
                           onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
                           onRepost={() => mutate()}
-                          onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
+                          onConnectRequired={() => { setConnectBluAnalytics(false); setIsConnectBluOpen(true); }}
                           onCommentClick={() => setSelectedPost(post)}
                           onPostClick={() => setSelectedPost(post)}
                           onStarGiftSuccess={() => mutateNotifications()}
@@ -1364,7 +1366,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       isConnected={isConnected}
                       onHide={() => setSearchResults(prev => prev.filter((p: any) => p.id !== post.id))}
                       onRepost={() => mutate()}
-                      onConnectRequired={() => { setConnectPrompt(true); setTimeout(() => setConnectPrompt(false), 3000); }}
+                      onConnectRequired={() => { setConnectBluAnalytics(false); setIsConnectBluOpen(true); }}
                       onCommentClick={() => setSelectedPost(post)}
                       onPostClick={() => setSelectedPost(post)}
                       onStarGiftSuccess={() => mutateNotifications()}
