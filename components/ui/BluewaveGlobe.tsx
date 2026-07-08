@@ -9,7 +9,8 @@ import {
   useState,
   useCallback,
   useMemo,
-  Suspense
+  Suspense,
+  memo
 } from "react";
 import GlobeDot from "./GlobeDot";
 import CountryCard from "./CountryCard";
@@ -370,7 +371,7 @@ function CameraTracker({ cameraRef }: { cameraRef: React.MutableRefObject<THREE.
 }
 
 // ─── Main Export ───────────────────────────────────────────────
-export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
+const BluewaveGlobe = memo(function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<SelectedDot | null>(null);
   const [cardScreen, setCardScreen] = useState<CardScreen | null>(null);
@@ -431,4 +432,6 @@ export default function BluewaveGlobe({ onLoaded }: { onLoaded?: () => void }) {
       )}
     </div>
   );
-}
+}, (prev, next) => true);
+
+export default BluewaveGlobe;

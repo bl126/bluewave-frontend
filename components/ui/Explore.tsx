@@ -70,9 +70,10 @@ interface ExploreProps {
   onClose: () => void;
   telegramUser: any;
   onGoToProfile?: () => void;
+  onOverlayStateChange?: (isActive: boolean) => void;
 }
 
-export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }: ExploreProps) {
+export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, onOverlayStateChange }: ExploreProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
 
@@ -133,6 +134,22 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
   const [latestKnownPostId, setLatestKnownPostId] = useState<number | string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
+
+  // Monitor active overlays and notify parent for dynamic z-index stacking
+  const isAnyOverlayActive = !!(
+    isDrawerOpen ||
+    isSearchOpen ||
+    isConnectBluOpen ||
+    isPostModalOpen ||
+    isLeaderboardSheetOpen ||
+    isReferralModalOpen ||
+    buyStarsOpen ||
+    buyStarsWalletGateOpen
+  );
+
+  useEffect(() => {
+    onOverlayStateChange?.(isAnyOverlayActive);
+  }, [isAnyOverlayActive, onOverlayStateChange]);
 
   // Pagination State
   const [offset, setOffset] = useState(0);
@@ -1462,10 +1479,17 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
     };
   }, [onClose]);
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[600] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
+      className="fixed inset-0 z-[1200] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
     >
       <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -1509,7 +1533,8 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
           ))}
         </div>
       )}
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 

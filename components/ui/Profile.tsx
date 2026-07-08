@@ -26,10 +26,11 @@ interface ProfileProps {
   onOpenBwaveScan?: () => void;
   onOpenEcosystemRoles?: () => void;
   onOpenBugsSuggestions?: () => void;
+  onOverlayStateChange?: (isActive: boolean) => void;
 }
 
 // [CODE: FRONTEND_PROFILE_MAIN_COMPONENT]
-export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles, onOpenBugsSuggestions }: ProfileProps) {
+export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, onOpenBwaveScan, onOpenEcosystemRoles, onOpenBugsSuggestions, onOverlayStateChange }: ProfileProps) {
   const { t, language } = useLanguage();
 
   // Tab State
@@ -301,6 +302,10 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
   };
 
   const isSubSheetOpen = menuOpen || settingsOpen || languageOpen || isReferralModalOpen || isLevelPopupOpen || isNetworkPopupOpen || isConnectBluOpen || isLevelUpModalOpen || isClaimBoostOpen;
+
+  useEffect(() => {
+    onOverlayStateChange?.(isSubSheetOpen);
+  }, [isSubSheetOpen, onOverlayStateChange]);
 
   return (
     <motion.div

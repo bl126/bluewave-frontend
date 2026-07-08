@@ -11,6 +11,7 @@ import Profile from "@/components/ui/Profile";
 import BottomNav, { TabId } from "@/components/ui/BottomNav";
 import LanguageSelector from "@/components/ui/LanguageSelector";
 import BugsSuggestions from "@/components/ui/BugsSuggestions";
+import BackgroundAmbience from "@/components/ui/BackgroundAmbience";
 
 
 import LoadingScreen from "./LoadingScreen";
@@ -91,6 +92,11 @@ export default function LandingPage() {
 
   // Lazy-loaded persistent tabs tracker
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["home"]));
+
+  // Overlay states from tabs to handle z-index context escalation
+  const [missionsOverlayActive, setMissionsOverlayActive] = useState(false);
+  const [exploreOverlayActive, setExploreOverlayActive] = useState(false);
+  const [profileOverlayActive, setProfileOverlayActive] = useState(false);
 
   useEffect(() => {
     if (activeTab && activeTab !== "home") {
@@ -1126,6 +1132,8 @@ export default function LandingPage() {
       <div className="absolute inset-0">
         <BluewaveGlobe />
       </div>
+      {/* ❄️ Global Particles Layer - ONLY ON HOME TAB */}
+      {activeTab === "home" && <BackgroundAmbience />}
       {/* 💰 Floating Balance Pill */}
       {!isLoading && (
         <BalancePill
@@ -1143,31 +1151,42 @@ export default function LandingPage() {
       )}
 
       {/* 🤖 BLU AI Assistant Button */}
-      {!isLoading && !isMaintenanceMode && activeTab === "home" && (
-        <BluButton
-          isExpanded={isBluExpanded}
-          onToggleExpand={setIsBluExpanded}
-          telegramUser={telegramUser}
-          balance={balance}
-          pendingMissionCount={pendingMissionCount}
-          socialMissionCount={socialMissionCount}
-          presenceMissionCount={presenceMissionCount}
-          onOpenCocoon={() => setCocoonOpen(true)}
-          onNavigateToTab={(tab) => {
-            setActiveTab(tab);
-            setMissionOpen(tab === "missions");
-            setExploreOpen(tab === "explore");
-            setMarketOpen(tab === "market");
-            setProfileOpen(tab === "profile");
-            setIsBluExpanded(false);
-          }}
-          welcomeBubble={showWelcomeBubble && welcomeBubbleMessage ? {
-            message: welcomeBubbleMessage,
-            isNewUser: isNewUser,
-            onDismiss: handleDismissWelcomeBubble
-          } : null}
-        />
-      )}
+      <AnimatePresence>
+        {!isLoading && !isMaintenanceMode && activeTab === "home" && (
+          <motion.div
+            key="blu-button-wrapper"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] left-1/2 -translate-x-1/2 z-[100] pointer-events-auto"
+          >
+            <BluButton
+              isExpanded={isBluExpanded}
+              onToggleExpand={setIsBluExpanded}
+              telegramUser={telegramUser}
+              balance={balance}
+              pendingMissionCount={pendingMissionCount}
+              socialMissionCount={socialMissionCount}
+              presenceMissionCount={presenceMissionCount}
+              onOpenCocoon={() => setCocoonOpen(true)}
+              onNavigateToTab={(tab) => {
+                setActiveTab(tab);
+                setMissionOpen(tab === "missions");
+                setExploreOpen(tab === "explore");
+                setMarketOpen(tab === "market");
+                setProfileOpen(tab === "profile");
+                setIsBluExpanded(false);
+              }}
+              welcomeBubble={showWelcomeBubble && welcomeBubbleMessage ? {
+                message: welcomeBubbleMessage,
+                isNewUser: isNewUser,
+                onDismiss: handleDismissWelcomeBubble
+              } : null}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
 
@@ -1194,7 +1213,9 @@ export default function LandingPage() {
       <div className="absolute inset-0 pointer-events-none">
         {visitedTabs.has("missions") && (
           <div 
-            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className={`absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              missionsOverlayActive ? "z-[1000]" : "z-[120]"
+            }`}
             style={{
               pointerEvents: activeTab === "missions" ? "auto" : "none",
               visibility: activeTab === "missions" ? "visible" : "hidden",
@@ -1207,13 +1228,16 @@ export default function LandingPage() {
               onClose={() => { setMissionOpen(false); setActiveTab("home"); }}
               telegramUser={telegramUser}
               isHumanVerified={!!telegramUser?.is_human_verified}
+              onOverlayStateChange={setMissionsOverlayActive}
             />
           </div>
         )}
 
         {visitedTabs.has("explore") && (
           <div 
-            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className={`absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              exploreOverlayActive ? "z-[1000]" : "z-[120]"
+            }`}
             style={{
               pointerEvents: activeTab === "explore" ? "auto" : "none",
               visibility: activeTab === "explore" ? "visible" : "hidden",
@@ -1232,6 +1256,7 @@ export default function LandingPage() {
                 setActiveTab("profile");
                 setProfileOpen(true);
               }}
+              onOverlayStateChange={setExploreOverlayActive}
             />
           </div>
         )}
@@ -1252,7 +1277,9 @@ export default function LandingPage() {
 
         {visitedTabs.has("profile") && (
           <div 
-            className="absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className={`absolute inset-0 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              profileOverlayActive ? "z-[1000]" : "z-[120]"
+            }`}
             style={{
               pointerEvents: activeTab === "profile" ? "auto" : "none",
               visibility: activeTab === "profile" ? "visible" : "hidden",
@@ -1276,6 +1303,7 @@ export default function LandingPage() {
                 setProfileOpen(false);
                 setIsBugsSuggestionsOpen(true);
               }}
+              onOverlayStateChange={setProfileOverlayActive}
             />
           </div>
         )}

@@ -17,6 +17,7 @@ interface MissionCenterProps {
   onClose: () => void;
   telegramUser: any;
   isHumanVerified: boolean;
+  onOverlayStateChange?: (isActive: boolean) => void;
 }
 
 interface Mission {
@@ -138,7 +139,7 @@ function PresenceCard({
 
 
 // [CODE: FRONTEND_MISSION_CENTER_MAIN_COMPONENT]
-export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVerified }: MissionCenterProps) {
+export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVerified, onOverlayStateChange }: MissionCenterProps) {
   const { t } = useLanguage();
   const telegram_id = telegramUser?.id;
 
@@ -641,6 +642,12 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   type TabId = "presence" | "social" | "quest" | "earn";
   const [activeTab, setActiveTab] = useState<TabId>("presence");
   const [questDetailOpen, setQuestDetailOpen] = useState(false);
+
+  const isAnyOverlayActive = isClaimBoostOpen || questDetailOpen;
+
+  useEffect(() => {
+    onOverlayStateChange?.(isAnyOverlayActive);
+  }, [isAnyOverlayActive, onOverlayStateChange]);
   const TABS: TabId[] = ["presence", "social", "quest", "earn"];
 
   const isQuestAdmin = canAdminQuests(telegram_id, telegramUser?.bw_id);
