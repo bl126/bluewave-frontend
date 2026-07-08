@@ -197,8 +197,12 @@ export default function LandingPage() {
       // 1. Nested Overlays/Modals (Stack-aware early returns)
       if (isBugsSuggestionsOpen) {
         setIsBugsSuggestionsOpen(false);
-        setProfileOpen(true);
-        setActiveTab("profile");
+        if (activeTab !== "explore") {
+          setProfileOpen(true);
+          setActiveTab("profile");
+        } else {
+          setExploreOpen(true);
+        }
         return;
       }
       if (selectedRoleData) {
@@ -809,7 +813,16 @@ export default function LandingPage() {
   useEffect(() => {
     const onQuestDetail = (e: Event) => setQuestDetailOpen(!!(e as CustomEvent).detail);
     window.addEventListener("questDetailOpen", onQuestDetail);
-    return () => window.removeEventListener("questDetailOpen", onQuestDetail);
+
+    const onOpenBugs = () => {
+      setIsBugsSuggestionsOpen(true);
+    };
+    window.addEventListener("openBugsSuggestions", onOpenBugs);
+
+    return () => {
+      window.removeEventListener("questDetailOpen", onQuestDetail);
+      window.removeEventListener("openBugsSuggestions", onOpenBugs);
+    };
   }, []);
 
   // 📜 Hide bottom nav on scroll (Explore feed + quest detail)
@@ -1301,8 +1314,12 @@ export default function LandingPage() {
             isOpen={isBugsSuggestionsOpen}
             onClose={() => {
               setIsBugsSuggestionsOpen(false);
-              setProfileOpen(true);
-              setActiveTab("profile");
+              if (activeTab !== "explore") {
+                setProfileOpen(true);
+                setActiveTab("profile");
+              } else {
+                setExploreOpen(true);
+              }
             }}
             telegramUser={telegramUser}
           />

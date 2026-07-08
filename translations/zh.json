@@ -231,8 +231,8 @@
     "post_btn": "发布",
     "post_success_popup": "广播成功",
     "tabs": {
-      "foryou": "推荐",
-      "following": "关注",
+      "foryou": "Waves",
+      "following": "Swap",
       "notifications": "通知",
       "leaderboard": "排行榜"
     },

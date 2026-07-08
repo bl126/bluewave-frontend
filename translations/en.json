@@ -306,8 +306,8 @@
     "post_btn": "Post",
     "post_success_popup": "Broadcast successful",
     "tabs": {
-      "foryou": "For You",
-      "following": "Following",
+      "foryou": "Waves",
+      "following": "Swap",
       "notifications": "Notifications",
       "leaderboard": "Leaderboard"
     },

@@ -232,8 +232,8 @@
     "post_btn": "โพสต์",
     "post_success_popup": "ออกอากาศสำเร็จ",
     "tabs": {
-      "foryou": "สำหรับคุณ",
-      "following": "กำลังติดตาม",
+      "foryou": "Waves",
+      "following": "Swap",
       "notifications": "การแจ้งเตือน",
       "leaderboard": "ลีดเดอร์บอร์ด"
     },

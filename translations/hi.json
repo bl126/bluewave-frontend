@@ -232,8 +232,8 @@
     "post_btn": "पोस्ट करें",
     "post_success_popup": "सफल प्रसारण",
     "tabs": {
-      "foryou": "आपके लिए",
-      "following": "फ़ॉलो किया जा रहा है",
+      "foryou": "Waves",
+      "following": "Swap",
       "notifications": "सूचनाएं",
       "leaderboard": "लीडरबोर्ड"
     },

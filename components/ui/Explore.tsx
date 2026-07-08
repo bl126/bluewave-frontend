@@ -37,7 +37,8 @@ import {
   Trophy,
   User,
   Lock,
-  Search
+  Search,
+  Sparkles
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -65,6 +66,166 @@ const WalletRequiredBeforeDepositModal = dynamic(
 
 const MINI_APP_INSERT_EVERY = 6;
 
+const AnimatedAIIcon = () => (
+  <span className="relative flex h-4 w-4 items-center justify-center shrink-0">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/20 opacity-75"></span>
+    <Sparkles size={14} className="text-white relative z-10 animate-[spin_5s_linear_infinite]" />
+  </span>
+);
+
+const VerifiedBadge = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="text-white shrink-0"
+  >
+    <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-13 5l-4-4 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+  </svg>
+);
+
+const Tooltip = ({ id, activeId, title, content }: { id: string, activeId: string | null, title: string, content: string }) => (
+  <AnimatePresence>
+    {activeId === id && (
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -10 }}
+        className="absolute left-[105%] top-1/2 -translate-y-1/2 z-50 w-48 bg-zinc-900 border border-white/10 rounded-2xl p-3 shadow-2xl pointer-events-none"
+      >
+        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-[9px] leading-relaxed text-white/60 font-semibold">{content}</p>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+function SwapTabComponent() {
+  return (
+    <div className="flex flex-col items-center px-6 pt-12 pb-32 text-left">
+      <div className="w-full max-w-sm">
+        {/* Header Title & Icons */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-white text-3xl font-black uppercase tracking-tight">Swap</h2>
+          <div className="flex items-center gap-3 text-white/40">
+            <button disabled className="p-2 bg-white/5 rounded-xl">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </button>
+            <button disabled className="p-2 bg-white/5 rounded-xl">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Swap Card */}
+        <div className="w-full bg-zinc-950 border border-white/5 rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col gap-1.5">
+          {/* Top Token Pay Box */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">You Pay</span>
+            <div className="flex items-center justify-between mt-1">
+              <input
+                type="text"
+                disabled
+                value="0"
+                className="bg-transparent text-white text-3xl font-bold focus:outline-none w-1/2"
+              />
+              <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full shrink-0">
+                {/* GRAM Diamond icon */}
+                <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                  <Star size={12} fill="currentColor" />
+                </div>
+                <span className="text-white text-sm font-black uppercase tracking-wider">GRAM</span>
+                <ChevronDown size={14} className="text-white/55" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/40">
+              <span>$0</span>
+              <span>Balance: 0.007726186</span>
+            </div>
+          </div>
+
+          {/* Swap divider circle */}
+          <div className="relative flex items-center justify-center my-0.5 z-10">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/[0.04]"></div>
+            </div>
+            <button disabled className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white/80 active:scale-90 transition-transform">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 5 4 4-4 4M16 9H3M12 19l-4-4 4-4M8 15h13"/></svg>
+            </button>
+          </div>
+
+          {/* Bottom Token Receive Box */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">You Receive</span>
+            <div className="flex items-center justify-between mt-1">
+              <input
+                type="text"
+                disabled
+                value="0"
+                className="bg-transparent text-white text-3xl font-bold focus:outline-none w-1/2"
+              />
+              <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full shrink-0">
+                {/* DUST Cube icon */}
+                <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
+                  <Bot size={12} fill="currentColor" />
+                </div>
+                <span className="text-white text-sm font-black uppercase tracking-wider">DUST</span>
+                <ChevronDown size={14} className="text-white/55" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/40">
+              <span>$0</span>
+              <span>Balance: 0</span>
+            </div>
+          </div>
+
+          {/* CTA Submit Button */}
+          <button disabled className="mt-4 w-full py-4 rounded-2xl bg-white/5 text-white/30 font-black uppercase tracking-widest text-xs border border-white/5">
+            Enter an amount
+          </button>
+        </div>
+
+        {/* Footer Dedust notice */}
+        <p className="text-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-4">
+          Powered by dedust coming soon
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PostCardSkeleton() {
+  return (
+    <div className="flex gap-4 p-4 border-b border-white/[0.06] animate-pulse w-full text-left">
+      {/* Avatar */}
+      <div className="w-11 h-11 rounded-2xl bg-white/10 shrink-0" />
+      {/* Content */}
+      <div className="flex-1 space-y-3">
+        {/* Name & Handle */}
+        <div className="flex gap-2">
+          <div className="h-3.5 bg-white/10 rounded w-1/4" />
+          <div className="h-3.5 bg-white/10 rounded w-1/6" />
+        </div>
+        {/* Text lines */}
+        <div className="space-y-2">
+          <div className="h-3 bg-white/10 rounded w-full" />
+          <div className="h-3 bg-white/10 rounded w-5/6" />
+        </div>
+        {/* Media Block */}
+        <div className="h-40 bg-white/5 rounded-2xl w-full" />
+        {/* Action Bar */}
+        <div className="flex justify-between w-3/4 pt-2">
+          <div className="h-3 bg-white/10 rounded w-8" />
+          <div className="h-3 bg-white/10 rounded w-8" />
+          <div className="h-3 bg-white/10 rounded w-8" />
+          <div className="h-3 bg-white/10 rounded w-8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface ExploreProps {
   isOpen: boolean;
   onClose: () => void;
@@ -83,7 +244,24 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [activeSearchTab, setActiveSearchTab] = useState("Topics");
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const tooltipTimeoutRef = useRef<any>(null);
+
+  const showTooltip = (id: string) => {
+    setActiveTooltip(id);
+    if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+    tooltipTimeoutRef.current = setTimeout(() => {
+      setActiveTooltip(null);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+    };
+  }, []);
 
   // Debounced search query logic
   useEffect(() => {
@@ -373,8 +551,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       const currentIndex = tabs.indexOf(activeTab);
 
       if (Math.abs(diff) > 80 && Math.abs(diff) > pullY) {
-        if (diff > 0 && currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
-        else if (diff < 0 && currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
+        if (diff > 0 && currentIndex < tabs.length - 1) {
+          setActiveTab(tabs[currentIndex + 1]);
+        } else if (diff < 0) {
+          if (currentIndex > 0) {
+            setActiveTab(tabs[currentIndex - 1]);
+          } else if (currentIndex === 0) {
+            setIsDrawerOpen(true);
+            const tg = (window as any).Telegram?.WebApp;
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+          }
+        }
       }
     }
 
@@ -648,18 +835,18 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 />
               </motion.div>
             )}
-            {(activeTab === "foryou" || activeTab === "following") && (
+            {activeTab === "foryou" && (
               <motion.div
-                key={activeTab}
+                key="foryou"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                {loading && pagedPosts.length === 0 ? (
+                {(loading && pagedPosts.length === 0) || isRefreshing ? (
                   <div className="p-4 space-y-4">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-32 bg-white/5 rounded-2xl animate-pulse border border-white/5" />
+                      <PostCardSkeleton key={i} />
                     ))}
                   </div>
                 ) : pagedPosts.length === 0 ? (
@@ -668,7 +855,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </div>
                 ) : (
                   <div className="pb-32">
-                    {activeTab === "foryou" && liveUsers && liveUsers.length > 0 && (
+                    {liveUsers && liveUsers.length > 0 && (
                       <LiveNowTray liveUsers={liveUsers} />
                     )}
                     {pagedPosts.map((post: any, index: number) => (
@@ -687,18 +874,29 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onStarGiftSuccess={() => mutateNotifications()}
                           onOpenBuyStars={tryOpenBuyStars}
                         />
-                        {activeTab === "foryou" && (index + 1) % MINI_APP_INSERT_EVERY === 0 && (
+                        {(index + 1) % MINI_APP_INSERT_EVERY === 0 && (
                           <MiniAppCarousel apps={MOCK_MINI_APPS} />
                         )}
                       </Fragment>
                     ))}
                     {hasMore && (
-                      <div ref={loadMoreRef} className="flex justify-center py-6">
-                        {loadingMore && <Loader2 size={20} className="text-cyan-400 animate-spin" />}
+                      <div ref={loadMoreRef} className="flex justify-center py-6 w-full px-4">
+                        {loadingMore && <PostCardSkeleton />}
                       </div>
                     )}
                   </div>
                 )}
+              </motion.div>
+            )}
+            {activeTab === "following" && (
+              <motion.div
+                key="following"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SwapTabComponent />
               </motion.div>
             )}
           </AnimatePresence>
@@ -915,10 +1113,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               }}
             >
               {/* Top content */}
-              <div className="px-4 flex flex-col gap-6">
+              <div className="px-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-1">
                 {/* Profile/Channel Card - Fitted left-top below back button, smaller avatar, no X */}
                 <div className="flex flex-col items-start text-left gap-3 mt-4 w-full">
-                  <div className="w-12 h-12 rounded-full border border-app-border overflow-hidden bg-app-bg flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 rounded-full border border-app-border overflow-hidden bg-app-bg flex items-center justify-center shadow-md">
                     {swrUser?.telegram_channel_photo ? (
                       <img 
                         src={swrUser.telegram_channel_photo} 
@@ -926,12 +1124,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <User size={20} className="text-text-sub/40" />
+                      <User size={18} className="text-text-sub/40" />
                     )}
                   </div>
 
                   {swrUser?.telegram_channel ? (
-                    <div className="flex flex-col gap-1 w-full overflow-hidden">
+                    <div className="flex flex-col gap-0.5 w-full overflow-hidden">
                       <h3 className="text-text-main font-black text-xs uppercase truncate tracking-tight w-full">
                         {swrUser.telegram_channel_title || "My Channel"}
                       </h3>
@@ -940,13 +1138,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       </p>
                       
                       {/* Subscriber Count */}
-                      <div className="mt-2 flex items-center gap-1.5 text-[9px] text-text-sub font-black uppercase tracking-wider">
+                      <div className="mt-1 flex items-center gap-1.5 text-[9px] text-text-sub font-black uppercase tracking-wider">
                         <BarChart2 size={10} className="text-app-accent shrink-0" />
                         <span className="truncate">{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subs</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-start gap-3 w-full">
+                    <div className="flex flex-col items-start gap-2 w-full">
                       <h3 className="text-text-main font-black text-[10px] uppercase tracking-wide">
                         No channel
                       </h3>
@@ -962,10 +1160,110 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     </div>
                   )}
                 </div>
+
+                <div className="h-px bg-white/[0.05] my-1" />
+
+                {/* Section 1: Topics & Blu AI */}
+                <div className="flex flex-col gap-1">
+                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Topics</div>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      setIsSearchOpen(true);
+                    }}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <Search size={16} className="text-white shrink-0" />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Topics</span>
+                  </button>
+                  <button
+                    onClick={() => showTooltip("blu-ai")}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                  >
+                    <AnimatedAIIcon />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Blu AI</span>
+                    <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." />
+                  </button>
+                </div>
+
+                <div className="h-px bg-white/[0.05] my-1" />
+
+                {/* Section 2: Swap, Wave Tools & AI Studio */}
+                <div className="flex flex-col gap-1">
+                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Ecosystem</div>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleTabClick("following");
+                    }}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <Repeat2 size={16} className="text-white shrink-0" />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Swap</span>
+                  </button>
+                  <button
+                    onClick={() => showTooltip("wave-tools")}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                  >
+                    <Zap size={16} className="text-white shrink-0" />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Wave Tools</span>
+                    <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" />
+                  </button>
+                  <button
+                    onClick={() => showTooltip("ai-studio")}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                  >
+                    <AnimatedAIIcon />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">AI Studio</span>
+                    <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" />
+                  </button>
+                </div>
+
+                <div className="h-px bg-white/[0.05] my-1" />
+
+                {/* Section 3: Analytics & Premium */}
+                <div className="flex flex-col gap-1">
+                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Growth</div>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      setIsConnectBluOpen(true);
+                    }}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <BarChart2 size={16} className="text-white shrink-0" />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Analytics</span>
+                  </button>
+                  <button
+                    onClick={() => showTooltip("premium")}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                  >
+                    <VerifiedBadge />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Premium</span>
+                    <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" />
+                  </button>
+                </div>
+
+                <div className="h-px bg-white/[0.05] my-1" />
+
+                {/* Section 4: Feedback & Support */}
+                <div className="flex flex-col gap-1">
+                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Support</div>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      window.dispatchEvent(new CustomEvent("openBugsSuggestions"));
+                    }}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <MessageCircle size={16} className="text-white shrink-0" />
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Feedback & Support</span>
+                  </button>
+                </div>
               </div>
 
               {/* Bottom section (keep blank as requested) */}
-              <div className="px-4 text-left">
+              <div className="px-4 text-left pt-2">
                 <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Bluewave</span>
               </div>
             </motion.div>
@@ -988,7 +1286,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             }}
           >
             {/* Search Input Container - Centered and Enlarged, 20px below safe area */}
-            <div className="w-full max-w-md mx-auto px-6 mb-6 shrink-0">
+            <div className="w-full max-w-md mx-auto px-6 mb-3 shrink-0">
               <div className="relative flex items-center w-full">
                 <input
                   type="text"
@@ -996,21 +1294,47 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full bg-app-card border border-app-border focus:border-app-accent/50 text-white placeholder-text-muted/40 text-base rounded-2xl py-3 px-5 pr-12 focus:outline-none transition-all font-sans"
+                  className="w-full bg-white/5 border border-white/5 focus:border-white/20 text-white placeholder-white/30 text-sm rounded-full py-2 px-4 pr-10 focus:outline-none transition-all font-sans"
                 />
                 {isSearching ? (
-                  <Loader2 size={18} className="absolute right-4 text-app-accent animate-spin" />
+                  <Loader2 size={16} className="absolute right-3.5 text-app-accent animate-spin" />
                 ) : (
-                  <Search size={18} className="absolute right-4 text-text-sub/50" />
+                  <Search size={16} className="absolute right-3.5 text-text-sub/50" />
                 )}
+              </div>
+            </div>
+
+            {/* Slim, sleek categories strip */}
+            <div className="w-full border-b border-white/[0.04] mb-4 shrink-0 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex gap-6 px-6 pb-2 min-w-max">
+                {["Topics", "Gram", "News", "AI", "Top Channels", "Mini Apps"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveSearchTab(tab)}
+                    className="relative pb-2 transition-all flex flex-col items-center shrink-0 active:scale-95"
+                  >
+                    <span className={`text-[11px] font-black uppercase tracking-widest ${activeSearchTab === tab ? "text-white" : "text-white/40"}`}>
+                      {tab}
+                    </span>
+                    {activeSearchTab === tab && (
+                      <motion.div
+                        layoutId="activeSearchTabIndicator"
+                        className="absolute bottom-0 w-8 h-[2px] bg-white rounded-full"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Search Results */}
             <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-24">
               {isSearching && searchResults.length === 0 ? (
-                <div className="flex justify-center items-center py-20">
-                  <Loader2 size={24} className="text-app-accent animate-spin" />
+                <div className="space-y-4 py-4">
+                  {[1, 2, 3].map((i) => (
+                    <PostCardSkeleton key={i} />
+                  ))}
                 </div>
               ) : searchQuery.trim() === "" ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -1982,27 +2306,25 @@ function PostCard({
 
   return (
     <div
-      className="mx-3 mb-3 rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.04] to-transparent overflow-hidden relative hover:border-cyan-500/20 transition-all cursor-pointer"
+      className="px-4 py-3.5 border-b border-white/[0.06] relative hover:bg-white/[0.01] transition-all cursor-pointer w-full text-left"
       onClick={onPostClick}
     >
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400/90 via-cyan-500/40 to-purple-500/30" />
-      <div className="p-4 flex flex-col gap-1 relative items-start pl-5">
       <TrueViewTracker postId={post.id} />
 
       {/* Repost Header */}
       {(isReposted || post.reposted_by_name) && (
-        <div className="flex items-center gap-2 mb-1 ml-10">
-          <Repeat2 size={12} className="text-cyan-400/80" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/88">
+        <div className="flex items-center gap-2 mb-1.5 ml-14">
+          <Repeat2 size={12} className="text-white/40" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
             {post.reposted_by_name ? `${post.reposted_by_name} Reposted` : "You Reposted"}
           </span>
         </div>
       )}
 
-      <div className="flex gap-4 w-full items-start">
+      <div className="flex gap-3.5 w-full items-start">
         {/* Avatar → direct channel link */}
         <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="shrink-0 relative">
-          <div className={`w-11 h-11 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-lg ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
+          <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm ${post.user?.is_live_on_telegram ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-black animate-pulse' : ''}`}>
             {post.channel?.photo && !imgError ? (
               <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
             ) : (
@@ -2025,7 +2347,7 @@ function PostCard({
               <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
             </button>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-white/88 font-bold uppercase">{timeAgo(post.created_at)}</span>
+              <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
                 <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/85 hover:text-white">
                   < MoreHorizontal size={14} />
@@ -2067,7 +2389,7 @@ function PostCard({
           {post.post_type === 'live_scheduled' ? null : post.media_urls && post.media_urls.length > 0 ? (
             <MediaCollage items={post.media_urls} />
           ) : post.media_url ? (
-            <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner">
+            <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full">
               {post.media_type === "photo" ? (
                 <img src={post.media_url} alt="signal" className="w-full h-auto max-h-[400px] object-contain" loading="lazy" />
               ) : post.media_type === "video" ? (
@@ -2077,20 +2399,20 @@ function PostCard({
           ) : null}
 
           {/* ─── Action Bar: Comment · Like · Star · Repost (left) | Views (right) ─── */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
-            {/* Left: Comment + Like + Star + Repost — X/Twitter scale, full visibility */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/40">
+            {/* Left: Comment + Like + Star + Repost — X/Twitter style, full visibility */}
             <div className="flex items-center gap-6">
 
-              {/* Comment — open for everyone */}
+              {/* Comment */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onCommentClick();
                 }}
-                className="flex items-center gap-2 group transition-all"
+                className="flex items-center gap-2 group transition-all hover:text-cyan-400"
               >
-                <MessageCircle size={18} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
-                <span className="text-[12px] font-bold font-mono text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                <MessageCircle size={16} className="transition-colors" />
+                <span className="text-[11px] font-black font-mono transition-colors">
                   {fmt(post.comments_count || 0)}
                 </span>
               </button>
@@ -2109,7 +2431,7 @@ function PostCard({
                           initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
                           animate={{ x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100, scale: 0, opacity: 0 }}
                           transition={{ duration: 1.0, ease: "easeOut" }}
-                          className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
+                          className="absolute w-1.5 h-1.5 bg-red-400 rounded-full"
                         />
                       ))}
                     </motion.div>
@@ -2118,36 +2440,35 @@ function PostCard({
                 <button
                   ref={ackBtnRef}
                   onClick={handleAcknowledge}
-                  className="flex items-center gap-2 group transition-all"
+                  className={`flex items-center gap-2 group transition-all ${
+                    isAcknowledged ? "text-red-500" : "hover:text-red-500"
+                  }`}
                 >
                   <Heart
-                    size={18}
+                    size={16}
                     fill={isAcknowledged ? "currentColor" : "none"}
-                    className={`transition-all ${
-                      isAcknowledged
-                        ? "text-cyan-400 scale-110"
-                        : "text-cyan-400 group-hover:text-cyan-300"
-                    }`}
+                    className="transition-transform active:scale-125"
                   />
-                  <span className={`text-[12px] font-bold font-mono transition-colors ${
-                    isAcknowledged ? "text-cyan-400" : "text-cyan-400 group-hover:text-cyan-300"
-                  }`}>
+                  <span className="text-[11px] font-black font-mono transition-colors">
                     {fmt(localAckCount)}
                   </span>
                 </button>
               </div>
 
+              {/* Star (Gift) */}
               <button
                 onClick={openStarGiftFlow}
                 title={t("explore.gift_star_hint")}
-                className="flex items-center gap-2 group transition-all"
+                className={`flex items-center gap-2 group transition-all ${
+                  localStarCount > 0 ? "text-amber-500" : "hover:text-amber-500"
+                }`}
               >
                 <Star
-                  size={18}
-                  fill="none"
-                  className="text-amber-400/80 group-hover:text-amber-300 transition-all"
+                  size={16}
+                  fill={localStarCount > 0 ? "currentColor" : "none"}
+                  className="transition-colors"
                 />
-                <span className="text-[12px] font-bold font-mono text-amber-400/80">
+                <span className="text-[11px] font-black font-mono transition-colors">
                   {fmt(localStarCount)}
                 </span>
               </button>
@@ -2157,24 +2478,24 @@ function PostCard({
                 onClick={handleRepost}
                 disabled={isReposted || isReposting}
                 className={`flex items-center gap-2 transition-all ${
-                  isReposted ? "text-cyan-400" : isReposting ? "text-cyan-400/50" : "text-cyan-400/60 hover:text-cyan-400"
+                  isReposted ? "text-green-500" : isReposting ? "text-green-500/50" : "hover:text-green-500"
                 }`}
               >
                 {isReposting
-                  ? <Loader2 size={16} className="animate-spin" />
-                  : <Repeat2 size={18} className={isReposted ? "rotate-180" : ""} />
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <Repeat2 size={16} className={isReposted ? "rotate-180 transition-transform duration-300" : "transition-transform"} />
                 }
                 {(post.reposts_count || 0) > 0 && (
-                  <span className="text-[12px] font-bold font-mono">{fmt(post.reposts_count || 0)}</span>
+                  <span className="text-[11px] font-black font-mono">{fmt(post.reposts_count || 0)}</span>
                 )}
               </button>
 
             </div>
 
             {/* Right: Views */}
-            <div className="flex items-center gap-2">
-              <BarChart2 size={18} className="text-cyan-400/60" />
-              <span className="text-[12px] font-bold font-mono text-cyan-400/60">
+            <div className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <BarChart2 size={16} />
+              <span className="text-[11px] font-black font-mono">
                 {fmt(post.views_count || post.views || 0)}
               </span>
             </div>
@@ -2183,7 +2504,6 @@ function PostCard({
             <p className="text-[10px] text-amber-400/90 mt-1 font-medium">{starError}</p>
           )}
         </div>
-      </div>
       </div>
 
       <StarGiftModal
@@ -2564,7 +2884,7 @@ function PostDetailModal({
     }
   }, [initialPost.id, initialPost.content, telegramUser?.id]);
 
-  const { data: comments, mutate: mutateComments } = useApi(post?.id ? `/explore/post/${post.id}/comments` : null);
+  const { data: comments, loading: loadingComments, mutate: mutateComments } = useApi(post?.id ? `/explore/post/${post.id}/comments` : null);
 
   useEffect(() => {
     if (comments) {
@@ -2764,9 +3084,40 @@ function PostDetailModal({
 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-40">
           {loading ? (
-            <div className="py-32 flex flex-col items-center gap-4 opacity-50">
-              <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500">Loading</p>
+            <div className="py-6 space-y-8 animate-pulse text-left">
+              {/* Post Header Skeleton */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/10 shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-white/10 rounded w-1/3" />
+                  <div className="h-3 bg-white/10 rounded w-1/4" />
+                </div>
+              </div>
+              {/* Post Content Skeleton */}
+              <div className="space-y-2">
+                <div className="h-3 bg-white/10 rounded w-full" />
+                <div className="h-3 bg-white/10 rounded w-full" />
+                <div className="h-3 bg-white/10 rounded w-2/3" />
+              </div>
+              {/* Media Block Skeleton */}
+              <div className="h-48 bg-white/5 rounded-2xl w-full" />
+              {/* Comments Section Separator */}
+              <div className="h-px bg-white/5 my-4" />
+              {/* Comments List Skeleton */}
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-3 py-4">
+                    <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <div className="flex gap-2">
+                        <div className="h-3 bg-white/10 rounded w-1/4" />
+                        <div className="h-2 bg-white/10 rounded w-1/6" />
+                      </div>
+                      <div className="h-3 bg-white/10 rounded w-5/6" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="py-6 space-y-8">
@@ -2826,7 +3177,22 @@ function PostDetailModal({
                 </div>
 
                 <div className="space-y-4">
-                  {localComments.length === 0 ? (
+                  {loadingComments && localComments.length === 0 ? (
+                    <div className="space-y-4 py-4 animate-pulse">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex gap-3 py-4 text-left">
+                          <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
+                          <div className="space-y-2 flex-1">
+                            <div className="flex gap-2">
+                              <div className="h-3 bg-white/10 rounded w-1/4" />
+                              <div className="h-2 bg-white/10 rounded w-1/6" />
+                            </div>
+                            <div className="h-3 bg-white/10 rounded w-5/6" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : localComments.length === 0 ? (
                     <div className="py-16 text-center opacity-20 flex flex-col items-center gap-4">
                       <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-2">
                         <MessageCircle size={32} strokeWidth={1.5} />
