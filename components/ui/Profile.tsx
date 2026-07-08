@@ -302,9 +302,11 @@ export default function Profile({ isOpen, onClose, telegramUser, onOpenRoles, on
     }
   };
 
+  const isSubSheetOpen = menuOpen || settingsOpen || languageOpen || isReferralModalOpen || isLevelPopupOpen || isNetworkPopupOpen || isConnectBluOpen || isLevelUpModalOpen || isClaimBoostOpen;
+
   return (
     <motion.div
-      className={`fixed inset-0 z-[120] flex flex-col overflow-hidden text-text-main bg-app-bg/95 backdrop-blur-3xl`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg/95 backdrop-blur-3xl transition-all duration-300 ${isSubSheetOpen ? "z-[1100]" : "z-[120]"}`}
       style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}

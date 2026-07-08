@@ -57,7 +57,7 @@ export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenBugsSu
                 <>
                     {/* Backdrop — above nav */}
                     <motion.div
-                        className="fixed inset-0 bg-app-bg/60 backdrop-blur-sm z-[998]"
+                        className="fixed inset-0 bg-app-bg/60 backdrop-blur-sm z-[1008]"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenBugsSu
 
                     {/* Sheet — above nav */}
                     <motion.div
-                        className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+                        className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
                         initial={{ y: "100%" }}
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}

@@ -293,7 +293,7 @@ export default function StarWithdrawalModal({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[990] pointer-events-auto">
+        <div className="fixed inset-0 z-[1029] pointer-events-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

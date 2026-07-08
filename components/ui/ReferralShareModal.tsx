@@ -239,7 +239,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-[1018] bg-app-bg/60 backdrop-blur-sm"
                     />
 
                     {/* Sheet — above nav */}
@@ -256,7 +256,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         onDragEnd={(_, info) => {
                             if (info.offset.y > 100) onClose();
                         }}
-                        className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+                        className="fixed bottom-0 left-0 right-0 z-[1019] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
                     >
                         {/* Drag Handle */}
                         <div

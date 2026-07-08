@@ -306,7 +306,7 @@ export default function ConnectBluModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={handleClose}
-                        className="fixed inset-0 z-[998] bg-app-bg/70 backdrop-blur-sm"
+                        className="fixed inset-0 z-[1008] bg-app-bg/70 backdrop-blur-sm"
                     />
 
                     {/* Sheet — above nav */}
@@ -323,7 +323,7 @@ export default function ConnectBluModal({
                         onDragEnd={(_, info) => {
                             if (info.offset.y > 100) handleClose();
                         }}
-                        className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main pointer-events-auto"
+                        className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main pointer-events-auto"
                     >
                         {/* Drag Handle */}
                         <div
@@ -555,7 +555,7 @@ export default function ConnectBluModal({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowDisconnectConfirm(false)}
-                            className="fixed inset-0 z-[1008] bg-black/60 backdrop-blur-sm"
+                            className="fixed inset-0 z-[1018] bg-black/60 backdrop-blur-sm"
                         />
                         {/* Sheet */}
                         <motion.div
@@ -571,7 +571,7 @@ export default function ConnectBluModal({
                             onDragEnd={(_, info) => {
                                 if (info.offset.y > 100) setShowDisconnectConfirm(false);
                             }}
-                            className="fixed bottom-0 left-0 right-0 z-[1009] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow p-6 text-center text-text-main"
+                            className="fixed bottom-0 left-0 right-0 z-[1019] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow p-6 text-center text-text-main"
                         >
                             {/* Drag Handle */}
                             <div
@@ -620,7 +620,7 @@ export default function ConnectBluModal({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 40 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[210] bg-app-bg text-text-main flex flex-col overflow-hidden font-sans"
+                        className="fixed inset-0 z-[1019] bg-app-bg text-text-main flex flex-col overflow-hidden font-sans"
                         style={{ 
                             "paddingTop": "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 27px)", 
                             paddingBottom: "env(safe-area-inset-bottom, 0px)" 
@@ -1020,7 +1020,7 @@ export default function ConnectBluModal({
 
                         {/* Floating Bottom Navigation Tabs — liquid glassmorphism */}
                         <div 
-                            className="absolute left-1/2 -translate-x-1/2 z-[215] flex items-center justify-around w-[94%] max-w-md rounded-[2.2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
+                            className="absolute left-1/2 -translate-x-1/2 z-[1020] flex items-center justify-around w-[94%] max-w-md rounded-[2.2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
                             style={{ bottom: "calc(max(1.5rem, env(safe-area-inset-bottom)) + 10px)" }}
                         >
                             {(["signals", "brain", "monetisation"] as const).map((tab) => {

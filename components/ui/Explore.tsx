@@ -416,7 +416,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen) ? "z-[300]" : "z-[120]"}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${(isPostModalOpen || isLeaderboardSheetOpen || isSearchOpen || isReferralModalOpen) ? "z-[1100]" : "z-[120]"}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
