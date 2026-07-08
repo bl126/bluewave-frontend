@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Star, X, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
+import { Star, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -42,6 +42,7 @@ export default function StarGiftModal({
   const [amount, setAmount] = useState(initialAmount);
   const [customDraft, setCustomDraft] = useState("");
   const [mounted, setMounted] = useState(false);
+  const dragControls = useDragControls();
 
   useEffect(() => {
     setMounted(true);
@@ -53,6 +54,23 @@ export default function StarGiftModal({
     setAmount(safe);
     setCustomDraft(isPresetAmount(safe) ? "" : String(safe));
   }, [isOpen, initialAmount, starsBalance]);
+
+  /* Telegram back button listener */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleBack = () => onClose();
+    window.addEventListener("bwNativeBack", handleBack);
+    return () => window.removeEventListener("bwNativeBack", handleBack);
+  }, [isOpen, onClose]);
+
+  const handleDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (info.offset.y > 100) {
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   if (!mounted) return null;
 
@@ -82,54 +100,54 @@ export default function StarGiftModal({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[400] pointer-events-auto"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Full-screen shield — blocks all background taps; only X / Telegram back closes */}
+        <>
+          {/* Backdrop */}
           <motion.div
+            key="star-gift-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-0 bg-app-bg/85 backdrop-blur-md"
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[998] bg-app-bg/60 backdrop-blur-sm"
+            onClick={onClose}
           />
+
+          {/* Bottom Sheet */}
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.96 }}
-            className="absolute inset-0 z-10 flex items-end sm:items-center justify-center p-4 pointer-events-none"
+            key="star-gift-sheet"
+            role="dialog"
+            aria-modal="true"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 350 }}
+            drag="y"
+            dragControls={dragControls}
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[80vh] shadow-app-shadow"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="w-full max-w-sm bg-app-card border border-app-border rounded-3xl overflow-hidden shadow-app-shadow pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-app-border">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <Star size={22} className="text-amber-400" fill="currentColor" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-black text-text-main uppercase tracking-tight">
-                      {mode === "setup" ? t("explore.gift_star_setup_title") : t("explore.gift_star_confirm_title")}
-                    </h3>
-                    <p className="text-[10px] text-text-sub font-medium mt-0.5 truncate">
-                      {displayName}
-                    </p>
-                  </div>
+            {/* Drag handle pill */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-text-sub/30" />
+            </div>
+
+            {/* Scrollable content */}
+            <div className="overflow-y-auto pb-24 flex-1">
+              {/* Header */}
+              <div className="px-5 pt-2 pb-3 flex items-center gap-3 border-b border-app-border">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <Star size={22} className="text-amber-400" fill="currentColor" />
                 </div>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                  className="p-2 rounded-xl bg-app-accent/5 border border-app-border text-text-sub hover:text-text-main transition-colors shrink-0"
-                  aria-label={t("explore.gift_star_close")}
-                >
-                  <X size={18} />
-                </button>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-black text-text-main uppercase tracking-tight">
+                    {mode === "setup" ? t("explore.gift_star_setup_title") : t("explore.gift_star_confirm_title")}
+                  </h3>
+                  <p className="text-[10px] text-text-sub font-medium mt-0.5 truncate">
+                    {displayName}
+                  </p>
+                </div>
               </div>
 
               {mode === "setup" ? (
@@ -227,7 +245,7 @@ export default function StarGiftModal({
               )}
             </div>
           </motion.div>
-        </div>
+        </>
       )}
     </AnimatePresence>,
     document.body

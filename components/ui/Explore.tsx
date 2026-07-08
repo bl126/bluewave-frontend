@@ -89,10 +89,10 @@ const Tooltip = ({ id, activeId, title, content }: { id: string, activeId: strin
   <AnimatePresence>
     {activeId === id && (
       <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -10 }}
-        className="absolute left-[105%] top-1/2 -translate-y-1/2 z-50 w-48 bg-zinc-900 border border-white/10 rounded-2xl p-3 shadow-2xl pointer-events-none"
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+        className="fixed left-1/2 -translate-x-1/2 bottom-28 z-[1100] w-64 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-none"
       >
         <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{title}</p>
         <p className="text-[9px] leading-relaxed text-white/60 font-semibold">{content}</p>
@@ -103,45 +103,28 @@ const Tooltip = ({ id, activeId, title, content }: { id: string, activeId: strin
 
 function SwapTabComponent() {
   return (
-    <div className="flex flex-col items-center px-6 pt-12 pb-32 text-left">
+    <div className="flex flex-col items-center px-5 pt-6 pb-32 text-left">
       <div className="w-full max-w-sm">
-        {/* Header Title & Icons */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-3xl font-black uppercase tracking-tight">Swap</h2>
-          <div className="flex items-center gap-3 text-white/40">
-            <button disabled className="p-2 bg-white/5 rounded-xl">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            </button>
-            <button disabled className="p-2 bg-white/5 rounded-xl">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
-          </div>
-        </div>
-
         {/* Swap Card */}
-        <div className="w-full bg-zinc-950 border border-white/5 rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col gap-1.5">
+        <div className="w-full bg-zinc-950/80 border border-white/[0.06] rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col gap-1.5">
           {/* Top Token Pay Box */}
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
-            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">You Pay</span>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">You Pay</span>
             <div className="flex items-center justify-between mt-1">
               <input
                 type="text"
                 disabled
                 value="0"
-                className="bg-transparent text-white text-3xl font-bold focus:outline-none w-1/2"
+                className="bg-transparent text-white/80 text-3xl font-bold focus:outline-none w-1/2"
               />
-              <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full shrink-0">
-                {/* GRAM Diamond icon */}
-                <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  <Star size={12} fill="currentColor" />
-                </div>
-                <span className="text-white text-sm font-black uppercase tracking-wider">GRAM</span>
-                <ChevronDown size={14} className="text-white/55" />
+              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] px-3 py-1.5 rounded-full shrink-0">
+                <span className="text-white/70 text-sm font-black uppercase tracking-wider">TON</span>
+                <ChevronDown size={14} className="text-white/40" />
               </div>
             </div>
-            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/40">
+            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/30">
               <span>$0</span>
-              <span>Balance: 0.007726186</span>
+              <span>Balance: 0</span>
             </div>
           </div>
 
@@ -150,45 +133,41 @@ function SwapTabComponent() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/[0.04]"></div>
             </div>
-            <button disabled className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white/80 active:scale-90 transition-transform">
+            <button disabled className="w-8 h-8 rounded-full bg-zinc-900 border border-white/[0.08] flex items-center justify-center text-white/60 active:scale-90 transition-transform">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m12 5 4 4-4 4M16 9H3M12 19l-4-4 4-4M8 15h13"/></svg>
             </button>
           </div>
 
           {/* Bottom Token Receive Box */}
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
-            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">You Receive</span>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">You Receive</span>
             <div className="flex items-center justify-between mt-1">
               <input
                 type="text"
                 disabled
                 value="0"
-                className="bg-transparent text-white text-3xl font-bold focus:outline-none w-1/2"
+                className="bg-transparent text-white/80 text-3xl font-bold focus:outline-none w-1/2"
               />
-              <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full shrink-0">
-                {/* DUST Cube icon */}
-                <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
-                  <Bot size={12} fill="currentColor" />
-                </div>
-                <span className="text-white text-sm font-black uppercase tracking-wider">DUST</span>
-                <ChevronDown size={14} className="text-white/55" />
+              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] px-3 py-1.5 rounded-full shrink-0">
+                <span className="text-white/70 text-sm font-black uppercase tracking-wider">USDT</span>
+                <ChevronDown size={14} className="text-white/40" />
               </div>
             </div>
-            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/40">
+            <div className="flex items-center justify-between mt-1 text-[10px] font-black uppercase tracking-wider text-white/30">
               <span>$0</span>
               <span>Balance: 0</span>
             </div>
           </div>
 
           {/* CTA Submit Button */}
-          <button disabled className="mt-4 w-full py-4 rounded-2xl bg-white/5 text-white/30 font-black uppercase tracking-widest text-xs border border-white/5">
+          <button disabled className="mt-4 w-full py-4 rounded-2xl bg-white/[0.04] text-white/25 font-black uppercase tracking-widest text-xs border border-white/[0.06]">
             Enter an amount
           </button>
         </div>
 
         {/* Footer Dedust notice */}
-        <p className="text-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-4">
-          Powered by dedust coming soon
+        <p className="text-center text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mt-5">
+          Powered by DeDust · Coming Soon
         </p>
       </div>
     </div>
@@ -246,6 +225,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isSearching, setIsSearching] = useState(false);
   const [activeSearchTab, setActiveSearchTab] = useState("Topics");
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
+  const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
 
@@ -734,7 +714,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       {/* New Posts Pill */}
       <AnimatePresence>
-        {newPostsAvailable && activeTab !== "leaderboard" && activeTab !== "notifications" && (
+        {newPostsAvailable && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -917,8 +897,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       </AnimatePresence>
 
       <AnimatePresence>
-        {showChrome && activeTab !== "leaderboard" && (
-          <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
+        {showChrome && activeTab !== "leaderboard" && activeTab !== "following" && (
+          <div className="fixed right-5 bottom-36 z-[200] flex flex-col items-center gap-3">
             <motion.button
               initial={{ scale: 0, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -930,8 +910,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               onClick={() => {
                 if (!hasAccess) return;
                 if (swrUser && !isConnected) {
-                  setConnectPrompt(true);
-                  setTimeout(() => setConnectPrompt(false), 3000);
+                  setConnectBluAnalytics(false);
+                  setIsConnectBluOpen(true);
                 } else {
                   setIsPostModalOpen(true);
                 }
@@ -1178,11 +1158,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </button>
                   <button
                     onClick={() => showTooltip("blu-ai")}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Blu AI</span>
-                    <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." />
                   </button>
                 </div>
 
@@ -1203,19 +1182,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </button>
                   <button
                     onClick={() => showTooltip("wave-tools")}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <Zap size={16} className="text-white shrink-0" />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Wave Tools</span>
-                    <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" />
                   </button>
                   <button
                     onClick={() => showTooltip("ai-studio")}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">AI Studio</span>
-                    <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" />
                   </button>
                 </div>
 
@@ -1227,6 +1204,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
+                      setConnectBluAnalytics(true);
                       setIsConnectBluOpen(true);
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
@@ -1236,11 +1214,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </button>
                   <button
                     onClick={() => showTooltip("premium")}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full relative"
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <VerifiedBadge />
                     <span className="text-white text-[11px] font-black uppercase tracking-widest">Premium</span>
-                    <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" />
                   </button>
                 </div>
 
@@ -1371,6 +1348,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
+      {/* ─── Tooltips ─── */}
+      <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." />
+      <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" />
+      <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" />
+      <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" />
+
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
         isOpen={isConnectBluOpen}
@@ -1382,6 +1365,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         channelTitle={swrUser?.telegram_channel_title || null}
         channelPhoto={swrUser?.telegram_channel_photo || null}
         channelStarsReceived={swrUser?.channel_stars_received ?? 0}
+        initialAnalytics={connectBluAnalytics}
       />
 
     </motion.div>

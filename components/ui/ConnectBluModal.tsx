@@ -20,6 +20,7 @@ interface ConnectBluModalProps {
     channelTitle?: string | null;
     channelPhoto?: string | null;
     channelStarsReceived?: number;
+    initialAnalytics?: boolean;
 }
 
 const getCachedAnalytics = (tgId: number) => {
@@ -49,6 +50,7 @@ export default function ConnectBluModal({
     channelTitle,
     channelPhoto,
     channelStarsReceived = 0,
+    initialAnalytics = false,
 }: ConnectBluModalProps) {
     const [view, setView] = useState<"main" | "telegram">("main");
     const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -71,6 +73,13 @@ export default function ConnectBluModal({
     // Custom States for Analytics and Confirm Modal
     const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
     const [analyticsOpen, setAnalyticsOpen] = useState(false);
+
+    // Auto-open analytics when initialAnalytics prop is true
+    useEffect(() => {
+        if (isOpen && initialAnalytics && alreadyConnected) {
+            setAnalyticsOpen(true);
+        }
+    }, [isOpen, initialAnalytics, alreadyConnected]);
     const [analyticsData, setAnalyticsData] = useState<{
         subscribers: number;
         total_posts: number;
