@@ -1151,42 +1151,31 @@ export default function LandingPage() {
       )}
 
       {/* 🤖 BLU AI Assistant Button */}
-      <AnimatePresence>
-        {!isLoading && !isMaintenanceMode && activeTab === "home" && (
-          <motion.div
-            key="blu-button-wrapper"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] left-1/2 -translate-x-1/2 z-[100] pointer-events-auto"
-          >
-            <BluButton
-              isExpanded={isBluExpanded}
-              onToggleExpand={setIsBluExpanded}
-              telegramUser={telegramUser}
-              balance={balance}
-              pendingMissionCount={pendingMissionCount}
-              socialMissionCount={socialMissionCount}
-              presenceMissionCount={presenceMissionCount}
-              onOpenCocoon={() => setCocoonOpen(true)}
-              onNavigateToTab={(tab) => {
-                setActiveTab(tab);
-                setMissionOpen(tab === "missions");
-                setExploreOpen(tab === "explore");
-                setMarketOpen(tab === "market");
-                setProfileOpen(tab === "profile");
-                setIsBluExpanded(false);
-              }}
-              welcomeBubble={showWelcomeBubble && welcomeBubbleMessage ? {
-                message: welcomeBubbleMessage,
-                isNewUser: isNewUser,
-                onDismiss: handleDismissWelcomeBubble
-              } : null}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!isLoading && !isMaintenanceMode && activeTab === "home" && (
+        <BluButton
+          isExpanded={isBluExpanded}
+          onToggleExpand={setIsBluExpanded}
+          telegramUser={telegramUser}
+          balance={balance}
+          pendingMissionCount={pendingMissionCount}
+          socialMissionCount={socialMissionCount}
+          presenceMissionCount={presenceMissionCount}
+          onOpenCocoon={() => setCocoonOpen(true)}
+          onNavigateToTab={(tab) => {
+            setActiveTab(tab);
+            setMissionOpen(tab === "missions");
+            setExploreOpen(tab === "explore");
+            setMarketOpen(tab === "market");
+            setProfileOpen(tab === "profile");
+            setIsBluExpanded(false);
+          }}
+          welcomeBubble={showWelcomeBubble && welcomeBubbleMessage ? {
+            message: welcomeBubbleMessage,
+            isNewUser: isNewUser,
+            onDismiss: handleDismissWelcomeBubble
+          } : null}
+        />
+      )}
 
 
 
