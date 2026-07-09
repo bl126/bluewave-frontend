@@ -91,15 +91,30 @@ export function LiveNowTray({ liveUsers }: { liveUsers: any[] }) {
   );
 }
 
-export function MiniAppCarousel({ apps }: { apps: typeof MOCK_MINI_APPS }) {
+export function MiniAppCarousel({
+  apps,
+  onViewAll,
+  loading = false
+}: {
+  apps?: any[];
+  onViewAll?: () => void;
+  loading?: boolean;
+}) {
   return (
     <div className="w-full py-5 border-y border-white/5 bg-white/[0.02] overflow-hidden">
-      <div className="px-5 mb-3 flex items-center justify-between">
+      <div className="px-5 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-text-main">Wave apps</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-text-main">Mini Apps & Bots</h3>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Preview</span>
+        {!loading && onViewAll && (
+          <button
+            onClick={onViewAll}
+            className="text-[10px] font-black uppercase tracking-wider text-app-accent hover:opacity-80 active:scale-95 transition-all cursor-pointer animate-pulse"
+          >
+            View All
+          </button>
+        )}
       </div>
 
       <div
@@ -108,29 +123,64 @@ export function MiniAppCarousel({ apps }: { apps: typeof MOCK_MINI_APPS }) {
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
       >
-        {apps.map((app) => (
-          <div key={app.id} className="flex flex-col items-center gap-3 shrink-0 snap-center group">
-            <div className="w-16 h-16 rounded-2xl bg-active p-[1.5px] relative group-active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.4)]">
-              <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.color} opacity-40 blur-[2px] transition-opacity group-hover:opacity-100`} />
-              <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
-                {app.icon}
+        {loading ? (
+          // Pulse Skeletons
+          [1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex flex-col items-center gap-3 shrink-0 snap-center animate-pulse">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10" />
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-16 h-2.5 bg-white/10 rounded" />
+                <div className="w-10 h-2 bg-white/5 rounded" />
               </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[11px] font-bold text-text-main uppercase tracking-wide text-center w-20 truncate">
-                {app.name}
-              </span>
+          ))
+        ) : (
+          apps?.map((app) => {
+            const handleOpen = () => {
+              const link = app.link || `https://t.me/${app.username}`;
+              const twa = (window as any).Telegram?.WebApp;
+              if (twa?.openTelegramLink) {
+                twa.openTelegramLink(link);
+              } else {
+                window.open(link, "_blank");
+              }
+            };
+
+            return (
               <button
-                type="button"
-                disabled
-                className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wide text-text-muted cursor-default"
+                key={app.id}
+                onClick={handleOpen}
+                className="flex flex-col items-center gap-3 shrink-0 snap-center group text-center"
               >
-                Soon
+                <div className="w-16 h-16 rounded-2xl bg-active p-[1px] relative group-active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.4)]">
+                  <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.gradient || app.color || "from-cyan-500 to-blue-600"} opacity-30 blur-[1px] transition-opacity group-hover:opacity-80`} />
+                  <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+                    {app.photo_url ? (
+                      <img src={app.photo_url} className="w-full h-full object-cover" alt="" />
+                    ) : app.photo ? (
+                      <img src={app.photo} className="w-full h-full object-cover" alt="" />
+                    ) : app.icon ? (
+                      app.icon
+                    ) : (
+                      <span className="text-sm font-black uppercase text-app-accent/80">
+                        {app.name?.[0]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="text-[11px] font-black text-text-main uppercase tracking-wide text-center w-20 truncate">
+                    {app.name}
+                  </span>
+                  <span className="text-[9px] font-mono font-bold text-text-muted">
+                    @{app.username || `${app.id}_bot`}
+                  </span>
+                </div>
               </button>
-            </div>
-          </div>
-        ))}
+            );
+          })
+        )}
         <div className="shrink-0 w-5" />
       </div>
     </div>

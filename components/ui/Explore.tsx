@@ -412,6 +412,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   // Fetch Live Users globally
   const { data: liveUsers } = useApi(isOpen ? `/explore/live_users${telegramUser?.id ? `?tg_id=${telegramUser.id}` : ''}` : null, { refreshInterval: 60000 });
 
+  // Fetch Ecosystem Mini Apps & Bots
+  const { data: dbMiniApps } = useApi(isOpen ? "/explore/mini_apps" : null);
+  const miniAppsList = dbMiniApps || [];
+
   // Track latest post ID for new-posts pill
   useEffect(() => {
     if (initialPosts && initialPosts.length > 0) {
@@ -893,7 +897,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onOpenBuyStars={tryOpenBuyStars}
                         />
                         {(index + 1) % MINI_APP_INSERT_EVERY === 0 && (
-                          <MiniAppCarousel apps={MOCK_MINI_APPS} />
+                          <MiniAppCarousel
+                            apps={miniAppsList}
+                            loading={!dbMiniApps || dbMiniApps.length === 0}
+                            onViewAll={() => {
+                              setIsSearchOpen(true);
+                              setActiveSearchTab("Mini Apps");
+                            }}
+                          />
                         )}
                       </Fragment>
                     ))}
@@ -1375,7 +1386,102 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
             {/* Search Results */}
             <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-24">
-              {isSearching && searchResults.length === 0 ? (
+              {activeSearchTab === "Mini Apps" ? (
+                (() => {
+                  if (!dbMiniApps || dbMiniApps.length === 0) {
+                    return (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-3 animate-pulse text-left">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-white/10" />
+                              <div className="space-y-2">
+                                <div className="w-24 h-3 bg-white/10 rounded" />
+                                <div className="w-16 h-2 bg-white/5 rounded" />
+                              </div>
+                            </div>
+                            <div className="w-14 h-6 rounded-full bg-white/10" />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  const filteredMiniApps = miniAppsList.filter((app: any) => {
+                    if (!searchQuery.trim()) return true;
+                    const query = searchQuery.toLowerCase();
+                    return (
+                      app.name?.toLowerCase().includes(query) ||
+                      app.username?.toLowerCase().includes(query) ||
+                      app.description?.toLowerCase().includes(query)
+                    );
+                  });
+
+                  if (filteredMiniApps.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <p className="text-xs text-text-muted font-black uppercase tracking-widest">No mini apps found</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-1">
+                      {filteredMiniApps.map((app: any) => {
+                        const handleOpen = () => {
+                          const link = app.link || `https://t.me/${app.username}`;
+                          const twa = (window as any).Telegram?.WebApp;
+                          if (twa?.openTelegramLink) {
+                            twa.openTelegramLink(link);
+                          } else {
+                            window.open(link, "_blank");
+                          }
+                        };
+
+                        return (
+                          <div
+                            key={app.id}
+                            className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-3 text-left"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              {/* Circular Logo */}
+                              <div className="w-10 h-10 rounded-full overflow-hidden border border-white/[0.08] bg-white/5 shrink-0 flex items-center justify-center relative">
+                                {app.photo_url ? (
+                                  <img src={app.photo_url} className="w-full h-full object-cover" alt="" />
+                                ) : app.photo ? (
+                                  <img src={app.photo} className="w-full h-full object-cover" alt="" />
+                                ) : app.icon ? (
+                                  app.icon
+                                ) : (
+                                  <span className="text-xs font-black uppercase text-app-accent">
+                                    {app.name?.[0]}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="min-w-0">
+                                <h4 className="text-white text-[12px] font-black uppercase tracking-tight truncate">
+                                  {app.name}
+                                </h4>
+                                <p className="text-text-muted font-mono text-[9px] font-bold truncate mt-0.5">
+                                  @{app.username || `${app.id}_bot`}
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={handleOpen}
+                              className="px-4 py-1.5 rounded-full bg-white text-black font-black uppercase text-[9px] tracking-widest hover:opacity-90 active:scale-95 transition-all shrink-0"
+                            >
+                              Open
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
+              ) : isSearching && searchResults.length === 0 ? (
                 <div className="space-y-4 py-4">
                   {[1, 2, 3].map((i) => (
                     <PostCardSkeleton key={i} />
