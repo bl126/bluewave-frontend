@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import BluewaveGlobe from "@/components/ui/BluewaveGlobe";
 import MissionCenter from "@/components/ui/MissionCenter";
 import Explore from "@/components/ui/Explore";
@@ -179,110 +179,124 @@ export default function LandingPage() {
 
   // [CODE: TELEGRAM_BACK_BUTTON]
   // 🔙 Sync Telegram's native Back Button with overlay state
+  const handleBackRef = useRef<() => void>(() => {});
+
+  const handleBack = useCallback(() => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (!tg) return;
+
+    if (isMaintenanceMode || isWalletRelinkRequired) {
+      tg.close();
+      return;
+    }
+
+    // 0. Dispatch Native Interceptor Event
+    const backEvent = new CustomEvent("bwNativeBack", { cancelable: true });
+    window.dispatchEvent(backEvent);
+    if (backEvent.defaultPrevented) return; // Signal intercepted (e.g. by Explore modal)
+
+    // 1. Nested Overlays/Modals (Stack-aware early returns)
+    if (isBugsSuggestionsOpen) {
+      setIsBugsSuggestionsOpen(false);
+      if (activeTab !== "explore") {
+        setProfileOpen(true);
+        setActiveTab("profile");
+      } else {
+        setExploreOpen(true);
+      }
+      return;
+    }
+    if (selectedRoleData) {
+      setSelectedRoleData(null);
+      return;
+    }
+    if (isBwaveScanOpen) {
+      setBwaveScanOpen(false);
+      return;
+    }
+    if (isRolesOpen) {
+      setRolesOpen(false);
+      return;
+    }
+    if (isCocoonOpen) {
+      setCocoonOpen(false);
+      return;
+    }
+    if (isBluExpanded) {
+      setIsBluExpanded(false);
+      return;
+    }
+    if (isStreakRecoveryOpen) {
+      setIsStreakRecoveryOpen(false);
+      return;
+    }
+    if (isStreakCelebrationOpen) {
+      // Streak reward must be claimed via the modal button — not back or backdrop
+      return;
+    }
+    if (isHumanModalOpen) {
+      handleClearHumanVerification();
+      return;
+    }
+    if (isNetworkBuilderModalOpen) {
+      handleClearNetworkBuilder();
+      return;
+    }
+    if (isTONModalOpen) {
+      handleClearTONExplorer();
+      return;
+    }
+    if (currentCelebratingRole) {
+      handleClearRoleCelebration(currentCelebratingRole);
+      return;
+    }
+    if (isAIPopupOpen) {
+      handleClearAIPopup();
+      return;
+    }
+
+    // 2. Top-Level Overlays (Close and return to Home)
+    if (activeTab !== "home") {
+      setMissionOpen(false);
+      setExploreOpen(false);
+      setMarketOpen(false);
+      setProfileOpen(false);
+      setActiveTab("home");
+      return;
+    }
+
+    // 3. App Exit
+    tg.close();
+  }, [
+    isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode, isWalletRelinkRequired,
+    selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
+    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen, isBugsSuggestionsOpen,
+    isStreakRecoveryOpen
+  ]);
+
+  useEffect(() => {
+    handleBackRef.current = handleBack;
+  }, [handleBack]);
+
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (!tg?.BackButton) return;
 
-    const handleBack = () => {
-      if (isMaintenanceMode || isWalletRelinkRequired) {
-        tg.close();
-        return;
-      }
-
-      // 0. Dispatch Native Interceptor Event
-      const backEvent = new CustomEvent("bwNativeBack", { cancelable: true });
-      window.dispatchEvent(backEvent);
-      if (backEvent.defaultPrevented) return; // Signal intercepted (e.g. by Explore modal)
-
-      // 1. Nested Overlays/Modals (Stack-aware early returns)
-      if (isBugsSuggestionsOpen) {
-        setIsBugsSuggestionsOpen(false);
-        if (activeTab !== "explore") {
-          setProfileOpen(true);
-          setActiveTab("profile");
-        } else {
-          setExploreOpen(true);
-        }
-        return;
-      }
-      if (selectedRoleData) {
-        setSelectedRoleData(null);
-        return;
-      }
-      if (isBwaveScanOpen) {
-        setBwaveScanOpen(false);
-        return;
-      }
-      if (isRolesOpen) {
-        setRolesOpen(false);
-        return;
-      }
-      if (isCocoonOpen) {
-        setCocoonOpen(false);
-        return;
-      }
-      if (isBluExpanded) {
-        setIsBluExpanded(false);
-        return;
-      }
-      if (isStreakRecoveryOpen) {
-        setIsStreakRecoveryOpen(false);
-        return;
-      }
-      if (isStreakCelebrationOpen) {
-        // Streak reward must be claimed via the modal button — not back or backdrop
-        return;
-      }
-      if (isHumanModalOpen) {
-        handleClearHumanVerification();
-        return;
-      }
-      if (isNetworkBuilderModalOpen) {
-        handleClearNetworkBuilder();
-        return;
-      }
-      if (isTONModalOpen) {
-        handleClearTONExplorer();
-        return;
-      }
-      if (currentCelebratingRole) {
-        handleClearRoleCelebration(currentCelebratingRole);
-        return;
-      }
-      if (isAIPopupOpen) {
-        handleClearAIPopup();
-        return;
-      }
-
-      // 2. Top-Level Overlays (Close and return to Home)
-      if (activeTab !== "home") {
-        setMissionOpen(false);
-        setExploreOpen(false);
-        setMarketOpen(false);
-        setProfileOpen(false);
-        setActiveTab("home");
-        return;
-      }
-
-      // 3. App Exit
-      tg.close();
+    const masterHandler = () => {
+      handleBackRef.current();
     };
 
     if (isAnyOverlayOpen) {
       tg.BackButton.show();
-      tg.BackButton.onClick(handleBack);
+      tg.BackButton.onClick(masterHandler);
     } else {
       tg.BackButton.hide();
     }
 
     return () => {
-      tg.BackButton.offClick(handleBack);
+      tg.BackButton.offClick(masterHandler);
     };
-  }, [
-    isAnyOverlayOpen, isRolesOpen, isBwaveScanOpen, isBluExpanded, isMaintenanceMode,
-    selectedRoleData, isStreakCelebrationOpen, isHumanModalOpen, isNetworkBuilderModalOpen,
-    isTONModalOpen, currentCelebratingRole, isAIPopupOpen, activeTab, isCocoonOpen, isBugsSuggestionsOpen
-  ]);
+  }, [isAnyOverlayOpen]);
 
   // 🔗 Global wallet synchronization listener
   useEffect(() => {
@@ -486,7 +500,13 @@ export default function LandingPage() {
         let actionQuestSlug = null;
         if (startParam) {
             if (startParam.startsWith("ref_")) {
-                referrerId = startParam.replace("ref_", "");
+                if (startParam.includes("_post_")) {
+                    const parts = startParam.split("_post_");
+                    referrerId = parts[0].replace("ref_", "");
+                    actionPostId = parts[1];
+                } else {
+                    referrerId = startParam.replace("ref_", "");
+                }
             } else if (startParam.startsWith("post_")) {
                 actionPostId = startParam.replace("post_", "");
             } else if (startParam.startsWith("quest_")) {

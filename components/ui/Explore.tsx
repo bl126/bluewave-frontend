@@ -888,6 +888,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           starsBalance={telegramUser?.stars_balance ?? 0}
                           onStarBalanceChange={handleStarBalanceChange}
                           isConnected={isConnected}
+                          isWalletConnected={!!swrUser?.wallet_address}
                           onHide={() => setPagedPosts(prev => prev.filter((p: any) => p.id !== post.id))}
                           onRepost={() => mutate()}
                           onConnectRequired={() => { setConnectBluAnalytics(false); setIsConnectBluOpen(true); }}
@@ -1509,6 +1510,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       starsBalance={telegramUser?.stars_balance ?? 0}
                       onStarBalanceChange={handleStarBalanceChange}
                       isConnected={isConnected}
+                      isWalletConnected={!!swrUser?.wallet_address}
                       onHide={() => setSearchResults(prev => prev.filter((p: any) => p.id !== post.id))}
                       onRepost={() => mutate()}
                       onConnectRequired={() => { setConnectBluAnalytics(false); setIsConnectBluOpen(true); }}
@@ -2189,6 +2191,7 @@ function PostCard({
   starsBalance,
   onStarBalanceChange,
   isConnected,
+  isWalletConnected,
   onHide,
   onRepost,
   onConnectRequired,
@@ -2202,6 +2205,7 @@ function PostCard({
   starsBalance: number,
   onStarBalanceChange: (delta: number) => void,
   isConnected: boolean,
+  isWalletConnected: boolean,
   onHide: () => void,
   onRepost: () => void,
   onConnectRequired: () => void,
@@ -2265,8 +2269,11 @@ function PostCard({
 
   const openStarGiftFlow = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isWalletConnected) {
+      return;
+    }
     setStarError(null);
-    if (post.tg_id === currentUserId) {
+    if (Number(post.tg_id) === Number(currentUserId)) {
       setStarError(t("explore.gift_star_own_post"));
       return;
     }
@@ -2341,7 +2348,7 @@ function PostCard({
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://bluewaveprotocol.com";
   const postLink = `${APP_URL}/post/${post.id}`;
   // Direct mini app deep link (used only for the Telegram forward action)
-  const miniAppLink = `https://t.me/Bluewave_Ecosystem_bot/bluewave?startapp=post_${post.id}`;
+  const miniAppLink = `https://t.me/Bluewave_Ecosystem_bot/bluewave?startapp=ref_${currentUserId}_post_${post.id}`;
 
 
   const handleForward = (e: React.MouseEvent) => {
@@ -2526,7 +2533,7 @@ function PostCard({
                       </button>
                       <div className="h-px bg-white/5 my-1 mx-2" />
                       
-                      {post.tg_id === currentUserId ? (
+                      {Number(post.tg_id) === Number(currentUserId) ? (
                         <button onClick={handleDelete} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all">
                           <X size={14} />
                           Delete Post
