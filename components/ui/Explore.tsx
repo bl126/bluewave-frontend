@@ -1466,6 +1466,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                                 <p className="text-text-muted font-mono text-[9px] font-bold truncate mt-0.5">
                                   @{app.username || `${app.id}_bot`}
                                 </p>
+                                <p className="text-text-muted text-[10px] font-bold mt-1 line-clamp-2 leading-normal">
+                                  {app.description || 'No description provided.'}
+                                </p>
                               </div>
                             </div>
 
