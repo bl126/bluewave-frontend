@@ -442,6 +442,26 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
   }, [initialPosts, activeTab]);
 
+  // 🔗 Auto-open pending deep link post on mount / tab open
+  useEffect(() => {
+    if (!isOpen || !telegramUser?.id) return;
+    const pendingPostId = window.localStorage.getItem("bw_pending_post_id");
+    if (!pendingPostId) return;
+
+    window.localStorage.removeItem("bw_pending_post_id");
+    
+    // Fetch post details immediately and open comments modal
+    getApi(`/explore/post/${pendingPostId}?tg_id=${telegramUser.id}`)
+      .then((data) => {
+        if (data && !data.error) {
+          setSelectedPost(data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load deep link post:", err);
+      });
+  }, [isOpen, telegramUser?.id]);
+
   // 🚀 Load More Implementation (Infinite Scroll Logic)
   const handleLoadMore = useCallback(async () => {
     if (!hasMore || loadingMore || loading || !telegramUser?.id) return;

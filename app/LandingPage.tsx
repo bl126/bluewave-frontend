@@ -516,6 +516,9 @@ export default function LandingPage() {
         if (actionQuestSlug) {
             window.localStorage.setItem("bw_pending_quest_slug", actionQuestSlug);
         }
+        if (actionPostId) {
+            window.localStorage.setItem("bw_pending_post_id", actionPostId);
+        }
 
         // 📢 Post-link Referral: resolve the post author as the referrer
         // If opened via a post share link, the post author gets referral credit
