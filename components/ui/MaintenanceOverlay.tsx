@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, ExternalLink, Settings, Sparkles } from "lucide-react";
+import { MessageCircle, ExternalLink, Settings } from "lucide-react";
 
 export default function MaintenanceOverlay() {
     const telegramLink = "https://t.me/bluewaveprotocol";
@@ -33,7 +33,7 @@ export default function MaintenanceOverlay() {
                 }}
             >
                 {/* Specular Liquid Glow: Soft ambient gradient behind the sheet contents */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-cyan-500/10 blur-[60px] rounded-full pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-[60px] rounded-full pointer-events-none" />
 
                 {/* Drag Handle */}
                 <div className="w-full flex justify-center pt-4 pb-2">
@@ -44,7 +44,7 @@ export default function MaintenanceOverlay() {
                     
                     {/* Clean Gear Icon with custom glass emblem */}
                     <div className="w-20 h-20 relative mb-6 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full" />
+                        <div className="absolute inset-0 bg-white/10 blur-xl rounded-full" />
                         <motion.div
                             animate={{
                                 rotate: 360
@@ -56,15 +56,6 @@ export default function MaintenanceOverlay() {
                             }}
                         >
                             <Settings size={36} className="text-white opacity-90" strokeWidth={1.5} />
-                        </motion.div>
-                        
-                        {/* Sparkle micro-badge */}
-                        <motion.div 
-                          animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                          className="absolute -top-1 -right-1 bg-cyan-500 text-black p-1 rounded-full border border-black"
-                        >
-                          <Sparkles size={10} />
                         </motion.div>
                     </div>
 
@@ -104,7 +95,7 @@ export default function MaintenanceOverlay() {
                         </a>
 
                         <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/30 font-bold uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
                             Encrypted Protocol Secure
                         </div>
                     </div>
