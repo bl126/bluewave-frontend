@@ -28,30 +28,54 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
 
     if (!roleData) return null;
 
+    // Native Back Button Interceptor -> Close modal
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleNativeBack = (e: Event) => {
+            e.preventDefault();
+            onClose();
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+    }, [isOpen, onClose]);
+
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
+                <div className="fixed inset-0 z-[300] flex flex-col justify-end overflow-hidden">
                     {/* Backdrop */}
                     <motion.div
-                        className="absolute inset-0 bg-app-bg/80 backdrop-blur-md"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
                     />
 
-                    {/* Modal Content */}
+                    {/* Bottom Sheet Container */}
                     <motion.div
-                        className={`relative w-full max-w-sm bg-app-card border ${roleData.border || 'border-app-border'} rounded-[32px] overflow-hidden shadow-app-shadow`}
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 26, stiffness: 190 }}
+                        style={{
+                          background: "rgba(28, 28, 30, 0.75)",
+                          backdropFilter: "blur(30px) saturate(190%)",
+                          WebkitBackdropFilter: "blur(30px) saturate(190%)",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                          boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+                        }}
                     >
                         {/* Top Glow based on role color */}
-                        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-gradient-to-b ${roleData.color} blur-[60px] pointer-events-none opacity-50`} />
+                        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b ${roleData.color} blur-[60px] pointer-events-none opacity-40`} />
 
-                        <div className="relative p-8 flex flex-col items-center text-center">
+                        {/* Drag Handle */}
+                        <div className="w-full flex justify-center pt-4 pb-2">
+                            <div className="w-12 h-1.5 bg-white/15 rounded-full" />
+                        </div>
+
+                        <div className="relative p-6 px-8 flex flex-col items-center text-center pb-12">
                             {/* Animated Icon */}
                             <div className="relative mb-6">
                                 <motion.div
@@ -59,7 +83,8 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                                     animate={{ scale: [1, 1.2, 1] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                 />
-                                <div className={`relative w-20 h-20 bg-app-bg/40 border ${roleData.border} rounded-full flex items-center justify-center`}>
+                                <div className={`relative w-20 h-20 bg-white/5 border ${roleData.border} rounded-full flex items-center justify-center shadow-lg`}
+                                     style={{ boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.15)" }}>
                                     <Icon className={`w-10 h-10 ${roleData.text}`} />
                                 </div>
 
@@ -73,54 +98,59 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                                 </motion.div>
                             </div>
 
-                            <h2 className="text-2xl font-black text-text-main uppercase tracking-tighter mb-2">
+                            <h2 className="text-2xl font-bold tracking-tight text-white leading-tight mb-2" style={{ letterSpacing: "-0.5px" }}>
                                 {t("role_celebration.title")}
                             </h2>
 
-                            <div className={`flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-app-bg/40 border ${roleData.border}`}>
+                            <div className={`flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-white/5 border ${roleData.border}`}>
                                 <Icon size={14} className={roleData.text} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${roleData.text}`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${roleData.text}`}>
                                     {t(`roles_list.${roleData.name}.name`) || roleData.name}
                                 </span>
                             </div>
 
-                            <p className="text-text-sub text-sm leading-relaxed mb-8">
+                            <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-xs">
                                 {t("role_celebration.desc").replace("{{role}}", t(`roles_list.${roleData.name}.name`) || roleData.name)}
                             </p>
 
                             {/* Benefit / Boost */}
-                            <div className="w-full space-y-3 mb-8">
-                                <div className="flex items-center gap-3 text-left bg-app-accent/5 p-3 rounded-2xl border border-app-border">
+                            <div className="w-full max-w-xs space-y-3 mb-8">
+                                <div className="flex items-center gap-3 text-left bg-white/5 p-3 rounded-2xl border border-white/5">
                                     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${roleData.color} flex items-center justify-center shrink-0`}>
                                         <Icon size={20} className={roleData.text} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-text-sub/40 uppercase tracking-widest leading-none mb-1">{t("role_celebration.yield_multiplier")}</p>
-                                        <p className={`text-lg font-black ${roleData.text} leading-none`}>{roleData.boost} {t("role_celebration.boost")}</p>
+                                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none mb-1">{t("role_celebration.yield_multiplier")}</p>
+                                        <p className={`text-lg font-bold ${roleData.text} leading-none`}>{roleData.boost} {t("role_celebration.boost")}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 text-left px-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-app-accent" />
-                                    <span className="text-[11px] font-bold text-text-main/80 uppercase tracking-tight">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                    <span className="text-[11px] font-semibold text-white/70 uppercase tracking-tight">
                                         {t(`roles_list.${roleData.name}.benefit`) || roleData.benefit}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Action Button */}
-                            <button
-                                onClick={onClose}
-                                className="w-full py-4 bg-app-accent hover:bg-app-accent/80 text-app-bg font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow"
-                            >
-                                {t("role_celebration.collect")}
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="w-full max-w-xs space-y-3">
+                                <button
+                                    onClick={onClose}
+                                    className="w-full py-4 bg-white text-black font-semibold text-sm rounded-full transition-all active:scale-[0.97] hover:bg-white/95"
+                                    style={{
+                                      boxShadow: "0 4px 20px rgba(255, 255, 255, 0.15)"
+                                    }}
+                                >
+                                    {t("role_celebration.collect")}
+                                </button>
 
-                            <button
-                                onClick={onClose}
-                                className="mt-4 text-[10px] font-black uppercase tracking-widest text-text-sub/40 hover:text-app-accent transition-colors"
-                            >
-                                {t("role_celebration.dismiss")}
-                            </button>
+                                <button
+                                    onClick={onClose}
+                                    className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white/60 transition-colors"
+                                >
+                                    {t("role_celebration.dismiss")}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 </div>

@@ -1,8 +1,9 @@
 "use client";
-import { useLanguage } from "@/contexts/LanguageContext";
 
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Flame, Star } from "lucide-react";
+import { Flame, Star } from "lucide-react";
+import { useEffect } from "react";
 
 interface RoleDetailModalProps {
   role: any | null;
@@ -11,79 +12,110 @@ interface RoleDetailModalProps {
 
 export default function RoleDetailModal({ role, onClose }: RoleDetailModalProps) {
   const { t } = useLanguage();
-  if (!role) return null;
+
+  // Native Back Button Interceptor -> Close modal
+  useEffect(() => {
+    if (!role) return;
+    const handleNativeBack = (e: Event) => {
+      e.preventDefault();
+      onClose();
+    };
+    window.addEventListener("bwNativeBack", handleNativeBack);
+    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+  }, [role, onClose]);
 
   return (
     <AnimatePresence>
       {role && (
-        <>
+        <div className="fixed inset-0 z-[500] flex flex-col justify-end overflow-hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[500] bg-app-bg/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
           />
 
-          {/* Popup */}
-          <div className="fixed inset-0 z-[510] flex items-center justify-center p-6 pointer-events-none">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.88 }}
-              transition={{ type: "spring", damping: 24, stiffness: 280 }}
-              className="relative w-full max-w-sm rounded-[2rem] border border-app-border bg-app-card p-7 flex flex-col items-center gap-5 shadow-app-shadow overflow-hidden pointer-events-auto"
-            >
-              {/* X Close */}
-              <button
-                onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-app-accent/5 hover:bg-app-accent/10 border border-app-border transition-colors"
-              >
-                <X size={16} className="text-text-sub" />
-              </button>
+          {/* Bottom Sheet Container */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 190 }}
+            className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
+            style={{
+              background: "rgba(28, 28, 30, 0.75)",
+              backdropFilter: "blur(30px) saturate(190%)",
+              WebkitBackdropFilter: "blur(30px) saturate(190%)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+            }}
+          >
+            {/* Specular Ambient Glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-app-accent/5 blur-[60px] rounded-full pointer-events-none" />
 
-              {/* Role Icon */}
-              <div className={`p-5 rounded-[1.75rem] bg-gradient-to-br ${role.color} border-2 ${role.border} flex items-center justify-center`}>
+            {/* Drag Handle */}
+            <div className="w-full flex justify-center pt-4 pb-2">
+              <div className="w-12 h-1.5 bg-white/15 rounded-full" />
+            </div>
+
+            <div className="relative p-6 px-8 flex flex-col items-center gap-6 pb-12">
+              {/* Role Icon inside gradient box */}
+              <div className={`p-4.5 rounded-[1.75rem] bg-gradient-to-br ${role.color} border-2 ${role.border} flex items-center justify-center shadow-md`}>
                 {role.image ? (
-                  <img src={role.image} alt={role.name} className="w-14 h-14 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                  <img src={role.image} alt={role.name} className="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] pointer-events-none select-none" />
                 ) : (
-                  <role.icon className={`w-14 h-14 ${role.text}`} />
+                  <role.icon className={`w-12 h-12 ${role.text}`} />
                 )}
               </div>
 
               {/* Name & Multiplier */}
               <div className="text-center space-y-2">
-                <h2 className={`text-2xl font-black uppercase tracking-tight ${role.text}`}>
+                <h2 className={`text-2xl font-bold uppercase tracking-tight ${role.text}`}>
                   {t(`roles_list.${role.name}.name`) || role.name}
                 </h2>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
-                  <Flame className="text-orange-400" size={13} />
-                  <span className="text-orange-400 font-black text-xs tracking-widest">{role.boost} {t("roles_overlay.yield_boost")}</span>
+                  <Flame className="text-orange-400 fill-orange-400/20" size={13} />
+                  <span className="text-orange-400 font-bold text-[11px] uppercase tracking-wider">{role.boost} {t("roles_overlay.yield_boost")}</span>
                 </div>
               </div>
 
               {/* Credential & Protocol Access */}
-              <div className="w-full space-y-3">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-sub block">{t("roles_overlay.credential")}</span>
-                  <p className="text-sm text-text-main/75 font-medium leading-relaxed">
+              <div className="w-full max-w-xs space-y-4">
+                <div className="space-y-1 text-center">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/40 block">
+                    {t("roles_overlay.credential")}
+                  </span>
+                  <p className="text-sm text-white/70 font-normal leading-relaxed">
                     {t(`roles_list.${role.name}.desc`) || role.desc}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-app-accent/5 border border-app-border space-y-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-app-accent/60 flex items-center gap-1.5">
-                    <Star size={10} className="text-yellow-400" /> {t("roles_overlay.protocol_access")}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-1.5 text-center">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 flex items-center justify-center gap-1.5">
+                    <Star size={11} className="text-yellow-400 fill-yellow-400" /> 
+                    {t("roles_overlay.protocol_access")}
                   </span>
-                  <p className="text-sm text-text-main/85 font-semibold leading-snug">
+                  <p className="text-sm text-white font-semibold leading-relaxed">
                     {t(`roles_list.${role.name}.benefit`) || role.benefit}
                   </p>
                 </div>
               </div>
-            </motion.div>
-          </div>
-        </>
+
+              {/* Action Button */}
+              <button
+                onClick={onClose}
+                className="w-full max-w-xs py-4 bg-white text-black font-semibold text-sm rounded-full transition-all active:scale-[0.97] hover:bg-white/95"
+                style={{
+                  boxShadow: "0 4px 20px rgba(255, 255, 255, 0.15)"
+                }}
+              >
+                Close Details
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
