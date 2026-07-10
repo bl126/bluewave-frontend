@@ -33,13 +33,13 @@ export default function GlobeDot({
           particles: "#00e6ff",
           intensity: 2
         };
-      default:
+      default: // glass / default
         return {
-          base: "#00e6ff",
-          emissive: "#00e6ff",
-          ripple: "#00e6ff",
-          particles: "#00e6ff",
-          intensity: 3
+          base: "#ffffff",
+          emissive: "#ffffff",
+          ripple: "#ffffff",
+          particles: "#ffffff",
+          intensity: 2.5
         };
     }
   }, [theme]);

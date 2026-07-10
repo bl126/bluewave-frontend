@@ -664,7 +664,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${isAnyOverlayActive ? "z-[900]" : "z-[120]"}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 120px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 180px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
@@ -675,8 +675,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       <div 
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 68px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 100px)"
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 88px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 132px)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -721,7 +721,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
           top: 0,
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 100px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 132px)",
           background: "rgba(0, 0, 0, 0.55)",
           backdropFilter: "blur(40px) saturate(180%)",
           WebkitBackdropFilter: "blur(40px) saturate(180%)",

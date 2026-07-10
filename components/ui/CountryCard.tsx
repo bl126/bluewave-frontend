@@ -44,17 +44,17 @@ export default function CountryCard({
                     scanColor: "rgba(0,246,255,0.15)",
                     glow: "drop-shadow(0 0 6px rgba(0,230,255,0.3))"
                 };
-            default: // original
+            default: // glass theme / default
                 return {
-                    bg: "linear-gradient(135deg, rgba(0,12,26,0.96) 0%, rgba(0,6,16,0.98) 100%)",
-                    border: "1px solid rgba(0,230,255,0.35)",
-                    shadow: "0 0 32px rgba(0,230,255,0.12), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,230,255,0.08)",
-                    text: "#e8f9ff",
-                    subtext: "#00e6ff",
-                    accent: "#00e6ff",
-                    closeBg: "rgba(0,230,255,0.08)",
-                    scanColor: "rgba(0,230,255,0.2)",
-                    glow: "drop-shadow(0 0 6px rgba(0,230,255,0.3))"
+                    bg: "rgba(0, 0, 0, 0.55)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    shadow: "inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px rgba(0, 0, 0, 0.5)",
+                    text: "#ffffff",
+                    subtext: "rgba(255, 255, 255, 0.6)",
+                    accent: "#ffffff",
+                    closeBg: "rgba(255, 255, 255, 0.08)",
+                    scanColor: "rgba(255, 255, 255, 0.1)",
+                    glow: "drop-shadow(0 0 6px rgba(255, 255, 255, 0.15))"
                 };
         }
     }, [theme]);
@@ -125,8 +125,8 @@ export default function CountryCard({
                         background: styles.bg,
                         border: styles.border,
                         boxShadow: styles.shadow,
-                        backdropFilter: "blur(16px)",
-                        WebkitBackdropFilter: "blur(16px)",
+                        backdropFilter: "blur(24px)",
+                        WebkitBackdropFilter: "blur(24px)",
                         display: "flex",
                         alignItems: "center",
                         gap: 12,

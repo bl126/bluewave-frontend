@@ -550,11 +550,11 @@ export default function BluButton({
                                 }, 8000);
                             }
                         }}
-                        whileHover={isAuthorized ? { scale: 1.1, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" } : {}}
+                        whileHover={isAuthorized ? { scale: 1.1, boxShadow: theme === "dim" ? "0 0 20px rgba(6, 182, 212, 0.3)" : "0 0 20px rgba(255, 255, 255, 0.15)" } : {}}
                         whileTap={isAuthorized ? { scale: 0.95 } : {}}
                         className={`relative w-12 h-12 rounded-full border backdrop-blur-3xl bg-black/40 flex items-center justify-center overflow-hidden transition-all duration-500 shadow-[0_0_30px_rgba(0,0,0,0.6)] ${
                             isAuthorized 
-                                ? "border-cyan-500/40 group-hover:border-cyan-400" 
+                                ? theme === "dim" ? "border-cyan-500/40 group-hover:border-cyan-400" : "border-white/10 group-hover:border-white/30" 
                                 : "border-white/5 opacity-50 cursor-default"
                         }`}
                     >
@@ -566,11 +566,11 @@ export default function BluButton({
                                     opacity: [0.3, 0.6, 0.3]
                                 }}
                                 transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
-                                className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 blur-xl opacity-20"
+                                className={`w-8 h-8 rounded-full blur-xl opacity-20 ${theme === "dim" ? "bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600" : "bg-gradient-to-tr from-white via-slate-400 to-zinc-600"}`}
                             />
                         </div>
                         
-                        <span className={`relative text-[8px] font-black tracking-[0.3em] text-cyan-300 group-hover:text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]`}>
+                        <span className={`relative text-[8px] font-black tracking-[0.3em] group-hover:text-white ${theme === "dim" ? "text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"}`}>
                             BLU
                         </span>
                     </motion.button>
@@ -635,14 +635,14 @@ export default function BluButton({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px' }}>
                                 <div style={{
                                     width: '7px', height: '7px', borderRadius: '50%',
-                                    background: '#00e8ff',
-                                    boxShadow: '0 0 6px rgba(0,232,255,0.8)',
+                                    background: theme === "dim" ? '#00e8ff' : '#ffffff',
+                                    boxShadow: theme === "dim" ? '0 0 6px rgba(0,232,255,0.8)' : '0 0 6px rgba(255,255,255,0.8)',
                                     flexShrink: 0,
                                 }} />
                                 <span style={{
                                     fontSize: '9px',
                                     fontWeight: 700,
-                                    color: '#00e8ff',
+                                    color: theme === "dim" ? '#00e8ff' : '#ffffff',
                                     letterSpacing: '0.08em',
                                     textTransform: 'uppercase',
                                 }}>
