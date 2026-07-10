@@ -671,15 +671,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-app-accent/5 blur-[100px] pointer-events-none" />
 
-      {/* ─── Top Header (Avatar + Search Bar) ─── */}
+      {/* ─── Top Header (Avatar + Search Bar) — NO background, sits on top of tab bar glass ─── */}
       <div 
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 48px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)",
-          background: "rgba(0, 0, 0, 0.6)",
-          backdropFilter: "blur(40px) saturate(180%)",
-          WebkitBackdropFilter: "blur(40px) saturate(180%)"
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 68px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 100px)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -723,8 +720,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)",
-          background: "rgba(0, 0, 0, 0.6)",
+          top: 0,
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 100px)",
+          background: "rgba(0, 0, 0, 0.55)",
           backdropFilter: "blur(40px) saturate(180%)",
           WebkitBackdropFilter: "blur(40px) saturate(180%)",
           borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
@@ -976,7 +974,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && activeTab !== "following" && (
-          <div className="fixed right-5 bottom-36 z-[200] flex flex-col items-center gap-3">
+          <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
             <motion.button
               initial={{ scale: 0, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -998,7 +996,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 !hasAccess
                   ? "bg-zinc-800/90 text-zinc-600 cursor-not-allowed opacity-50"
                   : isConnected || !swrUser
-                    ? "bg-white text-black shadow-[0_4px_20px_rgba(255,255,255,0.3)]"
+                    ? "bg-white text-black"
                     : "bg-gray-800 text-gray-500 shadow-none"
               }`}
             >
@@ -2553,7 +2551,7 @@ function PostCard({
                 </button>
                 <AnimatePresence>
                   {isMenuOpen && (
-                    <div className="fixed inset-0 z-[1000] flex flex-col justify-end overflow-hidden pointer-events-auto text-center">
+                    <div className="fixed inset-0 z-[1100] flex flex-col justify-end overflow-hidden pointer-events-auto text-center">
                       {/* Backdrop */}
                       <motion.div
                         className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"

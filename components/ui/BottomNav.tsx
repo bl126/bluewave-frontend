@@ -67,18 +67,18 @@ const ExploreIcon = ({ active }: { active: boolean }) => (
 const MarketIcon = ({ active }: { active: boolean }) => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     {active ? (
-      /* Filled bag */
+      /* Filled cart */
       <>
-        <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M3 6H21" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
-        <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 1H5L7.68 14.39C7.77 14.87 8.02 15.31 8.39 15.63C8.77 15.96 9.24 16.14 9.73 16.14H19.5C19.99 16.14 20.46 15.96 20.83 15.63C21.21 15.31 21.46 14.87 21.54 14.39L23 6H6" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="10" cy="20" r="2" fill="currentColor" />
+        <circle cx="20" cy="20" r="2" fill="currentColor" />
       </>
     ) : (
-      /* Outlined bag */
+      /* Outlined cart */
       <>
-        <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M3 6H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 1H5L7.68 14.39C7.77 14.87 8.02 15.31 8.39 15.63C8.77 15.96 9.24 16.14 9.73 16.14H19.5C19.99 16.14 20.46 15.96 20.83 15.63C21.21 15.31 21.46 14.87 21.54 14.39L23 6H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="10" cy="20" r="2" stroke="currentColor" strokeWidth="2" />
+        <circle cx="20" cy="20" r="2" stroke="currentColor" strokeWidth="2" />
       </>
     )}
   </svg>
@@ -148,7 +148,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-1/2 -translate-x-1/2 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+8px)] z-[150]
+            className="fixed left-1/2 -translate-x-1/2 bottom-[calc(max(0.5rem,env(safe-area-inset-bottom)))] z-[150]
                  flex items-center gap-2 w-[92%] max-w-md"
         >
             {/* ─── Main Nav Bar (rounded pill capsule) ─── */}
