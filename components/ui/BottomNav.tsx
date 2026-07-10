@@ -70,9 +70,16 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+10px)] z-[150]
-                 flex items-center justify-around w-[94%] max-w-md 
-                 rounded-[2rem] p-1.5 shadow-app-shadow border border-app-border bg-app-bg/40 backdrop-blur-3xl"
+            className="fixed left-1/2 -translate-x-1/2 bottom-[calc(max(1rem,env(safe-area-inset-bottom))+12px)] z-[150]
+                 flex items-center justify-around w-[90%] max-w-sm 
+                 rounded-full p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+            style={{
+              background: "rgba(28, 28, 30, 0.75)",
+              backdropFilter: "blur(30px) saturate(190%)",
+              WebkitBackdropFilter: "blur(30px) saturate(190%)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.5)"
+            }}
         >
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -82,51 +89,62 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                     <button
                         key={tab.id}
                         onClick={() => onTabChange(tab.id as TabId)}
-                        className="relative flex flex-col items-center justify-center flex-1 py-2 group outline-none"
+                        className="relative flex flex-col items-center justify-center flex-1 py-3 group outline-none"
                     >
-                        {/* Sliding Active Indicator */}
+                        {/* Sliding Active Capsule Highlight wrapping the entire item */}
                         {isActive && (
                             <motion.div
                                 layoutId="activePill"
-                                className="absolute inset-x-1 inset-y-1 border border-app-border rounded-2xl z-0 bg-app-accent/10"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                className="absolute inset-x-1 inset-y-1 rounded-full z-0"
+                                style={{
+                                  background: "rgba(255, 255, 255, 0.08)",
+                                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                                  boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.08)"
+                                }}
+                                transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
                             />
                         )}
 
-                        {/* Icon/Avatar Container */}
-                        <div className={`relative z-10 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "scale-110" : "scale-100 opacity-75 group-hover:opacity-90"}`}>
+                        {/* Icon and Text content */}
+                        <div className={`relative z-10 flex flex-col items-center gap-0.5 transition-all duration-300 ${isActive ? "text-white opacity-100" : "text-white/40 group-hover:text-white/60"}`}>
                             {tab.idIsProfile ? (
-                                <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all duration-300 
-                                ${isActive ? "border-app-accent shadow-app-shadow" : "border-app-border grayscale"}`}>
+                                <div className={`w-5 h-5 rounded-full overflow-hidden border transition-all duration-300 
+                                ${isActive ? "border-white" : "border-white/20 grayscale opacity-60"}`}>
                                     {userAvatarUrl ? (
-                                        <img src={userAvatarUrl} alt="profile" className="w-full h-full object-cover" />
+                                        <img src={userAvatarUrl} alt="profile" className="w-full h-full object-cover pointer-events-none select-none" />
                                     ) : (
-                                        <User size={16} className="text-app-accent" />
+                                        <User size={14} className="text-current" fill="currentColor" />
                                     )}
                                 </div>
                             ) : (
-                                <div className="relative">
-                                    {isActive && <div className="absolute inset-0 blur-md bg-app-accent/40 rounded-full" />}
-                                    {Icon && <Icon size={20} className={`relative transition-colors ${isActive ? "text-app-accent" : "text-text-main"}`} />}
+                                <div className="relative flex items-center justify-center">
+                                    {Icon && (
+                                      <Icon 
+                                        size={18} 
+                                        className="relative text-current" 
+                                        fill="currentColor"
+                                        strokeWidth={isActive ? 2.5 : 2}
+                                      />
+                                    )}
 
                                     {/* Mission Badge */}
                                     {tab.id === "missions" && missionBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-app-bg text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
+                                        <div className="absolute -top-1.5 -right-3 min-w-[12px] h-[12px] px-0.5 bg-white text-black text-[8px] font-bold rounded-full flex items-center justify-center border border-black/20 shadow-md">
                                             {missionBadgeCount > 9 ? "9+" : missionBadgeCount}
                                         </div>
                                     )}
 
                                     {/* Explore Badge */}
                                     {tab.id === "explore" && exploreBadgeCount > 0 && (
-                                        <div className="absolute -top-1 -right-3 min-w-[14px] h-[14px] px-1 bg-app-accent text-app-bg text-[9px] font-black rounded-full flex items-center justify-center shadow-app-shadow border border-black/20">
+                                        <div className="absolute -top-1.5 -right-3 min-w-[12px] h-[12px] px-0.5 bg-white text-black text-[8px] font-bold rounded-full flex items-center justify-center border border-black/20 shadow-md">
                                             {exploreBadgeCount > 9 ? "9+" : exploreBadgeCount}
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            <span className={`text-[10px] font-black uppercase tracking-tighter transition-all 
-                               ${isActive ? "text-text-main" : "text-text-sub"}`}>
+                            {/* Label: capitalize case layout */}
+                            <span className="text-[10px] font-bold tracking-tight mt-0.5 capitalize">
                                 {tab.label}
                             </span>
                         </div>

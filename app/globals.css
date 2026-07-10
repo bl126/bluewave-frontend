@@ -262,3 +262,15 @@ html, body {
   background: var(--app-accent);
   opacity: 0.4;
 }
+
+/* Native UI Feel: Prevent Image Context Menus, Selection, and Dragging */
+img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
