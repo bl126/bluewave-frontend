@@ -34,6 +34,7 @@ import {
   Copy,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
   Trophy,
   User,
   Lock,
@@ -249,6 +250,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   // New Drawer / Search / Connect Channel states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -563,6 +565,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
     const currentY = scrollContainerRef.current.scrollTop;
+    setShowScrollToTop(currentY > 400);
     if (Math.abs(currentY - lastScrollY.current) < 6) return;
     const goingDown = currentY > lastScrollY.current && currentY > 40;
     setShowChrome(!goingDown);
@@ -664,7 +667,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${isAnyOverlayActive ? "z-[900]" : "z-[120]"}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 180px)",
+        paddingTop: 0,
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
@@ -787,11 +790,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="fixed top-32 left-0 right-0 z-[140] flex justify-center pointer-events-none"
+            className="fixed left-0 right-0 z-[140] flex justify-center pointer-events-none"
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
           >
             <button
               onClick={handleNewPostsPill}
-              className="px-4 py-1.5 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-[0_0_12px_#00e6ff60] active:scale-95 transition-all flex items-center gap-1.5 pointer-events-auto"
+              className="px-5 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg border border-white/20 active:scale-95 transition-all flex items-center gap-1.5 pointer-events-auto"
             >
               {t("explore.new_posts_pill")}
             </button>
@@ -806,10 +810,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="fixed top-32 left-1/2 -translate-x-1/2 z-[135] bg-cyan-950/90 border border-cyan-500/30 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(0,230,255,0.2)] pointer-events-none"
+            className="fixed left-1/2 -translate-x-1/2 z-[135] bg-black/85 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg pointer-events-none"
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
           >
-            <Loader2 size={12} className="text-cyan-400 animate-spin" />
-            <span className="text-[9px] text-cyan-200 font-black uppercase tracking-widest">{t("explore.posting_btn") || "Transmitting"}</span>
+            <Loader2 size={12} className="text-white animate-spin" />
+            <span className="text-[9px] text-white/90 font-black uppercase tracking-widest">{t("explore.posting_btn") || "Transmitting"}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -832,7 +837,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        className="flex-1 overflow-y-auto custom-scrollbar mt-6"
+        className="flex-1 overflow-y-auto custom-scrollbar"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 180px)",
+          paddingBottom: "120px"
+        }}
       >
         {/* Main Content Area with Access Control */}
         {(!hasAccess && activeTab !== "leaderboard") ? (
@@ -972,6 +981,27 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
+      {/* Scroll-to-top FAB (Liquid Glass, Arrow Pointing Upwards) */}
+      <AnimatePresence>
+        {showScrollToTop && (
+          <div className="fixed right-5 bottom-44 z-[200]">
+            <motion.button
+              initial={{ scale: 0, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0, opacity: 0, y: 15 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="w-12 h-12 rounded-full flex items-center justify-center border border-white/10 text-white backdrop-blur-xl bg-black/55 shadow-lg active:bg-white/10 transition-all cursor-pointer"
+            >
+              <ArrowUp size={20} strokeWidth={2.5} />
+            </motion.button>
+          </div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && activeTab !== "following" && (
           <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
@@ -1081,12 +1111,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             initial={{ opacity: 0, y: -20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-cyan-500 text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(0,230,255,0.4)] border border-white/20"
+            className="fixed left-1/2 -translate-x-1/2 z-[300] bg-white text-black px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg border border-white/20"
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
           >
-            <div className="w-5 h-5 bg-black/10 rounded-full flex items-center justify-center">
+            <div className="w-5 h-5 bg-black/5 rounded-full flex items-center justify-center">
               <Rocket size={12} className="animate-pulse" />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]">{successMessage}</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.15em]">{successMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
