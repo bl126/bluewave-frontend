@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { Globe, Moon, Zap, Palette, MessageSquare, Sparkles } from "lucide-react";
+import { Globe, Moon, Zap, Palette, MessageSquare, Sparkles, Lock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useEffect } from "react";
@@ -151,21 +151,25 @@ export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenBugsSu
 
                                     <div className="grid grid-cols-3 gap-2 bg-app-bg/20 p-1 rounded-xl">
                                         {[
-                                            { id: 'dim', icon: Moon, label: 'Dim' },
-                                            { id: 'original', icon: Zap, label: 'Night' },
-                                            { id: 'glass', icon: Sparkles, label: 'Glass' }
+                                            { id: 'dim', icon: Moon, label: 'Dim', locked: true },
+                                            { id: 'original', icon: Zap, label: 'Night', locked: true },
+                                            { id: 'glass', icon: Sparkles, label: 'Glass', locked: false }
                                         ].map((mode) => (
                                             <button
                                                 key={mode.id}
+                                                disabled={mode.locked}
                                                 onClick={() => setTheme(mode.id as any)}
-                                                className={`flex flex-col items-center gap-1.5 py-2 rounded-lg transition-all ${
+                                                className={`relative flex flex-col items-center gap-1.5 py-2 rounded-lg transition-all ${
                                                     theme === mode.id 
                                                     ? 'bg-app-accent text-app-bg shadow-lg' 
-                                                    : 'text-text-sub hover:text-text-main hover:bg-app-accent/5'
+                                                    : 'text-text-sub opacity-50 cursor-not-allowed'
                                                 }`}
                                             >
                                                 <mode.icon size={18} strokeWidth={theme === mode.id ? 3 : 2} />
-                                                <span className="text-[9px] font-black uppercase tracking-widest">{mode.label}</span>
+                                                <span className="text-[9px] font-black uppercase tracking-widest flex items-center gap-0.5">
+                                                    {mode.label}
+                                                    {mode.locked && <Lock size={8} className="ml-0.5 text-text-sub" />}
+                                                </span>
                                             </button>
                                         ))}
                                     </div>

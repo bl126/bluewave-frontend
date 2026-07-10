@@ -82,7 +82,7 @@ export default function LandingPage() {
   const [isExploreOpen, setExploreOpen] = useState(false);
   const [isMarketOpen, setMarketOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [isRolesOpen, setRolesOpen] = useState(false);
@@ -1390,7 +1390,7 @@ export default function LandingPage() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isLoading && (
+        {false && isLoading && (
           <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1 }} className="fixed inset-0 z-[100]">
             <LoadingScreen />
           </motion.div>

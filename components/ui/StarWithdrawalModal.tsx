@@ -454,7 +454,7 @@ export default function StarWithdrawalModal({
                       </div>
                       <ArrowRight size={18} className="text-app-accent shrink-0" />
                       <div className="flex items-center gap-1.5 min-w-0 justify-end">
-                        <img src="/gram logo.jpg" alt="Gram" className="w-4 h-4 object-contain shrink-0" />
+                        <img src="/gram icon.png" alt="Gram" className="w-4 h-4 object-contain shrink-0" />
                         <span className="text-app-accent font-black text-lg tabular-nums">
                           {priceReady ? tonPreview.toFixed(4) : "—"}
                         </span>

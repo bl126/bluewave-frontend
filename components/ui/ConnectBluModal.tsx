@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getApi, postApi } from "@/lib/useApi";
@@ -656,7 +656,7 @@ export default function ConnectBluModal({
 
             {/* Fullscreen Analytics Overlay */}
             <AnimatePresence>
-                {analyticsOpen && isAdmin && (
+                {analyticsOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -664,27 +664,38 @@ export default function ConnectBluModal({
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="fixed inset-0 z-[1019] bg-app-bg text-text-main flex flex-col overflow-hidden font-sans"
                         style={{ 
-                            "paddingTop": "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 27px)", 
+                            "paddingTop": 0, 
                             paddingBottom: "env(safe-area-inset-bottom, 0px)" 
                         }}
                     >
-                        {/* Header — avatar + channel name, no X button */}
-                        <div className="flex items-center gap-3 px-6 py-4 border-b border-app-border bg-app-card/40 backdrop-blur-xl">
-                            <div className="w-10 h-10 rounded-full border border-app-border overflow-hidden bg-app-accent/5 flex items-center justify-center shrink-0">
+                        {/* Header — avatar + channel name, no X button (frosted, fixed for bleed-through) */}
+                        <div 
+                            className="fixed top-0 left-0 right-0 z-[1050] flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-black/45 backdrop-blur-2xl"
+                            style={{
+                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 16px)",
+                                height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)"
+                            }}
+                        >
+                            <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
                                 {connectedInfo.photo && !imgError ? (
                                     <img src={connectedInfo.photo} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="text-app-accent font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
+                                    <div className="text-white font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
                                 )}
                             </div>
                             <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-wider text-text-main leading-none">{connectedInfo.title}</h3>
-                                <p className="text-[10px] font-bold text-app-accent uppercase tracking-widest mt-1">Channel Analytics</p>
+                                <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{connectedInfo.title}</h3>
+                                <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1">Channel Analytics</p>
                             </div>
                         </div>
 
-                        {/* Content viewport */}
-                        <div className="flex-1 overflow-y-auto p-6 pb-32 space-y-6">
+                        {/* Content viewport (padded to scroll behind fixed header) */}
+                        <div 
+                            className="flex-1 overflow-y-auto p-6 pb-32 space-y-6"
+                            style={{
+                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 84px)"
+                            }}
+                        >
 
                             {/* === TAB: SIGNALS === */}
                             {activeAnalyticsTab === "signals" && (
@@ -902,63 +913,23 @@ export default function ConnectBluModal({
                                 <motion.div 
                                     initial={{ opacity: 0, y: 10 }} 
                                     animate={{ opacity: 1, y: 0 }} 
-                                    className="space-y-5"
+                                    className="flex-1 flex flex-col items-center justify-center text-center p-6 min-h-[300px] gap-4"
                                 >
-                                    {/* Sentiment Indicator */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex items-center justify-between gap-4 text-left">
-                                        <div>
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-sub mb-1">AI Audience Sentiment</h4>
-                                            <p className="text-xl font-black text-emerald-400 uppercase tracking-tight">Highly Positive</p>
-                                            <p className="text-[10px] text-text-sub mt-1">Based on semantic signal analysis of chat replies and reactions.</p>
-                                        </div>
-                                        <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                                <path className="text-app-accent/10" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                                <path className="text-emerald-500" strokeDasharray="92, 100" strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                            </svg>
-                                            <div className="absolute font-black text-sm text-emerald-400">92%</div>
-                                        </div>
+                                    <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-white/50 shadow-inner">
+                                        <Lock size={28} className="text-white/60" />
                                     </div>
-
-                                    {/* Sentiment Bar */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 space-y-4 text-left">
-                                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-text-sub">
-                                            <span>Positive (92%)</span>
-                                            <span>Neutral (6%)</span>
-                                            <span>Negative (2%)</span>
-                                        </div>
-                                        <div className="h-2 w-full rounded-full bg-app-accent/10 overflow-hidden flex">
-                                            <div className="bg-emerald-500 h-full" style={{ width: "92%" }} />
-                                            <div className="bg-text-sub h-full" style={{ width: "6%" }} />
-                                            <div className="bg-red-500 h-full" style={{ width: "2%" }} />
-                                        </div>
-                                    </div>
-
-                                    {/* AI Insights Narrative */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-6 space-y-4 text-left">
-                                        <div className="flex items-center gap-2 text-app-accent">
-                                            <Brain size={16} />
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest">Blu Intelligence Report</h4>
-                                        </div>
-                                        <p className="text-xs text-text-sub leading-relaxed font-medium">
-                                            Your broadcasts on decentralized yields and TON web application architectures are generating high-signal reactions. Commentators show specific interest in your streak updates and referrals.
+                                    <div className="space-y-2 max-w-xs">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-white">AI Brain Analytics Locked</h3>
+                                        <p className="text-[11px] text-white/40 leading-relaxed font-medium">
+                                            This feature requires an active ecosystem verification badge or special access node. Connect your identity to unlock real-time sentiment telemetry.
                                         </p>
-                                        <div className="h-px bg-app-border" />
-                                        <ul className="space-y-2 text-[11px] text-text-sub font-medium">
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-app-accent font-bold">1.</span>
-                                                <span>Your most impactful post was broadcasted on Tuesday, driving a 34% surge in views.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-app-accent font-bold">2.</span>
-                                                <span>Visual content (collage layouts) drives 2.4x higher engagement than pure text posts.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-app-accent font-bold">3.</span>
-                                                <span>Ideal posting window for your subscriber node network is 14:00 - 17:00 UTC.</span>
-                                            </li>
-                                        </ul>
                                     </div>
+                                    <button 
+                                        disabled
+                                        className="mt-2 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/30 cursor-not-allowed"
+                                    >
+                                        Unlock Insights
+                                    </button>
                                 </motion.div>
                             )}
 
@@ -1020,40 +991,34 @@ export default function ConnectBluModal({
                                         </button>
                                     </div>
 
-                                    {/* Premium subscription config card (FOR TESTING PURPOSES) */}
-                                    <div className="bg-app-accent/5 border border-app-border rounded-3xl p-6 space-y-4 text-left">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2.5 text-app-accent">
-                                                <Crown size={18} className={isPremium ? "text-app-accent fill-current" : "text-text-sub"} />
-                                                <div className="text-left">
-                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main leading-none">Premium Subscription</h4>
-                                                    <p className="text-[9px] text-text-sub mt-1 uppercase tracking-wider">Required for reconnection</p>
-                                                </div>
-                                            </div>
-                                            <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                                isPremium ? "bg-app-accent/10 border border-app-accent/30 text-app-accent" : "bg-app-accent/5 border border-app-border text-text-sub"
-                                            }`}>
-                                                {isPremium ? "Active" : "Inactive"}
-                                            </div>
+                                    {/* Transaction History Card */}
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4 text-left">
+                                        <div className="flex items-center gap-2 text-white/80">
+                                            <History size={16} />
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest">Transaction History</h4>
                                         </div>
-                                        <p className="text-[11px] text-text-sub leading-relaxed font-medium">
-                                            Disconnecting this channel means reconnecting it in the future will require an active Premium Subscription. You can toggle this simulated status below to test reconnection constraints.
-                                        </p>
-                                        <button
-                                            onClick={handleTogglePremium}
-                                            disabled={togglingPremium}
-                                            className={`w-full py-3 border font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
-                                                isPremium 
-                                                    ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20" 
-                                                    : "bg-app-accent text-app-bg border-app-accent hover:brightness-110"
-                                            }`}
-                                        >
-                                            {togglingPremium ? (
-                                                <Loader2 size={12} className="animate-spin" />
-                                            ) : (
-                                                isPremium ? "Deactivate Premium" : "Activate Premium"
+                                        <div className="space-y-3">
+                                            {[
+                                                { id: 1, date: "2026-07-08", amount: "5,000", payout: "75.000 TON", status: "Completed" },
+                                                { id: 2, date: "2026-07-02", amount: "2,500", payout: "37.500 TON", status: "Completed" },
+                                            ].map((tx) => (
+                                                <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px]">
+                                                    <div>
+                                                        <div className="font-bold text-white uppercase tracking-tight">{tx.amount} Stars Withdrawal</div>
+                                                        <div className="text-[9px] text-white/40 mt-0.5">{tx.date}</div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="font-black text-white">{tx.payout}</div>
+                                                        <div className="text-[9px] font-black uppercase text-emerald-400 mt-0.5 tracking-wider">{tx.status}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {channelStarsReceived === 0 && (
+                                                <div className="py-8 text-center text-white/30 italic text-[10px] uppercase tracking-widest">
+                                                    No transactions recorded
+                                                </div>
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}

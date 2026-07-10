@@ -13,26 +13,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>("original");
+    const [theme, setThemeState] = useState<Theme>("glass");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        const savedTheme = localStorage.getItem("bw_theme") as Theme;
-        if (savedTheme && (savedTheme === "original" || savedTheme === "dim" || savedTheme === "glass")) {
-            setThemeState(savedTheme);
-            document.documentElement.setAttribute("data-theme", savedTheme);
-        } else {
-            setThemeState("original");
-            document.documentElement.setAttribute("data-theme", "original");
-            localStorage.setItem("bw_theme", "original");
-        }
+        // Force the theme to glass for everyone automatically
+        setThemeState("glass");
+        document.documentElement.setAttribute("data-theme", "glass");
+        localStorage.setItem("bw_theme", "glass");
     }, []);
 
     const setTheme = (newTheme: Theme) => {
-        setThemeState(newTheme);
-        localStorage.setItem("bw_theme", newTheme);
-        document.documentElement.setAttribute("data-theme", newTheme);
+        // Locked to glass
+        setThemeState("glass");
+        localStorage.setItem("bw_theme", "glass");
+        document.documentElement.setAttribute("data-theme", "glass");
 
         const tg = (window as any).Telegram?.WebApp;
         if (tg) {

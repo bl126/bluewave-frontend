@@ -428,7 +428,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             <div className="flex items-center justify-between text-xs font-bold shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-app-accent/10 flex items-center justify-center border border-app-border">
-                  <img src="/gram logo.jpg" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                  <img src="/gram icon.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-text-main font-mono tracking-tight">
@@ -569,7 +569,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                       className="bg-transparent border-none outline-none text-text-main font-black text-3xl placeholder-text-main/20 w-full min-w-0 disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-app-accent/10 border border-app-border/50 select-none shrink-0">
-                      <img src="/gram logo.jpg" alt="Gram" className="w-4 h-4 object-contain" />
+                      <img src="/gram icon.png" alt="Gram" className="w-4 h-4 object-contain" />
                       <span className="text-text-main font-black text-xs tracking-tight">Gram</span>
                     </div>
                   </div>
@@ -658,7 +658,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                             }`}
                           >
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <img src="/gram logo.jpg" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                              <img src="/gram icon.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
                               <span className="font-black text-sm text-text-main">{preset.ton} Gram</span>
                             </div>
                             <div className="flex items-center gap-1 text-[11px] font-black text-text-main">
@@ -679,7 +679,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                   <div className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
                     useCustom && customAmount ? "border-app-accent bg-app-accent/5" : "border-app-border bg-app-accent/5"
                   }`}>
-                    <img src="/gram logo.jpg" alt="Gram" className="w-5 h-5 object-contain shrink-0" />
+                    <img src="/gram icon.png" alt="Gram" className="w-5 h-5 object-contain shrink-0" />
                     <input
                       type="number"
                       min={minTon}
@@ -722,7 +722,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
                           <div className="flex flex-col gap-0.5">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-text-main/70">You send</span>
                             <div className="flex items-center gap-1.5">
-                              <img src="/gram logo.jpg" alt="Gram" className="w-4 h-4 object-contain" />
+                              <img src="/gram icon.png" alt="Gram" className="w-4 h-4 object-contain" />
                               <span className="text-text-main font-black text-base">{activeTon} Gram</span>
                             </div>
                             <span className="text-text-main/90 text-[9px] font-mono">≈ ${usdValue.toFixed(2)} USD</span>

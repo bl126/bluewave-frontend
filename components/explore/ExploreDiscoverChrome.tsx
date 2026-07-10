@@ -105,7 +105,7 @@ export function MiniAppCarousel({
       <div className="px-5 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-text-main">Mini Apps & Bots</h3>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main">Mini Apps & Bots</h3>
         </div>
         {!loading && onViewAll && (
           <button

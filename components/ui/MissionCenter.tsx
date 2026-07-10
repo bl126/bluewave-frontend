@@ -726,10 +726,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
           <div 
             className="fixed top-0 left-0 right-0 z-[130] pointer-events-none"
             style={{
-              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)",
-              background: "rgba(0, 0, 0, 0.55)",
-              backdropFilter: "blur(40px) saturate(180%)",
-              WebkitBackdropFilter: "blur(40px) saturate(180%)",
+              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 108px)",
+              background: "rgba(10, 10, 12, 0.75)",
+              backdropFilter: "blur(50px) saturate(200%)",
+              WebkitBackdropFilter: "blur(50px) saturate(200%)",
               borderBottom: "1px solid rgba(255, 255, 255, 0.05)"
             }}
           />
@@ -738,7 +738,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
           <div 
             className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between w-full px-6 pb-4 shrink-0 gap-1.5"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 48px)",
             }}
           >
             {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
@@ -792,7 +792,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
               if (diff < 0 && idx > 0) setActiveTab(TABS[idx - 1]);
             }}
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)"
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 118px)"
             }}
           >
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
