@@ -26,50 +26,72 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
         setTimeout(onClose, 300); // Wait for exit animation
     };
 
+    // Native Back Button Interceptor -> Close modal
+    useEffect(() => {
+        if (!isVisible) return;
+        const handleNativeBack = (e: Event) => {
+            e.preventDefault();
+            handleClose();
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+    }, [isVisible]);
+
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 overflow-hidden">
+                <div className="fixed inset-0 z-50 flex flex-col justify-end overflow-hidden">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-app-bg/80 backdrop-blur-md"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
                         onClick={handleClose}
                     />
 
-                    {/* Modal Content */}
+                    {/* Bottom Sheet Modal Container using Frosted / Liquid Glass principles */}
                     <motion.div
-                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                        animate={{ scale: 1, y: 0, opacity: 1 }}
-                        exit={{ scale: 0.9, y: -20, opacity: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-app-border bg-app-card shadow-app-shadow"
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 26, stiffness: 190 }}
+                        className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
+                        style={{
+                          background: "rgba(28, 28, 30, 0.75)",
+                          backdropFilter: "blur(30px) saturate(190%)",
+                          WebkitBackdropFilter: "blur(30px) saturate(190%)",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                          boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+                        }}
                     >
-                        {/* Decorative background effects */}
-                        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none rounded-[2rem]">
-                            <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(ellipse_at_top_right,var(--accent-glow)_0%,transparent_60%)]" />
-                            <div className="absolute bottom-[-10%] left-[20%] w-[100%] h-[100%] bg-[radial-gradient(ellipse_at_bottom_left,var(--accent-glow)_0%,transparent_50%)]" />
+                        {/* Specular Liquid Glow */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-app-accent/5 blur-[60px] rounded-full pointer-events-none" />
+
+                        {/* Drag Handle */}
+                        <div className="w-full flex justify-center pt-4 pb-2">
+                            <div className="w-12 h-1.5 bg-white/15 rounded-full" />
                         </div>
 
-                        <div className="relative z-10 p-8 flex flex-col items-center text-center">
+                        <div className="relative p-6 px-8 flex flex-col items-center text-center pb-12">
 
-                            {/* Animated Check / Icon */}
+                            {/* Animated Emblem */}
                             <motion.div
                                 initial={{ scale: 0, rotate: -20 }}
                                 animate={{ scale: 1, rotate: 0 }}
                                 transition={{ type: "spring", damping: 15, delay: 0.2 }}
-                                className="w-20 h-20 mb-6 rounded-full bg-app-bg/50 border border-app-border flex items-center justify-center shadow-app-shadow"
+                                className="w-20 h-20 mb-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-lg"
+                                style={{ boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.15)" }}
                             >
-                                <span className="text-2xl font-black text-app-accent tracking-wider">BLU</span>
+                                <span className="text-xl font-bold text-white opacity-95 tracking-wider">BLU</span>
                             </motion.div>
 
                             <motion.h2
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className="text-2xl font-bold text-text-main mb-2 tracking-tight"
+                                className="text-2xl font-bold text-white mb-2 tracking-tight"
+                                style={{ letterSpacing: "-0.5px" }}
                             >
                                 {t("daily_ai_popup.title")}
                             </motion.h2>
@@ -78,47 +100,46 @@ export default function DailyAIPopup({ pointsAwarded, onClose }: DailyAIPopupPro
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-sm text-text-sub mb-6 leading-relaxed"
+                                className="text-sm text-white/60 mb-6 leading-relaxed px-4 pt-1"
                             >
                                 {t("daily_ai_popup.desc")}
                             </motion.p>
 
+                            {/* Reward display container */}
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", damping: 20, delay: 0.5 }}
-                                className="w-full bg-app-accent/5 border border-app-border rounded-2xl py-6 px-4 mb-8 flex flex-col relative overflow-hidden group"
+                                className="w-full max-w-xs bg-white/5 border border-white/10 rounded-2xl py-6 px-4 mb-8 flex flex-col relative overflow-hidden group shadow-md"
                             >
-                                {/* Subtle inner glow */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-app-accent/5 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
 
-                                <span className="text-xs font-semibold text-app-accent uppercase tracking-[0.2em] mb-2 pointer-events-auto">
+                                <span className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-2">
                                     {t("daily_ai_popup.reward_generated")}
                                 </span>
 
-                                <div className="flex items-center justify-center gap-2">
-                                    <span className="text-4xl font-black text-text-main pointer-events-auto shadow-sm">
+                                <div className="flex items-center justify-center gap-1.5">
+                                    <span className="text-4xl font-black text-white leading-none">
                                         +{pointsAwarded.toLocaleString()}
                                     </span>
-                                    <span className="text-base font-bold text-app-accent pointer-events-auto mt-2">
+                                    <span className="text-sm font-semibold text-white/60 mt-2">
                                         XP
                                     </span>
                                 </div>
                             </motion.div>
 
+                            {/* Acknowledge Button */}
                             <motion.button
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 }}
                                 onClick={handleClose}
-                                className="w-full relative group overflow-hidden rounded-xl bg-app-accent p-[1px]"
+                                className="w-full max-w-xs py-4 bg-white text-black font-semibold text-sm rounded-full transition-all active:scale-[0.97] hover:bg-white/95"
+                                style={{
+                                  boxShadow: "0 4px 20px rgba(255, 255, 255, 0.15)"
+                                }}
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-app-accent/80 to-app-accent opacity-80" />
-                                <div className="relative flex items-center justify-center rounded-xl bg-app-bg px-4 py-3 transition-colors group-hover:bg-app-accent/10">
-                                    <span className="font-bold text-app-accent transition-colors">
-                                        {t("daily_ai_popup.acknowledge")}
-                                    </span>
-                                </div>
+                                {t("daily_ai_popup.acknowledge")}
                             </motion.button>
                         </div>
                     </motion.div>

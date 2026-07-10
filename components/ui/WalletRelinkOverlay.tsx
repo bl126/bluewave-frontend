@@ -174,26 +174,51 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
         }
     };
 
+    // Native Back Button Interceptor -> Close App (mandatory lock screen)
+    useEffect(() => {
+        const handleNativeBack = (e: Event) => {
+            e.preventDefault();
+            const tg = (window as any).Telegram?.WebApp;
+            if (tg) {
+                tg.close();
+            }
+        };
+        window.addEventListener("bwNativeBack", handleNativeBack);
+        return () => window.removeEventListener("bwNativeBack", handleNativeBack);
+    }, []);
+
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 overflow-hidden">
-            {/* Dark heavy backdrop */}
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end overflow-hidden">
+            {/* Backdrop: Soft blurred background */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-black/95 backdrop-blur-xl pointer-events-auto"
+                className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
             />
 
-            {/* Main overlay modal card */}
+            {/* Bottom Sheet Modal Container */}
             <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="relative w-full max-w-sm bg-app-card border border-app-border rounded-[3rem] overflow-hidden shadow-app-shadow pointer-events-auto z-10"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ type: "spring", damping: 26, stiffness: 190 }}
+                className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
+                style={{
+                  background: "rgba(28, 28, 30, 0.75)",
+                  backdropFilter: "blur(30px) saturate(190%)",
+                  WebkitBackdropFilter: "blur(30px) saturate(190%)",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                  boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+                }}
             >
-                {/* Subtle Amber Top Glow for Alert/Verification focus */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-app-accent/5 blur-[80px] rounded-full pointer-events-none" />
+                {/* Specular Liquid Glow */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-app-accent/5 blur-[60px] rounded-full pointer-events-none" />
 
-                <div className="relative p-8 flex flex-col items-center">
+                {/* Drag Handle */}
+                <div className="w-full flex justify-center pt-4 pb-2">
+                    <div className="w-12 h-1.5 bg-white/15 rounded-full" />
+                </div>
+
+                <div className="relative p-6 px-8 flex flex-col items-center">
                     
                     <AnimatePresence mode="wait">
                         {isLocked ? (
@@ -203,52 +228,55 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="flex flex-col items-center text-center w-full"
+                                className="flex flex-col items-center text-center w-full pb-6"
                             >
                                 <div className="w-20 h-20 relative mb-6 flex items-center justify-center">
                                     <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full animate-pulse" />
-                                    <div className="relative z-10 bg-red-500/10 border border-red-500/30 text-red-500 p-5 rounded-3xl shadow-app-shadow">
-                                        <Lock size={36} className="animate-bounce" />
+                                    <div className="relative z-10 bg-white/5 border border-white/10 text-red-500 p-5 rounded-full shadow-lg">
+                                        <Lock size={36} className="animate-bounce text-red-500" strokeWidth={1.5} />
                                     </div>
                                 </div>
 
-                                <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase mb-3">
+                                <h2 className="text-2xl font-bold tracking-tight text-white leading-tight mb-2" style={{ letterSpacing: "-0.5px" }}>
                                     Security Lockout
                                 </h2>
 
                                 <div className="flex items-center justify-center gap-2 mb-6">
-                                    <div className="h-px w-6 bg-app-border" />
-                                    <span className="text-red-400 font-mono font-bold tracking-[0.3em] text-[10px] uppercase animate-pulse">
+                                    <div className="h-px w-5 bg-white/10" />
+                                    <span className="text-red-400 font-mono font-bold tracking-[0.25em] text-[9px] uppercase animate-pulse">
                                         System Locked
                                     </span>
-                                    <div className="h-px w-6 bg-app-border" />
+                                    <div className="h-px w-5 bg-white/10" />
                                 </div>
 
-                                <div className="w-full bg-red-500/5 border border-red-500/10 rounded-2xl p-5 mb-8 space-y-4">
-                                    <p className="text-xs text-text-sub font-medium leading-relaxed">
+                                <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-5 mb-8 space-y-3 leading-relaxed">
+                                    <p className="text-sm text-white/60 font-normal">
                                         Too many failed password attempts. For security, please try again in:
                                     </p>
-                                    <div className="text-4xl font-mono font-black text-red-400 tracking-wider">
+                                    <div className="text-3xl font-mono font-black text-red-400 tracking-wider">
                                         {formatTime(lockoutRemaining)}
                                     </div>
-                                    <p className="text-[10px] text-text-sub/50 leading-relaxed font-semibold">
+                                    <p className="text-[10px] text-white/40 leading-relaxed font-bold uppercase tracking-wider">
                                         Your assets are safe. If you forgot your password, please contact support directly.
                                     </p>
                                 </div>
 
-                                <div className="w-full space-y-4">
+                                <div className="w-full space-y-4 max-w-xs">
                                     <a
                                         href={supportLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group relative w-full flex items-center justify-center gap-3 py-4 bg-app-accent hover:opacity-90 text-app-bg font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-app-shadow text-sm"
+                                        className="group relative w-full flex items-center justify-center gap-2.5 py-4 bg-white text-black font-semibold text-sm rounded-full transition-all active:scale-[0.97] hover:bg-white/95"
+                                        style={{
+                                          boxShadow: "0 4px 20px rgba(255, 255, 255, 0.15)"
+                                        }}
                                     >
-                                        <MessageCircle size={18} fill="currentColor" />
-                                        <span>Contact Support</span>
-                                        <ExternalLink size={12} className="opacity-50" />
+                                        <MessageCircle size={18} fill="currentColor" className="text-black" />
+                                        <span className="tracking-tight">Contact Support</span>
+                                        <ExternalLink size={12} className="opacity-40 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                     </a>
 
-                                    <div className="flex items-center justify-center gap-2 text-[9px] text-text-sub/40 font-bold uppercase tracking-widest">
+                                    <div className="flex items-center justify-center gap-1.5 text-[9px] text-white/30 font-bold uppercase tracking-wider">
                                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                                         Locked for 30 minutes
                                     </div>
@@ -262,39 +290,39 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 onSubmit={handleVerify}
-                                className="flex flex-col items-center w-full"
+                                className="flex flex-col items-center w-full pb-6"
                             >
                                 <div className="w-20 h-20 relative mb-6 flex items-center justify-center">
-                                    <div className="absolute inset-0 bg-app-accent/20 blur-2xl rounded-full" />
-                                    <div className="relative z-10 bg-app-accent text-app-bg p-5 rounded-3xl shadow-app-shadow">
-                                        <ShieldAlert size={36} strokeWidth={2.5} />
+                                    <div className="absolute inset-0 bg-app-accent/20 blur-xl rounded-full" />
+                                    <div className="relative z-10 bg-white/5 border border-white/10 text-white p-5 rounded-full shadow-lg">
+                                        <ShieldAlert size={36} className="text-white opacity-95" strokeWidth={1.5} />
                                     </div>
                                 </div>
 
-                                <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase text-center mb-1">
+                                <h2 className="text-2xl font-bold tracking-tight text-white leading-tight mb-1" style={{ letterSpacing: "-0.5px" }}>
                                     Wallet Recovery
                                 </h2>
-                                <p className="text-[10px] text-app-accent font-mono font-bold tracking-[0.2em] uppercase mb-6 text-center">
+                                <p className="text-[9px] text-white/40 font-mono font-bold tracking-[0.25em] uppercase mb-5">
                                     Action Required
                                 </p>
 
-                                <p className="text-xs text-text-sub font-medium leading-relaxed text-center mb-6 px-2">
+                                <p className="text-sm text-white/60 font-normal leading-relaxed text-center mb-6 max-w-xs">
                                     Your wallet was unlinked by administration. Verify your identity with your <strong>Recovery Password</strong> to reconnect your wallet.
                                 </p>
 
                                 <div className="w-full space-y-4 mb-6">
                                     {/* BW ID Field (Pre-filled, disabled/read-only for security) */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-app-accent/60 ml-2">
+                                        <label className="text-[9px] font-bold uppercase tracking-wider text-white/50 ml-2">
                                             Bluewave ID
                                         </label>
                                         <div className="relative">
-                                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-app-accent/40" />
+                                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                                             <input
                                                 type="text"
                                                 value={bwId}
                                                 disabled
-                                                className="w-full bg-app-bg/30 border border-app-border/40 text-text-sub/50 font-mono font-bold rounded-xl py-3.5 pl-11 pr-4 text-sm focus:outline-none cursor-not-allowed opacity-80"
+                                                className="w-full bg-black/45 border border-white/10 text-white/40 font-mono font-bold rounded-xl py-3.5 pl-11 pr-4 text-sm focus:outline-none cursor-not-allowed opacity-80"
                                             />
                                         </div>
                                     </div>
@@ -302,30 +330,30 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                     {/* Password Field */}
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between items-center px-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-app-accent/60">
+                                            <label className="text-[9px] font-bold uppercase tracking-wider text-white/50">
                                                 Recovery Password
                                             </label>
                                             {attemptsLeft !== null && (
-                                                <span className="text-[9px] text-red-400 font-bold uppercase tracking-widest animate-pulse">
+                                                <span className="text-[9px] text-red-400 font-bold uppercase tracking-wider animate-pulse">
                                                     {attemptsLeft} attempts remaining
                                                 </span>
                                             )}
                                         </div>
                                         <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-app-accent/50" />
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                                             <input
                                                 type={showPassword ? "text" : "password"}
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Enter recovery password"
-                                                className="w-full bg-app-bg/50 border border-app-border rounded-xl py-3.5 pl-11 pr-11 text-text-main text-sm focus:outline-none focus:border-app-accent focus:bg-app-accent/5 transition-all duration-200"
+                                                className="w-full bg-black/45 border border-white/10 rounded-xl py-3.5 pl-11 pr-11 text-white text-sm focus:outline-none focus:border-white/30 focus:bg-white/5 transition-all duration-200"
                                                 required
                                                 disabled={loading}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(v => !v)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub/50 hover:text-app-accent transition-colors"
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
                                                 disabled={loading}
                                             >
                                                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -337,7 +365,7 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                         <motion.div
                                             initial={{ opacity: 0, y: -5 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 px-4 rounded-xl border border-red-500/20 leading-relaxed"
+                                            className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-2.5 rounded-xl border border-red-500/20 leading-relaxed"
                                         >
                                             {error}
                                         </motion.div>
@@ -347,11 +375,14 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-4 rounded-xl bg-app-accent text-app-bg font-black uppercase tracking-widest text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-app-shadow flex items-center justify-center gap-2"
+                                    className="w-full max-w-xs py-4 bg-white text-black font-semibold text-sm rounded-full transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/95 flex items-center justify-center gap-2"
+                                    style={{
+                                      boxShadow: "0 4px 20px rgba(255, 255, 255, 0.15)"
+                                    }}
                                 >
                                     {loading ? (
                                         <>
-                                            <Loader2 size={16} className="animate-spin" />
+                                            <Loader2 size={16} className="animate-spin text-black" />
                                             <span>Verifying...</span>
                                         </>
                                     ) : (
@@ -359,8 +390,8 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                     )}
                                 </button>
                                 
-                                <div className="mt-4 flex items-center justify-center gap-2 text-[9px] text-text-sub/40 font-bold uppercase tracking-widest">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-app-border animate-pulse" />
+                                <div className="mt-4 flex items-center justify-center gap-1.5 text-[9px] text-white/30 font-bold uppercase tracking-wider">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
                                     Encrypted Verification Protocol
                                 </div>
                             </motion.form>
@@ -370,20 +401,20 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                                 key="success"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="flex flex-col items-center text-center py-8 w-full"
+                                className="flex flex-col items-center text-center py-8 w-full pb-12"
                             >
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: "spring", delay: 0.1 }}
-                                    className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/50 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)] text-emerald-400"
+                                    className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6 shadow-lg text-emerald-400"
                                 >
-                                    <CheckCircle2 className="w-12 h-12 animate-pulse" />
+                                    <CheckCircle2 className="w-12 h-12 animate-pulse text-emerald-500 opacity-95" strokeWidth={1.5} />
                                 </motion.div>
-                                <h2 className="text-2xl font-black text-emerald-500 uppercase tracking-widest mb-3">
+                                <h2 className="text-2xl font-bold tracking-tight text-emerald-500 leading-tight mb-2" style={{ letterSpacing: "-0.5px" }}>
                                     Verified
                                 </h2>
-                                <p className="text-xs text-text-sub px-4 font-semibold leading-relaxed">
+                                <p className="text-sm text-white/60 leading-relaxed px-4 pt-1 max-w-xs">
                                     Identity verified successfully! You can now link a new wallet to your BW ID.
                                 </p>
                             </motion.div>
@@ -391,9 +422,6 @@ export default function WalletRelinkOverlay({ bwId: initialBwId, onVerified }: W
                     </AnimatePresence>
 
                 </div>
-
-                {/* Ambient Bottom Detail */}
-                <div className={`h-1.5 w-full bg-gradient-to-r ${isLocked ? "from-transparent via-red-500 to-transparent opacity-40 animate-pulse" : "from-transparent via-app-accent to-transparent opacity-50"}`} />
             </motion.div>
         </div>
     );
