@@ -664,7 +664,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed inset-0 flex flex-col overflow-hidden text-text-main bg-app-bg ${isAnyOverlayActive ? "z-[900]" : "z-[120]"}`}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 120px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)"
       }}
     >
@@ -675,11 +675,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       <div 
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 40px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)",
-          background: "rgba(28, 28, 30, 0.75)",
-          backdropFilter: "blur(30px) saturate(190%)",
-          WebkitBackdropFilter: "blur(30px) saturate(190%)"
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 48px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)",
+          background: "rgba(0, 0, 0, 0.6)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -723,12 +723,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         transition={{ duration: 0.12, ease: "easeInOut" }}
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)",
-          background: "rgba(28, 28, 30, 0.75)",
-          backdropFilter: "blur(30px) saturate(190%)",
-          WebkitBackdropFilter: "blur(30px) saturate(190%)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.15)"
+          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)",
+          background: "rgba(0, 0, 0, 0.6)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+          boxShadow: "none"
         }}
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
@@ -994,16 +994,15 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   setIsPostModalOpen(true);
                 }
               }}
-              className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-black/20 overflow-hidden group transition-all relative z-[210] ${
+              className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden group transition-all relative z-[210] ${
                 !hasAccess
                   ? "bg-zinc-800/90 text-zinc-600 cursor-not-allowed opacity-50"
                   : isConnected || !swrUser
-                    ? "bg-white text-black shadow-[0_4px_20px_rgba(255,255,255,0.25)]"
+                    ? "bg-white text-black shadow-[0_4px_20px_rgba(255,255,255,0.3)]"
                     : "bg-gray-800 text-gray-500 shadow-none"
               }`}
             >
-              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              {!hasAccess ? <Lock size={22} /> : <Plus size={26} className="text-black" strokeWidth={2.5} />}
+              {!hasAccess ? <Lock size={22} /> : <Plus size={24} className="text-black" strokeWidth={2.5} />}
             </motion.button>
           </div>
         )}
@@ -1172,14 +1171,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-[80%] max-w-sm z-[1009] flex flex-col justify-between border-r border-white/10"
+              className="fixed left-0 top-0 bottom-0 w-[80%] max-w-sm z-[1009] flex flex-col justify-between border-r border-white/6"
               style={{
                 paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 50px)",
                 paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)",
-                background: "rgba(28, 28, 30, 0.75)",
-                backdropFilter: "blur(30px) saturate(190%)",
-                WebkitBackdropFilter: "blur(30px) saturate(190%)",
-                boxShadow: "inset -1px 0 0 0 rgba(255, 255, 255, 0.05), 10px 0 40px rgba(0, 0, 0, 0.5)"
+                background: "rgba(0, 0, 0, 0.6)",
+                backdropFilter: "blur(40px) saturate(180%)",
+                WebkitBackdropFilter: "blur(40px) saturate(180%)",
+                boxShadow: "10px 0 40px rgba(0, 0, 0, 0.5)"
               }}
             >
               {/* Top content */}
