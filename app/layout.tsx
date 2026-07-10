@@ -30,9 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           (function() {
             try {
               var theme = localStorage.getItem('bw_theme');
-              if (theme !== 'dim' && theme !== 'original') theme = 'original'; // Default to high-contrast night
+              if (theme !== 'dim' && theme !== 'original' && theme !== 'glass') theme = 'original'; // Default to high-contrast night
               document.documentElement.setAttribute('data-theme', theme);
               if (theme === 'dim') document.body.style.backgroundColor = '#17212B';
+              else if (theme === 'glass') document.body.style.backgroundColor = '#030303';
               else document.body.style.backgroundColor = '#000000';
             } catch (e) {}
           })();

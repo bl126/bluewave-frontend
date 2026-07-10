@@ -176,12 +176,14 @@ function GlobeScene({
   const cloudsRef = useRef<THREE.Mesh>(null!);
   const [countryDots, setCountryDots] = useState<CountryDot[]>([]);
   
-  const isDark = theme === "original" || theme === "dim";
+  const isDark = theme === "original" || theme === "dim" || theme === "glass";
 
   const colors = useMemo(() => {
     switch (theme) {
       case "dim":
         return { ocean: "#0d3d5f", border: "#00F6FF", glow: "#00F6FF", ambient: 0.6 };
+      case "glass":
+        return { ocean: "#030811", border: "rgba(255, 255, 255, 0.4)", glow: "rgba(255, 255, 255, 0.5)", ambient: 0.5 };
       default: // original
         return { ocean: "#061422", border: "#00F6FF", glow: "#00F6FF", ambient: 0.4 };
     }
@@ -355,7 +357,7 @@ function SceneBackground() {
   const { gl } = useThree();
   const { theme } = useTheme();
   useEffect(() => {
-    const colorMap = { dim: '#17212B', original: '#000000' };
+    const colorMap: Record<string, string> = { dim: '#17212B', original: '#000000', glass: '#030303' };
     gl.setClearColor(new THREE.Color(colorMap[theme] || '#000000'), 1);
   }, [theme, gl]);
   return null;

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dim" | "original";
+type Theme = "dim" | "original" | "glass";
 
 interface ThemeContextType {
     theme: Theme;
@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         setMounted(true);
         const savedTheme = localStorage.getItem("bw_theme") as Theme;
-        if (savedTheme && (savedTheme === "original" || savedTheme === "dim")) {
+        if (savedTheme && (savedTheme === "original" || savedTheme === "dim" || savedTheme === "glass")) {
             setThemeState(savedTheme);
             document.documentElement.setAttribute("data-theme", savedTheme);
         } else {
@@ -36,8 +36,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
         const tg = (window as any).Telegram?.WebApp;
         if (tg) {
-            tg.setHeaderColor(newTheme === "original" ? "#000000" : "#17212B");
-            tg.setBackgroundColor(newTheme === "original" ? "#000000" : "#17212B");
+            let color = "#000000";
+            if (newTheme === "dim") color = "#17212B";
+            else if (newTheme === "glass") color = "#030303";
+            tg.setHeaderColor(color);
+            tg.setBackgroundColor(color);
         }
     };
 

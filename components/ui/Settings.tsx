@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { Globe, Moon, Zap, Palette, MessageSquare } from "lucide-react";
+import { Globe, Moon, Zap, Palette, MessageSquare, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useEffect } from "react";
@@ -149,10 +149,11 @@ export default function Settings({ isOpen, onClose, onOpenLanguage, onOpenBugsSu
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2 bg-app-bg/20 p-1 rounded-xl">
+                                    <div className="grid grid-cols-3 gap-2 bg-app-bg/20 p-1 rounded-xl">
                                         {[
                                             { id: 'dim', icon: Moon, label: 'Dim' },
-                                            { id: 'original', icon: Zap, label: 'Night' }
+                                            { id: 'original', icon: Zap, label: 'Night' },
+                                            { id: 'glass', icon: Sparkles, label: 'Glass' }
                                         ].map((mode) => (
                                             <button
                                                 key={mode.id}
