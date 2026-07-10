@@ -45,7 +45,7 @@ export default function TONExplorerModal({ isOpen, onClose }: TONExplorerModalPr
             transition={{ type: "spring", damping: 26, stiffness: 190 }}
             className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
             style={{
-              background: "rgba(28, 28, 30, 0.75)",
+              background: "rgba(0, 0, 0, 0.45)",
               backdropFilter: "blur(30px) saturate(190%)",
               WebkitBackdropFilter: "blur(30px) saturate(190%)",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",

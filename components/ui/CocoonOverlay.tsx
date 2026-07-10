@@ -54,7 +54,7 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
             transition={{ type: "spring", damping: 26, stiffness: 190 }}
             className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] max-h-[85vh] pb-safe"
             style={{
-              background: "rgba(28, 28, 30, 0.75)",
+              background: "rgba(0, 0, 0, 0.45)",
               backdropFilter: "blur(30px) saturate(190%)",
               WebkitBackdropFilter: "blur(30px) saturate(190%)",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
@@ -171,7 +171,7 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
             <div 
               className="absolute bottom-0 left-0 right-0 p-5 z-20 flex flex-col gap-2.5"
               style={{
-                background: "linear-gradient(to top, rgba(28, 28, 30, 0.98) 70%, rgba(28, 28, 30, 0) 100%)",
+                background: "linear-gradient(to top, rgba(0, 0, 0, 0.95) 70%, rgba(0, 0, 0, 0) 100%)",
                 paddingBottom: "calc(16px + var(--tg-safe-area-inset-bottom, 0px))"
               }}
             >

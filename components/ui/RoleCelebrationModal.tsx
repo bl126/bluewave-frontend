@@ -60,7 +60,7 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 26, stiffness: 190 }}
                         style={{
-                          background: "rgba(28, 28, 30, 0.75)",
+                          background: "rgba(0, 0, 0, 0.45)",
                           backdropFilter: "blur(30px) saturate(190%)",
                           WebkitBackdropFilter: "blur(30px) saturate(190%)",
                           borderTop: "1px solid rgba(255, 255, 255, 0.08)",

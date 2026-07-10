@@ -82,25 +82,22 @@ function PresenceCard({
 
   return (
     <div className={`
-      relative overflow-hidden rounded-2xl border transition-all duration-300
-      ${isActive ? "border-app-accent/50 bg-app-accent/10 shadow-app-shadow" : ""}
-      ${isCompleted ? "border-app-accent bg-app-accent/20 shadow-app-shadow" : ""}
-      ${mission.status === "inactive" ? "border-app-border bg-app-card" : ""}
+      relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-md
+      ${isActive ? "border-white/20 bg-white/10 shadow-lg shadow-black/10" : ""}
+      ${isCompleted ? "border-white/30 bg-white/20 shadow-lg shadow-black/20 animate-pulse" : ""}
+      ${mission.status === "inactive" ? "border-white/10 bg-white/5" : ""}
     `}>
       {/* Background Progress Bar (Fill) */}
       {(isActive || isCompleted) && (
         <div
-          className="absolute inset-0 bg-app-accent/20 transition-all duration-1000 ease-linear"
+          className="absolute inset-0 bg-white/10 transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       )}
 
       <div className="relative p-6 flex items-center justify-between z-10 w-full">
         <div className="flex-1">
-          {/* Title Removed as requested - Progress bar is the main visual */}
-          {/* If we need to show the TYPE (1h/4h/24h) we could put it in the button or a small tag, 
-               but user requested "no titles". We will rely on order or button text if needed, 
-               but for now just keeping it clean as requested. */}
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{mission.type} Mission</span>
         </div>
 
         <button
@@ -110,16 +107,16 @@ function PresenceCard({
           }}
           disabled={isActive || isLoading}
           className={`
-            w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all
+            py-3.5 px-6 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 duration-200
             ${isCompleted
-              ? "bg-app-accent text-app-bg hover:bg-app-accent/80 shadow-app-shadow"
+              ? "bg-white text-black shadow-md border border-white/20 hover:bg-white/95"
               : isActive
-                ? "bg-transparent text-text-sub cursor-not-allowed border border-app-border"
-                : "bg-app-accent/10 text-app-accent border border-app-border hover:bg-app-accent/20 hover:border-app-accent"
+                ? "bg-transparent text-white/40 cursor-not-allowed border border-white/5"
+                : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
             }
           `}
         >
-          {isLoading ? t("profile.wait") : // reusing 'Please wait...' or similar
+          {isLoading ? t("profile.wait") :
             isCompleted ? t("presence.claim_reward").replace("{{amount}}", (mission.reward || 0).toString()) :
               isActive ? t("missions.syncing").toUpperCase() :
                 t("presence.activate")}
@@ -128,7 +125,7 @@ function PresenceCard({
 
       {/* Active Glow Line */}
       {isActive && (
-        <div className="absolute bottom-0 left-0 h-1 bg-app-accent shadow-app-shadow"
+        <div className="absolute bottom-0 left-0 h-[2px] bg-white shadow-[0_0_10px_#ffffff]"
           style={{ width: `${progress}%`, transition: "width 1s linear" }}
         />
       )}
@@ -693,8 +690,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   return (
     <>
       <motion.div
-        className={`fixed inset-0 flex flex-col text-text-main bg-app-bg/95 backdrop-blur-3xl transition-all duration-300 ${isClaimBoostOpen || questDetailOpen ? "z-[900]" : "z-[120]"}`}
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        className={`fixed inset-0 flex flex-col text-text-main bg-app-bg/60 backdrop-blur-2xl transition-all duration-300 ${isClaimBoostOpen || questDetailOpen ? "z-[900]" : "z-[120]"}`}
+        style={{ paddingTop: 0, paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 15 }}
@@ -725,8 +722,25 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             </div>
           )}
 
+          {/* Frosted Header Background */}
+          <div 
+            className="fixed top-0 left-0 right-0 z-[130] pointer-events-none"
+            style={{
+              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)",
+              background: "rgba(0, 0, 0, 0.55)",
+              backdropFilter: "blur(40px) saturate(180%)",
+              WebkitBackdropFilter: "blur(40px) saturate(180%)",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.05)"
+            }}
+          />
+
           {/* ── Tab Bar ── */}
-          <div className="flex items-center justify-between w-full px-3 pt-6 pb-4 shrink-0 gap-1">
+          <div 
+            className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between w-full px-6 pb-4 shrink-0 gap-1.5"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 12px)",
+            }}
+          >
             {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
               const isActive = activeTab === tab;
               const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
@@ -739,11 +753,11 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   className={`relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all duration-200
                     ${isEarn || isQuest
                       ? isActive
-                        ? "bg-app-accent/5 border border-app-border text-text-sub/50"
-                        : "bg-transparent border border-app-border/30 text-text-sub/25 hover:border-app-border/50"
+                        ? "bg-white/10 border border-white/20 text-white"
+                        : "bg-transparent border border-white/5 text-white/30 hover:border-white/10"
                       : isActive
-                        ? "bg-app-accent/15 border border-app-border text-app-accent shadow-app-shadow"
-                        : "bg-transparent border border-app-border text-text-sub hover:border-app-accent/50 hover:text-app-accent"
+                        ? "bg-white/15 border border-white/20 text-white shadow-md"
+                        : "bg-transparent border border-white/10 text-white/60 hover:border-white/25 hover:text-white"
                     }`}
                 >
                   {tab === "presence" && t("missions.tabs.presence")}
@@ -751,7 +765,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   {tab === "quest" && t("missions.tabs.quest")}
                   {tab === "earn" && t("missions.tabs.earn")}
                   {badge > 0 && tab !== "earn" && tab !== "quest" && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-app-accent text-app-bg text-[9px] font-black flex items-center justify-center leading-none shadow-app-shadow">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-white text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_8px_rgba(255,255,255,0.3)] border border-white/10">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
@@ -776,6 +790,9 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
               const idx = TABS.indexOf(activeTab);
               if (diff > 0 && idx < TABS.length - 1) setActiveTab(TABS[idx + 1]);
               if (diff < 0 && idx > 0) setActiveTab(TABS[idx - 1]);
+            }}
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 80px)"
             }}
           >
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
@@ -813,8 +830,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   )}
                   {presenceMissions.length === 0 && !loading && (
                     <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-                      <div className="w-12 h-12 rounded-full bg-app-accent/10 border border-app-border flex items-center justify-center opacity-50">
-                        <Clock size={20} className="text-app-accent" />
+                      <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center opacity-50">
+                        <Clock size={20} className="text-white/85" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-bold text-text-main uppercase tracking-widest">{t("presence.system_offline")}</p>
@@ -824,7 +841,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       </div>
                       <button
                         onClick={() => mutatePresence()}
-                        className="h-10 px-4 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-app-accent/20 transition-all font-mono"
+                        className="h-10 px-4 bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:bg-white/20 transition-all font-mono"
                       >
                         {t("presence.retry_sync")}
                       </button>
@@ -846,15 +863,15 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                     <div
                       key={m.id}
                       className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
-                      ${m.status === "done"
-                          ? "border-app-border bg-app-card-bg opacity-50"
-                          : "border-app-border bg-app-card-bg hover:border-app-accent/50"
+                        ${m.status === "done"
+                          ? "border-white/5 bg-white/5 opacity-55"
+                          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8"
                         }`}
                     >
                       <div>
-                        <h4 className="text-[11px] font-black text-text-main uppercase tracking-tighter">{m.name}</h4>
+                        <h4 className="text-[11px] font-black text-white uppercase tracking-tighter">{m.name}</h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-black text-app-accent">+{m.points} $BWAVE</span>
+                          <span className="text-[10px] font-black text-white/60">+{m.points} $BWAVE</span>
                         </div>
                       </div>
 
@@ -863,14 +880,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                           <button
                             onClick={() => handleClaim(m.id)}
                             disabled={claimingMissionId === m.id}
-                            className="h-10 px-4 bg-app-accent text-app-bg rounded-xl text-[10px] font-black uppercase tracking-widest shadow-app-shadow hover:bg-app-accent/80 transition-all flex items-center gap-1.5"
+                            className="h-10 px-4 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-white/95 transition-all flex items-center gap-1.5 active:scale-95 border border-white/20"
                           >
                             {claimingMissionId === m.id ? t("missions.claiming").toUpperCase() : t("missions.claim")}
                           </button>
                         )}
                         {m.status === "waiting" && (
                           <button
-                            className="h-10 px-4 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 cursor-wait opacity-50"
+                            className="h-10 px-4 bg-white/10 border border-white/10 text-white/50 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 cursor-wait opacity-50"
                           >
                             <Clock size={12} className="animate-spin" />
                             {t("missions.verifying").toUpperCase()}
@@ -879,13 +896,13 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                         {m.status === "open" && m.id !== "invite_daily" && (
                           <button
                             onClick={() => handleOpen(m.id)}
-                            className="h-10 px-6 bg-app-accent/10 border border-app-border text-app-accent rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-app-accent/20 hover:border-app-accent/40 transition-all flex items-center gap-1.5"
+                            className="h-10 px-6 bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-1.5 active:scale-95"
                           >
                             {t("missions.open")}
                           </button>
                         )}
                         {m.status === "done" && (
-                          <div className="px-3 py-1.5 text-xs font-bold text-text-sub uppercase tracking-wider flex items-center gap-1">
+                          <div className="px-3 py-1.5 text-xs font-bold text-white/50 uppercase tracking-wider flex items-center gap-1">
                             <Check size={12} /> {t("missions.done")}
                           </div>
                         )}
@@ -894,18 +911,16 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   ))}
                   {loading && missions.length === 0 && (
                     <div className="space-y-3 animate-pulse">
-                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-app-card rounded-xl border border-app-border" />)}
+                      {[1, 2, 3].map(i => <div key={i} className="h-16 bg-white/5 rounded-xl border border-white/10" />)}
                     </div>
                   )}
                   {!loading && missions.length === 0 && !error && (
-                    <div className="py-20 text-center opacity-30 italic text-xs uppercase tracking-widest">
+                    <div className="py-20 text-center opacity-30 italic text-xs uppercase tracking-widest text-white/40">
                       {t("missions.no_missions") || "No social missions available"}
                     </div>
                   )}
                 </motion.div>
               )}
-
-              {/* QUEST TAB */}
               {activeTab === "quest" && (
                 <QuestTabPanel
                   telegramUser={telegramUser}

@@ -685,8 +685,24 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-app-accent/5 blur-[100px] pointer-events-none" />
 
-      {/* ─── Top Header (Avatar + Search Bar) — NO background, sits on top of tab bar glass ─── */}
-      <div 
+      {/* ─── Frosted Header Backdrop Background ─── */}
+      <motion.div
+        animate={{ y: showChrome ? 0 : -148 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-[125] pointer-events-none"
+        style={{
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 196px)",
+          background: "rgba(0, 0, 0, 0.55)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.05)"
+        }}
+      />
+
+      {/* ─── Top Header (Avatar + Search Bar) — NO background ─── */}
+      <motion.div 
+        animate={{ y: showChrome ? 0 : -148, opacity: showChrome ? 1 : 0 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 88px)",
@@ -723,23 +739,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           <span className="text-white/60 text-[11px] font-black uppercase tracking-wider">Search</span>
           <Search size={12} className="text-white/60" />
         </button>
-      </div>
+      </motion.div>
 
-      {/* ─── Tab Bar (fixed, solid, no floating) ─── */}
+      {/* ─── Tab Bar (fixed, transparent background) ─── */}
       <motion.div
-        animate={{
-          y: showChrome ? 0 : (activeTab === "foryou" || activeTab === "following") && (liveUsers?.length ?? 0) > 0 ? -200 : -80,
-          opacity: showChrome ? 1 : 0
-        }}
-        transition={{ duration: 0.12, ease: "easeInOut" }}
+        animate={{ y: showChrome ? 0 : -148, opacity: showChrome ? 1 : 0 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
           top: 0,
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 132px)",
-          background: "rgba(0, 0, 0, 0.55)",
-          backdropFilter: "blur(40px) saturate(180%)",
-          WebkitBackdropFilter: "blur(40px) saturate(180%)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 148px)",
+          background: "transparent",
           boxShadow: "none"
         }}
       >
@@ -802,7 +812,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="fixed left-0 right-0 z-[140] flex justify-center pointer-events-none"
-            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 200px)" }}
           >
             <button
               onClick={handleNewPostsPill}
@@ -822,7 +832,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="fixed left-1/2 -translate-x-1/2 z-[135] bg-black/85 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg pointer-events-none"
-            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 200px)" }}
           >
             <Loader2 size={12} className="text-white animate-spin" />
             <span className="text-[9px] text-white/90 font-black uppercase tracking-widest">{t("explore.posting_btn") || "Transmitting"}</span>
@@ -850,7 +860,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         onTouchEnd={onTouchEnd}
         className="flex-1 overflow-y-auto custom-scrollbar"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 180px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 196px)",
           paddingBottom: "120px"
         }}
       >
@@ -1073,7 +1083,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
             className="fixed left-1/2 -translate-x-1/2 z-[300] bg-white text-black px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg border border-white/20"
-            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 185px)" }}
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 200px)" }}
           >
             <div className="w-5 h-5 bg-black/5 rounded-full flex items-center justify-center">
               <Rocket size={12} className="animate-pulse" />
@@ -2551,7 +2561,7 @@ function PostCard({
                         transition={{ type: "spring", damping: 26, stiffness: 190 }}
                         className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
                         style={{
-                          background: "rgba(28, 28, 30, 0.75)",
+                          background: "rgba(0, 0, 0, 0.45)",
                           backdropFilter: "blur(30px) saturate(190%)",
                           WebkitBackdropFilter: "blur(30px) saturate(190%)",
                           borderTop: "1px solid rgba(255, 255, 255, 0.08)",
