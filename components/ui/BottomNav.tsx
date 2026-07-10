@@ -148,7 +148,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                 opacity: isVisible ? 1 : 0
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed left-1/2 -translate-x-1/2 bottom-[calc(max(0.5rem,env(safe-area-inset-bottom)))] z-[150]
+            className="fixed left-1/2 -translate-x-1/2 bottom-[calc(max(1.2rem,env(safe-area-inset-bottom))+8px)] z-[150]
                  flex items-center gap-2 w-[92%] max-w-md"
         >
             {/* ─── Main Nav Bar (rounded pill capsule) ─── */}

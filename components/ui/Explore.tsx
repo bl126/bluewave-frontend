@@ -59,6 +59,17 @@ import StarGiftModal, {
   type StarGiftModalMode,
 } from "@/components/explore/StarGiftModal";
 
+const openChannel = (handle: string) => {
+  const clean = handle.replace(/^@/, "");
+  const link = `https://t.me/${clean}`;
+  const twa = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+  if (twa?.openTelegramLink) {
+    twa.openTelegramLink(link);
+  } else if (typeof window !== "undefined") {
+    window.open(link, "_blank");
+  }
+};
+
 const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
 const WalletRequiredBeforeDepositModal = dynamic(
   () => import("./WalletRequiredBeforeDepositModal"),
@@ -984,7 +995,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       {/* Scroll-to-top FAB (Liquid Glass, Arrow Pointing Upwards) */}
       <AnimatePresence>
         {showScrollToTop && (
-          <div className="fixed right-5 bottom-44 z-[200]">
+          <div className="fixed right-5 bottom-52 z-[200]">
             <motion.button
               initial={{ scale: 0, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1004,7 +1015,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       <AnimatePresence>
         {showChrome && activeTab !== "leaderboard" && activeTab !== "following" && (
-          <div className="fixed right-5 bottom-28 z-[200] flex flex-col items-center gap-3">
+          <div className="fixed right-5 bottom-36 z-[200] flex flex-col items-center gap-3">
             <motion.button
               initial={{ scale: 0, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1015,11 +1026,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               title={hasAccess ? t("explore.new_post_title") : t("explore.beta_post_locked")}
               onClick={() => {
                 if (!hasAccess) return;
-                if (swrUser && !isConnected) {
+                const handle = swrUser?.telegram_channel;
+                if (handle) {
+                  openChannel(handle);
+                } else {
                   setConnectBluAnalytics(false);
                   setIsConnectBluOpen(true);
-                } else {
-                  setIsPostModalOpen(true);
                 }
               }}
               className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden group transition-all relative z-[210] ${
@@ -1036,58 +1048,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
-      {/* ─── Post Modal ─── */}
-      <AnimatePresence>
-        {isPostModalOpen && (
-          <PostModal
-            telegramUser={telegramUser}
-            swrUser={swrUser}
-            onClose={() => setIsPostModalOpen(false)}
-            onPosted={(requestArgs) => {
-              setIsPostModalOpen(false);
-
-              // 🚀 [SPEED_BOOST] Optimistic UI: Prepend to the feed immediately while background posting
-              const optimisticPost = {
-                id: `temp-${Date.now()}`,
-                tg_id: telegramUser.id,
-                content: requestArgs.content,
-                media_url: requestArgs.media_url,
-                media_urls: requestArgs.media_urls || (requestArgs.media_url ? [{ url: requestArgs.media_url, type: requestArgs.media_type }] : []),
-                media_type: requestArgs.media_type,
-                views: 0,
-                acknowledgments_count: 0,
-                reposts_count: 0,
-                comments_count: 0,
-                created_at: new Date().toISOString(),
-                is_acknowledged: false,
-                is_reposted: false,
-                is_following: true,
-                channel: {
-                  title: swrUser?.telegram_channel_title || "My Channel",
-                  photo: swrUser?.telegram_channel_photo,
-                  handle: swrUser?.telegram_channel
-                },
-                user: {
-                  name: swrUser?.name || swrUser?.first_name || "Me",
-                  photo: swrUser?.photo_url,
-                  country: "",
-                  is_live_on_telegram: false
-                }
-              };
-              setPagedPosts(prev => [optimisticPost, ...prev]);
-
-              setIsPostingBackground(true);
-              postApi("/explore/post", requestArgs).then((res) => {
-                if (res?.success) {
-                  mutate(); // Refresh the list from the real source
-                  setSuccessMessage(t("explore.post_success_popup"));
-                  setTimeout(() => setSuccessMessage(null), 3000);
-                }
-              }).catch(() => { }).finally(() => setIsPostingBackground(false));
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {/* Post Modal deleted as requested */}
 
       {/* ─── Detail Modal (X-style thread) ─── */}
       <AnimatePresence>
@@ -2167,16 +2128,6 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 function LinkedText({ text, className = "" }: { text: string, className?: string }) {
   if (!text) return null;
 
-  const openChannel = (handle: string) => {
-    const clean = handle.replace(/^@/, "");
-    const link = `https://t.me/${clean}`;
-    const twa = (window as any).Telegram?.WebApp;
-    if (twa?.openTelegramLink) {
-      twa.openTelegramLink(link);
-    } else {
-      window.open(link, "_blank");
-    }
-  };
 
   // Split by URL (with or without http), or Mention
   // Regex explanation:
@@ -2581,7 +2532,7 @@ function PostCard({
                   < MoreHorizontal size={14} />
                 </button>
                 <AnimatePresence>
-                  {isMenuOpen && (
+                  {isMenuOpen && typeof document !== "undefined" && createPortal(
                     <div className="fixed inset-0 z-[1100] flex flex-col justify-end overflow-hidden pointer-events-auto text-center">
                       {/* Backdrop */}
                       <motion.div
@@ -2651,7 +2602,8 @@ function PostCard({
                           </button>
                         </div>
                       </motion.div>
-                    </div>
+                    </div>,
+                    document.body
                   )}
                 </AnimatePresence>
               </div>
