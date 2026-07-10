@@ -205,7 +205,7 @@ export default function ConvertModal({
                       className="w-full bg-app-bg/50 border border-app-border rounded-xl px-4 py-3 pr-20 text-text-main font-mono text-lg placeholder-text-main/40 focus:border-app-accent outline-none transition-colors"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                      <img src="/Gram Diamond Mark.png" alt="Gram" className="w-5 h-5" />
+                      <img src="/gram logo.jpg" alt="Gram" className="w-5 h-5" />
                       <span className="text-text-main font-black text-sm">Gram</span>
                     </div>
                   </div>
@@ -238,7 +238,7 @@ export default function ConvertModal({
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <img src="/Gram Diamond Mark.png" alt="Gram" className="w-4 h-4" />
+                          <img src="/gram logo.jpg" alt="Gram" className="w-4 h-4" />
                           <span className="text-text-main font-black text-sm">
                             {parseFloat(amount || "0").toFixed(4)} Gram
                           </span>

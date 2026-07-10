@@ -240,11 +240,11 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                                                     
                                                     {/* Currency Icon comes after number for TON/Stars */}
                                                     <div className="w-4 h-4 flex items-center justify-center shrink-0 ml-0.5">
-                                                        {type === "ton" && (
-                                                            <div>
-                                                                <img src="/Gram Diamond Mark.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
-                                                            </div>
-                                                        )}
+                                                         {type === "ton" && (
+                                                             <div>
+                                                                 <img src="/gram logo.jpg" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                                                             </div>
+                                                         )}
                                                         {type === "stars" && (
                                                             <div className="text-app-accent flex items-center justify-center scale-90">
                                                                 <StarIcon />
