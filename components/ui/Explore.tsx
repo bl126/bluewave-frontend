@@ -673,10 +673,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       {/* ─── Top Header (Avatar + Search Bar) ─── */}
       <div 
-        className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3 bg-app-bg border-b border-app-border"
+        className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 40px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)",
+          background: "rgba(28, 28, 30, 0.75)",
+          backdropFilter: "blur(30px) saturate(190%)",
+          WebkitBackdropFilter: "blur(30px) saturate(190%)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -685,16 +688,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             if (hasAccess) setIsDrawerOpen(true);
           }}
           disabled={!hasAccess}
-          className={`w-10 h-10 rounded-full border border-app-border overflow-hidden shrink-0 flex items-center justify-center bg-app-card transition-all ${hasAccess ? "active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+          className={`w-12 h-12 rounded-full border border-white/10 overflow-hidden shrink-0 flex items-center justify-center bg-white/5 transition-all ${hasAccess ? "active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-50"}`}
         >
           {swrUser?.telegram_channel_photo ? (
             <img 
               src={swrUser.telegram_channel_photo} 
               alt="Channel Avatar" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover pointer-events-none select-none"
             />
           ) : (
-            <User size={18} className="text-text-sub" />
+            <User size={20} className="text-white/80" />
           )}
         </button>
 
@@ -704,10 +707,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             if (hasAccess) setIsSearchOpen(true);
           }}
           disabled={!hasAccess}
-          className={`w-28 h-9 rounded-full bg-app-card border border-app-border hover:bg-app-accent/5 transition-all flex items-center justify-between px-3 text-left ${hasAccess ? "cursor-pointer active:scale-95" : "cursor-not-allowed opacity-50"}`}
+          className={`w-28 h-9 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-between px-3 text-left ${hasAccess ? "cursor-pointer active:scale-95" : "cursor-not-allowed opacity-50"}`}
         >
-          <span className="text-text-sub text-[11px] font-black uppercase tracking-wider">Search</span>
-          <Search size={12} className="text-text-sub" />
+          <span className="text-white/60 text-[11px] font-black uppercase tracking-wider">Search</span>
+          <Search size={12} className="text-white/60" />
         </button>
       </div>
 
@@ -718,9 +721,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           opacity: showChrome ? 1 : 0
         }}
         transition={{ duration: 0.12, ease: "easeInOut" }}
-        className="fixed left-0 right-0 z-[130] border-b border-app-border pointer-events-auto bg-app-bg"
+        className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
-          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
+          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)",
+          background: "rgba(28, 28, 30, 0.75)",
+          backdropFilter: "blur(30px) saturate(190%)",
+          WebkitBackdropFilter: "blur(30px) saturate(190%)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.15)"
         }}
       >
         <div className="flex items-center justify-between px-6 pt-2 w-full">
@@ -990,12 +998,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 !hasAccess
                   ? "bg-zinc-800/90 text-zinc-600 cursor-not-allowed opacity-50"
                   : isConnected || !swrUser
-                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+                    ? "bg-white text-black shadow-[0_4px_20px_rgba(255,255,255,0.25)]"
                     : "bg-gray-800 text-gray-500 shadow-none"
               }`}
             >
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              {!hasAccess ? <Lock size={22} /> : <Plus size={26} strokeWidth={3} />}
+              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {!hasAccess ? <Lock size={22} /> : <Plus size={26} className="text-black" strokeWidth={2.5} />}
             </motion.button>
           </div>
         )}
@@ -1158,16 +1166,20 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               className="fixed inset-0 z-[1008] bg-black/60"
             />
 
-            {/* Sidebar drawer (stops at center: w-[50%], top-0 bottom-0, same theme not glass) */}
+            {/* Sidebar drawer (stops at center: w-[80%], top-0 bottom-0, premium glass styling) */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-[50%] z-[1009] bg-app-card border-r border-app-border shadow-2xl flex flex-col justify-between"
+              className="fixed left-0 top-0 bottom-0 w-[80%] max-w-sm z-[1009] flex flex-col justify-between border-r border-white/10"
               style={{
                 paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 50px)",
-                paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)"
+                paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)",
+                background: "rgba(28, 28, 30, 0.75)",
+                backdropFilter: "blur(30px) saturate(190%)",
+                WebkitBackdropFilter: "blur(30px) saturate(190%)",
+                boxShadow: "inset -1px 0 0 0 rgba(255, 255, 255, 0.05), 10px 0 40px rgba(0, 0, 0, 0.5)"
               }}
             >
               {/* Top content */}
@@ -1188,7 +1200,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
                   {swrUser?.telegram_channel ? (
                     <div className="flex flex-col gap-0.5 w-full overflow-hidden">
-                      <h3 className="text-text-main font-black text-xs uppercase truncate tracking-tight w-full">
+                      <h3 className="text-text-main font-bold text-xs uppercase truncate tracking-tight w-full">
                         {swrUser.telegram_channel_title || "My Channel"}
                       </h3>
                       <p className="text-[10px] font-bold uppercase tracking-wide text-app-accent truncate w-full">
@@ -1196,14 +1208,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       </p>
                       
                       {/* Subscriber Count */}
-                      <div className="mt-1 flex items-center gap-1.5 text-[9px] text-text-sub font-black uppercase tracking-wider">
+                      <div className="mt-1 flex items-center gap-1.5 text-[9px] text-text-sub font-bold uppercase tracking-wider">
                         <BarChart2 size={10} className="text-app-accent shrink-0" />
                         <span className="truncate">{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subs</span>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-col items-start gap-2 w-full">
-                      <h3 className="text-text-main font-black text-[10px] uppercase tracking-wide">
+                      <h3 className="text-text-main font-bold text-[10px] uppercase tracking-wide">
                         No channel
                       </h3>
                       <button
@@ -1211,7 +1223,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           setIsDrawerOpen(false);
                           setIsConnectBluOpen(true);
                         }}
-                        className="w-full py-2 bg-app-accent text-app-bg font-black uppercase text-[9px] tracking-wider rounded-xl shadow-lg active:scale-95 transition-all"
+                        className="w-full py-2 bg-app-accent text-app-bg font-bold uppercase text-[9px] tracking-wider rounded-xl shadow-lg active:scale-95 transition-all"
                       >
                         Connect
                       </button>
@@ -1232,14 +1244,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <Search size={16} className="text-white shrink-0" />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Topics</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Topics</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Blu AI</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Blu AI</span>
                   </button>
                 </div>
 
@@ -1256,21 +1268,21 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <Repeat2 size={16} className="text-white shrink-0" />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Swap</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Swap</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <Zap size={16} className="text-white shrink-0" />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Wave Tools</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Wave Tools</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("ai-studio", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <AnimatedAIIcon />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">AI Studio</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">AI Studio</span>
                   </button>
                 </div>
 
@@ -1288,7 +1300,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   >
                     <div className="flex items-center gap-3">
                       <Star size={16} className="text-amber-400 shrink-0" fill="currentColor" />
-                      <span className="text-white text-[11px] font-black uppercase tracking-widest">Withdraw Stars</span>
+                      <span className="text-white text-xs font-bold uppercase tracking-widest">Withdraw Stars</span>
                     </div>
                     <span className="text-amber-400 font-mono text-[10px] font-black mr-1">
                       {(swrUser?.stars_balance ?? 0).toLocaleString()}
@@ -1310,14 +1322,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <BarChart2 size={16} className="text-white shrink-0" />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Analytics</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Analytics</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("premium", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
                     <VerifiedBadge />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Premium</span>
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Premium</span>
                   </button>
                 </div>
 
@@ -2542,29 +2554,76 @@ function PostCard({
                 </button>
                 <AnimatePresence>
                   {isMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, x: 10 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 10 }}
-                      className="absolute right-0 top-8 w-44 bg-zinc-950 border border-white/10 rounded-2xl z-30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] overflow-hidden p-1.5"
-                    >
+                    <div className="fixed inset-0 z-[1000] flex flex-col justify-end overflow-hidden pointer-events-auto text-center">
+                      {/* Backdrop */}
+                      <motion.div
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                      />
 
-                      <button onClick={handleCopyLink} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                        <Copy size={14} className={isCopying ? "text-green-400" : "text-cyan-400"} />
-                        {isCopying ? "Copied!" : "Copy Link"}
-                      </button>
-                      <div className="h-px bg-white/5 my-1 mx-2" />
-                      
-                      {Number(post.tg_id) === Number(currentUserId) ? (
-                        <button onClick={handleDelete} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all">
-                          <X size={14} />
-                          Delete Post
-                        </button>
-                      ) : (
-                        <button onClick={(e) => { e.stopPropagation(); handleHide(); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-orange-400/70 hover:text-orange-400 hover:bg-orange-500/5 rounded-xl transition-all">
-                          <X size={14} />
-                          {t("explore.not_interested")}
-                        </button>
-                      )}
-                    </motion.div>
+                      {/* Bottom Sheet Modal Container */}
+                      <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 26, stiffness: 190 }}
+                        className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] pb-safe"
+                        style={{
+                          background: "rgba(28, 28, 30, 0.75)",
+                          backdropFilter: "blur(30px) saturate(190%)",
+                          WebkitBackdropFilter: "blur(30px) saturate(190%)",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                          boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+                        }}
+                      >
+                        {/* Specular Highlight */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-[60px] rounded-full pointer-events-none" />
+
+                        {/* Drag Handle */}
+                        <div className="w-full flex justify-center pt-4 pb-2 shrink-0">
+                          <div className="w-12 h-1.5 bg-white/15 rounded-full" />
+                        </div>
+
+                        {/* Options Buttons */}
+                        <div className="relative p-6 px-8 flex flex-col gap-3 pb-12">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleCopyLink(e); }} 
+                            className="w-full h-12 flex items-center justify-center gap-3 bg-white/5 border border-white/5 rounded-2xl text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 active:scale-[0.98] transition-all"
+                          >
+                            <Copy size={16} className={isCopying ? "text-green-400" : "text-white/85"} />
+                            <span>{isCopying ? "Copied!" : "Copy Link"}</span>
+                          </button>
+                          
+                          {Number(post.tg_id) === Number(currentUserId) ? (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDelete(e); }} 
+                              className="w-full h-12 flex items-center justify-center gap-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500/20 active:scale-[0.98] transition-all"
+                            >
+                              <X size={16} className="text-red-400" />
+                              <span>Delete Post</span>
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleHide(); }} 
+                              className="w-full h-12 flex items-center justify-center gap-3 bg-white/5 border border-white/5 rounded-2xl text-xs font-bold uppercase tracking-wider text-white/95 hover:bg-white/10 active:scale-[0.98] transition-all"
+                            >
+                              <X size={16} className="text-white/80" />
+                              <span>{t("explore.not_interested")}</span>
+                            </button>
+                          )}
+
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }} 
+                            className="w-full h-12 flex items-center justify-center gap-3 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold uppercase tracking-wider text-white/40 hover:bg-white/10 active:scale-[0.98] transition-all mt-1"
+                          >
+                            <span>Cancel</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    </div>
                   )}
                 </AnimatePresence>
               </div>
