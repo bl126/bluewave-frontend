@@ -108,22 +108,22 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
                         {/* Icon and Text content */}
                         <div className={`relative z-10 flex flex-col items-center gap-0.5 transition-all duration-300 ${isActive ? "text-white opacity-100" : "text-white/40 group-hover:text-white/60"}`}>
                             {tab.idIsProfile ? (
-                                <div className={`w-5 h-5 rounded-full overflow-hidden border transition-all duration-300 
+                                <div className={`w-[26px] h-[26px] rounded-full overflow-hidden border transition-all duration-300 
                                 ${isActive ? "border-white" : "border-white/20 grayscale opacity-60"}`}>
                                     {userAvatarUrl ? (
                                         <img src={userAvatarUrl} alt="profile" className="w-full h-full object-cover pointer-events-none select-none" />
                                     ) : (
-                                        <User size={14} className="text-current" fill="currentColor" />
+                                        <User size={18} className="text-current animate-none" fill="currentColor" />
                                     )}
                                 </div>
                             ) : (
                                 <div className="relative flex items-center justify-center">
                                     {Icon && (
                                       <Icon 
-                                        size={18} 
+                                        size={24} 
                                         className="relative text-current" 
                                         fill="currentColor"
-                                        strokeWidth={isActive ? 2.5 : 2}
+                                        strokeWidth={1.5}
                                       />
                                     )}
 
@@ -136,6 +136,7 @@ export default function BottomNav({ activeTab, onTabChange, userAvatarUrl, teleg
 
                                     {/* Explore Badge */}
                                     {tab.id === "explore" && exploreBadgeCount > 0 && (
+
                                         <div className="absolute -top-1.5 -right-3 min-w-[12px] h-[12px] px-0.5 bg-white text-black text-[8px] font-bold rounded-full flex items-center justify-center border border-black/20 shadow-md">
                                             {exploreBadgeCount > 9 ? "9+" : exploreBadgeCount}
                                         </div>
