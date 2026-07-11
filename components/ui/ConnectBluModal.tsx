@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { X, Bot, Send, Check, Loader2, ChevronRight, Star, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink, History } from "lucide-react";
+import { X, Bot, Send, Check, Loader2, ChevronRight, Star, Gem, BarChart3, Brain, Globe2, TrendingUp, Coins, Lock, Crown, ImageOff, ExternalLink, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getApi, postApi } from "@/lib/useApi";
@@ -98,6 +98,16 @@ export default function ConnectBluModal({
     const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loadingTransactions, setLoadingTransactions] = useState(false);
+    const [selectedTx, setSelectedTx] = useState<any | null>(null);
+
+    const StarIcon = ({ size = 12 }: { size?: number }) => (
+        <Star className="text-amber-400 inline-block align-middle shrink-0" size={size} fill="currentColor" />
+    );
+
+    const GramIcon = ({ size = 12 }: { size?: number }) => (
+        <Gem className="text-cyan-400 inline-block align-middle shrink-0" size={size} fill="currentColor" />
+    );
+
     const adminIds = [5023869471, 7762443283];
     const isAdmin = adminIds.includes(telegramId ?? 0);
 
@@ -968,11 +978,14 @@ export default function ConnectBluModal({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
                                                 <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Estimated Payout</span>
-                                                <span className="text-sm font-black text-text-main">{(channelStarsReceived * 0.015).toFixed(3)} TON</span>
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <span className="text-sm font-black text-text-main">{(channelStarsReceived * 0.015).toFixed(3)}</span>
+                                                    <GramIcon size={12} />
+                                                </div>
                                             </div>
                                             <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
                                                 <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">USD Value</span>
-                                                <span className="text-sm font-black text-emerald-400">${(channelStarsReceived * 0.015 * 6.5).toFixed(2)}</span>
+                                                <span className="text-sm font-black text-emerald-400 block mt-0.5">${(channelStarsReceived * 0.015 * 6.5).toFixed(2)}</span>
                                             </div>
                                         </div>
 
@@ -980,9 +993,12 @@ export default function ConnectBluModal({
                                         <div className="border-t border-amber-500/10 pt-4 grid grid-cols-2 gap-4">
                                             <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
                                                 <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Lifetime Payout</span>
-                                                <span className="text-sm font-black text-text-main">
-                                                    {withdrawalInfo?.lifetime_payout_ton ? `${withdrawalInfo.lifetime_payout_ton.toFixed(3)} TON` : "0.000 TON"}
-                                                </span>
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <span className="text-sm font-black text-text-main">
+                                                        {withdrawalInfo?.lifetime_payout_ton ? `${withdrawalInfo.lifetime_payout_ton.toFixed(3)}` : "0.000"}
+                                                    </span>
+                                                    <GramIcon size={12} />
+                                                </div>
                                                 {withdrawalInfo?.lifetime_payout_ton ? (
                                                     <span className="text-[9px] font-bold text-emerald-400 block mt-0.5">
                                                         ~${(withdrawalInfo.lifetime_payout_ton * (withdrawalInfo.ton_price_usd || 6.5)).toFixed(2)} USD
@@ -991,9 +1007,12 @@ export default function ConnectBluModal({
                                             </div>
                                             <div className="bg-app-bg/40 border border-app-border rounded-2xl p-3">
                                                 <span className="text-[8px] font-bold text-text-sub uppercase tracking-wider block">Lifetime Withdrawn</span>
-                                                <span className="text-sm font-black text-amber-500">
-                                                    {withdrawalInfo?.lifetime_payout_stars ? withdrawalInfo.lifetime_payout_stars.toLocaleString() : "0"}
-                                                </span>
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <span className="text-sm font-black text-amber-500">
+                                                        {withdrawalInfo?.lifetime_payout_stars ? withdrawalInfo.lifetime_payout_stars.toLocaleString() : "0"}
+                                                    </span>
+                                                    <StarIcon size={12} />
+                                                </div>
                                                 <span className="text-[9px] font-bold text-text-sub block mt-0.5">Stars</span>
                                             </div>
                                         </div>
@@ -1030,23 +1049,40 @@ export default function ConnectBluModal({
                                                     ))}
                                                 </div>
                                             ) : (
-                                                transactions.map((tx) => (
-                                                    <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px]">
-                                                        <div>
-                                                            <div className="font-bold text-white uppercase tracking-tight">{tx.description}</div>
-                                                            <div className="text-[9px] text-white/40 mt-0.5">{tx.date}</div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="font-black text-white">{tx.amount}</div>
-                                                            {tx.payout && (
-                                                                <div className="text-[9px] text-white/40 mt-0.5">{tx.payout}</div>
-                                                            )}
-                                                            <div className={`text-[9px] font-black uppercase mt-0.5 tracking-wider ${
-                                                                tx.status === "Completed" ? "text-emerald-400" : "text-amber-400"
-                                                            }`}>{tx.status}</div>
-                                                        </div>
-                                                    </div>
-                                                ))
+                                                transactions.map((tx) => {
+                                                    const isStar = tx.type === "gift_in" || tx.type === "gift_out" || (tx.type === "topup" && tx.description === "Stars Topup") || (tx.type === "withdrawal");
+                                                    return (
+                                                        <button
+                                                            key={tx.id}
+                                                            onClick={() => setSelectedTx(tx)}
+                                                            className="w-full text-left flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px] active:scale-[0.98] transition-all hover:bg-white/[0.05]"
+                                                        >
+                                                            <div>
+                                                                <div className="font-bold text-white uppercase tracking-tight">
+                                                                    {tx.description === "TON Deposit" ? "Gram Deposit" : tx.description}
+                                                                </div>
+                                                                <div className="text-[9px] text-white/40 mt-0.5">{tx.date}</div>
+                                                            </div>
+                                                            <div className="text-right shrink-0">
+                                                                <div className="flex items-center gap-1 justify-end">
+                                                                    <span className="font-black text-white">
+                                                                        {tx.amount.replace(" TON", "").replace(" Gram", "")}
+                                                                    </span>
+                                                                    {isStar ? <StarIcon size={12} /> : <GramIcon size={12} />}
+                                                                </div>
+                                                                {tx.payout && (
+                                                                    <div className="flex items-center gap-1 justify-end text-[9px] text-white/40 mt-0.5">
+                                                                        <span>{tx.payout.replace(" TON", "").replace(" Gram", "")}</span>
+                                                                        <GramIcon size={10} />
+                                                                    </div>
+                                                                )}
+                                                                <div className={`text-[9px] font-black uppercase mt-0.5 tracking-wider ${
+                                                                    tx.status === "Completed" ? "text-emerald-400" : "text-amber-400"
+                                                                }`}>{tx.status}</div>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })
                                             )}
                                             {!loadingTransactions && transactions.length === 0 && (
                                                 <div className="py-8 text-center text-white/30 italic text-[10px] uppercase tracking-widest">
@@ -1101,6 +1137,109 @@ export default function ConnectBluModal({
                         </div>
                     </motion.div>
                 )}
+        {/* Transaction Detail Bottom Sheet Modal */}
+        <AnimatePresence>
+            {selectedTx && (
+                <>
+                    {/* Dark backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedTx(null)}
+                        className="fixed inset-0 z-[1200] bg-black/60 backdrop-blur-sm"
+                    />
+
+                    {/* Bottom Sheet container */}
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 220 }}
+                        className="fixed bottom-0 left-0 right-0 z-[1201] max-w-md mx-auto rounded-t-[32px] overflow-hidden bg-black/65 border border-white/10 backdrop-blur-3xl shadow-[0_-20px_60px_rgba(0,0,0,0.8)] pb-[calc(env(safe-area-inset-bottom,20px)+20px)]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Light Bleed Effect (Glowing radial gradient in background) */}
+                        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-cyan-500/10 blur-[80px] pointer-events-none z-0" />
+                        
+                        {/* Content Area */}
+                        <div className="relative z-10 p-6 flex flex-col items-center text-center">
+                            
+                            {/* Handle Bar */}
+                            <div className="w-12 h-1 bg-white/10 rounded-full mb-6 shrink-0" />
+
+                            {/* Top Center: Amount + Icon */}
+                            <div className="flex flex-col items-center gap-2 mb-6">
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                                    Transaction Amount
+                                </div>
+                                <div className="flex items-center gap-2 text-3xl font-black text-white">
+                                    {selectedTx.amount.replace(" TON", "").replace(" Gram", "")}
+                                    {selectedTx.amount.includes("TON") || selectedTx.amount.includes("Gram") || (selectedTx.type === "topup" && selectedTx.description === "Gram Deposit") ? (
+                                        <GramIcon size={28} />
+                                    ) : (
+                                        <StarIcon size={28} />
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Details Block */}
+                            <div className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-3.5 text-left mb-6 font-mono text-[10px]">
+                                <div className="flex justify-between items-center py-1 border-b border-white/[0.03]">
+                                    <span className="text-white/40 uppercase tracking-wider">Transaction Type</span>
+                                    <span className="text-white font-bold uppercase">{selectedTx.description === "TON Deposit" ? "Gram Deposit" : selectedTx.description}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-1 border-b border-white/[0.03]">
+                                    <span className="text-white/40 uppercase tracking-wider">Transaction ID</span>
+                                    <span className="text-white font-bold break-all select-all">{selectedTx.id}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-1 border-b border-white/[0.03]">
+                                    <span className="text-white/40 uppercase tracking-wider">Date & Time</span>
+                                    <span className="text-white font-bold">{selectedTx.date}</span>
+                                </div>
+                                
+                                {/* Conditional Details showing gifting user id / post ID */}
+                                {selectedTx.type === "gift_out" && (
+                                    <div className="flex flex-col gap-1 py-1 border-b border-white/[0.03]">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-white/40 uppercase tracking-wider">Recipient Post ID</span>
+                                            <span className="text-white font-bold select-all">
+                                                {selectedTx.id.split("_").pop() || "N/A"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedTx.type === "gift_in" && (
+                                    <div className="flex flex-col gap-1 py-1 border-b border-white/[0.03]">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-white/40 uppercase tracking-wider">Source Post ID</span>
+                                            <span className="text-white font-bold select-all">
+                                                {selectedTx.id.split("_").pop() || "N/A"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-between items-center py-1">
+                                    <span className="text-white/40 uppercase tracking-wider">Status</span>
+                                    <span className={`font-black uppercase tracking-wider ${
+                                        selectedTx.status === "Completed" ? "text-emerald-400" : "text-amber-400"
+                                    }`}>{selectedTx.status}</span>
+                                </div>
+                            </div>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setSelectedTx(null)}
+                                className="w-full py-3 rounded-xl bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-white/90 active:scale-95 transition-all shadow-md"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
             </AnimatePresence>
 
             <StarWithdrawalModal

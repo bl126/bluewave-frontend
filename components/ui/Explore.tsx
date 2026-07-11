@@ -793,7 +793,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   <div className="relative">
                     <Bell size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />
                     {unreadCount > 0 && (
-                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-cyan-500 rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_#00e6ff]">
+                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-white rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                         {unreadCount > 9 ? "!" : unreadCount}
                       </div>
                     )}
@@ -3249,6 +3249,26 @@ function PostDetailModal({
   const commentImageInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const [isAcknowledged, setIsAcknowledged] = useState(initialPost.is_acknowledged);
+  const [localLikesCount, setLocalLikesCount] = useState(initialPost.acknowledgments_count || 0);
+  const [isReposted, setIsReposted] = useState(initialPost.is_reposted);
+  const [localRepostsCount, setLocalRepostsCount] = useState(initialPost.reposts_count || 0);
+  const [isReposting, setIsReposting] = useState(false);
+  const [localStarCount, setLocalStarCount] = useState(initialPost.stars_count || 0);
+  const [starGiftOpen, setStarGiftOpen] = useState(false);
+  const [starGiftMode, setStarGiftMode] = useState<"setup" | "confirm">("setup");
+  const [starError, setStarError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (post) {
+      setIsAcknowledged(post.is_acknowledged);
+      setLocalLikesCount(post.acknowledgments_count || 0);
+      setIsReposted(post.is_reposted);
+      setLocalRepostsCount(post.reposts_count || 0);
+      setLocalStarCount(post.stars_count || 0);
+    }
+  }, [post]);
+
   // Handle image selection for comment
   const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -3290,20 +3310,20 @@ function PostDetailModal({
 
     let uploadedMediaUrl: string | null = null;
 
-    // Upload image if attached
+    // Upload image if attached (uses safer postApi to propagate session and initHeaders)
     if (commentImage) {
       setCommentImageUploading(true);
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL;
         const b64 = commentImage.split(",")[1]; // strip data:image/...;base64,
         const ext = commentImage.split(";")[0].split("/")[1] || "jpg";
-        const uploadRes = await fetch(`${apiBase}/explore/upload_comment_image`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: telegramUser.id, image_b64: b64, ext }),
+        const uploadRes = await postApi("/explore/upload_comment_image", {
+          user_id: telegramUser.id,
+          image_b64: b64,
+          ext,
         });
-        const uploadData = await uploadRes.json();
-        if (uploadData.url) uploadedMediaUrl = uploadData.url;
+        if (uploadRes && uploadRes.url) {
+          uploadedMediaUrl = uploadRes.url;
+        }
       } catch (e) {
         console.warn("Comment image upload failed:", e);
       } finally {
@@ -3353,6 +3373,62 @@ function PostDetailModal({
       setReplyTo(prevReplyTo);
     } finally {
       setPosting(false);
+    }
+  };
+
+  const handleAcknowledge = async () => {
+    const nextState = !isAcknowledged;
+    setIsAcknowledged(nextState);
+    setLocalLikesCount((prev: number) => nextState ? prev + 1 : Math.max(0, prev - 1));
+    try {
+      await postApi(`/explore/post/${post.id}/acknowledge`, { user_id: telegramUser.id });
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRepost = async () => {
+    if (isReposting || isReposted) return;
+    setIsReposting(true);
+    try {
+      const res = await postApi("/explore/repost", { user_id: telegramUser.id, post_id: post.id });
+      if (res.success) {
+        setIsReposted(true);
+        setLocalRepostsCount((prev: number) => prev + 1);
+        onRefresh();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsReposting(false);
+    }
+  };
+
+  const openStarGiftFlow = () => {
+    if (post.tg_id === telegramUser.id) {
+      setStarError("You cannot send stars to your own post");
+      return;
+    }
+    setStarError(null);
+    setStarGiftMode("confirm");
+    setStarGiftOpen(true);
+  };
+
+  const handleStarGiftConfirm = async (amount: number) => {
+    setStarGiftOpen(false);
+    setLocalStarCount((prev: number) => prev + amount);
+    try {
+      const res = await postApi("/explore/star", {
+        user_id: telegramUser.id,
+        post_id: post.id,
+        amount
+      });
+      if (res.success) {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -3423,7 +3499,7 @@ function PostDetailModal({
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => handleToggleLike(comment.id)}
-                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-cyan-400" : "text-white/70 hover:text-white"}`}
+                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-rose-500 hover:text-rose-600" : "text-white/70 hover:text-white"}`}
                 >
                   <Heart size={11} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={3} />
                   {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
@@ -3541,24 +3617,100 @@ function PostDetailModal({
                 <MediaCollage items={post.media_urls} />
               )}
 
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
+                {/* ─── Actions Row (Above Stats) ─── */}
+                <div className="flex items-center gap-8 py-3.5 border-t border-white/5 w-full text-white/40">
+                  {/* Comment */}
+                  <button
+                    onClick={() => {
+                      const input = document.getElementById('comment-input');
+                      input?.focus();
+                    }}
+                    className="flex items-center gap-2 hover:text-cyan-400 transition-colors"
+                  >
+                    <MessageCircle size={18} />
+                    <span className="text-[11px] font-black font-mono">
+                      {post.comments_count || 0}
+                    </span>
+                  </button>
+
+                  {/* Like */}
+                  <button
+                    onClick={handleAcknowledge}
+                    className={`flex items-center gap-2 transition-all ${
+                      isAcknowledged ? "text-red-500" : "hover:text-red-500"
+                    }`}
+                  >
+                    <Heart
+                      size={18}
+                      fill={isAcknowledged ? "currentColor" : "none"}
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-black font-mono">
+                      {localLikesCount}
+                    </span>
+                  </button>
+
+                  {/* Star (Gift) */}
+                  <button
+                    onClick={openStarGiftFlow}
+                    className={`flex items-center gap-2 transition-all ${
+                      localStarCount > 0 ? "text-amber-500" : "hover:text-amber-500"
+                    }`}
+                  >
+                    <Star
+                      size={18}
+                      fill={localStarCount > 0 ? "currentColor" : "none"}
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-black font-mono">
+                      {localStarCount}
+                    </span>
+                  </button>
+
+                  {/* Repost */}
+                  <button
+                    onClick={handleRepost}
+                    disabled={isReposted || isReposting}
+                    className={`flex items-center gap-2 transition-all ${
+                      isReposted ? "text-green-500" : "hover:text-green-500"
+                    }`}
+                  >
+                    {isReposting ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Repeat2 size={18} className={isReposted ? "rotate-180 transition-transform duration-300" : ""} />
+                    )}
+                    <span className="text-[11px] font-black font-mono">
+                      {localRepostsCount}
+                    </span>
+                  </button>
+                </div>
+
+                {/* ─── Stats Row ─── */}
                 <div className="flex items-center justify-between py-4 border-y border-white/5">
                   <div className="flex items-center gap-8">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-black text-white">{post.acknowledgments_count || 0}</span>
+                      <span className="text-sm font-black text-white">{localLikesCount}</span>
                       <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Likes</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-black text-white">{post.reposts_count || 0}</span>
+                      <span className="text-sm font-black text-white">{localRepostsCount}</span>
                       <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Reposts</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-black text-white">{localStarCount}</span>
+                      <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Stars</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-sm font-black text-white">{post.views || 0}</span>
                       <span className="text-[9px] font-black text-white/70 uppercase tracking-widest">Views</span>
                     </div>
                   </div>
-                  <div className="text-[10px] font-mono font-bold text-white/75 uppercase tracking-tighter">
+                  <div className="text-[10px] font-mono font-bold text-white/60 uppercase tracking-tighter text-right">
                     {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {" · "}
+                    {new Date(post.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
 
@@ -3637,36 +3789,52 @@ function PostDetailModal({
             </motion.div>
           )}
 
-          {/* Input row */}
-          <div className={`flex items-end gap-3 p-3 m-3 mt-2 bg-white/[0.03] border border-white/10 ${
-            replyTo ? 'rounded-2xl' : 'rounded-3xl'
-          } focus-within:border-cyan-500/30 transition-all shadow-2xl`}>
+          {/* Input row (Slim layout, black & white buttons) */}
+          <div className="flex flex-col mx-4 my-2 gap-1.5">
+            {starError && (
+              <p className="text-[10px] text-amber-400 mt-1 font-medium px-2">{starError}</p>
+            )}
+            <div className={`flex items-center gap-2 p-1.5 px-3 bg-white/[0.03] border border-white/10 ${
+              replyTo ? 'rounded-2xl' : 'rounded-3xl'
+            } focus-within:border-white/20 transition-all shadow-xl`}>
 
-            {/* Image attach button */}
-            <button
-              onClick={() => commentImageInputRef.current?.click()}
-              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-400/10 transition-all active:scale-90"
-            >
-              <ImageIcon size={18} />
-            </button>
+              {/* Image attach button (White & Black style) */}
+              <button
+                onClick={() => commentImageInputRef.current?.click()}
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-white text-black hover:opacity-90 transition-all active:scale-90"
+              >
+                <ImageIcon size={14} />
+              </button>
 
-            <textarea
-              id="comment-input"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Post your reply…"
-              className="flex-1 bg-transparent border-none outline-none text-sm text-white py-2 resize-none max-h-32 min-h-[40px] custom-scrollbar"
-              rows={1}
-            />
-            <button
-              onClick={handlePostComment}
-              disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
-              className="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30 shadow-[0_0_20px_rgba(0,230,255,0.2)]"
-            >
-              {(posting || commentImageUploading) ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} strokeWidth={2.5} />}
-            </button>
+              <textarea
+                id="comment-input"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Post your reply…"
+                className="flex-1 bg-transparent border-none outline-none text-xs text-white py-1 resize-none max-h-24 min-h-[30px] custom-scrollbar"
+                rows={1}
+              />
+              <button
+                onClick={handlePostComment}
+                disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
+                className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30 shadow-md"
+              >
+                {(posting || commentImageUploading) ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} strokeWidth={2.5} />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Star Gift Modal integration inside PostDetailModal */}
+        <StarGiftModal
+          isOpen={starGiftOpen}
+          mode={starGiftMode}
+          recipientName={post.channel?.title || post.user?.name || "Ecosystem User"}
+          starsBalance={telegramUser?.stars_balance ?? 0}
+          onClose={() => setStarGiftOpen(false)}
+          onConfirm={handleStarGiftConfirm}
+          onEditAmount={() => setStarGiftMode("setup")}
+        />
       </motion.div>
     </motion.div>,
     document.body
