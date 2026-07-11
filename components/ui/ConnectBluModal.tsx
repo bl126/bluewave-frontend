@@ -96,6 +96,8 @@ export default function ConnectBluModal({
     const [isPremium, setIsPremium] = useState(false);
     const [togglingPremium, setTogglingPremium] = useState(false);
     const [withdrawalInfo, setWithdrawalInfo] = useState<any>(null);
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
     const adminIds = [5023869471, 7762443283];
     const isAdmin = adminIds.includes(telegramId ?? 0);
 
@@ -193,6 +195,20 @@ export default function ConnectBluModal({
             })
             .finally(() => {
                 setLoadingAnalytics(false);
+            });
+
+        setLoadingTransactions(true);
+        getApi(`/user/${telegramId}/transactions`)
+            .then((res: any) => {
+                if (Array.isArray(res)) {
+                    setTransactions(res);
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to fetch transactions:", err);
+            })
+            .finally(() => {
+                setLoadingTransactions(false);
             });
     }, [analyticsOpen, telegramId]);
 
@@ -998,22 +1014,30 @@ export default function ConnectBluModal({
                                             <h4 className="text-[10px] font-black uppercase tracking-widest">Transaction History</h4>
                                         </div>
                                         <div className="space-y-3">
-                                            {[
-                                                { id: 1, date: "2026-07-08", amount: "5,000", payout: "75.000 TON", status: "Completed" },
-                                                { id: 2, date: "2026-07-02", amount: "2,500", payout: "37.500 TON", status: "Completed" },
-                                            ].map((tx) => (
-                                                <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px]">
-                                                    <div>
-                                                        <div className="font-bold text-white uppercase tracking-tight">{tx.amount} Stars Withdrawal</div>
-                                                        <div className="text-[9px] text-white/40 mt-0.5">{tx.date}</div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="font-black text-white">{tx.payout}</div>
-                                                        <div className="text-[9px] font-black uppercase text-emerald-400 mt-0.5 tracking-wider">{tx.status}</div>
-                                                    </div>
+                                            {loadingTransactions ? (
+                                                <div className="py-6 flex justify-center items-center">
+                                                    <Loader2 className="w-5 h-5 animate-spin text-app-accent" />
                                                 </div>
-                                            ))}
-                                            {channelStarsReceived === 0 && (
+                                            ) : (
+                                                transactions.map((tx) => (
+                                                    <div key={tx.id} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-[11px]">
+                                                        <div>
+                                                            <div className="font-bold text-white uppercase tracking-tight">{tx.description}</div>
+                                                            <div className="text-[9px] text-white/40 mt-0.5">{tx.date}</div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="font-black text-white">{tx.amount}</div>
+                                                            {tx.payout && (
+                                                                <div className="text-[9px] text-white/40 mt-0.5">{tx.payout}</div>
+                                                            )}
+                                                            <div className={`text-[9px] font-black uppercase mt-0.5 tracking-wider ${
+                                                                tx.status === "Completed" ? "text-emerald-400" : "text-amber-400"
+                                                            }`}>{tx.status}</div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                            {!loadingTransactions && transactions.length === 0 && (
                                                 <div className="py-8 text-center text-white/30 italic text-[10px] uppercase tracking-widest">
                                                     No transactions recorded
                                                 </div>
