@@ -14,7 +14,7 @@ import {
   ShieldCheck,
   Rocket,
   Plus,
-  Grid,
+  Gamepad2,
   X,
   Image as ImageIcon,
   Video,
@@ -565,6 +565,25 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
   }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen, isMiniAppsOpen]);
+
+  useEffect(() => {
+    const twa = (window as any).Telegram?.WebApp;
+    if (!twa?.BackButton) return;
+    const shouldShowBack = isMiniAppsOpen || isSearchOpen;
+    if (shouldShowBack) {
+      twa.BackButton.show();
+      const handleBackClick = () => {
+        if (isMiniAppsOpen) setIsMiniAppsOpen(false);
+        else if (isSearchOpen) setIsSearchOpen(false);
+      };
+      twa.BackButton.onClick(handleBackClick);
+      return () => {
+        twa.BackButton.offClick(handleBackClick);
+      };
+    } else {
+      twa.BackButton.hide();
+    }
+  }, [isMiniAppsOpen, isSearchOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -1295,7 +1314,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Grid size={16} className="text-white shrink-0" />
+                    <Gamepad2 size={16} className="text-white shrink-0" />
                     <span className="text-white text-xs font-bold uppercase tracking-widest">Mini Apps</span>
                   </button>
                 </div>
@@ -1581,20 +1600,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 73px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 65px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
             }}
           >
             {/* Header - same size as Search header */}
-            <div className="w-full max-w-md mx-auto px-6 mb-3 shrink-0 flex items-center justify-between">
-              <button
-                onClick={() => setIsMiniAppsOpen(false)}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/5 text-white active:scale-95 transition-all"
-              >
-                <ArrowLeft size={16} />
-              </button>
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Ecosystem Mini Apps</h3>
-              <div className="w-8 h-8" /> {/* Spacer */}
+            <div className="w-full max-w-md mx-auto px-6 mb-2 shrink-0 flex items-center justify-center">
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">MINI APPS</h3>
             </div>
 
             {/* Categories strip matching MissionCenter control rectangle */}

@@ -105,7 +105,12 @@ export default function ConnectBluModal({
     );
 
     const GramIcon = ({ size = 12 }: { size?: number }) => (
-        <Gem className="text-cyan-400 inline-block align-middle shrink-0" size={size} fill="currentColor" />
+        <img
+            src="/gram icon.png"
+            alt="Gram"
+            style={{ width: `${size}px`, height: `${size}px` }}
+            className="inline-block align-middle shrink-0 object-contain"
+        />
     );
 
     const adminIds = [5023869471, 7762443283];
