@@ -722,7 +722,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
           <div 
             className="fixed top-0 left-0 right-0 z-[130] pointer-events-none"
             style={{
-              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 132px)",
+              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 54px)",
               background: "rgba(3, 3, 3, 0.85)",
               backdropFilter: "blur(50px) saturate(220%)",
               WebkitBackdropFilter: "blur(50px) saturate(220%)",
@@ -732,12 +732,14 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
 
           {/* ── Tab Bar (Curved Segmented Control) ── */}
           <div 
-            className="fixed top-0 left-0 right-0 z-[135] px-6"
+            className={`fixed top-0 left-0 right-0 z-[135] px-6 transition-all duration-300 ${
+              questDetailOpen ? "opacity-0 pointer-events-none -translate-y-4" : "opacity-100 translate-y-0"
+            }`}
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 64px)",
             }}
           >
-            <div className="flex items-center justify-between w-full bg-black/45 border border-white/5 rounded-2xl p-1 gap-1 backdrop-blur-md">
+            <div className="flex items-center justify-between w-full bg-black/55 border border-white/10 rounded-xl p-0.5 gap-0.5 backdrop-blur-xl shadow-lg shadow-black/30">
               {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
                 const isActive = activeTab === tab;
                 const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
@@ -745,10 +747,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`relative flex items-center justify-center flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200
+                    className={`relative flex items-center justify-center flex-1 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-200
                       ${isActive
-                        ? "bg-white/10 border border-white/15 text-white shadow-md"
-                        : "bg-transparent border border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                        ? "bg-white/[0.08] border border-white/10 text-white shadow-md"
+                        : "bg-transparent border border-transparent text-white/35 hover:text-white/60 hover:bg-white/[0.02]"
                       }`}
                   >
                     <span>
@@ -758,8 +760,8 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                       {tab === "earn" && t("missions.tabs.earn")}
                     </span>
                     {badge > 0 && tab !== "earn" && tab !== "quest" && (
-                      <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[8px] font-black leading-none transition-all duration-200
-                        ${isActive ? "bg-white text-black" : "bg-white/10 text-white/60"}`}
+                      <span className={`ml-1 px-1 py-0.5 rounded-full text-[7.5px] font-bold leading-none transition-all duration-200
+                        ${isActive ? "bg-white text-black" : "bg-white/10 text-white/50"}`}
                       >
                         {badge}
                       </span>
@@ -796,7 +798,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
               }
             }}
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 142px)"
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 134px)"
             }}
           >
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
