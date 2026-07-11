@@ -688,8 +688,8 @@ export default function ConnectBluModal({
                         <div 
                             className="fixed top-0 left-0 right-0 z-[1050] flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-black/45 backdrop-blur-2xl"
                             style={{
-                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 16px)",
-                                height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)"
+                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 40px)",
+                                height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
                             }}
                         >
                             <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
@@ -709,7 +709,7 @@ export default function ConnectBluModal({
                         <div 
                             className="flex-1 overflow-y-auto p-6 pb-32 space-y-6"
                             style={{
-                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 84px)"
+                                paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 108px)"
                             }}
                         >
 
@@ -725,52 +725,52 @@ export default function ConnectBluModal({
                                             {/* Stats grid skeleton */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 {Array.from({ length: 4 }).map((_, idx) => (
-                                                    <div key={idx} className="bg-app-accent/5 border border-app-border rounded-3xl p-5 flex flex-col gap-2 text-left">
-                                                        <div className="h-2.5 bg-text-sub/20 rounded-full w-2/3" />
-                                                        <div className="h-7 bg-text-main/20 rounded-lg w-1/2 my-1" />
-                                                        <div className="h-2.5 bg-text-sub/10 rounded-full w-1/3" />
+                                                    <div key={idx} className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 flex flex-col gap-2 text-left">
+                                                        <div className="h-2.5 bg-white/10 rounded-full w-2/3" />
+                                                        <div className="h-7 bg-white/20 rounded-lg w-1/2 my-1" />
+                                                        <div className="h-2.5 bg-white/10 rounded-full w-1/3" />
                                                     </div>
                                                 ))}
                                             </div>
 
                                             {/* Chart skeleton */}
-                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left">
-                                                <div className="h-3 bg-text-main/20 rounded-full w-1/3 mb-6" />
+                                            <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 text-left">
+                                                <div className="h-3 bg-white/20 rounded-full w-1/3 mb-6" />
                                                 <div className="h-32 flex items-end justify-between gap-3 pt-4">
                                                     {Array.from({ length: 7 }).map((_, idx) => (
                                                         <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                                                            <div className="w-full bg-app-accent/10 rounded-t-lg h-24 relative overflow-hidden">
-                                                                <div className="absolute bottom-0 inset-x-0 bg-app-accent/20 rounded-t-lg" style={{ height: `${20 + (idx * 10) % 60}%` }} />
+                                                            <div className="w-full bg-white/[0.02] border border-white/5 rounded-t-lg h-24 relative overflow-hidden">
+                                                                <div className="absolute bottom-0 inset-x-0 bg-white/10 rounded-t-lg" style={{ height: `${20 + (idx * 10) % 60}%` }} />
                                                             </div>
-                                                            <div className="h-2 bg-text-sub/20 rounded-full w-2/3" />
+                                                            <div className="h-2 bg-white/10 rounded-full w-2/3" />
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
 
                                             {/* Recent Posts skeleton */}
-                                            <div className="bg-app-accent/5 border border-app-border rounded-3xl p-5 text-left space-y-4">
+                                            <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 text-left space-y-4">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="h-3 bg-text-main/20 rounded-full w-1/4" />
-                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/8" />
+                                                    <div className="h-3 bg-white/20 rounded-full w-1/4" />
+                                                    <div className="h-2.5 bg-white/10 rounded-full w-1/8" />
                                                 </div>
                                                 <div className="space-y-3">
                                                     {Array.from({ length: 3 }).map((_, idx) => (
-                                                        <div key={idx} className="bg-app-card border border-app-border rounded-2xl p-4 flex flex-col gap-3">
+                                                        <div key={idx} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col gap-3">
                                                             <div className="flex items-start justify-between gap-3">
                                                                 <div className="flex-1 space-y-2">
-                                                                    <div className="h-3 bg-text-main/20 rounded-full w-11/12" />
-                                                                    <div className="h-3 bg-text-main/20 rounded-full w-4/5" />
+                                                                    <div className="h-3 bg-white/20 rounded-full w-11/12" />
+                                                                    <div className="h-3 bg-white/20 rounded-full w-4/5" />
                                                                 </div>
-                                                                <div className="w-12 h-12 rounded-lg bg-app-accent/10 shrink-0" />
+                                                                <div className="w-12 h-12 rounded-lg bg-white/10 shrink-0" />
                                                             </div>
-                                                            <div className="h-px bg-app-border/60" />
+                                                            <div className="h-px bg-white/5" />
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-4 w-2/3">
-                                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/3" />
-                                                                    <div className="h-2.5 bg-text-sub/20 rounded-full w-1/3" />
+                                                                    <div className="h-2.5 bg-white/10 rounded-full w-1/3" />
+                                                                    <div className="h-2.5 bg-white/10 rounded-full w-1/3" />
                                                                 </div>
-                                                                <div className="h-2.5 bg-text-sub/20 rounded-full w-1/6" />
+                                                                <div className="h-2.5 bg-white/10 rounded-full w-1/6" />
                                                             </div>
                                                         </div>
                                                     ))}
@@ -1015,8 +1015,19 @@ export default function ConnectBluModal({
                                         </div>
                                         <div className="space-y-3">
                                             {loadingTransactions ? (
-                                                <div className="py-6 flex justify-center items-center">
-                                                    <Loader2 className="w-5 h-5 animate-spin text-app-accent" />
+                                                <div className="space-y-3 animate-pulse">
+                                                    {Array.from({ length: 3 }).map((_, idx) => (
+                                                        <div key={idx} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-[11px]">
+                                                            <div className="flex-1 space-y-2">
+                                                                <div className="h-3 bg-white/15 rounded-full w-2/3" />
+                                                                <div className="h-2 bg-white/5 rounded-full w-1/3" />
+                                                            </div>
+                                                            <div className="w-16 flex flex-col items-end gap-1.5 shrink-0">
+                                                                <div className="h-3 bg-white/15 rounded-full w-full" />
+                                                                <div className="h-2 bg-white/5 rounded-full w-2/3" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             ) : (
                                                 transactions.map((tx) => (

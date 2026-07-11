@@ -146,7 +146,7 @@ function SwapTabComponent() {
         <div className="w-full bg-zinc-950/80 border border-white/[0.06] rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col gap-1.5">
           {/* Top Token Pay Box */}
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex flex-col gap-1">
-            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">You Pay</span>
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">You Send</span>
             <div className="flex items-center justify-between mt-1">
               <input
                 type="text"
@@ -844,14 +844,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
-      {/* Pull to Refresh Indicator */}
+      {/* Pull to Refresh Indicator (Magnetic reveal behind header) */}
       <div
-        className="absolute top-24 left-0 right-0 flex justify-center items-end overflow-hidden pointer-events-none z-[110]"
-        style={{ height: `${Math.max(0, pullY)}px`, transition: pullY === 0 ? 'height 0.2s' : 'none' }}
+        className="absolute left-0 right-0 flex justify-center items-center pointer-events-none z-[105] transition-opacity duration-150"
+        style={{ 
+          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 130px)", 
+          height: "40px",
+          opacity: Math.min(1, pullY / 60),
+          transform: `scale(${Math.min(1, pullY / 60)})`
+        }}
       >
-        <div className="mb-4">
-          <Loader2 className={`text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullY * 2}deg)` }} size={24} />
-        </div>
+        <Loader2 className={`text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullY * 2}deg)` }} size={24} />
       </div>
 
       {/* ─── Main Content Area ─── */}
@@ -862,10 +865,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        className="flex-1 overflow-y-auto custom-scrollbar"
+        className={`flex-1 custom-scrollbar ${activeTab === "following" ? "overflow-hidden" : "overflow-y-auto"}`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 196px)",
-          paddingBottom: "120px"
+          paddingBottom: activeTab === "following" ? "0px" : "120px",
+          transform: pullY > 0 ? `translateY(${pullY * 0.75}px)` : 'none',
+          transition: pullY === 0 ? 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)' : 'none'
         }}
       >
         {/* Main Content Area with Access Control */}
@@ -1373,7 +1378,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 76px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 73px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
             }}
           >
@@ -1396,27 +1401,25 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               </div>
             </div>
 
-            {/* Slim, sleek categories strip */}
-            <div className="w-full border-b border-white/[0.04] mb-4 shrink-0 overflow-x-auto no-scrollbar scroll-smooth">
-              <div className="flex gap-6 px-6 pb-2 min-w-max">
-                {["Topics", "Gram", "News", "AI", "Top Channels", "Mini Apps"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveSearchTab(tab)}
-                    className="relative pb-2 transition-all flex flex-col items-center shrink-0 active:scale-95"
-                  >
-                    <span className={`text-[11px] font-black uppercase tracking-widest ${activeSearchTab === tab ? "text-white" : "text-white/40"}`}>
+            {/* Slim, sleek categories strip - matching curved segmented control */}
+            <div className="w-full mb-4 shrink-0 px-6">
+              <div className="flex items-center gap-0.5 w-full bg-black/55 border border-white/10 rounded-xl p-0.5 backdrop-blur-xl shadow-lg shadow-black/30 overflow-x-auto no-scrollbar scroll-smooth">
+                {["Topics", "Gram", "News", "AI", "Top Channels", "Mini Apps"].map((tab) => {
+                  const isActive = activeSearchTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveSearchTab(tab)}
+                      className={`relative flex items-center justify-center py-1.5 px-3 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0
+                        ${isActive
+                          ? "bg-white/[0.08] border border-white/10 text-white shadow-md"
+                          : "bg-transparent border border-transparent text-white/35 hover:text-white/60 hover:bg-white/[0.02]"
+                        }`}
+                    >
                       {tab}
-                    </span>
-                    {activeSearchTab === tab && (
-                      <motion.div
-                        layoutId="activeSearchTabIndicator"
-                        className="absolute bottom-0 w-8 h-[2px] bg-white rounded-full"
-                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -2142,6 +2145,24 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 function LinkedText({ text, className = "" }: { text: string, className?: string }) {
   if (!text) return null;
 
+  // Check if text looks like HTML (contains HTML tags like <b>, <i>, <a>, <code> etc.)
+  const isHtml = /<[a-z][\s\S]*>/i.test(text);
+
+  if (isHtml) {
+    return (
+      <div 
+        className={`${className} html-post-content [&_a]:text-cyan-400 [&_a]:underline [&_a]:decoration-cyan-500/30 [&_a]:hover:text-cyan-300 [&_a]:transition-colors [&_a]:break-all [&_code]:bg-white/5 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-xs [&_pre]:bg-white/5 [&_pre]:p-3 [&_pre]:rounded-2xl [&_pre]:font-mono [&_pre]:text-xs [&_pre]:overflow-x-auto [&_pre]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-white/20 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:text-white/70`}
+        dangerouslySetInnerHTML={{ __html: text }}
+        onClick={(e) => {
+          // If the user clicked an <a> link, don't trigger parent card click!
+          const target = e.target as HTMLElement;
+          if (target.tagName === 'A') {
+            e.stopPropagation();
+          }
+        }}
+      />
+    );
+  }
 
   // Split by URL (with or without http), or Mention
   // Regex explanation:
