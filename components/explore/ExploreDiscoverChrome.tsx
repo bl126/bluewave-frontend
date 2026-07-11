@@ -104,7 +104,6 @@ export function MiniAppCarousel({
     <div className="w-full py-5 border-y border-white/5 bg-white/[0.02] overflow-hidden">
       <div className="px-5 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main">Mini Apps & Bots</h3>
         </div>
         {!loading && onViewAll && (
@@ -124,13 +123,13 @@ export function MiniAppCarousel({
         onTouchEnd={(e) => e.stopPropagation()}
       >
         {loading ? (
-          // Pulse Skeletons
+          // Shimmer-sweep Skeletons
           [1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex flex-col items-center gap-3 shrink-0 snap-center animate-pulse">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10" />
+            <div key={i} className="flex flex-col items-center gap-3 shrink-0 snap-center">
+              <div className="w-16 h-16 rounded-2xl shimmer-sweep border border-white/5" />
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-16 h-2.5 bg-white/10 rounded" />
-                <div className="w-10 h-2 bg-white/5 rounded" />
+                <div className="w-16 h-2.5 shimmer-sweep rounded" />
+                <div className="w-10 h-2 shimmer-sweep rounded" />
               </div>
             </div>
           ))

@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Rocket,
   Plus,
+  Grid,
   X,
   Image as ImageIcon,
   Video,
@@ -266,6 +267,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [activeSearchTab, setActiveSearchTab] = useState("Topics");
+  const [isMiniAppsOpen, setIsMiniAppsOpen] = useState(false);
+  const [activeMiniAppsTab, setActiveMiniAppsTab] = useState("All");
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -531,6 +534,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         e.preventDefault();
         return;
       }
+      if (isMiniAppsOpen) {
+        setIsMiniAppsOpen(false);
+        e.preventDefault();
+        return;
+      }
       if (isSearchOpen) {
         setIsSearchOpen(false);
         e.preventDefault();
@@ -556,7 +564,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen]);
+  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen, isMiniAppsOpen]);
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -844,18 +852,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
-      {/* Pull to Refresh Indicator (Magnetic reveal behind header) */}
-      <div
-        className="absolute left-0 right-0 flex justify-center items-center pointer-events-none z-[105] transition-opacity duration-150"
-        style={{ 
-          top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 130px)", 
-          height: "40px",
-          opacity: Math.min(1, pullY / 60),
-          transform: `scale(${Math.min(1, pullY / 60)})`
-        }}
-      >
-        <Loader2 className={`text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullY * 2}deg)` }} size={24} />
-      </div>
 
       {/* ─── Main Content Area ─── */}
       <div ref={feedTopRef} />
@@ -967,8 +963,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             apps={miniAppsList}
                             loading={!dbMiniApps || dbMiniApps.length === 0}
                             onViewAll={() => {
-                              setIsSearchOpen(true);
-                              setActiveSearchTab("Mini Apps");
+                              setIsMiniAppsOpen(true);
+                              setActiveMiniAppsTab("All");
                             }}
                           />
                         )}
@@ -1292,6 +1288,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <AnimatedAIIcon />
                     <span className="text-white text-xs font-bold uppercase tracking-widest">AI Studio</span>
                   </button>
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      setIsMiniAppsOpen(true);
+                    }}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <Grid size={16} className="text-white shrink-0" />
+                    <span className="text-white text-xs font-bold uppercase tracking-widest">Mini Apps</span>
+                  </button>
                 </div>
 
                 <div className="h-px bg-white/[0.05] my-1" />
@@ -1560,6 +1566,124 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   ))}
                 </div>
               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Fullscreen Ecosystem Mini Apps View (App Theme, matching Search layout) ─── */}
+      <AnimatePresence>
+        {isMiniAppsOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
+            style={{
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 73px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)"
+            }}
+          >
+            {/* Header - same size as Search header */}
+            <div className="w-full max-w-md mx-auto px-6 mb-3 shrink-0 flex items-center justify-between">
+              <button
+                onClick={() => setIsMiniAppsOpen(false)}
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/5 text-white active:scale-95 transition-all"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Ecosystem Mini Apps</h3>
+              <div className="w-8 h-8" /> {/* Spacer */}
+            </div>
+
+            {/* Categories strip matching MissionCenter control rectangle */}
+            <div className="w-full mb-4 shrink-0 px-6">
+              <div className="flex items-center gap-0.5 w-full bg-black/55 border border-white/10 rounded-xl p-0.5 backdrop-blur-xl shadow-lg shadow-black/30 overflow-x-auto no-scrollbar scroll-smooth">
+                {["All", "Wallets", "Swaps & DeFi", "Payments", "NFT & Marketplaces", "Dev Infra", "Explorers", "Naming & Identity"].map((tab) => {
+                  const isActive = activeMiniAppsTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveMiniAppsTab(tab)}
+                      className={`relative flex items-center justify-center py-1.5 px-3 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0
+                        ${isActive
+                          ? "bg-white/[0.08] border border-white/10 text-white shadow-md"
+                          : "bg-transparent border border-transparent text-white/35 hover:text-white/60 hover:bg-white/[0.02]"
+                        }`}
+                    >
+                      {tab}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mini Apps Grid */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-24">
+              {(() => {
+                const filteredApps = activeMiniAppsTab === "All"
+                  ? miniAppsList
+                  : miniAppsList.filter((app: any) => app.category === activeMiniAppsTab);
+
+                if (filteredApps.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <p className="text-xs text-text-muted font-black uppercase tracking-widest">No apps in this category</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-2 gap-4">
+                    {filteredApps.map((app: any) => {
+                      const handleOpen = () => {
+                        const link = app.deep_link || app.link || `https://t.me/${app.username}`;
+                        const twa = (window as any).Telegram?.WebApp;
+                        if (twa?.openTelegramLink) {
+                          twa.openTelegramLink(link);
+                        } else {
+                          window.open(link, "_blank");
+                        }
+                      };
+
+                      return (
+                        <button
+                          key={app.id}
+                          onClick={handleOpen}
+                          className="flex flex-col items-center gap-3 p-4 rounded-3xl bg-white/[0.02] border border-white/5 active:scale-95 transition-all text-center relative overflow-hidden group w-full"
+                        >
+                          {/* Logo Display */}
+                          <div className="w-16 h-16 rounded-2xl bg-active p-[1px] relative shadow-[0_0_20px_rgba(0,0,0,0.4)] shrink-0">
+                            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.gradient || "from-cyan-500 to-blue-600"} opacity-30 blur-[1px]`} />
+                            <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
+                              {app.photo_url ? (
+                                <img src={app.photo_url} className="w-full h-full object-cover" alt="" />
+                              ) : (
+                                <span className="text-sm font-black uppercase text-app-accent/80">
+                                  {app.name?.[0]}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-center gap-1 min-w-0 w-full">
+                            <span className="text-xs font-black text-white uppercase tracking-wide truncate w-full">
+                              {app.name}
+                            </span>
+                            <span className="text-[9px] font-mono font-bold text-white/40 truncate w-full">
+                              @{app.username}
+                            </span>
+                            <p className="text-[10px] text-white/50 leading-tight mt-1 line-clamp-2 h-7 overflow-hidden uppercase tracking-wider font-medium text-center w-full">
+                              {app.description || "Ecosystem App"}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           </motion.div>
         )}
