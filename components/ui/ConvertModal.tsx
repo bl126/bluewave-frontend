@@ -153,7 +153,7 @@ export default function ConvertModal({
             dragConstraints={{ top: 0 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[80vh] shadow-app-shadow"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[80vh] shadow-app-shadow backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle pill */}

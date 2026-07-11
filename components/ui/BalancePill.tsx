@@ -197,8 +197,8 @@ export default function BalancePill({ balance, isVisible, telegramUser, onGoToPr
                                     layout
                                     onClick={() => handleSwitch(type)}
                                     whileTap={{ scale: 0.95 }}
-                                    className={`flex items-center justify-between border border-app-border 
-                                    text-app-accent font-bold shadow-app-shadow overflow-hidden bg-app-card backdrop-blur-xl ${isExpanded ? "w-40 sm:w-48" : "w-auto min-w-fit px-3"}`}
+                                    className={`flex items-center justify-between border border-white/15 
+                                    text-app-accent font-bold shadow-app-shadow overflow-hidden bg-black/90 backdrop-blur-2xl ${isExpanded ? "w-40 sm:w-48" : "w-auto min-w-fit px-3"}`}
                                     initial={!isPrimary ? { opacity: 0, scale: 0.8, y: -20 } : false}
                                     animate={{
                                         opacity: 1,

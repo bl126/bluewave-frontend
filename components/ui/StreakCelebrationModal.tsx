@@ -52,7 +52,7 @@ const StreakCelebrationModal: React.FC<StreakCelebrationModalProps> = ({
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.8, opacity: 0, y: 20 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="relative z-10 w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden shadow-app-shadow"
+                        className="relative z-10 w-full max-w-sm bg-app-card border border-app-border rounded-[2.5rem] overflow-hidden shadow-app-shadow backdrop-blur-2xl"
                     >
                         {/* Ambient Background Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-app-accent/10 blur-[80px] rounded-full pointer-events-none" />

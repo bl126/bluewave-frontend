@@ -254,7 +254,7 @@ export default function ReferralShareModal({ isOpen, onClose, telegramId, bwId, 
                         onDragEnd={(_, info) => {
                             if (info.offset.y > 100) onClose();
                         }}
-                        className="fixed bottom-0 left-0 right-0 z-[1019] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main"
+                        className="fixed bottom-0 left-0 right-0 z-[1019] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow text-text-main backdrop-blur-2xl"
                     >
                         {/* Drag Handle */}
                         <div

@@ -60,10 +60,10 @@ export default function RoleCelebrationModal({ isOpen, roleName, onClose }: Role
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 26, stiffness: 190 }}
                         style={{
-                          background: "rgba(0, 0, 0, 0.45)",
-                          backdropFilter: "blur(30px) saturate(190%)",
-                          WebkitBackdropFilter: "blur(30px) saturate(190%)",
-                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                          background: "rgba(10, 10, 12, 0.88)",
+                          backdropFilter: "blur(40px) saturate(210%)",
+                          WebkitBackdropFilter: "blur(40px) saturate(210%)",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.12)",
                           boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
                         }}
                     >

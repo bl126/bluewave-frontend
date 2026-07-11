@@ -82,24 +82,20 @@ function PresenceCard({
 
   return (
     <div className={`
-      relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-md
-      ${isActive ? "border-white/20 bg-white/10 shadow-lg shadow-black/10" : ""}
-      ${isCompleted ? "border-white/30 bg-white/20 shadow-lg shadow-black/20 animate-pulse" : ""}
-      ${mission.status === "inactive" ? "border-white/10 bg-white/5" : ""}
+      relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-2xl bg-black/80
+      ${isActive ? "border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]" : ""}
+      ${isCompleted ? "border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.1)] animate-pulse" : ""}
+      ${mission.status === "inactive" ? "border-white/10" : ""}
     `}>
       {/* Background Progress Bar (Fill) */}
       {(isActive || isCompleted) && (
         <div
-          className="absolute inset-0 bg-white/10 transition-all duration-1000 ease-linear"
+          className="absolute inset-0 bg-white/[0.06] transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       )}
 
-      <div className="relative p-6 flex items-center justify-between z-10 w-full">
-        <div className="flex-1">
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{mission.type} Mission</span>
-        </div>
-
+      <div className="relative p-5 flex items-center justify-end z-10 w-full">
         <button
           onClick={() => {
             if (isCompleted) onClaim(mission.type);
@@ -107,7 +103,7 @@ function PresenceCard({
           }}
           disabled={isActive || isLoading}
           className={`
-            py-3.5 px-6 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 duration-200
+            py-3 px-6 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 duration-200
             ${isCompleted
               ? "bg-white text-black shadow-md border border-white/20 hover:bg-white/95"
               : isActive
@@ -726,52 +722,52 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
           <div 
             className="fixed top-0 left-0 right-0 z-[130] pointer-events-none"
             style={{
-              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 108px)",
-              background: "rgba(10, 10, 12, 0.75)",
-              backdropFilter: "blur(50px) saturate(200%)",
-              WebkitBackdropFilter: "blur(50px) saturate(200%)",
-              borderBottom: "1px solid rgba(255, 255, 255, 0.05)"
+              height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 132px)",
+              background: "rgba(3, 3, 3, 0.85)",
+              backdropFilter: "blur(50px) saturate(220%)",
+              WebkitBackdropFilter: "blur(50px) saturate(220%)",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.08)"
             }}
           />
 
-          {/* ── Tab Bar ── */}
+          {/* ── Tab Bar (Curved Segmented Control) ── */}
           <div 
-            className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between w-full px-6 pb-4 shrink-0 gap-1.5"
+            className="fixed top-0 left-0 right-0 z-[135] px-6"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 48px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 72px)",
             }}
           >
-            {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
-              const isActive = activeTab === tab;
-              const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
-              const isEarn = tab === "earn";
-              const isQuest = tab === "quest";
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all duration-200
-                    ${isEarn || isQuest
-                      ? isActive
-                        ? "bg-white/10 border border-white/20 text-white"
-                        : "bg-transparent border border-white/5 text-white/30 hover:border-white/10"
-                      : isActive
-                        ? "bg-white/15 border border-white/20 text-white shadow-md"
-                        : "bg-transparent border border-white/10 text-white/60 hover:border-white/25 hover:text-white"
-                    }`}
-                >
-                  {tab === "presence" && t("missions.tabs.presence")}
-                  {tab === "social" && t("missions.tabs.social")}
-                  {tab === "quest" && t("missions.tabs.quest")}
-                  {tab === "earn" && t("missions.tabs.earn")}
-                  {badge > 0 && tab !== "earn" && tab !== "quest" && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-white text-black text-[9px] font-black flex items-center justify-center leading-none shadow-[0_0_8px_rgba(255,255,255,0.3)] border border-white/10">
-                      {badge > 9 ? "9+" : badge}
+            <div className="flex items-center justify-between w-full bg-black/45 border border-white/5 rounded-2xl p-1 gap-1 backdrop-blur-md">
+              {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
+                const isActive = activeTab === tab;
+                const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`relative flex items-center justify-center flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200
+                      ${isActive
+                        ? "bg-white/10 border border-white/15 text-white shadow-md"
+                        : "bg-transparent border border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                      }`}
+                  >
+                    <span>
+                      {tab === "presence" && t("missions.tabs.presence")}
+                      {tab === "social" && t("missions.tabs.social")}
+                      {tab === "quest" && t("missions.tabs.quest")}
+                      {tab === "earn" && t("missions.tabs.earn")}
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                    {badge > 0 && tab !== "earn" && tab !== "quest" && (
+                      <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[8px] font-black leading-none transition-all duration-200
+                        ${isActive ? "bg-white text-black" : "bg-white/10 text-white/60"}`}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Tab Content (Swipeable) ── */}
@@ -779,20 +775,28 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
             className="flex-1 overflow-y-auto"
             onTouchStart={(e) => {
               (e.currentTarget as any)._touchStartX = e.touches[0].clientX;
+              (e.currentTarget as any)._touchStartY = e.touches[0].clientY;
             }}
             onTouchEnd={(e) => {
               if (questDetailOpen) return;
               const startX = (e.currentTarget as any)._touchStartX;
-              if (startX === undefined) return;
-              const diff = startX - e.changedTouches[0].clientX;
-              const THRESHOLD = 60;
-              if (Math.abs(diff) < THRESHOLD) return;
-              const idx = TABS.indexOf(activeTab);
-              if (diff > 0 && idx < TABS.length - 1) setActiveTab(TABS[idx + 1]);
-              if (diff < 0 && idx > 0) setActiveTab(TABS[idx - 1]);
+              const startY = (e.currentTarget as any)._touchStartY;
+              if (startX === undefined || startY === undefined) return;
+              
+              const diffX = startX - e.changedTouches[0].clientX;
+              const diffY = startY - e.changedTouches[0].clientY;
+              const absX = Math.abs(diffX);
+              const absY = Math.abs(diffY);
+              const THRESHOLD = 100;
+              
+              if (absX > THRESHOLD && absY < 40 && absX > absY * 3.5) {
+                const idx = TABS.indexOf(activeTab);
+                if (diffX > 0 && idx < TABS.length - 1) setActiveTab(TABS[idx + 1]);
+                if (diffX < 0 && idx > 0) setActiveTab(TABS[idx - 1]);
+              }
             }}
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 118px)"
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 142px)"
             }}
           >
             <div className="max-w-md mx-auto w-full px-6 pb-32 space-y-4 pt-2">
@@ -862,10 +866,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   {missions.map((m) => (
                     <div
                       key={m.id}
-                      className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all duration-200
+                      className={`flex justify-between items-center px-4 py-3.5 rounded-xl border backdrop-blur-2xl transition-all duration-200
                         ${m.status === "done"
-                          ? "border-white/5 bg-white/5 opacity-55"
-                          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/8"
+                          ? "border-white/5 bg-black/60 opacity-55"
+                          : "border-white/10 bg-black/80 hover:border-white/15 hover:bg-black/90 shadow-lg shadow-black/10"
                         }`}
                     >
                       <div>

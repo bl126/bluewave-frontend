@@ -601,15 +601,19 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   const onTouchEnd = (e: React.TouchEvent) => {
     // Horizontal swipe logic
-    if (touchStart.current !== null) {
-      const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (touchStart.current !== null && touchStartY.current !== null) {
+      const diffX = touchStart.current - e.changedTouches[0].clientX;
+      const diffY = touchStartY.current - e.changedTouches[0].clientY;
+      const absX = Math.abs(diffX);
+      const absY = Math.abs(diffY);
+      
       const tabs: ("foryou" | "following" | "leaderboard" | "notifications")[] = ["foryou", "following", "leaderboard", "notifications"];
       const currentIndex = tabs.indexOf(activeTab);
 
-      if (Math.abs(diff) > 80 && Math.abs(diff) > pullY) {
-        if (diff > 0 && currentIndex < tabs.length - 1) {
+      if (absX > 100 && absY < 40 && absX > absY * 3.5 && absX > pullY) {
+        if (diffX > 0 && currentIndex < tabs.length - 1) {
           setActiveTab(tabs[currentIndex + 1]);
-        } else if (diff < 0) {
+        } else if (diffX < 0) {
           if (currentIndex > 0) {
             setActiveTab(tabs[currentIndex - 1]);
           } else if (currentIndex === 0) {

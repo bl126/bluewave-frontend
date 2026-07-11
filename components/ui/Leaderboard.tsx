@@ -623,7 +623,7 @@ function ActiveCountriesSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow backdrop-blur-2xl"
           >
             {/* Drag Handle */}
             <div
@@ -751,7 +751,7 @@ function BuilderNationsSheet({ isOpen, onClose, leaders }: { isOpen: boolean; on
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[70vh] shadow-app-shadow backdrop-blur-2xl"
           >
             {/* Drag Handle */}
             <div

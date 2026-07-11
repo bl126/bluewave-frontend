@@ -100,16 +100,16 @@
 }
 
 [data-theme="glass"] {
-  --app-bg: #030303;
-  --card-bg: rgba(28, 28, 30, 0.70);
-  --glass-bg: rgba(28, 28, 30, 0.45);
+  --app-bg: #000000;
+  --card-bg: rgba(10, 10, 12, 0.88);
+  --glass-bg: rgba(10, 10, 12, 0.50);
   --text-main: #FFFFFF;
-  --text-sub: rgba(255, 255, 255, 0.75);
-  --text-muted: rgba(255, 255, 255, 0.50);
-  --border: rgba(255, 255, 255, 0.08);
+  --text-sub: rgba(255, 255, 255, 0.85);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --border: rgba(255, 255, 255, 0.12);
   --accent: #FFFFFF;
   --accent-glow: rgba(255, 255, 255, 0.15);
-  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
 }
 
 .dark {

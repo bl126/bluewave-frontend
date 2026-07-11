@@ -386,7 +386,7 @@ export default function DepositModal({ type, telegramUser, onClose, onSuccess }:
             if (info.offset.y > 100) tryDismiss();
           }}
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-0 left-0 right-0 z-10 bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[90vh] shadow-app-shadow w-full pointer-events-auto"
+          className="absolute bottom-0 left-0 right-0 z-10 bg-app-card border-t border-app-border rounded-t-[2.5rem] flex flex-col max-h-[90vh] shadow-app-shadow w-full pointer-events-auto backdrop-blur-2xl"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 20px) + 16px)" }}
         >
           {/* Drag Handle */}

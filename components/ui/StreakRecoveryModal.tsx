@@ -137,7 +137,7 @@ export default function StreakRecoveryModal({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-sm bg-app-card border border-app-border rounded-[2rem] overflow-hidden shadow-app-shadow pointer-events-auto relative"
+              className="w-full max-w-sm bg-app-card border border-app-border rounded-[2rem] overflow-hidden shadow-app-shadow pointer-events-auto relative backdrop-blur-2xl"
             >
               {success ? (
                 <div className="p-8 flex flex-col items-center text-center">
