@@ -411,8 +411,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
 
 
-  // Fetch Notifications (pre-load on mount)
-  const { data: notifications, mutate: mutateNotifications } = useApi(
+  const { data: notifications, loading: loadingNotifications, mutate: mutateNotifications } = useApi(
     telegramUser?.id ? `/explore/notifications/${telegramUser.id}` : null
   );
   const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
@@ -428,8 +427,31 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   // Fetch Live Users globally
   const { data: liveUsers } = useApi(isOpen ? `/explore/live_users${telegramUser?.id ? `?tg_id=${telegramUser.id}` : ''}` : null, { refreshInterval: 60000 });
 
+  const [cachedMiniApps, setCachedMiniApps] = useState<any[] | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("bw_mini_apps");
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {}
+      }
+    }
+    return undefined;
+  });
+
   // Fetch Ecosystem Mini Apps & Bots
-  const { data: dbMiniApps } = useApi(isOpen ? "/explore/mini_apps" : null);
+  const { data: dbMiniApps } = useApi(isOpen ? "/explore/mini_apps" : null, {
+    fallbackData: cachedMiniApps
+  });
+
+  useEffect(() => {
+    if (dbMiniApps && dbMiniApps.length > 0) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("bw_mini_apps", JSON.stringify(dbMiniApps));
+      }
+    }
+  }, [dbMiniApps]);
+
   const miniAppsList = dbMiniApps || [];
 
   // Track latest post ID for new-posts pill
@@ -566,24 +588,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
   }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen, isMiniAppsOpen]);
 
-  useEffect(() => {
-    const twa = (window as any).Telegram?.WebApp;
-    if (!twa?.BackButton) return;
-    const shouldShowBack = isMiniAppsOpen || isSearchOpen;
-    if (shouldShowBack) {
-      twa.BackButton.show();
-      const handleBackClick = () => {
-        if (isMiniAppsOpen) setIsMiniAppsOpen(false);
-        else if (isSearchOpen) setIsSearchOpen(false);
-      };
-      twa.BackButton.onClick(handleBackClick);
-      return () => {
-        twa.BackButton.offClick(handleBackClick);
-      };
-    } else {
-      twa.BackButton.hide();
-    }
-  }, [isMiniAppsOpen, isSearchOpen]);
+
 
   useEffect(() => {
     if (!syncData || syncData.error || !isOpen) return;
@@ -620,8 +625,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const onTouchMove = (e: React.TouchEvent) => {
     if (touchStartY.current !== null && scrollContainerRef.current?.scrollTop === 0) {
       const diffY = e.targetTouches[0].clientY - touchStartY.current;
-      if (diffY > 0 && diffY < 150) {
-        setPullY(diffY * 0.6);
+      if (diffY > 0) {
+        const pull = Math.pow(diffY, 0.8) * 1.5;
+        setPullY(Math.min(pull, 120));
       }
     }
   };
@@ -652,13 +658,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       }
     }
 
-    // Pull to refresh logic
+    // Pull to refresh logic - Magnetic snap and hold release
     if (pullY > 50 && !isRefreshing) {
-      setIsRefreshing(true);
-      mutate().then(() => {
-        setIsRefreshing(false);
+      setPullY(45);
+      setTimeout(() => {
+        setIsRefreshing(true);
         setPullY(0);
-      });
+        mutate().then(() => {
+          setIsRefreshing(false);
+        });
+      }, 300);
     } else {
       setPullY(0);
     }
@@ -680,6 +689,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const handleTabClick = (tab: "foryou" | "following" | "leaderboard" | "notifications") => {
     setActiveTab(tab);
     if (tab === "notifications" && telegramUser?.id) {
+      if (notifications) {
+        mutateNotifications(
+          notifications.map((n: any) => ({ ...n, is_read: true })),
+          false
+        );
+      }
       postApi("/explore/notifications/clear", { tg_id: telegramUser.id }).then(() => mutateNotifications());
     }
   };
@@ -790,27 +805,27 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               key={tab}
               onClick={() => handleTabClick(tab)}
               className={`relative pb-3 flex items-center justify-center transition-all ${
-                activeTab === tab ? "text-app-accent" : "text-text-sub"
+                activeTab === tab ? "text-cyan-400 font-black" : "text-white/60 hover:text-white/90"
               }`}
             >
               {tab === "foryou" && (
                 hasAccess ? (
-                  <span className="text-[11px] font-black uppercase tracking-widest">{t("explore.tabs.foryou")}</span>
+                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.foryou")}</span>
                 ) : (
-                  <Lock size={18} className="text-white/75" />
+                  <Lock size={19} className="text-white/75" />
                 )
               )}
               {tab === "following" && (
                 hasAccess ? (
-                  <span className="text-[11px] font-black uppercase tracking-widest">{t("explore.tabs.following")}</span>
+                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.following")}</span>
                 ) : (
-                  <Lock size={18} className="text-text-sub" />
+                  <Lock size={19} className="text-white/60" />
                 )
               )}
               {tab === "notifications" && (
                 hasAccess ? (
                   <div className="relative">
-                    <Bell size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />
+                    <Bell size={19} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
                     {unreadCount > 0 && (
                       <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-white rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                         {unreadCount > 9 ? "!" : unreadCount}
@@ -818,11 +833,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     )}
                   </div>
                 ) : (
-                  <Lock size={18} className="text-text-sub" />
+                  <Lock size={19} className="text-white/60" />
                 )
               )}
               {tab === "leaderboard" && (
-                <BarChart2 size={18} className={activeTab === tab ? "text-app-accent" : "text-text-sub"} />
+                <BarChart2 size={19} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
               )}
               {activeTab === tab && (
                 <motion.div
@@ -908,15 +923,29 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 transition={{ duration: 0.2 }}
                 className="p-4 space-y-4"
               >
-                <NotificationsView
-                  notifications={notifications || []}
-                  onClear={() => mutateNotifications()}
-                  currentUserId={telegramUser?.id}
-                  onPostClick={(postId, commentId) => {
-                    setSelectedPost({ id: postId });
-                    setSelectedCommentId(commentId || null);
-                  }}
-                />
+                {loadingNotifications && (!notifications || notifications.length === 0) ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                      <div key={idx} className="flex gap-4 p-4 rounded-2xl items-center border border-white/[0.05] bg-white/[0.01]">
+                        <div className="w-10 h-10 shrink-0 rounded-full shimmer-sweep bg-white/5" />
+                        <div className="flex-1 space-y-2">
+                          <div className="w-1/3 h-2.5 shimmer-sweep rounded bg-white/5" />
+                          <div className="w-3/4 h-2 shimmer-sweep rounded bg-white/5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <NotificationsView
+                    notifications={notifications || []}
+                    onClear={() => mutateNotifications()}
+                    currentUserId={telegramUser?.id}
+                    onPostClick={(postId, commentId) => {
+                      setSelectedPost({ id: postId });
+                      setSelectedCommentId(commentId || null);
+                    }}
+                  />
+                )}
               </motion.div>
             )}
             {activeTab === "leaderboard" && (
@@ -1428,17 +1457,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
             {/* Slim, sleek categories strip - matching curved segmented control */}
             <div className="w-full mb-4 shrink-0 px-6">
-              <div className="flex items-center gap-0.5 w-full bg-black/55 border border-white/10 rounded-xl p-0.5 backdrop-blur-xl shadow-lg shadow-black/30 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-xl p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
                 {["Topics", "Gram", "News", "AI", "Top Channels", "Mini Apps"].map((tab) => {
                   const isActive = activeSearchTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setActiveSearchTab(tab)}
-                      className={`relative flex items-center justify-center py-1.5 px-3 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0
+                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-lg text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
                         ${isActive
-                          ? "bg-white/[0.08] border border-white/10 text-white shadow-md"
-                          : "bg-transparent border border-transparent text-white/35 hover:text-white/60 hover:bg-white/[0.02]"
+                          ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
+                          : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
                         }`}
                     >
                       {tab}
@@ -1611,17 +1640,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
             {/* Categories strip matching MissionCenter control rectangle */}
             <div className="w-full mb-4 shrink-0 px-6">
-              <div className="flex items-center gap-0.5 w-full bg-black/55 border border-white/10 rounded-xl p-0.5 backdrop-blur-xl shadow-lg shadow-black/30 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-xl p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
                 {["All", "Wallets", "Swaps & DeFi", "Payments", "NFT & Marketplaces", "Dev Infra", "Explorers", "Naming & Identity"].map((tab) => {
                   const isActive = activeMiniAppsTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setActiveMiniAppsTab(tab)}
-                      className={`relative flex items-center justify-center py-1.5 px-3 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all duration-200 shrink-0
+                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-lg text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
                         ${isActive
-                          ? "bg-white/[0.08] border border-white/10 text-white shadow-md"
-                          : "bg-transparent border border-transparent text-white/35 hover:text-white/60 hover:bg-white/[0.02]"
+                          ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
+                          : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
                         }`}
                     >
                       {tab}
@@ -1925,7 +1954,7 @@ function PostModal({
     }
   };
 
-  const charLimit = 250;
+  const charLimit = 4096;
   const progress = (content.length / charLimit) * 100;
   const strokeDasharray = 2 * Math.PI * 8; 
   const strokeDashoffset = strokeDasharray - (Math.min(progress, 100) / 100) * strokeDasharray;
@@ -2399,6 +2428,7 @@ function PostCard({
   const { t } = useLanguage();
   const [isAcknowledged, setIsAcknowledged] = useState(post.is_acknowledged);
   const [localAckCount, setLocalAckCount] = useState(post.acknowledgments_count || 0);
+  const [isStarred, setIsStarred] = useState(post.is_starred);
   const [localStarCount, setLocalStarCount] = useState(post.stars_count || 0);
   const [starError, setStarError] = useState<string | null>(null);
   const [starGiftOpen, setStarGiftOpen] = useState(false);
@@ -2481,20 +2511,24 @@ function PostCard({
         onStarGiftSuccess?.();
       } else if (res?.error === "INSUFFICIENT_STARS") {
         setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        setIsStarred(post.is_starred);
         onStarBalanceChange(amount);
         onOpenBuyStars?.();
         setStarError(t("explore.gift_star_need_balance"));
       } else if (res?.error === "INVALID_AMOUNT") {
         setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        setIsStarred(post.is_starred);
         onStarBalanceChange(amount);
         setStarError(t("explore.gift_star_invalid_amount"));
       } else {
         setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+        setIsStarred(post.is_starred);
         onStarBalanceChange(amount);
         setStarError(t("explore.gift_star_failed"));
       }
     } catch {
       setLocalStarCount((prev: number) => Math.max(0, prev - amount));
+      setIsStarred(post.is_starred);
       onStarBalanceChange(amount);
       setStarError(t("explore.gift_star_failed"));
     }
@@ -2513,6 +2547,7 @@ function PostCard({
     }
     setStarGiftOpen(false);
     setLocalStarCount((prev: number) => prev + amount);
+    setIsStarred(true);
     onStarBalanceChange(-amount);
     void submitStarGiftInBackground(amount);
   };
@@ -2694,13 +2729,13 @@ function PostCard({
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center justify-between gap-2 mb-1">
             <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="flex items-center gap-1.5 truncate">
-              <span className="text-white font-bold text-[13px] truncate uppercase tracking-tight">{post.channel?.title}</span>
+              <span className="text-white font-bold text-[15px] truncate uppercase tracking-tight">{post.channel?.title}</span>
             </button>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-white/40 font-bold uppercase">{timeAgo(post.created_at)}</span>
+              <span className="text-[12px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
                 <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/85 hover:text-white">
-                  < MoreHorizontal size={14} />
+                  <MoreHorizontal size={15} />
                 </button>
                 <AnimatePresence>
                   {isMenuOpen && typeof document !== "undefined" && createPortal(
@@ -2781,7 +2816,7 @@ function PostCard({
             </div>
           </div>
 
-          <LinkedText text={post.content} className="text-sm text-white/90 leading-relaxed break-words whitespace-pre-wrap mb-3" />
+          <LinkedText text={post.content} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap mb-3" />
 
           {/* Signal Content */}
           {post.post_type === 'live_scheduled' ? null : post.media_urls && post.media_urls.length > 0 ? (
@@ -2797,7 +2832,7 @@ function PostCard({
           ) : null}
 
           {/* ─── Action Bar: Comment · Like · Star · Repost (left) | Views (right) ─── */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/40">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/60">
             {/* Left: Comment + Like + Star + Repost — X/Twitter style, full visibility */}
             <div className="flex items-center gap-6">
 
@@ -2858,12 +2893,12 @@ function PostCard({
                 onClick={openStarGiftFlow}
                 title={t("explore.gift_star_hint")}
                 className={`flex items-center gap-2 group transition-all ${
-                  localStarCount > 0 ? "text-amber-500" : "hover:text-amber-500"
+                  isStarred ? "text-amber-500" : "hover:text-amber-500"
                 }`}
               >
                 <Star
                   size={16}
-                  fill={localStarCount > 0 ? "currentColor" : "none"}
+                  fill={isStarred ? "currentColor" : "none"}
                   className="transition-colors"
                 />
                 <span className="text-[11px] font-black font-mono transition-colors">
@@ -3109,7 +3144,7 @@ function NotificationsView({
                   if (isMilestone) handleToggle(n);
                   else if (n.post_id) onPostClick(n.post_id, n.type.includes("comment") ? n.comment_id : undefined);
                 }}
-                className={`flex gap-4 p-4 rounded-2xl items-center transition-all cursor-pointer active:scale-[0.98] ${n.is_read ? "bg-white/[0.04] border border-white/[0.08] opacity-90" : "bg-cyan-500/[0.08] border border-cyan-500/40 shadow-[0_0_20px_rgba(0,230,255,0.1)]"}`}
+                className={`flex gap-4 p-4 rounded-2xl items-center transition-all cursor-pointer active:scale-[0.98] bg-white/[0.04] border border-white/[0.08] ${n.is_read ? "opacity-75" : "opacity-100"}`}
               >
                 {/* Avatar for acknowledged + new_follower + repost + comment types — clickable to open channel */}
                 {(n.type === "acknowledged" || n.type === "reposted" || n.type === "new_follower" || n.type.startsWith("verified_repost_milestone") || n.type === "commented" || n.type === "comment_replied" || n.type === "comment_liked" || n.type === "mentioned_in_post" || n.type === "mentioned_in_comment") && n.from_user ? (
@@ -3135,7 +3170,7 @@ function NotificationsView({
                     )}
                   </button>
                 ) : (
-                  <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border ${n.is_read ? "bg-white/5 border-white/5" : "bg-cyan-500/10 border-cyan-500/20"}`}>
+                  <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center border bg-white/5 border-white/5">
                     {getIcon(n.type)}
                   </div>
                 )}
@@ -3183,7 +3218,7 @@ function NotificationsView({
                     </button>
                   )}
                 </div>
-                {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#00e6ff]" />}
+                {!n.is_read && <div className="w-1.5 h-1.5 rounded-full bg-white/40" />}
                 {isMilestone && (
                   <ChevronDown size={14} className={`text-white/75 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                 )}
@@ -3266,6 +3301,7 @@ function PostDetailModal({
   const [isReposted, setIsReposted] = useState(initialPost.is_reposted);
   const [localRepostsCount, setLocalRepostsCount] = useState(initialPost.reposts_count || 0);
   const [isReposting, setIsReposting] = useState(false);
+  const [isStarred, setIsStarred] = useState(initialPost.is_starred);
   const [localStarCount, setLocalStarCount] = useState(initialPost.stars_count || 0);
   const [starGiftOpen, setStarGiftOpen] = useState(false);
   const [starGiftMode, setStarGiftMode] = useState<"setup" | "confirm">("setup");
@@ -3277,6 +3313,7 @@ function PostDetailModal({
       setLocalLikesCount(post.acknowledgments_count || 0);
       setIsReposted(post.is_reposted);
       setLocalRepostsCount(post.reposts_count || 0);
+      setIsStarred(post.is_starred);
       setLocalStarCount(post.stars_count || 0);
     }
   }, [post]);
@@ -3305,8 +3342,28 @@ function PostDetailModal({
   const { data: comments, loading: loadingComments, mutate: mutateComments } = useApi(post?.id ? `/explore/post/${post.id}/comments` : null);
 
   useEffect(() => {
+    if (post?.id) {
+      if (typeof window !== "undefined") {
+        const cached = localStorage.getItem(`bw_comments_${post.id}`);
+        if (cached) {
+          try {
+            setLocalComments(JSON.parse(cached));
+          } catch (e) {}
+        } else {
+          setLocalComments([]);
+        }
+      }
+    } else {
+      setLocalComments([]);
+    }
+  }, [post?.id]);
+
+  useEffect(() => {
     if (comments) {
       setLocalComments(comments);
+      if (post?.id && typeof window !== "undefined") {
+        localStorage.setItem(`bw_comments_${post.id}`, JSON.stringify(comments));
+      }
       if (commentId) {
         setTimeout(() => {
           const el = document.getElementById(`comment-${commentId}`);
@@ -3314,7 +3371,7 @@ function PostDetailModal({
         }, 500);
       }
     }
-  }, [comments, commentId]);
+  }, [comments, commentId, post?.id]);
 
   const handlePostComment = async () => {
     if (!content.trim() && !commentImage) return;
@@ -3430,6 +3487,7 @@ function PostDetailModal({
   const handleStarGiftConfirm = async (amount: number) => {
     setStarGiftOpen(false);
     setLocalStarCount((prev: number) => prev + amount);
+    setIsStarred(true);
     try {
       const res = await postApi("/explore/star", {
         user_id: telegramUser.id,
@@ -3631,7 +3689,7 @@ function PostDetailModal({
 
               <div className="flex flex-col gap-4">
                 {/* ─── Actions Row (Above Stats) ─── */}
-                <div className="flex items-center gap-8 py-3.5 border-t border-white/5 w-full text-white/40">
+                 <div className="flex items-center gap-8 py-3.5 border-t border-white/5 w-full text-white/60">
                   {/* Comment */}
                   <button
                     onClick={() => {
@@ -3667,12 +3725,12 @@ function PostDetailModal({
                   <button
                     onClick={openStarGiftFlow}
                     className={`flex items-center gap-2 transition-all ${
-                      localStarCount > 0 ? "text-amber-500" : "hover:text-amber-500"
+                      isStarred ? "text-amber-500" : "hover:text-amber-500"
                     }`}
                   >
                     <Star
                       size={18}
-                      fill={localStarCount > 0 ? "currentColor" : "none"}
+                      fill={isStarred ? "currentColor" : "none"}
                       strokeWidth={2.5}
                     />
                     <span className="text-[11px] font-black font-mono">

@@ -212,11 +212,24 @@ export default function ConnectBluModal({
                 setLoadingAnalytics(false);
             });
 
+        if (typeof window !== "undefined") {
+            const cacheKey = `bw_transactions_${telegramId}`;
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    setTransactions(JSON.parse(cached));
+                } catch (e) {}
+            }
+        }
+
         setLoadingTransactions(true);
         getApi(`/user/${telegramId}/transactions`)
             .then((res: any) => {
                 if (Array.isArray(res)) {
                     setTransactions(res);
+                    if (typeof window !== "undefined") {
+                        localStorage.setItem(`bw_transactions_${telegramId}`, JSON.stringify(res));
+                    }
                 }
             })
             .catch((err) => {
@@ -1038,7 +1051,7 @@ export default function ConnectBluModal({
                                             <h4 className="text-[10px] font-black uppercase tracking-widest">Transaction History</h4>
                                         </div>
                                         <div className="space-y-3">
-                                            {loadingTransactions ? (
+                                            {loadingTransactions && transactions.length === 0 ? (
                                                 <div className="space-y-3 animate-pulse">
                                                     {Array.from({ length: 3 }).map((_, idx) => (
                                                         <div key={idx} className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-[11px]">

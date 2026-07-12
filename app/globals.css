@@ -243,15 +243,26 @@ html, body {
   }
 }
 
+@keyframes wavePulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
 .shimmer-sweep {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.02) 25%,
-    rgba(255, 255, 255, 0.10) 37%,
-    rgba(255, 255, 255, 0.02) 63%
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.03) 75%,
+    rgba(255, 255, 255, 0.03) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
+  animation: shimmer 1.6s infinite cubic-bezier(0.4, 0, 0.6, 1), wavePulse 2.5s infinite ease-in-out;
 }
 
 
