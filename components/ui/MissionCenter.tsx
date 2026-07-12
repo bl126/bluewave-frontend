@@ -746,7 +746,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
               paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 64px)",
             }}
           >
-            <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/20 rounded-xl p-1 gap-1 backdrop-blur-xl shadow-lg shadow-black/40">
+            <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 gap-1 backdrop-blur-xl shadow-lg shadow-black/40">
               {(["presence", "social", "quest", "earn"] as TabId[]).map((tab) => {
                 const isActive = activeTab === tab;
                 const badge = tab === "presence" ? presenceBadge : tab === "social" ? socialBadge : 0;
@@ -754,7 +754,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`relative flex items-center justify-center flex-1 py-1.5 rounded-lg text-[12.5px] font-black uppercase tracking-wider transition-all duration-200
+                    className={`relative flex items-center justify-center flex-1 py-1.5 rounded-full text-[12.5px] font-black uppercase tracking-wider transition-all duration-200
                       ${isActive
                         ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
                         : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"

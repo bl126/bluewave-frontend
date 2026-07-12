@@ -808,59 +808,60 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
           top: 0,
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 148px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
           background: "transparent",
           boxShadow: "none"
         }}
       >
-        <div className="flex items-center justify-between px-6 pt-2 w-full">
-          {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => handleTabClick(tab)}
-              className={`relative pb-3 flex items-center justify-center transition-all ${
-                activeTab === tab ? "text-white font-black" : "text-white/60 hover:text-white/90"
-              }`}
-            >
-              {tab === "foryou" && (
-                hasAccess ? (
-                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.foryou")}</span>
-                ) : (
-                  <Lock size={19} className="text-white/75" />
-                )
-              )}
-              {tab === "following" && (
-                hasAccess ? (
-                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.following")}</span>
-                ) : (
-                  <Lock size={19} className="text-white/60" />
-                )
-              )}
-              {tab === "notifications" && (
-                hasAccess ? (
-                  <div className="relative">
-                    <Bell size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
-                    {unreadCount > 0 && (
-                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-white rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-                        {unreadCount > 9 ? "!" : unreadCount}
+        <div className="w-full max-w-md mx-auto px-6">
+          <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 gap-1 backdrop-blur-xl shadow-lg shadow-black/40">
+            {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => handleTabClick(tab)}
+                  className={`relative flex items-center justify-center flex-1 py-1.5 rounded-full text-[12.5px] font-black uppercase tracking-wider transition-all duration-200
+                    ${isActive
+                      ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
+                      : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
+                    }`}
+                >
+                  {tab === "foryou" && (
+                    hasAccess ? (
+                      <span>{t("explore.tabs.foryou")}</span>
+                    ) : (
+                      <Lock size={15} className="text-white/60" />
+                    )
+                  )}
+                  {tab === "following" && (
+                    hasAccess ? (
+                      <span>{t("explore.tabs.following")}</span>
+                    ) : (
+                      <Lock size={15} className="text-white/60" />
+                    )
+                  )}
+                  {tab === "notifications" && (
+                    hasAccess ? (
+                      <div className="relative flex items-center gap-1.5 justify-center">
+                        <Bell size={15} />
+                        {unreadCount > 0 && (
+                          <div className="absolute -top-1.5 -right-2 w-3.5 h-3.5 bg-red-500 text-white rounded-full flex items-center justify-center text-[7px] font-black shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+                            {unreadCount > 9 ? "!" : unreadCount}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <Lock size={19} className="text-white/60" />
-                )
-              )}
-              {tab === "leaderboard" && (
-                <BarChart2 size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
-              )}
-              {activeTab === tab && (
-                <motion.div
-                  layoutId="exploreTabUnderline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-accent shadow-app-shadow"
-                />
-              )}
-            </button>
-          ))}
+                    ) : (
+                      <Lock size={15} className="text-white/60" />
+                    )
+                  )}
+                  {tab === "leaderboard" && (
+                    <BarChart2 size={15} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </motion.div>
 
@@ -1530,14 +1531,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
             {/* Slim, sleek categories strip - matching curved segmented control */}
             <div className="w-full mb-4 shrink-0 px-6">
-              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-xl p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
                 {["Topics", "Live", "Gram", "News", "AI", "Top Channels", "Mini Apps"].map((tab) => {
                   const isActive = activeSearchTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setActiveSearchTab(tab)}
-                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-lg text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
+                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-full text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
                         ${isActive
                           ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
                           : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
@@ -1777,14 +1778,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
             {/* Categories strip matching MissionCenter control rectangle */}
             <div className="w-full mb-4 shrink-0 px-6">
-              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-xl p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
+              <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
                 {["All", "Wallets", "Swaps & DeFi", "Payments", "NFT & Marketplaces", "Dev Infra", "Explorers", "Naming & Identity"].map((tab) => {
                   const isActive = activeMiniAppsTab === tab;
                   return (
                     <button
                       key={tab}
                       onClick={() => setActiveMiniAppsTab(tab)}
-                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-lg text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
+                      className={`relative flex items-center justify-center py-1.5 px-3.5 rounded-full text-[12.5px] font-black uppercase tracking-wider transition-all duration-200 shrink-0
                         ${isActive
                           ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
                           : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
@@ -1813,7 +1814,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 }
 
                 return (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     {filteredApps.map((app: any) => {
                       const handleOpen = () => {
                         const link = app.deep_link || app.link || `https://t.me/${app.username}`;
@@ -1826,37 +1827,44 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       };
 
                       return (
-                        <button
+                        <div
                           key={app.id}
-                          onClick={handleOpen}
-                          className="flex flex-col items-center gap-3 p-4 rounded-3xl bg-white/[0.02] border border-white/5 active:scale-95 transition-all text-center relative overflow-hidden group w-full"
+                          className="flex items-center justify-between border-b border-white/[0.04] pb-4 mb-4 text-left"
                         >
-                          {/* Logo Display */}
-                          <div className="w-16 h-16 rounded-2xl bg-active p-[1px] relative shadow-[0_0_20px_rgba(0,0,0,0.4)] shrink-0">
-                            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${app.gradient || "from-cyan-500 to-blue-600"} opacity-30 blur-[1px]`} />
-                            <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-white relative z-10 border border-white/10 overflow-hidden">
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            {/* Circular Logo */}
+                            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/[0.08] bg-white/5 shrink-0 flex items-center justify-center relative shadow-[0_0_12px_rgba(0,0,0,0.3)]">
                               {app.photo_url ? (
                                 <img src={app.photo_url} className="w-full h-full object-cover" alt="" />
+                              ) : app.photo ? (
+                                <img src={app.photo} className="w-full h-full object-cover" alt="" />
                               ) : (
-                                <span className="text-sm font-black uppercase text-app-accent/80">
+                                <span className="text-sm font-black uppercase text-app-accent">
                                   {app.name?.[0]}
                                 </span>
                               )}
                             </div>
+
+                            <div className="min-w-0">
+                              <h4 className="text-white text-[13px] font-black uppercase tracking-tight truncate">
+                                {app.name}
+                              </h4>
+                              <p className="text-text-muted font-mono text-[9.5px] font-bold truncate mt-0.5">
+                                @{app.username}
+                              </p>
+                              <p className="text-white/50 text-[10.5px] leading-relaxed mt-1 line-clamp-2 uppercase tracking-wide font-medium">
+                                {app.description || "Ecosystem App"}
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="flex flex-col items-center gap-1 min-w-0 w-full">
-                            <span className="text-xs font-black text-white uppercase tracking-wide truncate w-full">
-                              {app.name}
-                            </span>
-                            <span className="text-[9px] font-mono font-bold text-white/40 truncate w-full">
-                              @{app.username}
-                            </span>
-                            <p className="text-[10px] text-white/50 leading-tight mt-1 line-clamp-2 h-7 overflow-hidden uppercase tracking-wider font-medium text-center w-full">
-                              {app.description || "Ecosystem App"}
-                            </p>
-                          </div>
-                        </button>
+                          <button
+                            onClick={handleOpen}
+                            className="px-5 py-2 rounded-full bg-white text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 active:scale-95 transition-all shrink-0 ml-4 border border-white/20 shadow-md"
+                          >
+                            Open
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -2306,6 +2314,11 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
     };
   }, [onClose]);
 
+  // Reset zoom on index change
+  useEffect(() => {
+    setScale(1);
+  }, [curr]);
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -2313,39 +2326,101 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
   if (!mounted) return null;
 
+  const handleZoomIn = () => setScale(s => Math.min(4, s + 0.5));
+  const handleZoomOut = () => setScale(s => Math.max(1, s - 0.5));
+  const handleResetZoom = () => setScale(1);
+
   return createPortal(
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[1200] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
     >
+      {/* Lightbox Controls */}
+      <div className="absolute top-6 left-6 right-6 z-[1210] flex items-center justify-between text-white/80" onClick={e => e.stopPropagation()}>
+        <span className="text-[12px] font-black font-mono tracking-widest bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+          {curr + 1} / {items.length}
+        </span>
+        <div className="flex items-center gap-2">
+          {scale > 1 && (
+            <button 
+              onClick={handleResetZoom} 
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-xs font-black uppercase tracking-wider"
+            >
+              1x
+            </button>
+          )}
+          <button 
+            onClick={handleZoomOut} 
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-lg font-bold"
+          >
+            -
+          </button>
+          <button 
+            onClick={handleZoomIn} 
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-lg font-bold"
+          >
+            +
+          </button>
+          <button 
+            onClick={onClose} 
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-sm font-bold ml-2"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
       <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
          <motion.div 
-           key={curr}
-           initial={{ x: 100, opacity: 0 }}
-           animate={{ x: 0, opacity: 1 }}
-           exit={{ x: -100, opacity: 0 }}
-           className="w-full h-full flex items-center justify-center p-4 touch-none"
-           drag
-           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-           dragElastic={0.8}
-           onDragEnd={(_, info) => {
-             // Vertical dismiss
-             if (Math.abs(info.offset.y) > 150) {
-               onClose();
-             }
-             // Horizontal swiping
-             else if (info.offset.x > 80 && curr > 0) setCurr(curr - 1);
-             else if (info.offset.x < -80 && curr < items.length - 1) setCurr(curr + 1);
-           }}
-           style={{ scale }}
-           onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
+            key={curr}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            className="w-full h-full flex items-center justify-center p-4 touch-none relative"
+            drag={scale === 1 ? true : true}
+            dragConstraints={scale > 1 ? undefined : { left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={scale > 1 ? 0.1 : 0.8}
+            onDragEnd={(_, info) => {
+              if (scale === 1) {
+                // Swipe down/up to dismiss
+                if (Math.abs(info.offset.y) > 120) {
+                  onClose();
+                }
+                // Swipe left/right to navigate
+                else if (info.offset.x > 100 && curr > 0) {
+                  setCurr(curr - 1);
+                } else if (info.offset.x < -100 && curr < items.length - 1) {
+                  setCurr(curr + 1);
+                }
+              }
+            }}
+            style={{ scale }}
+            onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
          >
-           {items[curr].type === "photo" ? (
-             <img src={items[curr].url} className="max-w-full max-h-[90vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg" />
-           ) : (
-             <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
-           )}
+            {/* Horizontal swipe navigation buttons for ease of use */}
+            {scale === 1 && curr > 0 && (
+              <div 
+                onClick={() => setCurr(curr - 1)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 text-white cursor-pointer active:scale-95 transition-all z-[1205]"
+              >
+                ◀
+              </div>
+            )}
+            {scale === 1 && curr < items.length - 1 && (
+              <div 
+                onClick={() => setCurr(curr + 1)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 text-white cursor-pointer active:scale-95 transition-all z-[1205]"
+              >
+                ▶
+              </div>
+            )}
+
+            {items[curr].type === "photo" ? (
+              <img src={items[curr].url} className="max-w-full max-h-[90vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg transition-transform duration-100" />
+            ) : (
+              <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
+            )}
          </motion.div>
       </div>
 
@@ -2354,7 +2429,7 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
           {items.map((_, i) => (
             <motion.div 
               key={i} 
-              animate={{ width: i === curr ? 24 : 6, backgroundColor: i === curr ? "#06b6d4" : "rgba(255,255,255,0.2)" }}
+              animate={{ width: i === curr ? 24 : 6, backgroundColor: i === curr ? "#ffffff" : "rgba(255,255,255,0.2)" }}
               className="h-1.5 rounded-full transition-all" 
             />
           ))}
