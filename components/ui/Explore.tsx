@@ -617,17 +617,30 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     // (Optional: for even less traffic, only mutate if count > notification length)
   }, [syncData, latestKnownPostId, activeTab, isOpen]);
 
-  // Scroll handler — fast hide/show
+  // Scroll handler — fast hide/show & early load-more when 8 posts remaining (~2400px)
   const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-    const currentY = scrollContainerRef.current.scrollTop;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const currentY = container.scrollTop;
     setShowScrollToTop(currentY > 400);
+
+    // Trigger "load more" early when remaining scroll height is less than 8 posts (~2400px)
+    const scrollHeight = container.scrollHeight;
+    const clientHeight = container.clientHeight;
+    const remainingScroll = scrollHeight - currentY - clientHeight;
+    
+    if (remainingScroll < 2400) {
+      if (hasMore && !loadingMore && !loading && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following") {
+        handleLoadMore();
+      }
+    }
+
     if (Math.abs(currentY - lastScrollY.current) < 6) return;
     const goingDown = currentY > lastScrollY.current && currentY > 40;
     setShowChrome(!goingDown);
     window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: goingDown ? "down" : "up" }));
     lastScrollY.current = currentY;
-  }, []);
+  }, [hasMore, loadingMore, loading, handleLoadMore, activeTab]);
 
   // Swipe tab switch & Pull to refresh
   const onTouchStart = (e: React.TouchEvent) => {
@@ -677,7 +690,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       setTimeout(() => {
         setIsRefreshing(true);
         setPullY(0);
+        
+        // Safety timeout: force stop refreshing after 5 seconds if mutate hangs
+        const safetyTimeout = setTimeout(() => {
+          setIsRefreshing(false);
+        }, 5000);
+
         mutate().then(() => {
+          clearTimeout(safetyTimeout);
+          setIsRefreshing(false);
+        }).catch(() => {
+          clearTimeout(safetyTimeout);
           setIsRefreshing(false);
         });
       }, 300);
@@ -748,11 +771,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       {/* ─── Frosted Header Backdrop Background ─── */}
       <motion.div
-        animate={{ y: showChrome ? 0 : (showLiveTray ? -276 : -196) }}
+        animate={{ y: showChrome ? 0 : (showLiveTray ? -288 : -196) }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed top-0 left-0 right-0 z-[125] pointer-events-none"
         style={{
-          height: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 276 : 196}px)`,
+          height: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 288 : 196}px)`,
           background: "rgba(0, 0, 0, 0.55)",
           backdropFilter: "blur(40px) saturate(180%)",
           WebkitBackdropFilter: "blur(40px) saturate(180%)",
@@ -762,7 +785,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       {/* ─── Top Header (Avatar + Search Bar) — NO background ─── */}
       <motion.div 
-        animate={{ y: showChrome ? 0 : (showLiveTray ? -276 : -196), opacity: showChrome ? 1 : 0 }}
+        animate={{ y: showChrome ? 0 : (showLiveTray ? -288 : -196), opacity: showChrome ? 1 : 0 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
@@ -804,7 +827,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
       {/* ─── Tab Bar (fixed, transparent background) ─── */}
       <motion.div
-        animate={{ y: showChrome ? 0 : (showLiveTray ? -276 : -196), opacity: showChrome ? 1 : 0 }}
+        animate={{ y: showChrome ? 0 : (showLiveTray ? -288 : -196), opacity: showChrome ? 1 : 0 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
@@ -868,13 +891,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       {/* ─── Live Channels Dropdown ─── */}
       {showLiveTray && (
         <motion.div
-          animate={{ y: showChrome ? 0 : (showLiveTray ? -276 : -196), opacity: showChrome ? 1 : 0 }}
+          animate={{ y: showChrome ? 0 : (showLiveTray ? -288 : -196), opacity: showChrome ? 1 : 0 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
           className="fixed left-0 right-0 z-[130] pointer-events-auto"
           style={{
             top: 0,
-            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 190px)",
-            height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 276px)",
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 202px)",
+            height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 288px)",
             background: "transparent"
           }}
         >
@@ -898,20 +921,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 transition-transform"
                 >
                   {/* Live Avatar with Shimmer Glim */}
-                  <div className="relative">
-                    <div className="w-11 h-11 rounded-full overflow-hidden bg-black/40 relative z-10 border border-white/10">
-                      {u.telegram_channel_photo ? (
-                        <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
-                      ) : u.photo_url ? (
-                        <img src={u.photo_url} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
-                          {(u.telegram_channel_title || u.name || "?")[0]}
-                        </div>
-                      )}
-                    </div>
-                    {/* Shimmer Glim shadow animation (pulses every 3s) */}
-                    <div className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.85)] animate-[pulse_3s_infinite] pointer-events-none z-20" />
+                  <div className="relative w-11 h-11 rounded-full overflow-hidden bg-black/40 border border-white/20 shimmer-light-wave shrink-0">
+                    {u.telegram_channel_photo ? (
+                      <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
+                    ) : u.photo_url ? (
+                      <img src={u.photo_url} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
+                        {(u.telegram_channel_title || u.name || "?")[0]}
+                      </div>
+                    )}
                   </div>
                   {/* Name */}
                   <span className="text-[9px] font-black text-white/90 uppercase tracking-wider truncate w-14 text-center mt-0.5">
@@ -932,7 +951,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="fixed left-0 right-0 z-[140] flex justify-center pointer-events-none"
-            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 280 : 200}px)` }}
+            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 292 : 200}px)` }}
           >
             <button
               onClick={handleNewPostsPill}
@@ -952,7 +971,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="fixed left-1/2 -translate-x-1/2 z-[135] bg-black/85 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg pointer-events-none"
-            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 280 : 200}px)` }}
+            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 292 : 200}px)` }}
           >
             <Loader2 size={12} className="text-white animate-spin" />
             <span className="text-[9px] text-white/90 font-black uppercase tracking-widest">{t("explore.posting_btn") || "Transmitting"}</span>
@@ -971,7 +990,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         onTouchEnd={onTouchEnd}
         className={`flex-1 custom-scrollbar ${activeTab === "following" ? "overflow-hidden" : "overflow-y-auto"}`}
         style={{
-          paddingTop: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 276 : 196}px)`,
+          paddingTop: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 288 : 196}px)`,
           paddingBottom: activeTab === "following" ? "0px" : "120px",
           transform: pullY > 0 ? `translateY(${pullY * 0.75}px)` : 'none',
           transition: pullY === 0 ? 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)' : 'none'
@@ -1097,8 +1116,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       </Fragment>
                     ))}
                     {hasMore && (
-                      <div ref={loadMoreRef} className="flex justify-center py-6 w-full px-4">
-                        {loadingMore && <PostCardSkeleton />}
+                      <div ref={loadMoreRef} className="flex flex-col gap-4 py-6 w-full px-4 shrink-0">
+                        {loadingMore && (
+                          <>
+                            <PostCardSkeleton />
+                            <PostCardSkeleton />
+                            <PostCardSkeleton />
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1497,7 +1522,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
               {/* Bottom section (keep blank as requested) */}
               <div className="px-4 text-left pt-2">
-                <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Bluewave</span>
+                <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Bluewave beta phase v1.2.0</span>
               </div>
             </motion.div>
           </>
@@ -1594,20 +1619,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             className="flex flex-col items-center justify-center p-4 active:scale-[0.98] transition-all text-center relative overflow-hidden h-32 cursor-pointer"
                           >
                             {/* Avatar */}
-                            <div className="relative mb-2 shrink-0">
-                              <div className="w-14 h-14 rounded-full overflow-hidden bg-black/40 relative z-10 border border-white/5">
-                                {u.telegram_channel_photo ? (
-                                  <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
-                                ) : u.photo_url ? (
-                                  <img src={u.photo_url} className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-sm">
-                                    {(u.telegram_channel_title || u.name || "?")[0]}
-                                  </div>
-                                )}
-                              </div>
-                              {/* Live state and shimmer glim (pulsing glow shadow) */}
-                              <div className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.85)] animate-[pulse_3s_infinite] pointer-events-none z-20" />
+                            <div className="relative mb-2 shrink-0 w-14 h-14 rounded-full overflow-hidden bg-black/40 border border-white/20 shimmer-light-wave z-10">
+                              {u.telegram_channel_photo ? (
+                                <img src={u.telegram_channel_photo} className="w-full h-full object-cover" />
+                              ) : u.photo_url ? (
+                                <img src={u.photo_url} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-sm">
+                                  {(u.telegram_channel_title || u.name || "?")[0]}
+                                </div>
+                              )}
                             </div>
 
                             {/* Info */}
@@ -3351,17 +3372,13 @@ function PostCard({
       <div className="flex gap-3.5 w-full items-start">
         {/* Avatar → direct channel link */}
         <button onClick={(e) => { e.stopPropagation(); openChannel(); }} className="shrink-0 relative">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm relative">
+          <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm relative ${(isLive || post.user?.is_live_on_telegram) ? "shimmer-light-wave" : ""}`}>
             {post.channel?.photo && !imgError ? (
               <img src={post.channel.photo} onError={() => setImgError(true)} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
                 {post.channel?.title?.[0] || "B"}
               </div>
-            )}
-            {/* Shimmer Glim (Active pulsing shadow instead of border/circle) */}
-            {(isLive || post.user?.is_live_on_telegram) && (
-              <div className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.85)] animate-[pulse_2s_infinite] pointer-events-none z-20" />
             )}
           </div>
           {(isLive || post.user?.is_live_on_telegram) && (
@@ -4314,17 +4331,13 @@ function PostDetailModal({
                   }
                 }}
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40 shrink-0 group-hover:border-cyan-500/50 transition-colors relative">
+                <div className={`w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-black/40 shrink-0 group-hover:border-cyan-500/50 transition-colors relative ${(isLive || post.user?.is_live_on_telegram) ? "shimmer-light-wave" : ""}`}>
                   {(post.channel?.photo || post.user?.photo) ? (
                     <img src={post.channel?.photo || post.user.photo} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-lg">
                       {(post.channel?.title || post.user?.name || 'U')[0]}
                     </div>
-                  )}
-                  {/* Shimmer Glim (Active pulsing shadow instead of border/circle) */}
-                  {(isLive || post.user?.is_live_on_telegram) && (
-                    <div className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.85)] animate-[pulse_2s_infinite] pointer-events-none z-20" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
