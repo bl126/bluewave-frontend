@@ -454,6 +454,18 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   const miniAppsList = dbMiniApps || [];
 
+  const lastPostUploadedNotif = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (notifications && notifications.length > 0) {
+      const latestPostNotif = notifications.find((n: any) => n.type === "post_uploaded" && !n.is_read);
+      if (latestPostNotif && latestPostNotif.id !== lastPostUploadedNotif.current) {
+        lastPostUploadedNotif.current = latestPostNotif.id;
+        mutate();
+      }
+    }
+  }, [notifications, mutate]);
+
   // Track latest post ID for new-posts pill
   useEffect(() => {
     if (initialPosts && initialPosts.length > 0) {
@@ -753,8 +765,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         transition={{ duration: 0.22, ease: "easeOut" }}
         className="fixed top-0 left-0 right-0 z-[135] flex items-center justify-between gap-3 px-6 pb-3"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 86px)",
-          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 130px)"
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 88px)",
+          height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 126px)"
         }}
       >
         {/* Left Side: Channel Avatar */}
@@ -807,7 +819,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               key={tab}
               onClick={() => handleTabClick(tab)}
               className={`relative pb-3 flex items-center justify-center transition-all ${
-                activeTab === tab ? "text-cyan-400 font-black" : "text-white/60 hover:text-white/90"
+                activeTab === tab ? "text-white font-black" : "text-white/60 hover:text-white/90"
               }`}
             >
               {tab === "foryou" && (
@@ -827,7 +839,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               {tab === "notifications" && (
                 hasAccess ? (
                   <div className="relative">
-                    <Bell size={19} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
+                    <Bell size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
                     {unreadCount > 0 && (
                       <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-white rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                         {unreadCount > 9 ? "!" : unreadCount}
@@ -839,7 +851,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 )
               )}
               {tab === "leaderboard" && (
-                <BarChart2 size={19} className={activeTab === tab ? "text-cyan-400" : "text-white/60"} />
+                <BarChart2 size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
               )}
               {activeTab === tab && (
                 <motion.div

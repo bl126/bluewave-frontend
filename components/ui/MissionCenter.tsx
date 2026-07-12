@@ -82,10 +82,10 @@ function PresenceCard({
 
   return (
     <div className={`
-      relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-2xl bg-black/80
-      ${isActive ? "border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]" : ""}
-      ${isCompleted ? "border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.1)] animate-pulse" : ""}
-      ${mission.status === "inactive" ? "border-white/10" : ""}
+      relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]
+      ${isActive ? "border-white/25 bg-gradient-to-br from-white/12 via-white/6 to-white/[0.02] shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]" : ""}
+      ${isCompleted ? "border-white/35 bg-gradient-to-br from-white/16 via-white/8 to-white/[0.03] shadow-[0_8px_32px_0_rgba(255,255,255,0.1)] animate-pulse" : ""}
+      ${mission.status === "inactive" ? "border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-white/[0.01]" : ""}
     `}>
       {/* Background Progress Bar (Fill) */}
       {(isActive || isCompleted) && (
@@ -686,7 +686,7 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
   return (
     <>
       <motion.div
-        className={`fixed inset-0 flex flex-col text-text-main bg-black/35 backdrop-blur-[2px] transition-all duration-300 ${isClaimBoostOpen || questDetailOpen ? "z-[900]" : "z-[120]"}`}
+        className={`fixed inset-0 flex flex-col text-text-main bg-black/10 backdrop-blur-[1px] transition-all duration-300 ${isClaimBoostOpen || questDetailOpen ? "z-[900]" : "z-[120]"}`}
         style={{
           paddingTop: 0,
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
@@ -875,10 +875,10 @@ export default function MissionCenter({ isOpen, onClose, telegramUser, isHumanVe
                   {missions.map((m) => (
                     <div
                       key={m.id}
-                      className={`flex justify-between items-center px-4 py-3.5 rounded-xl border backdrop-blur-2xl transition-all duration-200
+                      className={`flex justify-between items-center px-5 py-4 rounded-2xl border backdrop-blur-3xl transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]
                         ${m.status === "done"
-                          ? "border-white/5 bg-black/60 opacity-55"
-                          : "border-white/10 bg-black/80 hover:border-white/15 hover:bg-black/90 shadow-lg shadow-black/10"
+                          ? "border-white/10 bg-gradient-to-br from-white/[0.03] via-white/[0.01] to-transparent opacity-60"
+                          : "border-white/20 bg-gradient-to-br from-white/12 via-white/6 to-white/[0.02] hover:border-white/25 hover:from-white/16 hover:via-white/9 hover:to-white/[0.03] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] hover:scale-[1.01]"
                         }`}
                     >
                       <div>
