@@ -83,20 +83,20 @@ const StarWithdrawalModal = dynamic(
 
 const MINI_APP_INSERT_EVERY = 6;
 
-const AnimatedAIIcon = () => (
-  <span className="relative flex h-4 w-4 items-center justify-center shrink-0">
+const AnimatedAIIcon = ({ size = 16 }: { size?: number }) => (
+  <span className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/20 opacity-75"></span>
-    <Sparkles size={14} className="text-white relative z-10 animate-[spin_5s_linear_infinite]" />
+    <Sparkles size={size - 2} className="text-white relative z-10 animate-[spin_5s_linear_infinite]" />
   </span>
 );
 
-const VerifiedBadge = () => (
+const VerifiedBadge = ({ className = "text-white shrink-0", size = 16 }: { className?: string, size?: number }) => (
   <svg
-    width="16"
-    height="16"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="currentColor"
-    className="text-white shrink-0"
+    className={className}
   >
     <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-13 5l-4-4 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
   </svg>
@@ -127,7 +127,7 @@ const Tooltip = ({
           style={{
             top: top,
             transform: "translateY(-50%)",
-            left: "calc(50% + 12px)"
+            left: targetRect.right + 12
           }}
         >
           <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-zinc-950/95" />
@@ -272,6 +272,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
@@ -808,60 +809,59 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         className="fixed left-0 right-0 z-[130] pointer-events-auto"
         style={{
           top: 0,
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 140px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 148px)",
           background: "transparent",
           boxShadow: "none"
         }}
       >
-        <div className="w-full max-w-md mx-auto px-6">
-          <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 gap-1 backdrop-blur-xl shadow-lg shadow-black/40">
-            {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => {
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => handleTabClick(tab)}
-                  className={`relative flex items-center justify-center flex-1 py-1.5 rounded-full text-[12.5px] font-black uppercase tracking-wider transition-all duration-200
-                    ${isActive
-                      ? "bg-white/[0.12] border border-white/25 text-white shadow-md shadow-white/5"
-                      : "bg-transparent border border-transparent text-white/65 hover:text-white/90 hover:bg-white/[0.04]"
-                    }`}
-                >
-                  {tab === "foryou" && (
-                    hasAccess ? (
-                      <span>{t("explore.tabs.foryou")}</span>
-                    ) : (
-                      <Lock size={15} className="text-white/60" />
-                    )
-                  )}
-                  {tab === "following" && (
-                    hasAccess ? (
-                      <span>{t("explore.tabs.following")}</span>
-                    ) : (
-                      <Lock size={15} className="text-white/60" />
-                    )
-                  )}
-                  {tab === "notifications" && (
-                    hasAccess ? (
-                      <div className="relative flex items-center gap-1.5 justify-center">
-                        <Bell size={15} />
-                        {unreadCount > 0 && (
-                          <div className="absolute -top-1.5 -right-2 w-3.5 h-3.5 bg-red-500 text-white rounded-full flex items-center justify-center text-[7px] font-black shadow-[0_0_8px_rgba(239,68,68,0.5)]">
-                            {unreadCount > 9 ? "!" : unreadCount}
-                          </div>
-                        )}
+        <div className="flex items-center justify-between px-6 pt-2 w-full">
+          {(["foryou", "following", "leaderboard", "notifications"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabClick(tab)}
+              className={`relative pb-3 flex items-center justify-center transition-all ${
+                activeTab === tab ? "text-white font-black" : "text-white/60 hover:text-white/90"
+              }`}
+            >
+              {tab === "foryou" && (
+                hasAccess ? (
+                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.foryou")}</span>
+                ) : (
+                  <Lock size={19} className="text-white/75" />
+                )
+              )}
+              {tab === "following" && (
+                hasAccess ? (
+                  <span className="text-[13.5px] font-black uppercase tracking-wider">{t("explore.tabs.following")}</span>
+                ) : (
+                  <Lock size={19} className="text-white/60" />
+                )
+              )}
+              {tab === "notifications" && (
+                hasAccess ? (
+                  <div className="relative">
+                    <Bell size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
+                    {unreadCount > 0 && (
+                      <div className="absolute -top-1.5 -right-2 w-3 h-3 bg-white rounded-full flex items-center justify-center text-[7px] text-black font-black shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+                        {unreadCount > 9 ? "!" : unreadCount}
                       </div>
-                    ) : (
-                      <Lock size={15} className="text-white/60" />
-                    )
-                  )}
-                  {tab === "leaderboard" && (
-                    <BarChart2 size={15} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    )}
+                  </div>
+                ) : (
+                  <Lock size={19} className="text-white/60" />
+                )
+              )}
+              {tab === "leaderboard" && (
+                <BarChart2 size={19} className={activeTab === tab ? "text-white" : "text-white/60"} />
+              )}
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="exploreTabUnderline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-accent shadow-app-shadow"
+                />
+              )}
+            </button>
+          ))}
         </div>
       </motion.div>
 
@@ -1015,7 +1015,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClear={() => mutateNotifications()}
                     currentUserId={telegramUser?.id}
                     onPostClick={(postId, commentId) => {
-                      setSelectedPost({ id: postId });
+                      const foundPost = pagedPosts.find((p: any) => p.id === postId);
+                      if (foundPost) {
+                        setSelectedPost(foundPost);
+                      } else {
+                        setSelectedPost({ id: postId });
+                      }
                       setSelectedCommentId(commentId || null);
                     }}
                   />
@@ -1369,15 +1374,15 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Search size={16} className="text-white shrink-0" />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Topics</span>
+                    <Search size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Topics</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <AnimatedAIIcon />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Blu AI</span>
+                    <AnimatedAIIcon size={20} />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
                   </button>
                 </div>
 
@@ -1393,22 +1398,22 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Repeat2 size={16} className="text-white shrink-0" />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Swap</span>
+                    <Repeat2 size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Swap</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Zap size={16} className="text-white shrink-0" />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Wave Tools</span>
+                    <Zap size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Wave Tools</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("ai-studio", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <AnimatedAIIcon />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">AI Studio</span>
+                    <AnimatedAIIcon size={20} />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">AI Studio</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1417,8 +1422,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Gamepad2 size={16} className="text-white shrink-0" />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Mini Apps</span>
+                    <Gamepad2 size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Mini Apps</span>
                   </button>
                 </div>
 
@@ -1435,8 +1440,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     className="flex items-center justify-between py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full border border-amber-500/20 bg-amber-500/5 shadow-[0_0_10px_rgba(245,158,11,0.05)]"
                   >
                     <div className="flex items-center gap-3">
-                      <Star size={16} className="text-amber-400 shrink-0" fill="currentColor" />
-                      <span className="text-white text-xs font-bold uppercase tracking-widest">Withdraw Stars</span>
+                      <Star size={20} className="text-amber-400 shrink-0" fill="currentColor" />
+                      <span className="text-white text-[12px] font-black uppercase tracking-wider">Withdraw Stars</span>
                     </div>
                     <span className="text-amber-400 font-mono text-[10px] font-black mr-1">
                       {(swrUser?.stars_balance ?? 0).toLocaleString()}
@@ -1457,15 +1462,18 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <BarChart2 size={16} className="text-white shrink-0" />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Analytics</span>
+                    <BarChart2 size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Analytics</span>
                   </button>
                   <button
-                    onClick={(e) => showTooltip("premium", e)}
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      setIsPremiumOpen(true);
+                    }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <VerifiedBadge />
-                    <span className="text-white text-xs font-bold uppercase tracking-widest">Premium</span>
+                    <VerifiedBadge size={20} className="text-cyan-400 shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Premium</span>
                   </button>
                 </div>
 
@@ -1481,8 +1489,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <MessageCircle size={16} className="text-white shrink-0" />
-                    <span className="text-white text-[11px] font-black uppercase tracking-widest">Feedback & Support</span>
+                    <MessageCircle size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Feedback & Support</span>
                   </button>
                 </div>
               </div>
@@ -1875,11 +1883,21 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
+      {/* ─── Premium Full Page Overlay ─── */}
+      <AnimatePresence>
+        {isPremiumOpen && (
+          <PremiumPage
+            telegramUser={telegramUser}
+            swrUser={swrUser}
+            onClose={() => setIsPremiumOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ─── Tooltips ─── */}
       <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." targetRect={tooltipRect} />
       <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" targetRect={tooltipRect} />
       <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" targetRect={tooltipRect} />
-      <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Coming Soon" targetRect={tooltipRect} />
 
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
@@ -2259,6 +2277,405 @@ function PostModal({
           </motion.div>
         )}
       </AnimatePresence>
+    </motion.div>
+  );
+}
+
+const GramIcon = ({ size = 12 }: { size?: number }) => (
+  <img
+    src="/gram icon.png"
+    alt="Gram"
+    style={{ width: size, height: size }}
+    className="shrink-0"
+  />
+);
+
+function PremiumPage({ 
+  telegramUser, 
+  swrUser, 
+  onClose 
+}: { 
+  telegramUser: any, 
+  swrUser: any, 
+  onClose: () => void 
+}) {
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<"premium" | "premium+">("premium");
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("monthly");
+  
+  // Payment states
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [copiedMemo, setCopiedMemo] = useState(false);
+  const [copiedWallet, setCopiedWallet] = useState(false);
+
+  // Load latest premium status
+  const { data: premiumStatus, mutate: mutatePremium } = useApi(
+    telegramUser?.id ? `/explore/premium/status?tg_id=${telegramUser.id}` : null
+  );
+
+  const tonBalance = premiumStatus?.ton_balance ?? (swrUser?.ton_balance ?? 0);
+  const depositToken = premiumStatus?.deposit_token ?? (swrUser?.deposit_token ?? "");
+  const userBwId = premiumStatus?.bw_id ?? (swrUser?.bw_id ?? "");
+
+  const planPriceUsd = selectedPlan === "monthly" ? 1.49 : 12.52;
+  // Estimate TON conversion statically or dynamically if price loaded
+  const tonPrice = 7.50; // default estimated price of TON
+  const requiredTon = Number((planPriceUsd / tonPrice).toFixed(3));
+  const gramEquivalent = selectedPlan === "monthly" ? 15 : 125;
+
+  const handlePayFromBalance = async () => {
+    setIsPaying(true);
+    setPaymentError(null);
+    try {
+      const res = await postApi("/explore/premium/pay_balance", {
+        tg_id: telegramUser?.id,
+        plan: selectedPlan
+      });
+      if (res.success) {
+        setPaymentSuccess(true);
+        mutatePremium();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("refreshUserStatus"));
+        }
+      } else {
+        if (res.error === "INSUFFICIENT_BALANCE") {
+          setPaymentError(`Insufficient TON balance. You need at least ${res.required_ton?.toFixed(3)} TON but you currently have ${res.current_ton?.toFixed(3)} TON.`);
+        } else {
+          setPaymentError(res.error || "Payment failed.");
+        }
+      }
+    } catch (err: any) {
+      setPaymentError("An error occurred during payment processing.");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const handleCopyMemo = () => {
+    const memo = `tg_id:${telegramUser?.id}|bw_id:${userBwId}|token:${depositToken}|mode:premium_${selectedPlan}`;
+    navigator.clipboard.writeText(memo);
+    setCopiedMemo(true);
+    setTimeout(() => setCopiedMemo(false), 2000);
+  };
+
+  const handleCopyWallet = () => {
+    const depositWallet = "UQCs-W3qSgG6z99K_e7wYlS87c-H0VjX2lU82nE27z"; // standard system deposit wallet or user's specific address if any
+    navigator.clipboard.writeText(depositWallet);
+    setCopiedWallet(true);
+    setTimeout(() => setCopiedWallet(false), 2000);
+  };
+
+  // Telegram WebApp BackButton setup
+  useEffect(() => {
+    const twa = (window as any).Telegram?.WebApp;
+    if (twa?.BackButton) {
+      twa.BackButton.show();
+      const handleBack = () => onClose();
+      twa.BackButton.onClick(handleBack);
+      return () => {
+        twa.BackButton.hide();
+        twa.BackButton.offClick(handleBack);
+      };
+    }
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: "100%" }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: "100%" }}
+      transition={{ type: "spring", damping: 26, stiffness: 220 }}
+      className="fixed inset-0 z-[1100] flex flex-col select-none overflow-hidden"
+      style={{
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Top Header Section */}
+      <div className="w-full flex flex-col items-center pt-16 pb-4 relative z-10 shrink-0">
+        <button 
+          onClick={onClose}
+          className="absolute top-6 left-6 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 text-white font-black text-sm uppercase active:scale-95 transition-all"
+        >
+          ✕
+        </button>
+
+        {/* Rotating verified badge */}
+        <div className="relative w-20 h-20 flex items-center justify-center mb-3">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0"
+          >
+            <VerifiedBadge size={80} className="text-cyan-400 opacity-90 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
+          </motion.div>
+          <VerifiedBadge size={80} className="text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.4)]" />
+        </div>
+
+        <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+          Upgrade to Premium
+        </h2>
+      </div>
+
+      {/* Liquid Black Bottom Sheet */}
+      <div className="flex-1 w-full bg-black/85 backdrop-blur-3xl border-t border-white/10 rounded-t-[2.5rem] p-6 flex flex-col shadow-[0_-15px_40px_rgba(0,0,0,0.6)] overflow-y-auto no-scrollbar">
+        {/* Segmented Control Tabs (Premium vs Premium+) */}
+        <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/10 rounded-full p-1 gap-1 mb-6 shadow-md shrink-0">
+          {(["premium", "premium+"] as const).map((tab) => {
+            const isActive = activeTab === tab;
+            const isPremiumPlus = tab === "premium+";
+            return (
+              <button
+                key={tab}
+                disabled={isPremiumPlus}
+                onClick={() => setActiveTab(tab)}
+                className={`relative flex items-center justify-center flex-1 py-2 rounded-full text-[12px] font-black uppercase tracking-wider transition-all duration-200
+                  ${isActive
+                    ? "bg-white/[0.12] border border-white/20 text-white shadow-md shadow-white/5"
+                    : isPremiumPlus
+                      ? "text-white/30 cursor-not-allowed"
+                      : "text-white/60 hover:text-white/90"
+                  }`}
+              >
+                <span>{tab === "premium" ? "Premium" : "Premium+ (Soon)"}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {!showPaymentOptions ? (
+          <div className="flex-1 flex flex-col justify-between">
+            {/* Benefits list */}
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-white/55 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">
+                Premium Benefits
+              </h3>
+              
+              <div className="space-y-3.5">
+                {[
+                  { title: "Verified Badge", desc: "Show a premium blue checkmark next to your channel profile." },
+                  { title: "Double Claim Yield", desc: "Gain 2x multiplier on all daily $BWAVE mission rewards." },
+                  { title: "Instant Sync Priority", desc: "Priority background scanning locks and updates posts instantly." },
+                  { title: "Advanced Beta Tools", desc: "Exclusive early beta access to Wave Tools & AI Studio." }
+                ].map((b, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 font-bold shrink-0 mt-0.5">
+                      ✓
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-white text-xs font-black uppercase tracking-wide leading-none mb-1">{b.title}</h4>
+                      <p className="text-[10px] text-white/50 leading-relaxed font-semibold">{b.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Grid Cards (Monthly vs Annual) */}
+            <div className="grid grid-cols-2 gap-3.5 my-6 shrink-0">
+              {/* Monthly Plan Card */}
+              <button
+                onClick={() => setSelectedPlan("monthly")}
+                className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
+                  ${selectedPlan === "monthly"
+                    ? "border-cyan-500 bg-cyan-950/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
+              >
+                {/* 1 Month Free Badge */}
+                <div className="absolute -top-2.5 left-3 bg-cyan-500 text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
+                  +1 Mo Free
+                </div>
+                
+                <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">Monthly</span>
+                <span className="text-white font-black text-base mt-1">$1.49<span className="text-[9px] font-bold text-white/50">/mo</span></span>
+                
+                <div className="flex items-center gap-1 mt-2.5 bg-black/40 border border-white/5 rounded-full px-2 py-0.5">
+                  <span className="text-white text-[9.5px] font-bold">{gramEquivalent} GRAM</span>
+                  <GramIcon size={9} />
+                </div>
+              </button>
+
+              {/* Annual Plan Card */}
+              <button
+                onClick={() => setSelectedPlan("annual")}
+                className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
+                  ${selectedPlan === "annual"
+                    ? "border-cyan-500 bg-cyan-950/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
+              >
+                {/* Save 30% Badge */}
+                <div className="absolute -top-2.5 right-3 bg-amber-500 text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
+                  Save 30%
+                </div>
+                
+                <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">Annual</span>
+                <span className="text-white font-black text-base mt-1">$12.52<span className="text-[9px] font-bold text-white/50">/yr</span></span>
+                
+                <div className="flex items-center gap-1 mt-1 bg-black/40 border border-white/5 rounded-full px-2 py-0.5">
+                  <span className="text-white text-[9.5px] font-bold">{gramEquivalent} GRAM</span>
+                  <GramIcon size={9} />
+                </div>
+                <span className="text-white/40 font-mono text-[8px] mt-1.5 font-bold uppercase tracking-wider">$1.04/mo equiv</span>
+              </button>
+            </div>
+
+            {/* Subscribe Button & T&C */}
+            <div className="shrink-0 flex flex-col gap-3">
+              <button
+                onClick={() => setShowPaymentOptions(true)}
+                className="w-full h-12 bg-white text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-md hover:bg-white/95 active:scale-[0.98] transition-all flex items-center justify-center border border-white/20"
+              >
+                Subscribe
+              </button>
+              
+              <p className="text-[8px] text-white/35 text-center leading-relaxed font-semibold uppercase tracking-wider">
+                By subscribing, you authorize recurring payments. You can cancel at any time in settings.
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Payment options screen */
+          <div className="flex-1 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <button 
+                  onClick={() => {
+                    setShowPaymentOptions(false);
+                    setPaymentSuccess(false);
+                    setPaymentError(null);
+                  }}
+                  className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
+                >
+                  ◀
+                </button>
+                <h3 className="text-xs font-black text-white uppercase tracking-widest">
+                  Select Payment Method
+                </h3>
+              </div>
+
+              {paymentSuccess ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-3xl animate-bounce">
+                    ✓
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-white font-black text-sm uppercase tracking-widest">Payment Successful!</h4>
+                    <p className="text-[10px] text-white/50 max-w-[240px] leading-relaxed">
+                      Your Premium status is active. You now have the verified badge and double daily reward multipliers!
+                    </p>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="h-10 px-6 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/95 transition-all shadow-md mt-4"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paymentError && (
+                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10.5px] font-bold text-center leading-relaxed">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  {/* Option 1: Pay from TON Balance */}
+                  <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
+                    <div className="flex justify-between items-center">
+                      <div className="text-left">
+                        <h4 className="text-white text-xs font-black uppercase tracking-wide">Pay from TON Balance</h4>
+                        <p className="text-[9px] text-white/40 mt-0.5 font-bold">Pay instantly using your in-app wallet balance</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-white font-mono text-xs font-black">{requiredTon} TON</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
+                      <span className="text-white/50 font-bold">Your Balance:</span>
+                      <span className="text-cyan-400 font-mono font-black">{tonBalance.toFixed(4)} TON</span>
+                    </div>
+
+                    <button
+                      onClick={handlePayFromBalance}
+                      disabled={isPaying || tonBalance < requiredTon}
+                      className={`w-full h-10 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center shadow-md
+                        ${tonBalance < requiredTon
+                          ? "bg-white/5 border border-white/5 text-white/30 cursor-not-allowed"
+                          : "bg-white text-black hover:bg-white/95 active:scale-[0.98]"
+                        }`}
+                    >
+                      {isPaying ? "Processing..." : "Confirm & Pay Now"}
+                    </button>
+                  </div>
+
+                  {/* Option 2: Direct TON Deposit */}
+                  <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
+                    <div className="text-left">
+                      <h4 className="text-white text-xs font-black uppercase tracking-wide">Direct TON Deposit</h4>
+                      <p className="text-[9px] text-white/40 mt-0.5 font-bold">Send TON directly from any external wallet (Tonkeeper, etc.)</p>
+                    </div>
+
+                    <div className="space-y-2 text-left border-t border-white/5 pt-2.5 text-[9.5px]">
+                      {/* Deposit wallet */}
+                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                        <div className="truncate pr-2 font-mono">
+                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Deposit Wallet</span>
+                          <span className="text-white truncate block">UQCs-W3qSgG6z99K_e7wYlS87c-H0VjX2lU82nE27z</span>
+                        </div>
+                        <button 
+                          onClick={handleCopyWallet}
+                          className="shrink-0 text-cyan-400 font-bold hover:text-cyan-300 uppercase tracking-widest text-[8px]"
+                        >
+                          {copiedWallet ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+
+                      {/* Required transfer amount */}
+                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                        <div>
+                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Amount</span>
+                          <span className="text-white font-mono font-bold block">{requiredTon} TON</span>
+                        </div>
+                      </div>
+
+                      {/* Transaction Memo */}
+                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                        <div className="truncate pr-2 font-mono">
+                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Memo (Must Include!)</span>
+                          <span className="text-amber-400 truncate block">
+                            tg_id:{telegramUser?.id}|bw_id:{userBwId}|token:{depositToken}|mode:premium_{selectedPlan}
+                          </span>
+                        </div>
+                        <button 
+                          onClick={handleCopyMemo}
+                          className="shrink-0 text-cyan-400 font-bold hover:text-cyan-300 uppercase tracking-widest text-[8px]"
+                        >
+                          {copiedMemo ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-[8px] text-amber-500/80 font-bold uppercase tracking-wider text-left leading-normal leading-relaxed mt-1">
+                      ⚠️ WARNING: You must copy and include the memo payload exactly as shown. Otherwise the deposit monitor cannot identify your account and verify the transaction automatically!
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[8px] text-white/30 text-center leading-relaxed font-semibold uppercase tracking-wider shrink-0 mt-6">
+              TON payments are processed automatically on-chain via TonCenter APIs.
+            </p>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
