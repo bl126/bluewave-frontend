@@ -40,7 +40,13 @@ import {
   User,
   Lock,
   Search,
-  Sparkles
+  Sparkles,
+  Coins,
+  Award,
+  Megaphone,
+  DollarSign,
+  Clock,
+  Tv
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -1406,7 +1412,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <AnimatedAIIcon size={20} />
+                    <img src="/ai icon.png" alt="Blu AI" className="w-5 h-5 shrink-0 object-contain text-white" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
                   </button>
                 </div>
@@ -1430,14 +1436,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Zap size={20} className="text-white shrink-0" />
+                    <img src="/wave tools.png" alt="Wave Tools" className="w-5 h-5 shrink-0 object-contain" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Wave Tools</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("ai-studio", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <AnimatedAIIcon size={20} />
+                    <img src="/ai icon.png" alt="AI Studio" className="w-5 h-5 shrink-0 object-contain text-white" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">AI Studio</span>
                   </button>
                   <button
@@ -1471,6 +1477,27 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-amber-400 font-mono text-[10px] font-black mr-1">
                       {(swrUser?.stars_balance ?? 0).toLocaleString()}
                     </span>
+                  </button>
+                  <button
+                    onClick={(e) => showTooltip("revenue-sharing", e)}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <DollarSign size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Revenue Sharing</span>
+                  </button>
+                  <button
+                    onClick={(e) => showTooltip("presence-rewards", e)}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <Clock size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Presence Rewards</span>
+                  </button>
+                  <button
+                    onClick={(e) => showTooltip("ads-placement", e)}
+                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
+                  >
+                    <Tv size={20} className="text-white shrink-0" />
+                    <span className="text-white text-[12px] font-black uppercase tracking-wider">ADs Placement</span>
                   </button>
                 </div>
 
@@ -1919,6 +1946,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." targetRect={tooltipRect} />
       <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" targetRect={tooltipRect} />
       <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="revenue-sharing" activeId={activeTooltip} title="Revenue Sharing" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="presence-rewards" activeId={activeTooltip} title="Presence Rewards" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="ads-placement" activeId={activeTooltip} title="ADs Placement" content="Coming Soon" targetRect={tooltipRect} />
 
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
@@ -2332,6 +2362,24 @@ function PremiumPage({
   const [copiedMemo, setCopiedMemo] = useState(false);
   const [copiedWallet, setCopiedWallet] = useState(false);
 
+  // Live TON price from CoinGecko
+  const [liveTonPrice, setLiveTonPrice] = useState<number>(7.50);
+  useEffect(() => {
+    let cancelled = false;
+    const fetchTonPrice = async () => {
+      try {
+        const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd");
+        const data = await res.json();
+        if (!cancelled && data?.["the-open-network"]?.usd) {
+          setLiveTonPrice(data["the-open-network"].usd);
+        }
+      } catch {}
+    };
+    fetchTonPrice();
+    const interval = setInterval(fetchTonPrice, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
   // Load latest premium status
   const { data: premiumStatus, mutate: mutatePremium } = useApi(
     telegramUser?.id ? `/explore/premium/status?tg_id=${telegramUser.id}` : null
@@ -2342,10 +2390,29 @@ function PremiumPage({
   const userBwId = premiumStatus?.bw_id ?? (swrUser?.bw_id ?? "");
 
   const planPriceUsd = selectedPlan === "monthly" ? 1.49 : 12.52;
-  // Estimate TON conversion statically or dynamically if price loaded
-  const tonPrice = 7.50; // default estimated price of TON
-  const requiredTon = Number((planPriceUsd / tonPrice).toFixed(3));
+  const requiredTon = Number((planPriceUsd / liveTonPrice).toFixed(3));
   const gramEquivalent = selectedPlan === "monthly" ? 15 : 125;
+
+  // Premium countdown timer
+  const premiumExpiresAt = premiumStatus?.premium_expires_at;
+  const [countdown, setCountdown] = useState("");
+  useEffect(() => {
+    if (!premiumExpiresAt) return;
+    const tick = () => {
+      const now = Date.now();
+      const exp = new Date(premiumExpiresAt).getTime();
+      const diff = exp - now;
+      if (diff <= 0) { setCountdown("Expired"); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setCountdown(`${d}d ${h}h ${m}m ${s}s`);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [premiumExpiresAt]);
 
   const handlePayFromBalance = async () => {
     setIsPaying(true);
@@ -2404,300 +2471,319 @@ function PremiumPage({
   }, [onClose]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: "100%" }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: "100%" }}
-      transition={{ type: "spring", damping: 26, stiffness: 220 }}
-      className="fixed inset-0 z-[1100] flex flex-col select-none overflow-hidden"
-      style={{
-        backgroundImage: "url('/background.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Top Header Section */}
-      <div className="w-full flex flex-col items-center pt-16 pb-4 relative z-10 shrink-0">
-        <button 
-          onClick={onClose}
-          className="absolute top-6 left-6 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 text-white font-black text-sm uppercase active:scale-95 transition-all"
-        >
-          ✕
-        </button>
+    <div className="fixed inset-0 z-[1100] flex flex-col justify-end select-none">
+      {/* Backdrop Dimmer Shield (Tap to close) */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"
+      />
 
-        {/* Rotating verified badge */}
-        <div className="relative w-20 h-20 flex items-center justify-center mb-3">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0"
-          >
-            <VerifiedBadge size={80} className="text-cyan-400 opacity-90 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
-          </motion.div>
-          <VerifiedBadge size={80} className="text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.4)]" />
+      {/* Styles for Shimmer Glint */}
+      <style>{`
+        @keyframes horizontal-shimmer {
+          0% { transform: translateX(-150%); }
+          50% { transform: translateX(150%); }
+          100% { transform: translateX(150%); }
+        }
+        .premium-shimmer {
+          animation: horizontal-shimmer 3s infinite linear;
+        }
+      `}</style>
+
+      {/* Liquid Glass Bottom Sheet */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 240 }}
+        className="relative z-10 w-full max-h-[85vh] bg-black/60 border-t border-white/10 rounded-t-[2.5rem] p-6 pb-12 flex flex-col shadow-[0_-15px_40px_rgba(0,0,0,0.6)] overflow-y-auto no-scrollbar backdrop-blur-2xl"
+      >
+        {/* Shimmer overlay element */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2.5rem] z-0">
+          <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-25deg] premium-shimmer" />
         </div>
 
-        <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
-          Upgrade to Premium
-        </h2>
-      </div>
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Top Center Premium Icon & Title */}
+          <div className="flex flex-col items-center mb-6 shrink-0 relative">
+            <div className="w-16 h-16 flex items-center justify-center mb-2">
+              <img src="/premium badge.png" alt="Premium Badge" className="w-full h-full object-contain" />
+            </div>
+            
+            <h2 className="text-lg font-black text-white uppercase tracking-[0.25em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+              Upgrade to Premium
+            </h2>
+            
+            {/* Subscription Countdown Timer */}
+            {premiumStatus?.is_premium && (
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Premium Active</span>
+                <span className="text-xs font-mono font-black text-white bg-white/10 border border-white/15 px-3 py-1 rounded-full">
+                  {countdown || "Checking..."}
+                </span>
+              </div>
+            )}
+          </div>
 
-      {/* Liquid Black Bottom Sheet */}
-      <div className="flex-1 w-full bg-black/85 backdrop-blur-3xl border-t border-white/10 rounded-t-[2.5rem] p-6 flex flex-col shadow-[0_-15px_40px_rgba(0,0,0,0.6)] overflow-y-auto no-scrollbar">
-        {/* Segmented Control Tabs (Premium vs Premium+) */}
-        <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/10 rounded-full p-1 gap-1 mb-6 shadow-md shrink-0">
-          {(["premium", "premium+"] as const).map((tab) => {
-            const isActive = activeTab === tab;
-            const isPremiumPlus = tab === "premium+";
-            return (
-              <button
-                key={tab}
-                disabled={isPremiumPlus}
-                onClick={() => setActiveTab(tab)}
-                className={`relative flex items-center justify-center flex-1 py-2 rounded-full text-[12px] font-black uppercase tracking-wider transition-all duration-200
-                  ${isActive
-                    ? "bg-white/[0.12] border border-white/20 text-white shadow-md shadow-white/5"
-                    : isPremiumPlus
-                      ? "text-white/30 cursor-not-allowed"
-                      : "text-white/60 hover:text-white/90"
-                  }`}
-              >
-                <span>{tab === "premium" ? "Premium" : "Premium+ (Soon)"}</span>
-              </button>
-            );
-          })}
-        </div>
+          {/* Segmented Control Tabs (Premium vs Premium+) */}
+          <div className="flex items-center justify-between w-full bg-zinc-950/80 border border-white/10 rounded-full p-1 gap-1 mb-6 shadow-md shrink-0">
+            {(["premium", "premium+"] as const).map((tab) => {
+              const isActive = activeTab === tab;
+              const isPremiumPlus = tab === "premium+";
+              return (
+                <button
+                  key={tab}
+                  disabled={isPremiumPlus}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative flex items-center justify-center flex-1 py-2 rounded-full text-[12px] font-black uppercase tracking-wider transition-all duration-200
+                    ${isActive
+                      ? "bg-white/[0.12] border border-white/20 text-white shadow-md shadow-white/5"
+                      : isPremiumPlus
+                        ? "text-white/30 cursor-not-allowed"
+                        : "text-white/60 hover:text-white/90"
+                    }`}
+                >
+                  <span>{tab === "premium" ? "Premium" : "Premium+ (Soon)"}</span>
+                </button>
+              );
+            })}
+          </div>
 
-        {!showPaymentOptions ? (
-          <div className="flex-1 flex flex-col justify-between">
-            {/* Benefits list */}
-            <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-white/55 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">
-                Premium Benefits
-              </h3>
-              
-              <div className="space-y-3.5">
-                {[
-                  { title: "Verified Badge", desc: "Show a premium blue checkmark next to your channel profile." },
-                  { title: "Double Claim Yield", desc: "Gain 2x multiplier on all daily $BWAVE mission rewards." },
-                  { title: "Instant Sync Priority", desc: "Priority background scanning locks and updates posts instantly." },
-                  { title: "Advanced Beta Tools", desc: "Exclusive early beta access to Wave Tools & AI Studio." }
-                ].map((b, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 font-bold shrink-0 mt-0.5">
+          {!showPaymentOptions ? (
+            <div className="flex-1 flex flex-col justify-between">
+              {/* Benefits list */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-white/55 uppercase tracking-widest mb-2 border-b border-white/5 pb-2">
+                  Premium Benefits
+                </h3>
+                
+                <div className="space-y-3.5">
+                  {[
+                    { title: "Verified Badge", desc: "Show a premium checkmark next to your channel profile." },
+                    { title: "Double Claim Yield", desc: "Gain 2x multiplier on all daily $BWAVE mission rewards." },
+                    { title: "Instant Sync Priority", desc: "Priority background scanning locks and updates posts instantly." },
+                    { title: "Advanced Beta Tools", desc: "Exclusive early beta access to Wave Tools & AI Studio." }
+                  ].map((b, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px] text-white font-bold shrink-0 mt-0.5">
+                        ✓
+                      </div>
+                      <div className="text-left">
+                        <h4 className="text-white text-xs font-black uppercase tracking-wide leading-none mb-1">{b.title}</h4>
+                        <p className="text-[10px] text-white/50 leading-relaxed font-semibold">{b.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Grid Cards (Monthly vs Annual) */}
+              <div className="grid grid-cols-2 gap-3.5 my-6 shrink-0">
+                {/* Monthly Plan Card */}
+                <button
+                  onClick={() => setSelectedPlan("monthly")}
+                  className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
+                    ${selectedPlan === "monthly"
+                      ? "border-white bg-white/[0.04] shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}
+                >
+                  {/* 1 Month Free Badge */}
+                  <div className="absolute -top-2.5 left-3 bg-white text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
+                    +1 Mo Free
+                  </div>
+                  
+                  <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">1 Month</span>
+                  <span className="text-white font-black text-base mt-1">$1.49</span>
+                  
+                  <div className="flex items-center gap-1.5 mt-2 bg-black/40 border border-white/5 rounded-full px-2.5 py-1">
+                    <span className="text-white text-[10px] font-black">{gramEquivalent} GRAM</span>
+                    <span className="text-white/40 text-[9px] font-bold">({requiredTon.toFixed(3)} TON)</span>
+                    <GramIcon size={10} />
+                  </div>
+                </button>
+
+                {/* Annual Plan Card */}
+                <button
+                  onClick={() => setSelectedPlan("annual")}
+                  className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
+                    ${selectedPlan === "annual"
+                      ? "border-white bg-white/[0.04] shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}
+                >
+                  {/* Save 30% Badge */}
+                  <div className="absolute -top-2.5 right-3 bg-white text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
+                    Save 30%
+                  </div>
+                  
+                  <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">1 Year</span>
+                  <span className="text-white font-black text-base mt-1">$12.52</span>
+                  
+                  <div className="flex items-center gap-1.5 mt-2 bg-black/40 border border-white/5 rounded-full px-2.5 py-1">
+                    <span className="text-white text-[10px] font-black">{gramEquivalent} GRAM</span>
+                    <span className="text-white/40 text-[9px] font-bold">({requiredTon.toFixed(3)} TON)</span>
+                    <GramIcon size={10} />
+                  </div>
+                </button>
+              </div>
+
+              {/* Subscribe Button & T&C */}
+              <div className="shrink-0 flex flex-col gap-3">
+                <button
+                  onClick={() => setShowPaymentOptions(true)}
+                  className="w-full h-12 bg-white text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-md hover:bg-white/95 active:scale-[0.98] transition-all flex items-center justify-center border border-white/20"
+                >
+                  Subscribe
+                </button>
+                
+                <p className="text-[8px] text-white/35 text-center leading-relaxed font-semibold uppercase tracking-wider">
+                  By subscribing, you authorize recurring payments. You can cancel at any time in settings.
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* Payment options screen */
+            <div className="flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <button 
+                    onClick={() => {
+                      setShowPaymentOptions(false);
+                      setPaymentSuccess(false);
+                      setPaymentError(null);
+                    }}
+                    className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
+                  >
+                    ◀
+                  </button>
+                  <h3 className="text-xs font-black text-white uppercase tracking-widest">
+                    Select Payment Method
+                  </h3>
+                </div>
+
+                {paymentSuccess ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-3xl animate-bounce">
                       ✓
                     </div>
-                    <div className="text-left">
-                      <h4 className="text-white text-xs font-black uppercase tracking-wide leading-none mb-1">{b.title}</h4>
-                      <p className="text-[10px] text-white/50 leading-relaxed font-semibold">{b.desc}</p>
+                    <div className="space-y-1">
+                      <h4 className="text-white font-black text-sm uppercase tracking-widest">Payment Successful!</h4>
+                      <p className="text-[10px] text-white/50 max-w-[240px] leading-relaxed">
+                        Your Premium status is active. You now have the verified badge and double daily reward multipliers!
+                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Grid Cards (Monthly vs Annual) */}
-            <div className="grid grid-cols-2 gap-3.5 my-6 shrink-0">
-              {/* Monthly Plan Card */}
-              <button
-                onClick={() => setSelectedPlan("monthly")}
-                className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
-                  ${selectedPlan === "monthly"
-                    ? "border-cyan-500 bg-cyan-950/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
-                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                  }`}
-              >
-                {/* 1 Month Free Badge */}
-                <div className="absolute -top-2.5 left-3 bg-cyan-500 text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
-                  +1 Mo Free
-                </div>
-                
-                <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">Monthly</span>
-                <span className="text-white font-black text-base mt-1">$1.49<span className="text-[9px] font-bold text-white/50">/mo</span></span>
-                
-                <div className="flex items-center gap-1 mt-2.5 bg-black/40 border border-white/5 rounded-full px-2 py-0.5">
-                  <span className="text-white text-[9.5px] font-bold">{gramEquivalent} GRAM</span>
-                  <GramIcon size={9} />
-                </div>
-              </button>
-
-              {/* Annual Plan Card */}
-              <button
-                onClick={() => setSelectedPlan("annual")}
-                className={`relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 group
-                  ${selectedPlan === "annual"
-                    ? "border-cyan-500 bg-cyan-950/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
-                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                  }`}
-              >
-                {/* Save 30% Badge */}
-                <div className="absolute -top-2.5 right-3 bg-amber-500 text-black font-black uppercase text-[7px] tracking-widest px-2 py-0.5 rounded-full shadow-md">
-                  Save 30%
-                </div>
-                
-                <span className="text-white/60 font-black uppercase text-[9px] tracking-wider mt-1">Annual</span>
-                <span className="text-white font-black text-base mt-1">$12.52<span className="text-[9px] font-bold text-white/50">/yr</span></span>
-                
-                <div className="flex items-center gap-1 mt-1 bg-black/40 border border-white/5 rounded-full px-2 py-0.5">
-                  <span className="text-white text-[9.5px] font-bold">{gramEquivalent} GRAM</span>
-                  <GramIcon size={9} />
-                </div>
-                <span className="text-white/40 font-mono text-[8px] mt-1.5 font-bold uppercase tracking-wider">$1.04/mo equiv</span>
-              </button>
-            </div>
-
-            {/* Subscribe Button & T&C */}
-            <div className="shrink-0 flex flex-col gap-3">
-              <button
-                onClick={() => setShowPaymentOptions(true)}
-                className="w-full h-12 bg-white text-black rounded-2xl font-black uppercase text-xs tracking-widest shadow-md hover:bg-white/95 active:scale-[0.98] transition-all flex items-center justify-center border border-white/20"
-              >
-                Subscribe
-              </button>
-              
-              <p className="text-[8px] text-white/35 text-center leading-relaxed font-semibold uppercase tracking-wider">
-                By subscribing, you authorize recurring payments. You can cancel at any time in settings.
-              </p>
-            </div>
-          </div>
-        ) : (
-          /* Payment options screen */
-          <div className="flex-1 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <button 
-                  onClick={() => {
-                    setShowPaymentOptions(false);
-                    setPaymentSuccess(false);
-                    setPaymentError(null);
-                  }}
-                  className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center font-bold text-xs active:scale-90 transition-transform"
-                >
-                  ◀
-                </button>
-                <h3 className="text-xs font-black text-white uppercase tracking-widest">
-                  Select Payment Method
-                </h3>
-              </div>
-
-              {paymentSuccess ? (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-3xl animate-bounce">
-                    ✓
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-white font-black text-sm uppercase tracking-widest">Payment Successful!</h4>
-                    <p className="text-[10px] text-white/50 max-w-[240px] leading-relaxed">
-                      Your Premium status is active. You now have the verified badge and double daily reward multipliers!
-                    </p>
-                  </div>
-                  <button
-                    onClick={onClose}
-                    className="h-10 px-6 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/95 transition-all shadow-md mt-4"
-                  >
-                    Done
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paymentError && (
-                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10.5px] font-bold text-center leading-relaxed">
-                      {paymentError}
-                    </div>
-                  )}
-
-                  {/* Option 1: Pay from TON Balance */}
-                  <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                      <div className="text-left">
-                        <h4 className="text-white text-xs font-black uppercase tracking-wide">Pay from TON Balance</h4>
-                        <p className="text-[9px] text-white/40 mt-0.5 font-bold">Pay instantly using your in-app wallet balance</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-white font-mono text-xs font-black">{requiredTon} TON</span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
-                      <span className="text-white/50 font-bold">Your Balance:</span>
-                      <span className="text-cyan-400 font-mono font-black">{tonBalance.toFixed(4)} TON</span>
-                    </div>
-
                     <button
-                      onClick={handlePayFromBalance}
-                      disabled={isPaying || tonBalance < requiredTon}
-                      className={`w-full h-10 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center shadow-md
-                        ${tonBalance < requiredTon
-                          ? "bg-white/5 border border-white/5 text-white/30 cursor-not-allowed"
-                          : "bg-white text-black hover:bg-white/95 active:scale-[0.98]"
-                        }`}
+                      onClick={onClose}
+                      className="h-10 px-6 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/95 transition-all shadow-md mt-4"
                     >
-                      {isPaying ? "Processing..." : "Confirm & Pay Now"}
+                      Done
                     </button>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    {paymentError && (
+                      <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10.5px] font-bold text-center leading-relaxed">
+                        {paymentError}
+                      </div>
+                    )}
 
-                  {/* Option 2: Direct TON Deposit */}
-                  <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
-                    <div className="text-left">
-                      <h4 className="text-white text-xs font-black uppercase tracking-wide">Direct TON Deposit</h4>
-                      <p className="text-[9px] text-white/40 mt-0.5 font-bold">Send TON directly from any external wallet (Tonkeeper, etc.)</p>
+                    {/* Option 1: Pay from TON Balance */}
+                    <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
+                      <div className="flex justify-between items-center">
+                        <div className="text-left">
+                          <h4 className="text-white text-xs font-black uppercase tracking-wide">Pay from TON Balance</h4>
+                          <p className="text-[9px] text-white/40 mt-0.5 font-bold">Pay instantly using your in-app wallet balance</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-white font-mono text-xs font-black">{requiredTon} TON</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
+                        <span className="text-white/50 font-bold">Your Balance:</span>
+                        <span className="text-white font-mono font-black">{tonBalance.toFixed(4)} TON</span>
+                      </div>
+
+                      <button
+                        onClick={handlePayFromBalance}
+                        disabled={isPaying || tonBalance < requiredTon}
+                        className={`w-full h-10 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center shadow-md
+                          ${tonBalance < requiredTon
+                            ? "bg-white/5 border border-white/5 text-white/30 cursor-not-allowed"
+                            : "bg-white text-black hover:bg-white/95 active:scale-[0.98]"
+                          }`}
+                      >
+                        {isPaying ? "Processing..." : "Confirm & Pay Now"}
+                      </button>
                     </div>
 
-                    <div className="space-y-2 text-left border-t border-white/5 pt-2.5 text-[9.5px]">
-                      {/* Deposit wallet */}
-                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
-                        <div className="truncate pr-2 font-mono">
-                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Deposit Wallet</span>
-                          <span className="text-white truncate block">UQCs-W3qSgG6z99K_e7wYlS87c-H0VjX2lU82nE27z</span>
-                        </div>
-                        <button 
-                          onClick={handleCopyWallet}
-                          className="shrink-0 text-cyan-400 font-bold hover:text-cyan-300 uppercase tracking-widest text-[8px]"
-                        >
-                          {copiedWallet ? "Copied" : "Copy"}
-                        </button>
+                    {/* Option 2: Direct TON Deposit */}
+                    <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
+                      <div className="text-left">
+                        <h4 className="text-white text-xs font-black uppercase tracking-wide">Direct TON Deposit</h4>
+                        <p className="text-[9px] text-white/40 mt-0.5 font-bold">Send TON directly from any external wallet (Tonkeeper, etc.)</p>
                       </div>
 
-                      {/* Required transfer amount */}
-                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
-                        <div>
-                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Amount</span>
-                          <span className="text-white font-mono font-bold block">{requiredTon} TON</span>
+                      <div className="space-y-2 text-left border-t border-white/5 pt-2.5 text-[9.5px]">
+                        {/* Deposit wallet */}
+                        <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                          <div className="truncate pr-2 font-mono">
+                            <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Deposit Wallet</span>
+                            <span className="text-white truncate block">UQCs-W3qSgG6z99K_e7wYlS87c-H0VjX2lU82nE27z</span>
+                          </div>
+                          <button 
+                            onClick={handleCopyWallet}
+                            className="shrink-0 text-white font-bold hover:text-white/80 uppercase tracking-widest text-[8px]"
+                          >
+                            {copiedWallet ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+
+                        {/* Required transfer amount */}
+                        <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                          <div>
+                            <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Amount</span>
+                            <span className="text-white font-mono font-bold block">{requiredTon} TON</span>
+                          </div>
+                        </div>
+
+                        {/* Transaction Memo */}
+                        <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
+                          <div className="truncate pr-2 font-mono">
+                            <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Memo (Must Include!)</span>
+                            <span className="text-white truncate block">
+                              tg_id:{telegramUser?.id}|bw_id:{userBwId}|token:{depositToken}|mode:premium_{selectedPlan}
+                            </span>
+                          </div>
+                          <button 
+                            onClick={handleCopyMemo}
+                            className="shrink-0 text-white font-bold hover:text-white/80 uppercase tracking-widest text-[8px]"
+                          >
+                            {copiedMemo ? "Copied" : "Copy"}
+                          </button>
                         </div>
                       </div>
 
-                      {/* Transaction Memo */}
-                      <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
-                        <div className="truncate pr-2 font-mono">
-                          <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Memo (Must Include!)</span>
-                          <span className="text-amber-400 truncate block">
-                            tg_id:{telegramUser?.id}|bw_id:{userBwId}|token:{depositToken}|mode:premium_{selectedPlan}
-                          </span>
-                        </div>
-                        <button 
-                          onClick={handleCopyMemo}
-                          className="shrink-0 text-cyan-400 font-bold hover:text-cyan-300 uppercase tracking-widest text-[8px]"
-                        >
-                          {copiedMemo ? "Copied" : "Copy"}
-                        </button>
-                      </div>
+                      <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider text-left leading-normal leading-relaxed mt-1">
+                        ⚠️ WARNING: You must copy and include the memo payload exactly as shown. Otherwise the deposit monitor cannot identify your account and verify the transaction automatically!
+                      </p>
                     </div>
-
-                    <p className="text-[8px] text-amber-500/80 font-bold uppercase tracking-wider text-left leading-normal leading-relaxed mt-1">
-                      ⚠️ WARNING: You must copy and include the memo payload exactly as shown. Otherwise the deposit monitor cannot identify your account and verify the transaction automatically!
-                    </p>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <p className="text-[8px] text-white/30 text-center leading-relaxed font-semibold uppercase tracking-wider shrink-0 mt-6">
-              TON payments are processed automatically on-chain via TonCenter APIs.
-            </p>
-          </div>
-        )}
-      </div>
-    </motion.div>
+              <p className="text-[8px] text-white/30 text-center leading-relaxed font-semibold uppercase tracking-wider shrink-0 mt-6">
+                TON payments are processed automatically on-chain via TonCenter APIs.
+              </p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -2962,44 +3048,60 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
   if (!text) return null;
 
   const isHtml = /<[a-z][\s\S]*>/i.test(text);
-
-  // If text is long and not expanded, truncate it
-  const isLong = text.length > 300;
   
+  // Check length using plain text (strip tags just for measurement)
+  const plainText = isHtml ? text.replace(/<[^>]*>/g, "") : text;
+  const isLong = plainText.length > 300;
+
+  const htmlClasses = "[&_a]:text-cyan-400 [&_a]:underline [&_a]:decoration-cyan-500/30 [&_a]:hover:text-cyan-300 [&_a]:transition-colors [&_a]:break-all [&_code]:bg-white/5 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-xs [&_pre]:bg-white/5 [&_pre]:p-3 [&_pre]:rounded-2xl [&_pre]:font-mono [&_pre]:text-xs [&_pre]:overflow-x-auto [&_pre]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-white/20 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:text-white/70";
+
+  // Long text: use CSS overflow + gradient fade for truncation (preserves links!)
   if (isLong && !expanded) {
-    // Truncate preview
-    let preview = text;
     if (isHtml) {
-      // Strip HTML tags for clean text-only preview
-      preview = text.replace(/<[^>]*>/g, "");
+      return (
+        <div className={`${className} relative`} onClick={(e) => e.stopPropagation()}>
+          <div 
+            className={`max-h-[120px] overflow-hidden relative html-post-content ${htmlClasses}`}
+            style={{
+              maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)"
+            }}
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+            className="text-white/60 hover:text-white/90 font-black uppercase text-[10px] tracking-wider mt-1 block transition-colors"
+          >
+            Show more
+          </button>
+        </div>
+      );
     }
-    const truncated = preview.slice(0, 300).trim() + "...";
-    
-    // We treat the truncated version as plain text
+    // Plain text truncation
+    const truncated = plainText.slice(0, 300).trim() + "...";
     const parts = truncated.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
-    
     return (
       <div className={className} onClick={(e) => e.stopPropagation()}>
-        <span className="inline">
+        <span className="inline whitespace-pre-wrap">
           {parts.map((part, i) => {
             if (!part) return null;
             if (/^https?:\/\//i.test(part)) {
               return (
-                <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+                <a key={i} href={part} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
                   {part}
                 </a>
               );
             }
             if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
               return (
-                <a key={i} href={`https://${part}`} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+                <a key={i} href={`https://${part}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
                   {part}
                 </a>
               );
             }
             if (part.startsWith('@')) {
               return (
-                <span key={i} onClick={() => openChannel(part)} className="text-cyan-400 font-bold hover:text-cyan-300 cursor-pointer transition-colors">
+                <span key={i} onClick={(e) => { e.stopPropagation(); openChannel(part); }} className="text-cyan-400 font-bold hover:text-cyan-300 cursor-pointer transition-colors">
                   {part}
                 </span>
               );
@@ -3008,11 +3110,8 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
           })}
         </span>{" "}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded(true);
-          }}
-          className="text-cyan-400 hover:text-cyan-350 font-black uppercase text-[11px] tracking-wider ml-1 inline-block"
+          onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+          className="text-white/60 hover:text-white/90 font-black uppercase text-[10px] tracking-wider ml-1 inline-block transition-colors"
         >
           Show more
         </button>
@@ -3024,7 +3123,7 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
   if (isHtml) {
     return (
       <div 
-        className={`${className} html-post-content [&_a]:text-cyan-400 [&_a]:underline [&_a]:decoration-cyan-500/30 [&_a]:hover:text-cyan-300 [&_a]:transition-colors [&_a]:break-all [&_code]:bg-white/5 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-xs [&_pre]:bg-white/5 [&_pre]:p-3 [&_pre]:rounded-2xl [&_pre]:font-mono [&_pre]:text-xs [&_pre]:overflow-x-auto [&_pre]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-white/20 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:text-white/70`}
+        className={`${className} html-post-content ${htmlClasses}`}
         dangerouslySetInnerHTML={{ __html: text }}
         onClick={(e) => {
           const target = e.target as HTMLElement;
@@ -3038,7 +3137,7 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
 
   const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
   return (
-    <p className={className}>
+    <p className={`${className} whitespace-pre-wrap`}>
       {parts.map((part, i) => {
         if (!part) return null;
         if (/^https?:\/\//i.test(part)) {
