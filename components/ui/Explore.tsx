@@ -43,10 +43,7 @@ import {
   Sparkles,
   Coins,
   Award,
-  Megaphone,
-  DollarSign,
-  Clock,
-  Tv
+  Megaphone
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -360,7 +357,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     isReferralModalOpen ||
     buyStarsOpen ||
     buyStarsWalletGateOpen ||
-    withdrawOpen
+    withdrawOpen ||
+    isPremiumOpen
   );
 
   useEffect(() => {
@@ -758,7 +756,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     );
   }, [telegramUser?.id, telegramUser?.stars_balance]);
 
-  const showLiveTray = liveUsers && liveUsers.length > 0;
+  const showLiveTray = liveUsers && liveUsers.length > 0 && activeTab === "foryou";
 
   return (
     <motion.div
@@ -899,7 +897,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         <motion.div
           animate={{ y: showChrome ? 0 : (showLiveTray ? -288 : -196), opacity: showChrome ? 1 : 0 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="fixed left-0 right-0 z-[130] pointer-events-auto"
+          className="fixed left-0 right-0 z-[130] pointer-events-none"
           style={{
             top: 0,
             paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 202px)",
@@ -908,7 +906,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           }}
         >
           {/* Horizontal scroll list of live channels */}
-          <div className="flex items-center gap-4 overflow-x-auto px-6 pb-3 hide-scrollbar w-full">
+          <div className="flex items-center gap-4 overflow-x-auto px-6 pb-3 hide-scrollbar w-full pointer-events-auto">
             {liveUsers.map((u: any, idx: number) => {
               const handleOpen = () => {
                 const handle = u.telegram_channel;
@@ -1412,7 +1410,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <img src="/ai icon.png" alt="Blu AI" className="w-5 h-5 shrink-0 object-contain text-white" />
+                    <img src="/ai icon.png" alt="Blu AI" className="w-7 h-7 shrink-0 object-contain" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
                   </button>
                 </div>
@@ -1436,14 +1434,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <img src="/wave tools.png" alt="Wave Tools" className="w-5 h-5 shrink-0 object-contain" />
+                    <img src="/wave tools.png" alt="Wave Tools" className="w-7 h-7 shrink-0 object-contain" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Wave Tools</span>
                   </button>
                   <button
                     onClick={(e) => showTooltip("ai-studio", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <img src="/ai icon.png" alt="AI Studio" className="w-5 h-5 shrink-0 object-contain text-white" />
+                    <img src="/ai icon.png" alt="AI Studio" className="w-7 h-7 shrink-0 object-contain" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">AI Studio</span>
                   </button>
                   <button
@@ -1478,27 +1476,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       {(swrUser?.stars_balance ?? 0).toLocaleString()}
                     </span>
                   </button>
-                  <button
-                    onClick={(e) => showTooltip("revenue-sharing", e)}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
-                  >
-                    <DollarSign size={20} className="text-white shrink-0" />
-                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Revenue Sharing</span>
-                  </button>
-                  <button
-                    onClick={(e) => showTooltip("presence-rewards", e)}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
-                  >
-                    <Clock size={20} className="text-white shrink-0" />
-                    <span className="text-white text-[12px] font-black uppercase tracking-wider">Presence Rewards</span>
-                  </button>
-                  <button
-                    onClick={(e) => showTooltip("ads-placement", e)}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
-                  >
-                    <Tv size={20} className="text-white shrink-0" />
-                    <span className="text-white text-[12px] font-black uppercase tracking-wider">ADs Placement</span>
-                  </button>
+
                 </div>
 
                 <div className="h-px bg-white/[0.05] my-1" />
@@ -1524,7 +1502,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <VerifiedBadge size={20} className="text-cyan-400 shrink-0" />
+                    <img src="/premium badge.png" alt="Premium" className="w-6 h-6 shrink-0 object-contain" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Premium</span>
                   </button>
                 </div>
@@ -1946,9 +1924,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." targetRect={tooltipRect} />
       <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" targetRect={tooltipRect} />
       <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" targetRect={tooltipRect} />
-      <Tooltip id="revenue-sharing" activeId={activeTooltip} title="Revenue Sharing" content="Coming Soon" targetRect={tooltipRect} />
-      <Tooltip id="presence-rewards" activeId={activeTooltip} title="Presence Rewards" content="Coming Soon" targetRect={tooltipRect} />
-      <Tooltip id="ads-placement" activeId={activeTooltip} title="ADs Placement" content="Coming Soon" targetRect={tooltipRect} />
+
 
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
@@ -2391,7 +2367,7 @@ function PremiumPage({
 
   const planPriceUsd = selectedPlan === "monthly" ? 1.49 : 12.52;
   const requiredTon = Number((planPriceUsd / liveTonPrice).toFixed(3));
-  const gramEquivalent = selectedPlan === "monthly" ? 15 : 125;
+  const requiredGram = requiredTon; // 1 Gram = 1 TON
 
   // Premium countdown timer
   const premiumExpiresAt = premiumStatus?.premium_expires_at;
@@ -2430,7 +2406,7 @@ function PremiumPage({
         }
       } else {
         if (res.error === "INSUFFICIENT_BALANCE") {
-          setPaymentError(`Insufficient TON balance. You need at least ${res.required_ton?.toFixed(3)} TON but you currently have ${res.current_ton?.toFixed(3)} TON.`);
+          setPaymentError(`Insufficient Gram balance. You need at least ${res.required_ton?.toFixed(3)} Gram but you currently have ${res.current_ton?.toFixed(3)} Gram.`);
         } else {
           setPaymentError(res.error || "Payment failed.");
         }
@@ -2470,8 +2446,10 @@ function PremiumPage({
     }
   }, [onClose]);
 
-  return (
-    <div className="fixed inset-0 z-[1100] flex flex-col justify-end select-none">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-end select-none">
       {/* Backdrop Dimmer Shield (Tap to close) */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -2481,18 +2459,6 @@ function PremiumPage({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"
       />
 
-      {/* Styles for Shimmer Glint */}
-      <style>{`
-        @keyframes horizontal-shimmer {
-          0% { transform: translateX(-150%); }
-          50% { transform: translateX(150%); }
-          100% { transform: translateX(150%); }
-        }
-        .premium-shimmer {
-          animation: horizontal-shimmer 3s infinite linear;
-        }
-      `}</style>
-
       {/* Liquid Glass Bottom Sheet */}
       <motion.div
         initial={{ y: "100%" }}
@@ -2501,16 +2467,12 @@ function PremiumPage({
         transition={{ type: "spring", damping: 28, stiffness: 240 }}
         className="relative z-10 w-full max-h-[85vh] bg-black/60 border-t border-white/10 rounded-t-[2.5rem] p-6 pb-12 flex flex-col shadow-[0_-15px_40px_rgba(0,0,0,0.6)] overflow-y-auto no-scrollbar backdrop-blur-2xl"
       >
-        {/* Shimmer overlay element */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-t-[2.5rem] z-0">
-          <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-25deg] premium-shimmer" />
-        </div>
 
         <div className="relative z-10 flex flex-col h-full">
           {/* Top Center Premium Icon & Title */}
           <div className="flex flex-col items-center mb-6 shrink-0 relative">
-            <div className="w-16 h-16 flex items-center justify-center mb-2">
-              <img src="/premium badge.png" alt="Premium Badge" className="w-full h-full object-contain" />
+            <div className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-2 shimmer-light-wave">
+              <img src="/premium badge.png" alt="Premium Badge" className="w-16 h-16 object-contain pointer-events-none select-none" />
             </div>
             
             <h2 className="text-lg font-black text-white uppercase tracking-[0.25em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
@@ -2600,9 +2562,8 @@ function PremiumPage({
                   <span className="text-white font-black text-base mt-1">$1.49</span>
                   
                   <div className="flex items-center gap-1.5 mt-2 bg-black/40 border border-white/5 rounded-full px-2.5 py-1">
-                    <span className="text-white text-[10px] font-black">{gramEquivalent} GRAM</span>
-                    <span className="text-white/40 text-[9px] font-bold">({requiredTon.toFixed(3)} TON)</span>
-                    <GramIcon size={10} />
+                    <img src="/gram icon.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                    <span className="text-white text-[10px] font-black">{requiredGram.toFixed(3)} Gram</span>
                   </div>
                 </button>
 
@@ -2624,9 +2585,8 @@ function PremiumPage({
                   <span className="text-white font-black text-base mt-1">$12.52</span>
                   
                   <div className="flex items-center gap-1.5 mt-2 bg-black/40 border border-white/5 rounded-full px-2.5 py-1">
-                    <span className="text-white text-[10px] font-black">{gramEquivalent} GRAM</span>
-                    <span className="text-white/40 text-[9px] font-bold">({requiredTon.toFixed(3)} TON)</span>
-                    <GramIcon size={10} />
+                    <img src="/gram icon.png" alt="Gram" className="w-3.5 h-3.5 object-contain" />
+                    <span className="text-white text-[10px] font-black">{requiredGram.toFixed(3)} Gram</span>
                   </div>
                 </button>
               </div>
@@ -2691,21 +2651,21 @@ function PremiumPage({
                       </div>
                     )}
 
-                    {/* Option 1: Pay from TON Balance */}
+                    {/* Option 1: Pay from Gram Balance */}
                     <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
                       <div className="flex justify-between items-center">
                         <div className="text-left">
-                          <h4 className="text-white text-xs font-black uppercase tracking-wide">Pay from TON Balance</h4>
+                          <h4 className="text-white text-xs font-black uppercase tracking-wide">Pay from Gram Balance</h4>
                           <p className="text-[9px] text-white/40 mt-0.5 font-bold">Pay instantly using your in-app wallet balance</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-white font-mono text-xs font-black">{requiredTon} TON</span>
+                          <span className="text-white font-mono text-xs font-black">{requiredGram.toFixed(3)} Gram</span>
                         </div>
                       </div>
 
                       <div className="flex justify-between items-center text-[10px] border-t border-white/5 pt-2.5">
                         <span className="text-white/50 font-bold">Your Balance:</span>
-                        <span className="text-white font-mono font-black">{tonBalance.toFixed(4)} TON</span>
+                        <span className="text-white font-mono font-black">{tonBalance.toFixed(4)} Gram</span>
                       </div>
 
                       <button
@@ -2721,11 +2681,11 @@ function PremiumPage({
                       </button>
                     </div>
 
-                    {/* Option 2: Direct TON Deposit */}
+                    {/* Option 2: Direct Gram Deposit */}
                     <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col gap-3">
                       <div className="text-left">
-                        <h4 className="text-white text-xs font-black uppercase tracking-wide">Direct TON Deposit</h4>
-                        <p className="text-[9px] text-white/40 mt-0.5 font-bold">Send TON directly from any external wallet (Tonkeeper, etc.)</p>
+                        <h4 className="text-white text-xs font-black uppercase tracking-wide">Direct Gram Deposit</h4>
+                        <p className="text-[9px] text-white/40 mt-0.5 font-bold">Send Gram directly from any external wallet (Tonkeeper, etc.)</p>
                       </div>
 
                       <div className="space-y-2 text-left border-t border-white/5 pt-2.5 text-[9.5px]">
@@ -2747,7 +2707,7 @@ function PremiumPage({
                         <div className="flex justify-between items-center bg-black/40 border border-white/5 rounded-lg px-2.5 py-2">
                           <div>
                             <span className="text-white/40 uppercase tracking-wider block text-[7.5px] font-sans font-bold">Required Amount</span>
-                            <span className="text-white font-mono font-bold block">{requiredTon} TON</span>
+                            <span className="text-white font-mono font-bold block">{requiredGram.toFixed(3)} Gram</span>
                           </div>
                         </div>
 
@@ -2777,13 +2737,14 @@ function PremiumPage({
               </div>
 
               <p className="text-[8px] text-white/30 text-center leading-relaxed font-semibold uppercase tracking-wider shrink-0 mt-6">
-                TON payments are processed automatically on-chain via TonCenter APIs.
+                Gram payments are processed automatically on-chain.
               </p>
             </div>
           )}
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
