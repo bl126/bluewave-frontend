@@ -24,20 +24,26 @@ interface ConnectBluModalProps {
     analyticsChannelHandle?: string | null;
 }
 
-const getCachedAnalytics = (tgId: number) => {
+const getCachedAnalytics = (tgId: number, handle: string | null) => {
     if (typeof window === "undefined") return null;
     try {
-        const cached = localStorage.getItem(`tg_channel_analytics_${tgId}`);
+        const key = handle 
+            ? `tg_channel_analytics_${tgId}_${handle.replace(/^@/, "").toLowerCase()}`
+            : `tg_channel_analytics_${tgId}`;
+        const cached = localStorage.getItem(key);
         return cached ? JSON.parse(cached) : null;
     } catch {
         return null;
     }
 };
 
-const setCachedAnalytics = (tgId: number, data: any) => {
+const setCachedAnalytics = (tgId: number, handle: string | null, data: any) => {
     if (typeof window === "undefined") return;
     try {
-        localStorage.setItem(`tg_channel_analytics_${tgId}`, JSON.stringify(data));
+        const key = handle 
+            ? `tg_channel_analytics_${tgId}_${handle.replace(/^@/, "").toLowerCase()}`
+            : `tg_channel_analytics_${tgId}`;
+        localStorage.setItem(key, JSON.stringify(data));
     } catch {}
 };
 
@@ -122,6 +128,23 @@ export default function ConnectBluModal({
     }, [isOpen, telegramUser?.connected_channels, alreadyConnected, channelTitle, channelPhoto]);
 
     const connectedChannels = localChannels;
+
+    const [selectedChannelForAnalytics, setSelectedChannelForAnalytics] = useState<string | null>(null);
+
+    // Initialize selectedChannelForAnalytics when modal opens or channels load
+    useEffect(() => {
+        if (isOpen) {
+            if (analyticsChannelHandle) {
+                setSelectedChannelForAnalytics(analyticsChannelHandle);
+            } else if (alreadyConnected) {
+                setSelectedChannelForAnalytics(alreadyConnected);
+            } else if (connectedChannels.length > 0) {
+                setSelectedChannelForAnalytics(connectedChannels[0].handle);
+            } else {
+                setSelectedChannelForAnalytics(null);
+            }
+        }
+    }, [isOpen, analyticsChannelHandle, alreadyConnected, connectedChannels]);
 
     useEffect(() => {
         setVerified(connectedChannels.length > 0);
@@ -215,22 +238,26 @@ export default function ConnectBluModal({
 
 
 
-    // Fetch channel analytics when analytics overlay opens
+    // Fetch channel analytics when analytics overlay opens or selected channel changes
     useEffect(() => {
         if (!analyticsOpen || !telegramId) return;
         
-        const cached = getCachedAnalytics(telegramId);
+        const handle = selectedChannelForAnalytics || analyticsChannelHandle || alreadyConnected || null;
+        
+        const cached = getCachedAnalytics(telegramId, handle);
         if (cached) {
             setAnalyticsData(cached);
             setLoadingAnalytics(false);
         } else {
+            setAnalyticsData(null);
             setLoadingAnalytics(true);
         }
 
-        getApi(`/api/telegram/channel/analytics/${telegramId}${analyticsChannelHandle ? `?channel=${encodeURIComponent(analyticsChannelHandle)}` : ''}`)
+        const queryParam = handle ? `?channel=${encodeURIComponent(handle)}` : '';
+        getApi(`/api/telegram/channel/analytics/${telegramId}${queryParam}`)
             .then((res: any) => {
                 setAnalyticsData(res);
-                setCachedAnalytics(telegramId, res);
+                setCachedAnalytics(telegramId, handle, res);
             })
             .catch((err) => {
                 console.error("Failed to fetch channel analytics:", err);
@@ -265,7 +292,7 @@ export default function ConnectBluModal({
             .finally(() => {
                 setLoadingTransactions(false);
             });
-    }, [analyticsOpen, telegramId]);
+    }, [analyticsOpen, telegramId, selectedChannelForAnalytics, analyticsChannelHandle, alreadyConnected]);
 
     const handlePostClick = (messageId: number | null) => {
         const handle = analyticsData?.channel_handle;
@@ -594,19 +621,8 @@ export default function ConnectBluModal({
                                                                 <div 
                                                                     key={ch.handle || idx}
                                                                     onClick={() => {
-                                                                        setAnalyticsData(null);
+                                                                        setSelectedChannelForAnalytics(ch.handle);
                                                                         setAnalyticsOpen(true);
-                                                                        setLoadingAnalytics(true);
-                                                                        void getApi(`/api/telegram/channel/analytics/${telegramId}?channel=${ch.handle}`)
-                                                                            .then((res) => {
-                                                                                setAnalyticsData(res);
-                                                                            })
-                                                                            .catch((err) => {
-                                                                                console.error("Failed to fetch channel analytics:", err);
-                                                                            })
-                                                                            .finally(() => {
-                                                                                setLoadingAnalytics(false);
-                                                                            });
                                                                     }}
                                                                     className="w-full bg-app-accent/5 border border-app-border rounded-2xl p-3.5 flex items-center gap-3 group cursor-pointer hover:bg-app-accent/10 hover:border-app-accent/30 transition-all active:scale-[0.99]"
                                                                 >
