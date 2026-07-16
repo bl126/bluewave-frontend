@@ -475,21 +475,53 @@ export default function LandingPage() {
 
     (async () => {
       try {
-        const tg = (window as any).Telegram?.WebApp;
+        let tg = (window as any).Telegram?.WebApp;
         let tgUser = tg?.initDataUnsafe?.user;
 
-        // 1. Determine Telegram ID (STRICT prioritization)
-        // If we don't have a live tgUser yet, we MUST wait for it rather than guessing from localStorage
+        // 1. Determine Telegram ID (STRICT prioritization with robust polling)
+        // If we don't have a live tgUser yet, we poll for up to 3 seconds (30 * 100ms)
         if (!tgUser?.id) {
-          await new Promise(resolve => setTimeout(resolve, 800));
-          tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+          console.log("🕒 Telegram WebApp user not ready, polling...");
+          for (let i = 0; i < 30; i++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            tg = (window as any).Telegram?.WebApp;
+            tgUser = tg?.initDataUnsafe?.user;
+            if (tgUser?.id) {
+              console.log("✅ Telegram WebApp user found after polling");
+              break;
+            }
+          }
         }
 
-        const effectiveTgId = tgUser?.id;
+        // Fallback to URL query parameter or localStorage if live SDK is not yet available/failed
+        let effectiveTgId = tgUser?.id;
+        if (!effectiveTgId && typeof window !== "undefined") {
+          const urlParams = new URLSearchParams(window.location.search);
+          const queryTgId = urlParams.get("tg_id") || urlParams.get("telegram_id");
+          const localTgId = window.localStorage.getItem("bw_tg_id");
+          const parsedId = queryTgId ? Number(queryTgId) : (localTgId ? Number(localTgId) : undefined);
+          if (parsedId && !isNaN(parsedId)) {
+            effectiveTgId = parsedId;
+            console.log(`ℹ️ Falling back to cached/query Telegram ID: ${effectiveTgId}`);
+          }
+        }
 
         if (!effectiveTgId) {
-          console.warn("No Telegram ID found. Retrying...");
-          setTimeout(() => window.location.reload(), 2000);
+          console.warn("No Telegram ID found. Delaying retry...");
+          
+          // Only auto-reload if we are running inside a Telegram client webview
+          const isTelegramClient = typeof window !== "undefined" && 
+            ((window as any).Telegram?.WebApp?.initData || 
+             window.location.hash.includes("tgWebAppData") ||
+             /telegram/i.test(navigator.userAgent));
+          
+          if (isTelegramClient) {
+            setTimeout(() => window.location.reload(), 5000);
+          } else {
+            console.log("Not in Telegram client. Skipping reload loop.");
+            setShowLanguageSelector(true);
+            setIsLoading(false);
+          }
           return;
         }
 

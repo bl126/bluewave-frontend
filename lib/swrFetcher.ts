@@ -15,7 +15,7 @@ export async function waitForInitData(): Promise<string> {
   if (initData) return initData;
 
   console.log("🕒 SDK not ready, waiting for initData...");
-  for (let i = 0; i < 20; i++) { // 2 seconds max
+  for (let i = 0; i < 50; i++) { // 5 seconds max
     await new Promise(r => setTimeout(r, 100));
     initData = (window as any).Telegram?.WebApp?.initData || "";
     if (initData) {
