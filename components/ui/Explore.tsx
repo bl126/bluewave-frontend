@@ -3187,7 +3187,7 @@ function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
 // ----------------------------------------------------------------------------
 // 🔗 Linked Text Component (X-style Clickable Links & Mentions)
 // ----------------------------------------------------------------------------
-function LinkedText({ text, className = "" }: { text: string, className?: string }) {
+function LinkedText({ text, className = "", showFull = false }: { text: string, className?: string, showFull?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   if (!text) return null;
 
@@ -3200,7 +3200,7 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
   const htmlClasses = "[&_a]:text-cyan-400 [&_a]:underline [&_a]:decoration-cyan-500/30 [&_a]:hover:text-cyan-300 [&_a]:transition-colors [&_a]:break-all [&_code]:bg-white/5 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-xs [&_pre]:bg-white/5 [&_pre]:p-3 [&_pre]:rounded-2xl [&_pre]:font-mono [&_pre]:text-xs [&_pre]:overflow-x-auto [&_pre]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-white/20 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:my-2 [&_blockquote]:text-white/70";
 
   // Long text: use CSS overflow + gradient fade for truncation (preserves links!)
-  if (isLong && !expanded) {
+  if (isLong && !expanded && !showFull) {
     if (isHtml) {
       return (
         <div className={`${className} relative`} onClick={(e) => e.stopPropagation()}>
@@ -4595,7 +4595,7 @@ function PostDetailModal({
                 </div>
               </div>
 
-              <LinkedText text={post.content} className="text-xl text-white font-medium leading-[1.6] tracking-tight mb-8 whitespace-pre-wrap selection:bg-cyan-500/30" />
+              <LinkedText text={post.content} showFull={true} className="text-xl text-white font-medium leading-[1.6] tracking-tight mb-8 whitespace-pre-wrap selection:bg-cyan-500/30" />
 
               {post.media_urls && post.media_urls.length > 0 && (
                 <MediaCollage items={post.media_urls} />
