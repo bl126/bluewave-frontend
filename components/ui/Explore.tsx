@@ -103,7 +103,7 @@ const StarWithdrawalModal = dynamic(
   { ssr: false }
 );
 
-const MINI_APP_INSERT_EVERY = 6;
+const MINI_APP_INSERT_EVERY = 20;
 
 const AnimatedAIIcon = ({ size = 16 }: { size?: number }) => (
   <span className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
@@ -137,22 +137,25 @@ const Tooltip = ({
   content: string,
   targetRect: DOMRect | null
 }) => {
-  const top = targetRect ? targetRect.top + (targetRect.height / 2) : 0;
+  // Position it above the button (68px offset)
+  const top = targetRect ? targetRect.top - 68 : 0;
+  const left = targetRect ? Math.max(12, Math.min((typeof window !== "undefined" ? window.innerWidth : 360) - 220, targetRect.left + (targetRect.width / 2) - 104)) : 0;
+
   return (
     <AnimatePresence>
       {activeId === id && targetRect && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, x: -10 }}
-          animate={{ opacity: 1, scale: 1, x: 0 }}
-          exit={{ opacity: 0, scale: 0.95, x: -10 }}
-          className="fixed z-[1100] w-52 bg-zinc-950/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-3 shadow-2xl pointer-events-none text-left"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="fixed z-[1200] w-52 bg-zinc-950/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-3 shadow-2xl pointer-events-none text-left"
           style={{
             top: top,
-            transform: "translateY(-50%)",
-            left: targetRect.right + 12
+            left: left
           }}
         >
-          <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-zinc-950/95" />
+          {/* Arrow pointing down */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-full border-[5px] border-transparent border-t-zinc-950/95" />
           <p className="text-[10px] font-black text-white uppercase tracking-widest mb-0.5">{title}</p>
           <p className="text-[9px] leading-relaxed text-white/50 font-semibold">{content}</p>
         </motion.div>
@@ -311,6 +314,29 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
 
+  const [showConnectBanner, setShowConnectBanner] = useState(false);
+  const [feedSeed, setFeedSeed] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFeedSeed(Math.floor(Math.random() * 1000000));
+  }, []);
+
+  useEffect(() => {
+    if (!swrUser) return;
+    const hasConnectedChannel = swrUser.telegram_channel || (swrUser.connected_channels && swrUser.connected_channels.length > 0);
+    if (!hasConnectedChannel) {
+      if (typeof window !== "undefined") {
+        const sessionFlag = sessionStorage.getItem("explore_connect_banner_shown");
+        if (!sessionFlag) {
+          setShowConnectBanner(true);
+          sessionStorage.setItem("explore_connect_banner_shown", "true");
+        }
+      }
+    } else {
+      setShowConnectBanner(false);
+    }
+  }, [swrUser]);
+
   const showTooltip = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltipRect(rect);
@@ -455,7 +481,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   // Fetch Feed — all tabs pre-loaded on mount for instant switching
   const { data: initialPosts, loading, mutate } = useApi(
-    telegramUser?.id ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0` : null
+    telegramUser?.id
+      ? `/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=0${activeTab === "foryou" && feedSeed !== null ? `&seed=${feedSeed}` : ""}`
+      : null
   );
 
   // Pre-warm following tab
@@ -556,7 +584,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     setLoadingMore(true);
     try {
       // 🚄 Fetch the next batch from the API using current offset
-      const nextBatch = await getApi(`/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}`);
+      const queryParamSeed = activeTab === "foryou" && feedSeed !== null ? `&seed=${feedSeed}` : '';
+      const nextBatch = await getApi(`/explore/feed?tg_id=${telegramUser.id}&tab=${activeTab}&offset=${offset}${queryParamSeed}`);
 
       if (nextBatch && Array.isArray(nextBatch) && nextBatch.length > 0) {
         setPagedPosts(prev => [...prev, ...nextBatch]);
@@ -570,7 +599,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     } finally {
       setLoadingMore(false);
     }
-  }, [hasMore, loadingMore, loading, offset, activeTab, telegramUser?.id]);
+  }, [hasMore, loadingMore, loading, offset, activeTab, telegramUser?.id, feedSeed]);
 
   // 👁️ Intersection Observer for triggering the load more action
   useEffect(() => {
@@ -737,6 +766,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         setIsRefreshing(true);
         setPullY(0);
         
+        // Generate a new random seed on pull-to-refresh
+        setFeedSeed(Math.floor(Math.random() * 1000000));
+        
         // Safety timeout: force stop refreshing after 5 seconds if mutate hangs
         const safetyTimeout = setTimeout(() => {
           setIsRefreshing(false);
@@ -763,6 +795,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     setActiveTab("foryou");
     setNewPostsAvailable(false);
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    setFeedSeed(Math.floor(Math.random() * 1000000));
     mutate();
     if (initialPosts && initialPosts.length > 0) setLatestKnownPostId(initialPosts[0]?.id);
   };
@@ -1124,14 +1157,36 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       <PostCardSkeleton key={i} />
                     ))}
                   </div>
-                ) : pagedPosts.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-64 text-center p-8">
-                    <p className="text-text-sub text-sm font-black uppercase tracking-widest">No posts yet</p>
-                  </div>
                 ) : (
                   <div className="pb-32">
+                    {/* Connect Channel Banner Card */}
+                    {showConnectBanner && (
+                      <div className="mx-4 mt-2 mb-4 bg-black border border-white/[0.08] rounded-3xl p-6 flex flex-col gap-4 text-left shadow-2xl relative overflow-hidden">
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-black text-white tracking-tight leading-tight">
+                            Post on the Waves
+                          </h3>
+                          <p className="text-xs text-white/50 leading-relaxed font-semibold">
+                            Connect your Telegram channel to start posting on the Explore feed.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setConnectBluAnalytics(false);
+                            setIsConnectBluOpen(true);
+                          }}
+                          className="w-full bg-white text-black text-xs font-black uppercase tracking-wider py-3.5 rounded-full hover:opacity-90 active:scale-[0.98] transition-all"
+                        >
+                          Connect channel
+                        </button>
+                      </div>
+                    )}
 
-                    {pagedPosts.map((post: any, index: number) => (
+                    {pagedPosts.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 text-center p-8">
+                        <p className="text-text-sub text-sm font-black uppercase tracking-widest">No posts yet</p>
+                      </div>
+                    ) : pagedPosts.map((post: any, index: number) => (
                       <Fragment key={post.id}>
                         <PostCard
                           post={post}
@@ -1160,7 +1215,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           />
                         )}
                       </Fragment>
-                    ))}
+                    ))
+                    }
                     {hasMore && (
                       <div ref={loadMoreRef} className="flex flex-col gap-4 py-6 w-full px-4 shrink-0">
                         {loadingMore && (
@@ -4722,14 +4778,14 @@ function PostDetailModal({
             {starError && (
               <p className="text-[10px] text-amber-400 mt-1 font-medium px-2">{starError}</p>
             )}
-            <div className={`flex items-center gap-2 p-1.5 px-3 bg-white/[0.03] border border-white/10 ${
-              replyTo ? 'rounded-2xl' : 'rounded-3xl'
-            } focus-within:border-white/20 transition-all shadow-xl`}>
+            <div className={`flex items-center gap-2.5 p-2 px-4 bg-zinc-950 border border-white/20 ${
+              replyTo ? 'rounded-2xl' : 'rounded-full'
+            } focus-within:border-white/80 transition-all shadow-xl`}>
 
-              {/* Image attach button (White & Black style) */}
+              {/* Image attach button (Sleek transparent style) */}
               <button
                 onClick={() => commentImageInputRef.current?.click()}
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-white text-black hover:opacity-90 transition-all active:scale-90"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all active:scale-90 shadow-sm border border-white/10"
               >
                 <ImageIcon size={14} />
               </button>
@@ -4739,13 +4795,13 @@ function PostDetailModal({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Post your reply…"
-                className="flex-1 bg-transparent border-none outline-none text-xs text-white py-1 resize-none max-h-24 min-h-[30px] custom-scrollbar"
+                className="flex-1 bg-transparent border-none outline-none text-[13px] text-white py-1.5 resize-none max-h-24 min-h-[32px] placeholder-zinc-500 font-medium custom-scrollbar"
                 rows={1}
               />
               <button
                 onClick={handlePostComment}
                 disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
-                className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-30 shadow-md"
+                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-20 shadow-md"
               >
                 {(posting || commentImageUploading) ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} strokeWidth={2.5} />}
               </button>
