@@ -262,6 +262,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const { data: swrUser } = useApi(telegramUser?.id ? `/user/${telegramUser.id}` : null);
   const isConnected = !!swrUser?.telegram_channel;
 
+  // Admin check & multi-channel support
+  const ADMIN_IDS = [5023869471, 7762443283];
+  const isAdmin = ADMIN_IDS.includes(telegramUser?.id ?? 0);
+  const connectedChannels: any[] = swrUser?.connected_channels || (swrUser?.telegram_channel ? [{
+    handle: swrUser.telegram_channel,
+    title: swrUser.telegram_channel_title || "",
+    photo: swrUser.telegram_channel_photo || "",
+    subscribers: 0
+  }] : []);
+
   // New Drawer / Search / Connect Channel states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -276,6 +286,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+  const [isAnalyticsChannelSheetOpen, setIsAnalyticsChannelSheetOpen] = useState(false);
+  const [analyticsChannelHandle, setAnalyticsChannelHandle] = useState<string | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
   const tooltipTimeoutRef = useRef<any>(null);
@@ -358,7 +370,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     buyStarsOpen ||
     buyStarsWalletGateOpen ||
     withdrawOpen ||
-    isPremiumOpen
+    isPremiumOpen ||
+    isAnalyticsChannelSheetOpen
   );
 
   useEffect(() => {
@@ -568,6 +581,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   useEffect(() => {
     const handleNativeBack = (e: Event) => {
       if (!isOpen) return;
+      if (isPremiumOpen) {
+        setIsPremiumOpen(false);
+        e.preventDefault();
+        return;
+      }
+      if (isAnalyticsChannelSheetOpen) {
+        setIsAnalyticsChannelSheetOpen(false);
+        e.preventDefault();
+        return;
+      }
       if (isDrawerOpen) {
         setIsDrawerOpen(false);
         e.preventDefault();
@@ -603,7 +626,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     window.addEventListener("bwNativeBack", handleNativeBack);
     return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen, isMiniAppsOpen]);
+  }, [isOpen, selectedPost, isPostModalOpen, isSpeedDialOpen, isSearchOpen, isDrawerOpen, isMiniAppsOpen, isPremiumOpen, isAnalyticsChannelSheetOpen]);
 
 
 
@@ -1162,6 +1185,37 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
+      {/* Speed Dial Channel Avatars */}
+      <AnimatePresence>
+        {isSpeedDialOpen && connectedChannels.length > 1 && (
+          <div className="fixed right-5 bottom-36 z-[205] flex flex-col items-center gap-3 pb-16">
+            {connectedChannels.map((ch: any, i: number) => (
+              <motion.button
+                key={ch.handle}
+                initial={{ scale: 0, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0, opacity: 0, y: 20 }}
+                transition={{ duration: 0.15, delay: i * 0.05, ease: "easeOut" }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  setIsSpeedDialOpen(false);
+                  openChannel(ch.handle);
+                }}
+                className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shadow-lg bg-zinc-800"
+              >
+                {ch.photo ? (
+                  <img src={ch.photo} className="w-full h-full object-cover" alt={ch.title || ch.handle} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-cyan-500 to-blue-600">
+                    {(ch.title || ch.handle || "?")[0].toUpperCase()}
+                  </div>
+                )}
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Scroll-to-top FAB (Liquid Glass, Arrow Pointing Upwards) */}
       <AnimatePresence>
         {showScrollToTop && (
@@ -1196,12 +1250,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               title={hasAccess ? t("explore.new_post_title") : t("explore.beta_post_locked")}
               onClick={() => {
                 if (!hasAccess) return;
-                const handle = swrUser?.telegram_channel;
-                if (handle) {
-                  openChannel(handle);
+                if (connectedChannels.length > 1) {
+                  setIsSpeedDialOpen(!isSpeedDialOpen);
                 } else {
-                  setConnectBluAnalytics(false);
-                  setIsConnectBluOpen(true);
+                  const handle = swrUser?.telegram_channel;
+                  if (handle) {
+                    openChannel(handle);
+                  } else {
+                    setConnectBluAnalytics(false);
+                    setIsConnectBluOpen(true);
+                  }
                 }
               }}
               className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden group transition-all relative z-[210] ${
@@ -1487,8 +1545,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
-                      setConnectBluAnalytics(true);
-                      setIsConnectBluOpen(true);
+                      if (connectedChannels.length > 1) {
+                        setIsAnalyticsChannelSheetOpen(true);
+                      } else {
+                        setAnalyticsChannelHandle(null);
+                        setConnectBluAnalytics(true);
+                        setIsConnectBluOpen(true);
+                      }
                     }}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
@@ -1496,7 +1559,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Analytics</span>
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={(e: any) => {
+                      if (!isAdmin) {
+                        showTooltip("premium", e);
+                        return;
+                      }
                       setIsDrawerOpen(false);
                       setIsPremiumOpen(true);
                     }}
@@ -1924,12 +1991,70 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       <Tooltip id="blu-ai" activeId={activeTooltip} title="Blu AI" content="Blu is in the lab. Access is restricted during beta." targetRect={tooltipRect} />
       <Tooltip id="wave-tools" activeId={activeTooltip} title="Wave Tools" content="Coming Soon" targetRect={tooltipRect} />
       <Tooltip id="ai-studio" activeId={activeTooltip} title="AI Studio" content="Coming Soon" targetRect={tooltipRect} />
+      <Tooltip id="premium" activeId={activeTooltip} title="Premium" content="Premium is currently invite-only." targetRect={tooltipRect} />
 
+
+      {/* ─── Analytics Channel Selector Bottom Sheet ─── */}
+      <AnimatePresence>
+        {isAnalyticsChannelSheetOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-end justify-center"
+            onClick={() => setIsAnalyticsChannelSheetOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="w-full max-w-md bg-[#111113] rounded-t-3xl p-5 pb-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center mb-4">
+                <div className="w-10 h-1 rounded-full bg-white/20" />
+              </div>
+              <h3 className="text-white text-base font-black uppercase tracking-wider mb-4 text-center">Select Channel</h3>
+              <div className="flex flex-col gap-3 max-h-[50vh] overflow-y-auto">
+                {connectedChannels.map((ch: any) => (
+                  <button
+                    key={ch.handle}
+                    onClick={() => {
+                      setIsAnalyticsChannelSheetOpen(false);
+                      setAnalyticsChannelHandle(ch.handle);
+                      setConnectBluAnalytics(true);
+                      setIsConnectBluOpen(true);
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] transition-all text-left w-full border border-white/[0.06]"
+                  >
+                    <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 bg-zinc-800">
+                      {ch.photo ? (
+                        <img src={ch.photo} className="w-full h-full object-cover" alt={ch.title || ch.handle} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-cyan-500 to-blue-600">
+                          {(ch.title || ch.handle || "?")[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-white text-sm font-bold truncate">{ch.title || ch.handle}</span>
+                      <span className="text-white/40 text-xs truncate">@{(ch.handle || "").replace(/^@/, "")}</span>
+                    </div>
+                    <BarChart2 size={18} className="text-white/30 ml-auto shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─── Connect Channel Modal ─── */}
       <ConnectBluModal
         isOpen={isConnectBluOpen}
-        onClose={() => setIsConnectBluOpen(false)}
+        onClose={() => { setIsConnectBluOpen(false); setAnalyticsChannelHandle(null); }}
         telegramId={telegramUser?.id}
         telegramUser={swrUser || telegramUser}
         isHumanVerified={!!swrUser?.is_human_verified}
@@ -1938,6 +2063,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         channelPhoto={swrUser?.telegram_channel_photo || null}
         channelStarsReceived={swrUser?.channel_stars_received ?? 0}
         initialAnalytics={connectBluAnalytics}
+        analyticsChannelHandle={analyticsChannelHandle}
       />
 
     </motion.div>
@@ -2432,20 +2558,6 @@ function PremiumPage({
     setTimeout(() => setCopiedWallet(false), 2000);
   };
 
-  // Telegram WebApp BackButton setup
-  useEffect(() => {
-    const twa = (window as any).Telegram?.WebApp;
-    if (twa?.BackButton) {
-      twa.BackButton.show();
-      const handleBack = () => onClose();
-      twa.BackButton.onClick(handleBack);
-      return () => {
-        twa.BackButton.hide();
-        twa.BackButton.offClick(handleBack);
-      };
-    }
-  }, [onClose]);
-
   if (typeof document === "undefined") return null;
 
   return createPortal(
@@ -2785,18 +2897,14 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   const [scale, setScale] = useState(1);
   const { t } = useLanguage();
 
+  // Local interceptor for native back button
   useEffect(() => {
-    const twa = (window as any).Telegram?.WebApp;
-    if (twa?.BackButton) {
-      twa.BackButton.show();
-      twa.BackButton.onClick(onClose);
-    }
-    return () => {
-      if (twa?.BackButton) {
-        twa.BackButton.hide();
-        twa.BackButton.offClick(onClose);
-      }
+    const handleBack = (e: Event) => {
+      onClose();
+      e.preventDefault();
     };
+    window.addEventListener("bwNativeBack", handleBack);
+    return () => window.removeEventListener("bwNativeBack", handleBack);
   }, [onClose]);
 
   // Reset zoom on index change
@@ -3193,15 +3301,7 @@ function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    if (!starGiftOpen) return;
-    const handleNativeBack = (e: Event) => {
-      setStarGiftOpen(false);
-      e.preventDefault();
-    };
-    window.addEventListener("bwNativeBack", handleNativeBack);
-    return () => window.removeEventListener("bwNativeBack", handleNativeBack);
-  }, [starGiftOpen]);
+  // StarGift BackButton handled in parent Explore.tsx centralized event listener
 
   const handleAcknowledge = async (e: React.MouseEvent) => {
     e.stopPropagation();

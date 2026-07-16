@@ -58,7 +58,10 @@ export default function StarGiftModal({
   /* Telegram back button listener */
   useEffect(() => {
     if (!isOpen) return;
-    const handleBack = () => onClose();
+    const handleBack = (e: Event) => {
+      onClose();
+      e.preventDefault();
+    };
     window.addEventListener("bwNativeBack", handleBack);
     return () => window.removeEventListener("bwNativeBack", handleBack);
   }, [isOpen, onClose]);

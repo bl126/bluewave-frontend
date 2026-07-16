@@ -21,6 +21,7 @@ interface ConnectBluModalProps {
     channelPhoto?: string | null;
     channelStarsReceived?: number;
     initialAnalytics?: boolean;
+    analyticsChannelHandle?: string | null;
 }
 
 const getCachedAnalytics = (tgId: number) => {
@@ -51,6 +52,7 @@ export default function ConnectBluModal({
     channelPhoto,
     channelStarsReceived = 0,
     initialAnalytics = false,
+    analyticsChannelHandle = null,
 }: ConnectBluModalProps) {
     const [view, setView] = useState<"main" | "telegram">("main");
     const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -99,6 +101,18 @@ export default function ConnectBluModal({
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loadingTransactions, setLoadingTransactions] = useState(false);
     const [selectedTx, setSelectedTx] = useState<any | null>(null);
+    const [channelToDisconnect, setChannelToDisconnect] = useState<{ handle: string, title: string } | null>(null);
+
+    const connectedChannels = telegramUser?.connected_channels || (alreadyConnected ? [{
+        handle: alreadyConnected,
+        title: channelTitle || "",
+        photo: channelPhoto || "",
+        subscribers: 0
+    }] : []);
+
+    useEffect(() => {
+        setVerified(connectedChannels.length > 0);
+    }, [connectedChannels]);
 
     const StarIcon = ({ size = 12 }: { size?: number }) => (
         <Star className="text-amber-400 inline-block align-middle shrink-0" size={size} fill="currentColor" />
@@ -200,7 +214,7 @@ export default function ConnectBluModal({
             setLoadingAnalytics(true);
         }
 
-        getApi(`/api/telegram/channel/analytics/${telegramId}`)
+        getApi(`/api/telegram/channel/analytics/${telegramId}${analyticsChannelHandle ? `?channel=${encodeURIComponent(analyticsChannelHandle)}` : ''}`)
             .then((res: any) => {
                 setAnalyticsData(res);
                 setCachedAnalytics(telegramId, res);
@@ -351,17 +365,16 @@ export default function ConnectBluModal({
         }
     };
 
-    const handleDisconnect = async () => {
-        if (!verified || verifying) return;
+    const handleDisconnect = async (channelHandle: string) => {
+        if (verifying) return;
         setVerifying(true);
         setError("");
         try {
             const res = await postApi("/api/telegram/disconnect_channel", {
-                tg_id: telegramId
+                tg_id: telegramId,
+                channel: channelHandle
             });
             if (res.success) {
-                setVerified(false);
-                setConnectedInfo({ title: "", photo: "", username: "" });
                 setChannelInput("");
                 mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegramId}`);
             } else {
@@ -371,6 +384,7 @@ export default function ConnectBluModal({
             setError(t("connect_blu.error_connection"));
         } finally {
             setVerifying(false);
+            setChannelToDisconnect(null);
         }
     };
 
@@ -540,73 +554,88 @@ export default function ConnectBluModal({
                                                         </ul>
                                                     </div>
 
-                                                    {/* Input + Button */}
-                                                    {!verified ? (
-                                                        <div className="flex flex-col gap-3">
-                                                            <input
-                                                                type="text"
-                                                                placeholder={t("connect_blu.placeholder")}
-                                                                value={channelInput}
-                                                                onChange={(e) => setChannelInput(e.target.value)}
-                                                                className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-text-main text-sm font-mono placeholder:text-app-accent/20 focus:outline-none focus:border-app-accent/50"
-                                                            />
-                                                            {error && <p className="text-red-400/80 text-[10px] font-bold uppercase">{error}</p>}
-                                                            <button
-                                                                onClick={handleVerify}
-                                                                disabled={verifying || !channelInput.trim()}
-                                                                className="w-full h-13 py-3.5 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                                                            >
-                                                                {verifying ? <><Loader2 size={16} className="animate-spin" /> {t("connect_blu.verifying")}</> : t("connect_blu.verify_btn")}
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex flex-col gap-4">
-                                                            <div 
-                                                                onClick={() => setAnalyticsOpen(true)}
-                                                                className="w-full bg-app-accent/5 border border-app-border rounded-2xl p-3.5 flex items-center gap-3 group cursor-pointer hover:bg-app-accent/10 hover:border-app-accent/30 transition-all active:scale-[0.99]"
-                                                            >
-                                                                <div className="w-12 h-12 rounded-full border-2 border-app-border overflow-hidden bg-app-bg flex items-center justify-center shrink-0">
-                                                                    {connectedInfo.photo && !imgError ? (
-                                                                        <img
-                                                                            src={connectedInfo.photo}
-                                                                            alt="Channel"
-                                                                            className="w-full h-full object-cover"
-                                                                            onError={() => setImgError(true)}
-                                                                        />
-                                                                    ) : (
-                                                                        <div className="w-full h-full flex items-center justify-center text-app-accent bg-app-accent/10 font-black text-sm">
-                                                                            {connectedInfo.title?.[0] || "B"}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <p className="text-text-main font-black text-xs uppercase truncate">{connectedInfo.title}</p>
-                                                                    </div>
-                                                                    <p className="text-readable-sm font-bold uppercase tracking-wide truncate mt-0.5">@{connectedInfo.username.replace("@", "")}</p>
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={(e) => { e.stopPropagation(); setWithdrawOpen(true); }}
-                                                                    className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 hover:bg-amber-500/25 active:scale-95 transition-all"
-                                                                    aria-label={t("withdraw.title")}
+                                                    {/* Connected Channels Stack */}
+                                                    {connectedChannels.length > 0 && (
+                                                        <div className="flex flex-col gap-3 mb-4">
+                                                            <p className="text-readable-sm font-black uppercase tracking-widest mb-1 text-app-accent/80">Connected Channels</p>
+                                                            {connectedChannels.map((ch: any, idx: number) => (
+                                                                <div 
+                                                                    key={ch.handle || idx}
+                                                                    onClick={() => {
+                                                                        setAnalyticsData(null);
+                                                                        setAnalyticsOpen(true);
+                                                                        setLoadingAnalytics(true);
+                                                                        void getApi(`/api/telegram/channel/analytics/${telegramId}?channel=${ch.handle}`)
+                                                                            .then((res) => {
+                                                                                setAnalyticsData(res);
+                                                                            })
+                                                                            .catch((err) => {
+                                                                                console.error("Failed to fetch channel analytics:", err);
+                                                                            })
+                                                                            .finally(() => {
+                                                                                setLoadingAnalytics(false);
+                                                                            });
+                                                                    }}
+                                                                    className="w-full bg-app-accent/5 border border-app-border rounded-2xl p-3.5 flex items-center gap-3 group cursor-pointer hover:bg-app-accent/10 hover:border-app-accent/30 transition-all active:scale-[0.99]"
                                                                 >
-                                                                    <Star size={12} className="text-amber-400" fill="currentColor" />
-                                                                    <span className="text-amber-300 font-black text-xs tabular-nums">
-                                                                        {channelStarsReceived.toLocaleString()}
-                                                                    </span>
-                                                                </button>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => setShowDisconnectConfirm(true)}
-                                                                disabled={verifying}
-                                                                className="w-full py-3.5 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50"
-                                                            >
-                                                                {verifying ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-                                                                {verifying ? t("connect_blu.disconnecting") : t("connect_blu.disconnect")}
-                                                            </button>
+                                                                    <div className="w-12 h-12 rounded-full border-2 border-app-border overflow-hidden bg-app-bg flex items-center justify-center shrink-0">
+                                                                        {ch.photo ? (
+                                                                            <img
+                                                                                src={ch.photo}
+                                                                                alt="Channel"
+                                                                                className="w-full h-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-app-accent bg-app-accent/10 font-black text-sm">
+                                                                                {ch.title?.[0] || "B"}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <p className="text-text-main font-black text-xs uppercase truncate">{ch.title}</p>
+                                                                        </div>
+                                                                        <p className="text-readable-sm font-bold uppercase tracking-wide truncate mt-0.5">@{ch.handle.replace("@", "")}</p>
+                                                                    </div>
+                                                                    
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setChannelToDisconnect(ch);
+                                                                            setShowDisconnectConfirm(true);
+                                                                        }}
+                                                                        className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 active:scale-90 transition-all"
+                                                                        title="Disconnect Channel"
+                                                                    >
+                                                                        <X size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     )}
+
+                                                    {/* Add Channel Section */}
+                                                    <div className="flex flex-col gap-3 mt-2">
+                                                        {connectedChannels.length > 0 && (
+                                                            <p className="text-readable-sm font-black uppercase tracking-widest mt-2 text-app-accent/80">Connect New Channel</p>
+                                                        )}
+                                                        <input
+                                                            type="text"
+                                                            placeholder={t("connect_blu.placeholder")}
+                                                            value={channelInput}
+                                                            onChange={(e) => setChannelInput(e.target.value)}
+                                                            className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-text-main text-sm font-mono placeholder:text-app-accent/20 focus:outline-none focus:border-app-accent/50"
+                                                        />
+                                                        {error && <p className="text-red-400/80 text-[10px] font-bold uppercase">{error}</p>}
+                                                        <button
+                                                            onClick={handleVerify}
+                                                            disabled={verifying || !channelInput.trim()}
+                                                            className="w-full h-13 py-3.5 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            {verifying ? <><Loader2 size={16} className="animate-spin" /> {t("connect_blu.verifying")}</> : t("connect_blu.verify_btn")}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 /* NOT VERIFIED human view */
@@ -674,7 +703,7 @@ export default function ConnectBluModal({
                                 {t("connect_blu.disconnect_confirm_title")}
                             </h3>
                             <p className="text-text-sub text-xs leading-relaxed mb-6 font-medium">
-                                {t("connect_blu.disconnect_confirm_desc")}
+                                Are you sure you want to disconnect @{channelToDisconnect?.handle}? Your signals from this channel will no longer appear on Explore.
                             </p>
                             <div className="flex gap-3 pb-8">
                                 <button
@@ -684,14 +713,16 @@ export default function ConnectBluModal({
                                     {t("connect_blu.disconnect_cancel_btn")}
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        setShowDisconnectConfirm(false);
-                                        handleDisconnect();
-                                    }}
-                                    className="flex-1 py-3 bg-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
-                                >
-                                    {t("connect_blu.disconnect_confirm_btn")}
-                                </button>
+                                     onClick={() => {
+                                         setShowDisconnectConfirm(false);
+                                         if (channelToDisconnect) {
+                                             handleDisconnect(channelToDisconnect.handle);
+                                         }
+                                     }}
+                                     className="flex-1 py-3 bg-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                                 >
+                                     {t("connect_blu.disconnect_confirm_btn")}
+                                 </button>
                             </div>
                         </motion.div>
                     </>
