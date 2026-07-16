@@ -102,13 +102,26 @@ export default function ConnectBluModal({
     const [loadingTransactions, setLoadingTransactions] = useState(false);
     const [selectedTx, setSelectedTx] = useState<any | null>(null);
     const [channelToDisconnect, setChannelToDisconnect] = useState<{ handle: string, title: string } | null>(null);
+    const [localChannels, setLocalChannels] = useState<any[]>([]);
 
-    const connectedChannels = telegramUser?.connected_channels || (alreadyConnected ? [{
-        handle: alreadyConnected,
-        title: channelTitle || "",
-        photo: channelPhoto || "",
-        subscribers: 0
-    }] : []);
+    // Sync localChannels from props whenever the modal opens or telegramUser updates
+    useEffect(() => {
+        const fromUser = telegramUser?.connected_channels;
+        if (fromUser && Array.isArray(fromUser) && fromUser.length > 0) {
+            setLocalChannels(fromUser);
+        } else if (alreadyConnected) {
+            setLocalChannels([{
+                handle: alreadyConnected,
+                title: channelTitle || "",
+                photo: channelPhoto || "",
+                subscribers: 0
+            }]);
+        } else {
+            setLocalChannels([]);
+        }
+    }, [isOpen, telegramUser?.connected_channels, alreadyConnected, channelTitle, channelPhoto]);
+
+    const connectedChannels = localChannels;
 
     useEffect(() => {
         setVerified(connectedChannels.length > 0);
@@ -339,7 +352,7 @@ export default function ConnectBluModal({
     }, [isOpen, view, onClose]);
 
     const handleVerify = async () => {
-        if (!channelInput.trim() || verifying || verified) return;
+        if (!channelInput.trim() || verifying) return;
         setVerifying(true);
         setError("");
         try {
@@ -348,7 +361,24 @@ export default function ConnectBluModal({
                 channel: channelInput.trim().replace("@", ""),
             });
             if (res.success) {
+                // Update local channels list immediately from API response
+                if (res.connected_channels && Array.isArray(res.connected_channels)) {
+                    setLocalChannels(res.connected_channels);
+                } else {
+                    // Fallback: append manually
+                    const newChannel = {
+                        handle: res.channel || channelInput.trim().replace("@", ""),
+                        title: res.channel_title || t("connect_blu.connected_fallback"),
+                        photo: res.channel_photo || "",
+                        subscribers: 0
+                    };
+                    setLocalChannels(prev => {
+                        const exists = prev.some((ch: any) => ch.handle?.toLowerCase() === newChannel.handle.toLowerCase());
+                        return exists ? prev : [...prev, newChannel];
+                    });
+                }
                 setVerified(true);
+                setChannelInput("");
                 setConnectedInfo({
                     title: res.channel_title || t("connect_blu.connected_fallback"),
                     photo: res.channel_photo || "",
@@ -375,6 +405,8 @@ export default function ConnectBluModal({
                 channel: channelHandle
             });
             if (res.success) {
+                // Remove from local state immediately
+                setLocalChannels(prev => prev.filter((ch: any) => ch.handle?.toLowerCase() !== channelHandle.toLowerCase()));
                 setChannelInput("");
                 mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/user/${telegramId}`);
             } else {
@@ -630,7 +662,7 @@ export default function ConnectBluModal({
                                                         {error && <p className="text-red-400/80 text-[10px] font-bold uppercase">{error}</p>}
                                                         <button
                                                             onClick={handleVerify}
-                                                            disabled={verifying || !channelInput.trim()}
+                                                            disabled={verifying || !channelInput.trim() || localChannels.some((ch: any) => ch.handle?.toLowerCase() === channelInput.trim().replace("@", "").toLowerCase())}
                                                             className="w-full h-13 py-3.5 bg-app-accent text-app-bg font-black uppercase text-xs tracking-widest rounded-2xl shadow-app-shadow disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                                         >
                                                             {verifying ? <><Loader2 size={16} className="animate-spin" /> {t("connect_blu.verifying")}</> : t("connect_blu.verify_btn")}
