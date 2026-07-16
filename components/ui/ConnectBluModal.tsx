@@ -504,8 +504,8 @@ export default function ConnectBluModal({
                                                 {t("connect_blu.back")}
                                             </button>
 
-                                            {/* VERIFIED human view */}
-                                            {isHumanVerified ? (
+                                            {/* VERIFIED human view (always enabled for everyone) */}
+                                            {true ? (
                                                 <div className="flex flex-col gap-4">
                                                     {/* Criteria */}
                                                     <div className="bg-app-accent/5 border border-app-border rounded-2xl p-4 flex flex-col gap-3">
@@ -637,20 +637,7 @@ export default function ConnectBluModal({
                                                         </button>
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                /* NOT VERIFIED human view */
-                                                <div className="flex flex-col items-center text-center gap-6 py-4">
-                                                    <div className="w-16 h-16 rounded-3xl bg-app-accent/10 border border-app-border flex items-center justify-center">
-                                                        <Bot size={32} className="text-app-accent" />
-                                                    </div>
-                                                    <div className="flex flex-col gap-2">
-                                                        <h3 className="text-text-main font-black text-base uppercase tracking-wide">{t("connect_blu.verified_humans_only")}</h3>
-                                                        <p className="text-text-sub text-xs leading-relaxed max-w-xs" dangerouslySetInnerHTML={{ __html: t("connect_blu.verified_desc") }} />
-                                                    </div>
-                                                    <div className="w-full h-px bg-app-border" />
-                                                    <p className="text-readable-muted font-bold uppercase tracking-wide">{t("connect_blu.verified_footer")}</p>
-                                                </div>
-                                            )}
+                                            ) : null}
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
