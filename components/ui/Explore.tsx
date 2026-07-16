@@ -74,6 +74,25 @@ const openChannel = (handle: string) => {
   }
 };
 
+const openExternalLink = (url: string, e?: React.MouseEvent) => {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const twa = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+  if (url.includes("t.me/") || url.includes("telegram.me/")) {
+    if (twa?.openTelegramLink) {
+      twa.openTelegramLink(url);
+      return;
+    }
+  }
+  if (twa?.openLink) {
+    twa.openLink(url);
+  } else if (typeof window !== "undefined") {
+    window.open(url, "_blank");
+  }
+};
+
 const DepositModal = dynamic(() => import("./DepositModal"), { ssr: false });
 const WalletRequiredBeforeDepositModal = dynamic(
   () => import("./WalletRequiredBeforeDepositModal"),
@@ -3136,6 +3155,16 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
               WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)"
             }}
             dangerouslySetInnerHTML={{ __html: text }}
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              const anchor = target.closest('a');
+              if (anchor) {
+                const href = anchor.getAttribute('href');
+                if (href) {
+                  openExternalLink(href, e);
+                }
+              }
+            }}
           />
           <button
             onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
@@ -3156,14 +3185,14 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
             if (!part) return null;
             if (/^https?:\/\//i.test(part)) {
               return (
-                <a key={i} href={part} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+                <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
                   {part}
                 </a>
               );
             }
             if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
               return (
-                <a key={i} href={`https://${part}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+                <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
                   {part}
                 </a>
               );
@@ -3196,8 +3225,12 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
         dangerouslySetInnerHTML={{ __html: text }}
         onClick={(e) => {
           const target = e.target as HTMLElement;
-          if (target.tagName === 'A') {
-            e.stopPropagation();
+          const anchor = target.closest('a');
+          if (anchor) {
+            const href = anchor.getAttribute('href');
+            if (href) {
+              openExternalLink(href, e);
+            }
           }
         }}
       />
@@ -3211,14 +3244,14 @@ function LinkedText({ text, className = "" }: { text: string, className?: string
         if (!part) return null;
         if (/^https?:\/\//i.test(part)) {
           return (
-            <a key={i} href={part} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+            <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
               {part}
             </a>
           );
         }
         if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
           return (
-            <a key={i} href={`https://${part}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+            <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
               {part}
             </a>
           );
