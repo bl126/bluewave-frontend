@@ -383,7 +383,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery, isSearchOpen, telegramUser?.id]);
 
-  const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("leaderboard");
+  const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
