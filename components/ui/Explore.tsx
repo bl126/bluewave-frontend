@@ -3233,7 +3233,7 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
     }
     // Plain text truncation
     const truncated = plainText.slice(0, 300).trim() + "...";
-    const parts = truncated.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
+    const parts = truncated.split(/(https?:\/\/[^\s]+|@\w{3,}|#\w{2,}|\$[A-Za-z]{2,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
     return (
       <div className={className}>
         <span className="inline whitespace-pre-wrap">
@@ -3256,6 +3256,20 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
             if (part.startsWith('@')) {
               return (
                 <span key={i} onClick={(e) => { e.stopPropagation(); openChannel(part); }} className="text-cyan-400 font-bold hover:text-cyan-300 cursor-pointer transition-colors">
+                  {part}
+                </span>
+              );
+            }
+            if (part.startsWith('#')) {
+              return (
+                <span key={i} className="text-cyan-400 font-bold">
+                  {part}
+                </span>
+              );
+            }
+            if (part.startsWith('$') && /^\$[A-Za-z]/.test(part)) {
+              return (
+                <span key={i} className="text-emerald-400 font-bold">
                   {part}
                 </span>
               );
@@ -3293,7 +3307,7 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
     );
   }
 
-  const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
+  const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,}|#\w{2,}|\$[A-Za-z]{2,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
   return (
     <p className={`${className} whitespace-pre-wrap`}>
       {parts.map((part, i) => {
@@ -3315,6 +3329,20 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
         if (part.startsWith('@')) {
           return (
             <span key={i} onClick={(e) => { e.stopPropagation(); openChannel(part); }} className="text-cyan-400 font-bold hover:text-cyan-300 cursor-pointer transition-colors">
+              {part}
+            </span>
+          );
+        }
+        if (part.startsWith('#')) {
+          return (
+            <span key={i} className="text-cyan-400 font-bold">
+              {part}
+            </span>
+          );
+        }
+        if (part.startsWith('$') && /^\$[A-Za-z]/.test(part)) {
+          return (
+            <span key={i} className="text-emerald-400 font-bold">
               {part}
             </span>
           );
@@ -3666,10 +3694,11 @@ function PostCard({
               <span className="text-[12px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} 
-                  className="p-1 text-white/85 hover:text-white"
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsMenuOpen(!isMenuOpen); }}
+                  onPointerDown={(e) => { e.stopPropagation(); }}
+                  className="p-2.5 -m-1.5 text-white/85 hover:text-white touch-manipulation"
                 >
-                  <MoreHorizontal size={15} />
+                  <MoreHorizontal size={18} />
                 </button>
                 <AnimatePresence>
                   {isMenuOpen && typeof document !== "undefined" && createPortal(
