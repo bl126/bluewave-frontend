@@ -3384,10 +3384,16 @@ function PostCard({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (rowMenuRef.current && !rowMenuRef.current.contains(event.target as Node)) setIsMenuOpen(false);
+      const target = event.target as HTMLElement;
+      if (target.closest('.bottom-sheet-portal')) {
+        return;
+      }
+      if (rowMenuRef.current && !rowMenuRef.current.contains(target)) {
+        setIsMenuOpen(false);
+      }
     };
-    if (isMenuOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (isMenuOpen) document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [isMenuOpen]);
 
   // StarGift BackButton handled in parent Explore.tsx centralized event listener
@@ -3646,12 +3652,17 @@ function PostCard({
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-[12px] text-white/60 font-bold uppercase">{timeAgo(post.created_at)}</span>
               <div className="relative" ref={rowMenuRef}>
-                <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1 text-white/85 hover:text-white">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} 
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  className="p-1 text-white/85 hover:text-white"
+                >
                   <MoreHorizontal size={15} />
                 </button>
                 <AnimatePresence>
                   {isMenuOpen && typeof document !== "undefined" && createPortal(
-                    <div className="fixed inset-0 z-[1100] flex flex-col justify-end overflow-hidden pointer-events-auto text-center">
+                    <div className="fixed inset-0 z-[1100] flex flex-col justify-end overflow-hidden pointer-events-auto text-center bottom-sheet-portal">
                       {/* Backdrop */}
                       <motion.div
                         className="absolute inset-0 bg-black/40 backdrop-blur-[8px]"
