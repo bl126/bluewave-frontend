@@ -3383,7 +3383,9 @@ function PostCard({
   const ackBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    let active = true;
     const handleClickOutside = (event: MouseEvent) => {
+      if (!active) return;
       const target = event.target as HTMLElement;
       if (target.closest('.bottom-sheet-portal')) {
         return;
@@ -3392,8 +3394,19 @@ function PostCard({
         setIsMenuOpen(false);
       }
     };
-    if (isMenuOpen) document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    
+    let timer: any;
+    if (isMenuOpen) {
+      timer = setTimeout(() => {
+        if (active) document.addEventListener("click", handleClickOutside);
+      }, 0);
+    }
+    
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, [isMenuOpen]);
 
   // StarGift BackButton handled in parent Explore.tsx centralized event listener
@@ -3654,8 +3667,6 @@ function PostCard({
               <div className="relative" ref={rowMenuRef}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} 
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
                   className="p-1 text-white/85 hover:text-white"
                 >
                   <MoreHorizontal size={15} />
