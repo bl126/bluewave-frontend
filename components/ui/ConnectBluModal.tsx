@@ -131,6 +131,10 @@ export default function ConnectBluModal({
 
     const [selectedChannelForAnalytics, setSelectedChannelForAnalytics] = useState<string | null>(null);
 
+    const activeAnalyticsChannel = connectedChannels.find(
+        (ch) => ch.handle === (selectedChannelForAnalytics || analyticsChannelHandle || alreadyConnected)
+    ) || connectedInfo;
+
     // Initialize selectedChannelForAnalytics when modal opens or channels load
     useEffect(() => {
         if (isOpen) {
@@ -241,6 +245,7 @@ export default function ConnectBluModal({
     // Fetch channel analytics when analytics overlay opens or selected channel changes
     useEffect(() => {
         if (!analyticsOpen || !telegramId) return;
+        setImgError(false);
         
         const handle = selectedChannelForAnalytics || analyticsChannelHandle || alreadyConnected || null;
         
@@ -787,14 +792,14 @@ export default function ConnectBluModal({
                             }}
                         >
                             <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
-                                {connectedInfo.photo && !imgError ? (
-                                    <img src={connectedInfo.photo} alt="Avatar" className="w-full h-full object-cover" />
+                                {activeAnalyticsChannel.photo && !imgError ? (
+                                    <img src={activeAnalyticsChannel.photo} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="text-white font-black text-sm">{connectedInfo.title?.[0] || "B"}</div>
+                                    <div className="text-white font-black text-sm">{activeAnalyticsChannel.title?.[0] || "B"}</div>
                                 )}
                             </div>
                             <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{connectedInfo.title}</h3>
+                                <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{activeAnalyticsChannel.title}</h3>
                                 <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1">Channel Analytics</p>
                             </div>
                         </div>
