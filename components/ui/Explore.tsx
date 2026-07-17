@@ -3203,7 +3203,7 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
   if (isLong && !expanded && !showFull) {
     if (isHtml) {
       return (
-        <div className={`${className} relative`} onClick={(e) => e.stopPropagation()}>
+        <div className={`${className} relative`}>
           <div 
             className={`max-h-[120px] overflow-hidden relative html-post-content ${htmlClasses}`}
             style={{
@@ -3235,7 +3235,7 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
     const truncated = plainText.slice(0, 300).trim() + "...";
     const parts = truncated.split(/(https?:\/\/[^\s]+|@\w{3,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
     return (
-      <div className={className} onClick={(e) => e.stopPropagation()}>
+      <div className={className}>
         <span className="inline whitespace-pre-wrap">
           {parts.map((part, i) => {
             if (!part) return null;
