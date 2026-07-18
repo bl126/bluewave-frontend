@@ -100,3 +100,8 @@ export async function fetchQuestShare(questId: string) {
 export async function fetchQuestBoardPass(questId: string) {
   return getApi(`/quests/${questId}/board-pass`);
 }
+
+export async function requestQuestMint(questId: string, walletAddress: string) {
+  return postApi(`/quests/${questId}/request-mint`, { wallet_address: walletAddress });
+}
+

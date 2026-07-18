@@ -319,6 +319,18 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   useEffect(() => {
     setFeedSeed(Math.floor(Math.random() * 1000000));
+    
+    const handleTriggerTokenSearch = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const query = customEvent.detail?.query || "";
+      if (query) {
+        setIsSearchOpen(true);
+        setSearchQuery(query);
+        setActiveSearchTab("Gram");
+      }
+    };
+    window.addEventListener("triggerTokenSearch", handleTriggerTokenSearch);
+    return () => window.removeEventListener("triggerTokenSearch", handleTriggerTokenSearch);
   }, []);
 
   useEffect(() => {
@@ -354,6 +366,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     };
   }, []);
 
+  const [tokenResults, setTokenResults] = useState<any[]>([]);
+  const [isTokenSearching, setIsTokenSearching] = useState(false);
+
   // Debounced search query logic
   useEffect(() => {
     if (!isSearchOpen) {
@@ -361,6 +376,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       setSearchQuery("");
       return;
     }
+    
+    if (activeSearchTab === "Gram") return;
     
     const query = searchQuery.trim();
     if (!query) {
@@ -381,7 +398,30 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }, 300);
     
     return () => clearTimeout(delayDebounce);
-  }, [searchQuery, isSearchOpen, telegramUser?.id]);
+  }, [searchQuery, isSearchOpen, telegramUser?.id, activeSearchTab]);
+
+  useEffect(() => {
+    if (!isSearchOpen) {
+      setTokenResults([]);
+      return;
+    }
+    if (activeSearchTab !== "Gram") return;
+
+    setIsTokenSearching(true);
+    const query = searchQuery.trim();
+    const delayDebounce = setTimeout(() => {
+      getApi(`/explore/token/search?query=${encodeURIComponent(query)}`)
+        .then((res: any) => {
+          if (res) {
+            setTokenResults(res);
+          }
+        })
+        .catch((err) => console.error("Token search failed:", err))
+        .finally(() => setIsTokenSearching(false));
+    }, 250);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, isSearchOpen, activeSearchTab]);
 
   const [activeTab, setActiveTab] = useState<"foryou" | "following" | "leaderboard" | "notifications">("foryou");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -1890,6 +1930,108 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     </div>
                   );
                 })()
+              ) : activeSearchTab === "Gram" ? (
+                (() => {
+                  if (isTokenSearching && tokenResults.length === 0) {
+                    return (
+                      <div className="space-y-4 py-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-3 animate-pulse">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-white/10" />
+                              <div className="space-y-2">
+                                <div className="w-24 h-3 bg-white/10 rounded" />
+                                <div className="w-16 h-2 bg-white/5 rounded" />
+                              </div>
+                            </div>
+                            <div className="w-16 h-6 rounded-full bg-white/10" />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  
+                  if (tokenResults.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <p className="text-xs text-text-muted font-black uppercase tracking-widest">No tokens found</p>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="space-y-3 pb-12">
+                      {tokenResults.map((token: any, idx: number) => {
+                        const swapUrl = `https://app.ston.fi/swap?ft=TON&tt=${token.address || "TON"}`;
+                        const handleOpenSwap = (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          const twa = (window as any).Telegram?.WebApp;
+                          if (twa?.openLink) twa.openLink(swapUrl);
+                          else window.open(swapUrl, "_blank");
+                        };
+                        
+                        const handleCopyAddress = (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          if (token.address) {
+                            navigator.clipboard.writeText(token.address);
+                            const twa = (window as any).Telegram?.WebApp;
+                            if (twa?.showAlert) twa.showAlert("Address copied!");
+                            else alert("Address copied to clipboard!");
+                          }
+                        };
+                        
+                        return (
+                          <div 
+                            key={idx}
+                            className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] transition-all"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-black/40 border border-white/15 flex items-center justify-center shrink-0">
+                                {token.image ? (
+                                  <img src={token.image} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-emerald-400 bg-emerald-400/10 font-black text-xs">
+                                    {token.symbol?.[0] || "$"}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-white text-sm font-black uppercase tracking-wider">{token.symbol}</span>
+                                  {token.name && <span className="text-[10px] text-white/50 font-bold uppercase truncate max-w-[80px]">({token.name})</span>}
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[9px] font-mono text-white/40 truncate max-w-[120px]">{token.address || "Native TON"}</span>
+                                  {token.address && (
+                                    <button 
+                                      onClick={handleCopyAddress}
+                                      className="text-[9px] font-black uppercase tracking-wider text-emerald-400 hover:text-emerald-300"
+                                    >
+                                      Copy
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col items-end shrink-0 gap-1.5">
+                              <span className="text-sm font-mono font-black text-emerald-400">
+                                {token.price !== null ? `$${token.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}` : "—"}
+                              </span>
+                              <button 
+                                onClick={handleOpenSwap}
+                                className="px-3.5 py-1 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-black uppercase text-[9px] tracking-widest active:scale-95 transition-all"
+                              >
+                                Swap
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
               ) : isSearching && searchResults.length === 0 ? (
                 <div className="space-y-4 py-4">
                   {[1, 2, 3].map((i) => (
@@ -3267,9 +3409,17 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
                 </span>
               );
             }
-            if (part.startsWith('$') && /^\$[A-Za-z]/.test(part)) {
+             if (part.startsWith('$') && /^\$[A-Za-z]/.test(part)) {
+              const symbol = part.slice(1);
               return (
-                <span key={i} className="text-emerald-400 font-bold">
+                <span 
+                  key={i} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new CustomEvent("triggerTokenSearch", { detail: { query: symbol } }));
+                  }}
+                  className="text-emerald-400 font-bold cursor-pointer hover:underline underline-offset-2 transition-all"
+                >
                   {part}
                 </span>
               );
@@ -3341,8 +3491,16 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
           );
         }
         if (part.startsWith('$') && /^\$[A-Za-z]/.test(part)) {
+          const symbol = part.slice(1);
           return (
-            <span key={i} className="text-emerald-400 font-bold">
+            <span 
+              key={i} 
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("triggerTokenSearch", { detail: { query: symbol } }));
+              }}
+              className="text-emerald-400 font-bold cursor-pointer hover:underline underline-offset-2 transition-all"
+            >
               {part}
             </span>
           );

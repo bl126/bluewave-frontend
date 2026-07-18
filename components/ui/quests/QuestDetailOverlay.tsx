@@ -6,7 +6,9 @@ import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { buildQuestStartappLink } from "@/lib/questDeepLink";
 import { buildLocalQuestChecks } from "@/lib/questLocalChecks";
-import { fetchQuestProgress, type QuestListItem } from "@/lib/questsApi";
+import { fetchQuestProgress, requestQuestMint, type QuestListItem } from "@/lib/questsApi";
+import { useTonConnectUI, useTonAddress } from "@tonconnect/ui-react";
+import { Address, beginCell, toNano } from "@ton/core";
 import QuestCriteriaPanel from "./QuestCriteriaPanel";
 import QuestBoardPass from "./QuestBoardPass";
 
@@ -65,6 +67,9 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     wallet_address?: string;
   }>({});
   const [walletConfirmed, setWalletConfirmed] = useState<boolean>(false);
+  const [mintLoading, setMintLoading] = useState(false);
+  const [tonConnectUI] = useTonConnectUI();
+  const tonAddress = useTonAddress();
 
   // Premium Anti-Farming Scanning States
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'revealing' | 'done'>('idle');
@@ -201,8 +206,66 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
     }
   };
 
-  const handleMintRequest = () => {
-    toast("MINT_NOT_READY — smart contract Phase 3–5. User-paid gas (~0.05–0.2 TON) when live.");
+  const handleMintRequest = async () => {
+    // 1. Ensure wallet is connected via TonConnect
+    if (!tonAddress) {
+      try {
+        await tonConnectUI.openModal();
+      } catch {
+        toast("Please connect your TON wallet first.");
+      }
+      return;
+    }
+
+    setMintLoading(true);
+    try {
+      // 2. Request signed payload from backend
+      const res = await requestQuestMint(quest.id, tonAddress);
+      if (!res || res.error) {
+        toast(res?.detail || res?.error || "Mint request failed.");
+        setMintLoading(false);
+        return;
+      }
+
+      // 3. Build the Mint message body
+      // Message opcode = 0x00000001 (Mint)
+      const signatureBytes = Buffer.from(res.signature_hex, "hex");
+      const itemContentCell = Buffer.from(res.item_content_boc, "base64");
+
+      const mintBody = beginCell()
+        .storeUint(1, 32) // op: Mint
+        .storeUint(0, 64) // query_id
+        .storeAddress(Address.parse(tonAddress)) // to
+        .storeUint(res.tier, 8) // tier
+        .storeRef(beginCell().storeBuffer(itemContentCell).endCell()) // item_content
+        .storeBuffer(signatureBytes) // signature (64 bytes = 512 bits)
+        .endCell();
+
+      // 4. Send transaction via TonConnect
+      const txResult = await tonConnectUI.sendTransaction({
+        validUntil: Math.floor(Date.now() / 1000) + 300, // 5 min
+        messages: [
+          {
+            address: res.collection_address,
+            amount: toNano("0.1").toString(), // gas for deployment
+            payload: mintBody.toBoc().toString("base64"),
+          },
+        ],
+      });
+
+      toast("🎉 Mint transaction sent! Check your wallet for the SBT.");
+      setProgressStatus({ ...progressStatus, minted: true });
+      setScanState('done');
+    } catch (err: any) {
+      const msg = err?.message || "Mint transaction failed.";
+      if (msg.includes("Cancelled") || msg.includes("Rejected")) {
+        toast("Transaction cancelled.");
+      } else {
+        toast(msg);
+      }
+    } finally {
+      setMintLoading(false);
+    }
   };
 
   /* ── Stats columns ─────────────────────────────────────────────────── */
@@ -439,9 +502,9 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                                 You Are Eligible!
                               </h4>
                             </div>
-                            {progressStatus.wallet_address && (
+                            {(tonAddress || progressStatus.wallet_address) && (
                               <p className="text-[10px] text-text-sub">
-                                Connected: <span className="font-mono">{progressStatus.wallet_address}</span>
+                                Connected: <span className="font-mono">{tonAddress || progressStatus.wallet_address}</span>
                               </p>
                             )}
                             <label className="inline-flex items-center space-x-2 mt-2">
@@ -456,10 +519,19 @@ export default function QuestDetailOverlay({ quest, telegramUser, onClose, onToa
                             <button
                               type="button"
                               onClick={handleMintRequest}
-                              disabled={!walletConfirmed}
-                              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              disabled={!walletConfirmed || mintLoading}
+                              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                             >
-                              Mint NFT
+                              {mintLoading ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Minting...
+                                </>
+                              ) : tonAddress ? (
+                                "Mint NFT"
+                              ) : (
+                                "Connect Wallet & Mint"
+                              )}
                             </button>
                           </div>
                         )}
