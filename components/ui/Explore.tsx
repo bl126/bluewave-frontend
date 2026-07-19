@@ -559,6 +559,10 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   const miniAppsList = dbMiniApps || [];
 
+  // Fetch Explore Ads
+  const { data: dbAds } = useApi(isOpen ? "/explore/ads" : null);
+  const adsList = dbAds || [];
+
   const lastPostUploadedNotif = useRef<string | null>(null);
 
   useEffect(() => {
@@ -1244,7 +1248,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onStarGiftSuccess={() => mutateNotifications()}
                           onOpenBuyStars={tryOpenBuyStars}
                         />
-                        {(index + 1) % MINI_APP_INSERT_EVERY === 0 && (
+                        {(index + 1) % MINI_APP_INSERT_EVERY === 0 ? (
                           <MiniAppCarousel
                             apps={miniAppsList}
                             loading={!dbMiniApps || dbMiniApps.length === 0}
@@ -1253,7 +1257,32 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                               setActiveMiniAppsTab("All");
                             }}
                           />
-                        )}
+                        ) : (index + 1) % 10 === 0 && adsList.length > 0 ? (
+                          (() => {
+                            const adIndex = Math.floor((index + 1) / 10) % adsList.length;
+                            const ad = adsList[adIndex];
+                            if (!ad) return null;
+                            
+                            return (
+                              <div 
+                                onClick={(e) => openExternalLink(ad.link_url, e)}
+                                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-[24px] overflow-hidden p-4 mb-4 flex flex-col gap-3 relative cursor-pointer active:scale-[0.98] transition-all hover:bg-white/[0.04]"
+                              >
+                                <span className="absolute top-6 right-6 bg-black/60 backdrop-blur-md text-[9px] font-black uppercase tracking-widest text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-400/20 z-10">
+                                  Sponsored
+                                </span>
+                                <div className="w-full h-44 rounded-2xl overflow-hidden border border-white/5 bg-black/40">
+                                  <img src={ad.banner_url} className="w-full h-full object-cover" alt="" />
+                                </div>
+                                {ad.caption && (
+                                  <p className="text-xs text-text-sub font-semibold tracking-wide uppercase px-1">
+                                    {ad.caption}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })()
+                        ) : null}
                       </Fragment>
                     ))
                     }
