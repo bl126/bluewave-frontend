@@ -45,7 +45,9 @@ import {
   Award,
   Megaphone,
   Layers,
-  Wrench
+  Wrench,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -4503,6 +4505,125 @@ function NotificationsView({
   );
 }
 
+function GifPickerModal({
+  isOpen,
+  onClose,
+  onSelectGif
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectGif: (gifUrl: string) => void;
+}) {
+  const [searchTerm, setSearchTerm] = useState("crypto");
+  const [gifs, setGifs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const categories = ["Crypto", "Bullish", "WAGMI", "Reaction", "GM", "Hype", "Fire", "LOL", "Rocket", "Meme"];
+
+  const fetchGifs = async (query: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=cw33n8E59jM7T7jVqX7R8pG5K9L1xZ00&q=${encodeURIComponent(query)}&limit=20&rating=g`);
+      if (res.ok) {
+        const data = await res.json();
+        const urls = (data.data || []).map((g: any) => g.images?.fixed_height?.url || g.images?.original?.url).filter(Boolean);
+        if (urls.length > 0) {
+          setGifs(urls);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setGifs([
+      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9C1nyePlaac92/giphy.gif",
+      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/trN9F5u8OQOW4/giphy.gif",
+      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlHFRbmaZtBRhXG/giphy.gif",
+      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tXGgHju4xH8B2/giphy.gif"
+    ]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchGifs(searchTerm);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-t-[2.5rem] sm:rounded-3xl p-5 flex flex-col gap-4 max-h-[80vh] shadow-2xl"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-extrabold text-base tracking-tight uppercase">Choose a GIF</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 px-3 py-2 bg-black/50 border border-white/10 rounded-2xl">
+          <Search size={16} className="text-white/40" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              fetchGifs(e.target.value);
+            }}
+            placeholder="Search GIFs..."
+            className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none font-medium"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => {
+                setSearchTerm(cat);
+                fetchGifs(cat);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider shrink-0 transition-all ${
+                searchTerm.toLowerCase() === cat.toLowerCase()
+                  ? "bg-cyan-500 text-black shadow-md"
+                  : "bg-white/5 border border-white/10 text-white/70 hover:bg-white/10"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar min-h-[260px] grid grid-cols-2 gap-2 pr-1">
+          {loading ? (
+            <div className="col-span-2 flex items-center justify-center py-12 text-white/50">
+              <Loader2 size={24} className="animate-spin" />
+            </div>
+          ) : gifs.map((url, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                onSelectGif(url);
+                onClose();
+              }}
+              className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black/40 hover:border-cyan-400 active:scale-95 transition-all shadow-md group"
+            >
+              <img src={url} alt="GIF" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function PostDetailModal({
   post: initialPost,
   commentId,
@@ -4527,6 +4648,8 @@ function PostDetailModal({
   const [loading, setLoading] = useState(!initialPost.content);
   const [commentImage, setCommentImage] = useState<string | null>(null); // base64 preview
   const [commentImageUploading, setCommentImageUploading] = useState(false);
+  const [isGifModalOpen, setIsGifModalOpen] = useState(false);
+  const [isInputExpanded, setIsInputExpanded] = useState(false);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -5098,82 +5221,194 @@ function PostDetailModal({
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom,20px)+20px)] max-w-xl mx-auto">
-          {/* Hidden image file input */}
-          <input
-            ref={commentImageInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleCommentImageSelect}
-          />
+        {/* Hidden image file input */}
+        <input
+          ref={commentImageInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCommentImageSelect}
+        />
 
-          {/* Reply banner */}
+        {/* ─── Modern X/Twitter Style Dual-State Comment Input ─── */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-zinc-950/95 to-transparent pt-4 pb-[calc(env(safe-area-inset-bottom,16px)+16px)] px-4 max-w-xl mx-auto z-[600] pointer-events-auto">
+          {/* Reply Banner */}
           {replyTo && (
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-2 border-x border-t border-cyan-500/20">
-              <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
-                Replying to <span className="text-white">{replyTo.user.name}</span>
+            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-1.5 mb-2 rounded-xl border border-cyan-500/20">
+              <span className="text-[10px] font-black text-cyan-400 uppercase tracking-wider">
+                Replying to <span className="text-white font-bold">{replyTo.user.name}</span>
               </span>
-              <button onClick={() => setReplyTo(null)} className="text-cyan-400 p-1">
+              <button onClick={() => setReplyTo(null)} className="text-cyan-400 p-0.5 hover:text-white">
                 <X size={14} />
               </button>
             </motion.div>
           )}
 
-          {/* Image preview strip */}
-          {commentImage && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 px-4 pt-3"
-            >
-              <div className="relative">
-                <img src={commentImage} alt="preview" className="w-16 h-16 rounded-xl object-cover border border-white/10" />
-                <button
-                  onClick={() => setCommentImage(null)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black/80 rounded-full border border-white/20 flex items-center justify-center"
-                >
-                  <X size={10} className="text-white" />
-                </button>
-              </div>
-              <span className="text-[10px] text-white/80 font-mono">Image attached</span>
-            </motion.div>
+          {starError && (
+            <p className="text-[10px] text-amber-400 mb-2 font-medium px-2">{starError}</p>
           )}
 
-          {/* Input row (Slim layout, black & white buttons) */}
-          <div className="flex flex-col mx-4 my-2 gap-1.5">
-            {starError && (
-              <p className="text-[10px] text-amber-400 mt-1 font-medium px-2">{starError}</p>
-            )}
-            <div className={`flex items-center gap-2.5 p-2 px-4 bg-zinc-950 border border-white/20 ${
-              replyTo ? 'rounded-2xl' : 'rounded-full'
-            } focus-within:border-white/80 transition-all shadow-xl`}>
+          {!isInputExpanded ? (
+            /* ─── COLLAPSED PILL STATE (Matching Reference Image 2) ─── */
+            <div
+              onClick={() => setIsInputExpanded(true)}
+              className="w-full bg-zinc-900/90 border border-white/15 rounded-full px-3.5 py-2.5 flex items-center justify-between shadow-2xl backdrop-blur-2xl cursor-pointer hover:border-white/30 transition-all"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {/* Left: Current User Avatar */}
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm">
+                  {telegramUser?.photo ? (
+                    <img src={telegramUser.photo} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-cyan-500/20 text-cyan-400 font-black text-xs">
+                      {(telegramUser?.first_name || telegramUser?.username || "U")[0]}
+                    </div>
+                  )}
+                </div>
 
-              {/* Image attach button (Sleek transparent style) */}
-              <button
-                onClick={() => commentImageInputRef.current?.click()}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all active:scale-90 shadow-sm border border-white/10"
-              >
-                <ImageIcon size={14} />
-              </button>
+                {/* Input Placeholder */}
+                <input
+                  type="text"
+                  readOnly
+                  value={content}
+                  placeholder="Post your reply"
+                  className="bg-transparent text-white/90 text-sm font-medium outline-none pointer-events-none w-full placeholder-white/40"
+                />
+              </div>
 
-              <textarea
-                id="comment-input"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Post your reply…"
-                className="flex-1 bg-transparent border-none outline-none text-[13px] text-white py-1.5 resize-none max-h-24 min-h-[32px] placeholder-zinc-500 font-medium custom-scrollbar"
-                rows={1}
-              />
-              <button
-                onClick={handlePostComment}
-                disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
-                className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-20 shadow-md"
-              >
-                {(posting || commentImageUploading) ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} strokeWidth={2.5} />}
-              </button>
+              {/* Right Action Icons */}
+              <div className="flex items-center gap-2.5 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => commentImageInputRef.current?.click()}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white transition-colors"
+                >
+                  <ImageIcon size={20} />
+                </button>
+
+                <button
+                  onClick={() => setIsGifModalOpen(true)}
+                  className="px-2 py-0.5 rounded-lg border border-white/30 text-[10px] font-black text-white/80 uppercase tracking-widest hover:border-white hover:text-white transition-colors"
+                >
+                  GIF
+                </button>
+
+                <button
+                  onClick={() => setIsInputExpanded(true)}
+                  className="p-1.5 rounded-full text-white/70 hover:text-white transition-colors"
+                >
+                  <Maximize2 size={18} />
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* ─── EXPANDED CARD STATE (Matching Reference Images 1 & 3) ─── */
+            <div className="w-full bg-zinc-900/95 border border-white/15 rounded-[2rem] p-4 flex flex-col gap-3 shadow-2xl backdrop-blur-2xl">
+              {/* Top Input Row: Avatar + Textarea + Contract Icon */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm mt-1">
+                  {telegramUser?.photo ? (
+                    <img src={telegramUser.photo} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-cyan-500/20 text-cyan-400 font-black text-xs">
+                      {(telegramUser?.first_name || telegramUser?.username || "U")[0]}
+                    </div>
+                  )}
+                </div>
+
+                <textarea
+                  id="comment-input"
+                  autoFocus
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Post your reply"
+                  rows={3}
+                  className="flex-1 bg-transparent text-white text-sm font-medium outline-none resize-none placeholder-white/40 leading-relaxed custom-scrollbar pt-1"
+                />
+
+                <button
+                  onClick={() => setIsInputExpanded(false)}
+                  className="p-1 text-white/50 hover:text-white transition-colors"
+                >
+                  <Minimize2 size={18} />
+                </button>
+              </div>
+
+              {/* Attached Media Thumbnail Preview (Matching Image 3) */}
+              {commentImage && (
+                <div className="relative inline-block w-24 h-24 rounded-2xl overflow-hidden border border-white/15 shadow-lg ml-11 my-1">
+                  <img src={commentImage} alt="attached media" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setCommentImage(null)}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white active:scale-90 transition-transform shadow-md"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+
+              {/* Bottom Action Toolbar */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                {/* Left Toolbar Icons: Image & GIF */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => commentImageInputRef.current?.click()}
+                    className="p-1.5 rounded-full text-white/70 hover:text-white active:scale-90 transition-all"
+                  >
+                    <ImageIcon size={20} />
+                  </button>
+
+                  <button
+                    onClick={() => setIsGifModalOpen(true)}
+                    className="px-2 py-0.5 rounded-lg border border-white/30 text-[10px] font-black text-white/80 uppercase tracking-widest hover:border-white hover:text-white active:scale-90 transition-all"
+                  >
+                    GIF
+                  </button>
+                </div>
+
+                {/* Right Toolbar: Character Ring + Bold Reply Pill Button */}
+                <div className="flex items-center gap-3">
+                  {/* Character Progress Ring */}
+                  <div className="w-5 h-5 relative flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="10" cy="10" r="8" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
+                      <circle
+                        cx="10" cy="10" r="8"
+                        stroke={content.length > 250 ? "#ef4444" : "#00e6ff"}
+                        strokeWidth="2"
+                        fill="none"
+                        strokeDasharray={50}
+                        strokeDashoffset={Math.max(0, 50 - (content.length / 280) * 50)}
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Reply Pill Button */}
+                  <button
+                    onClick={handlePostComment}
+                    disabled={posting || commentImageUploading || (!content.trim() && !commentImage)}
+                    className="bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-sm px-6 py-2 rounded-full transition-all active:scale-95 disabled:opacity-30 shadow-lg flex items-center justify-center"
+                  >
+                    {posting || commentImageUploading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <span>Reply</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* GIF Picker Modal */}
+        <GifPickerModal
+          isOpen={isGifModalOpen}
+          onClose={() => setIsGifModalOpen(false)}
+          onSelectGif={(gifUrl) => {
+            setCommentImage(gifUrl);
+            setIsInputExpanded(true);
+          }}
+        />
 
         {/* Star Gift Modal integration inside PostDetailModal */}
         <StarGiftModal
