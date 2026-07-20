@@ -1265,23 +1265,81 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             const adIndex = Math.floor((index + 1) / 10) % adsList.length;
                             const ad = adsList[adIndex];
                             if (!ad) return null;
-                            
+
+                            const handleAdClick = (e: React.MouseEvent) => {
+                              postApi(`/explore/ad/${ad.id}/view`, {}).catch(() => {});
+                              openExternalLink(ad.link_url, e);
+                            };
+
+                            const isVideo = ad.media_type === 'video' || (ad.banner_url && /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(ad.banner_url));
+
                             return (
                               <div 
-                                onClick={(e) => openExternalLink(ad.link_url, e)}
-                                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-[24px] overflow-hidden p-4 mb-4 flex flex-col gap-3 relative cursor-pointer active:scale-[0.98] transition-all hover:bg-white/[0.04]"
+                                onClick={handleAdClick}
+                                className="w-full bg-zinc-950/90 border border-white/[0.08] rounded-[2rem] p-5 mb-4 flex flex-col shadow-2xl relative cursor-pointer active:scale-[0.99] transition-all hover:bg-white/[0.02]"
                               >
-                                <span className="absolute top-6 right-6 bg-black/60 backdrop-blur-md text-[9px] font-black uppercase tracking-widest text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-400/20 z-10">
-                                  Sponsored
-                                </span>
-                                <div className="w-full h-44 rounded-2xl overflow-hidden border border-white/5 bg-black/40">
-                                  <img src={ad.banner_url} className="w-full h-full object-cover" alt="" />
+                                {/* Header Row: Logo Avatar + Title + "Sponsored" badge */}
+                                <div className="flex items-center justify-between gap-3 mb-3">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-black/40 flex items-center justify-center shrink-0 shadow-md">
+                                      {ad.avatar_url ? (
+                                        <img src={ad.avatar_url} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-xs uppercase">
+                                          {(ad.title || "S")[0]}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <h3 className="text-white font-black text-[13px] uppercase truncate tracking-tight">
+                                        {ad.title || "Sponsored Post"}
+                                      </h3>
+                                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider">Ad</span>
+                                    </div>
+                                  </div>
+
+                                  <span className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-emerald-500/20 shrink-0">
+                                    Sponsored
+                                  </span>
                                 </div>
+
+                                {/* Caption text */}
                                 {ad.caption && (
-                                  <p className="text-xs text-text-sub font-semibold tracking-wide uppercase px-1">
-                                    {ad.caption}
-                                  </p>
+                                  <div className="mb-3">
+                                    <LinkedText text={ad.caption} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap font-medium" />
+                                  </div>
                                 )}
+
+                                {/* Media Banner (Image or Video) */}
+                                {ad.banner_url && (
+                                  <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full max-h-[400px]">
+                                    {isVideo ? (
+                                      <video 
+                                        src={ad.banner_url} 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline 
+                                        className="w-full h-auto max-h-[400px] object-cover" 
+                                      />
+                                    ) : (
+                                      <img 
+                                        src={ad.banner_url} 
+                                        alt="Sponsored media" 
+                                        className="w-full h-auto max-h-[400px] object-contain" 
+                                        loading="lazy" 
+                                      />
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Action / Views Bar: Only Views (BarChart2 icon) */}
+                                <div className="flex items-center justify-end pt-1 border-t border-white/[0.04]">
+                                  <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-black uppercase tracking-widest">
+                                    <BarChart2 size={16} />
+                                    <span>{(ad.views_count || 1).toLocaleString()}</span>
+                                  </div>
+                                </div>
                               </div>
                             );
                           })()

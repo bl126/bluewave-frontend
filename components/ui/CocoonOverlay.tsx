@@ -51,14 +51,14 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 26, stiffness: 190 }}
-            className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] max-h-[85vh] pb-safe"
+            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+            className="relative w-full z-10 overflow-hidden text-text-main flex flex-col rounded-t-[2.5rem] max-h-[85vh] pb-safe will-change-transform"
             style={{
-              background: "rgba(0, 0, 0, 0.45)",
-              backdropFilter: "blur(30px) saturate(190%)",
-              WebkitBackdropFilter: "blur(30px) saturate(190%)",
+              background: "rgba(0, 0, 0, 0.85)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
               borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-              boxShadow: "inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 -10px 40px rgba(0, 0, 0, 0.5)"
+              boxShadow: "0 -10px 40px rgba(0, 0, 0, 0.5)"
             }}
           >
             {/* Ambient specular glow */}
@@ -70,7 +70,7 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-44 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-36 custom-scrollbar">
               
               {/* Hero Section */}
               <div className="flex flex-col items-center text-center mb-8">
@@ -193,12 +193,6 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
                 <span>Cocoon Community</span>
                 <ExternalLink size={14} />
               </a>
-              <button 
-                onClick={onClose}
-                className="w-full h-12 bg-white/5 border border-white/10 text-white font-semibold text-sm rounded-full transition-all active:scale-[0.97] hover:bg-white/10"
-              >
-                Back to Wave
-              </button>
             </div>
 
           </motion.div>
