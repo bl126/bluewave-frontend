@@ -1677,7 +1677,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Sparkles size={20} className="text-cyan-400 shrink-0" />
+                    <Sparkles size={20} className="text-white shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
                   </button>
 
@@ -1727,7 +1727,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Layers size={20} className="text-cyan-400 shrink-0" />
+                    <Layers size={20} className="text-white shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Wave Tools</span>
                   </button>
 
@@ -5257,8 +5257,12 @@ function PostDetailModal({
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Left: Current User Avatar */}
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm">
-                  {telegramUser?.photo ? (
-                    <img src={telegramUser.photo} className="w-full h-full object-cover" />
+                  {(telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url)) ? (
+                    <img 
+                      src={telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url} 
+                      className="w-full h-full object-cover" 
+                      alt="User avatar"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-cyan-500/20 text-cyan-400 font-black text-xs">
                       {(telegramUser?.first_name || telegramUser?.username || "U")[0]}
@@ -5306,8 +5310,12 @@ function PostDetailModal({
               {/* Top Input Row: Avatar + Textarea + Contract Icon */}
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm mt-1">
-                  {telegramUser?.photo ? (
-                    <img src={telegramUser.photo} className="w-full h-full object-cover" />
+                  {(telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url)) ? (
+                    <img 
+                      src={telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url} 
+                      className="w-full h-full object-cover" 
+                      alt="User avatar"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-cyan-500/20 text-cyan-400 font-black text-xs">
                       {(telegramUser?.first_name || telegramUser?.username || "U")[0]}

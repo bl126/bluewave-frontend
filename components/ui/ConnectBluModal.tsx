@@ -783,25 +783,55 @@ export default function ConnectBluModal({
                             paddingBottom: "env(safe-area-inset-bottom, 0px)" 
                         }}
                     >
-                        {/* Header — avatar + channel name, no X button (frosted, fixed for bleed-through) */}
+                        {/* Header — avatar + channel name + channel switcher pills */}
                         <div 
-                            className="fixed top-0 left-0 right-0 z-[1050] flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-black/45 backdrop-blur-2xl"
+                            className="fixed top-0 left-0 right-0 z-[1050] flex items-center justify-between gap-3 px-6 py-4 border-b border-white/10 bg-black/45 backdrop-blur-2xl"
                             style={{
                                 paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 40px)",
                                 height: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 96px)"
                             }}
                         >
-                            <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
-                                {activeAnalyticsChannel.photo && !imgError ? (
-                                    <img src={activeAnalyticsChannel.photo} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="text-white font-black text-sm">{activeAnalyticsChannel.title?.[0] || "B"}</div>
-                                )}
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
+                                    {activeAnalyticsChannel.photo && !imgError ? (
+                                        <img src={activeAnalyticsChannel.photo} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-white font-black text-sm">{activeAnalyticsChannel.title?.[0] || "B"}</div>
+                                    )}
+                                </div>
+                                <div className="text-left min-w-0">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none truncate">{activeAnalyticsChannel.title}</h3>
+                                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1 truncate">@{activeAnalyticsChannel.handle?.replace(/^@/, '') || "analytics"}</p>
+                                </div>
                             </div>
-                            <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-wider text-white leading-none">{activeAnalyticsChannel.title}</h3>
-                                <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1">Channel Analytics</p>
-                            </div>
+
+                            {/* Channel Switcher Pills */}
+                            {connectedChannels.length > 1 && (
+                                <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar max-w-[45%] shrink-0 py-1">
+                                    {connectedChannels.map((ch: any) => {
+                                        const isSel = (selectedChannelForAnalytics || activeAnalyticsChannel?.handle)?.toLowerCase() === ch.handle?.toLowerCase();
+                                        return (
+                                            <button
+                                                key={ch.handle}
+                                                onClick={() => {
+                                                    if (!isSel) {
+                                                        setAnalyticsData(null);
+                                                        setLoadingAnalytics(true);
+                                                        setSelectedChannelForAnalytics(ch.handle);
+                                                    }
+                                                }}
+                                                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all shrink-0 ${
+                                                    isSel
+                                                        ? "bg-cyan-500 text-black shadow-md scale-105"
+                                                        : "bg-white/10 text-white/70 hover:bg-white/20 active:scale-95"
+                                                }`}
+                                            >
+                                                @{ch.handle.replace(/^@/, '')}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Content viewport (padded to scroll behind fixed header) */}
