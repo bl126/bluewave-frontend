@@ -43,7 +43,9 @@ import {
   Sparkles,
   Coins,
   Award,
-  Megaphone
+  Megaphone,
+  Layers,
+  Wrench
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { createPortal } from "react-dom";
@@ -274,9 +276,10 @@ interface ExploreProps {
   telegramUser: any;
   onGoToProfile?: () => void;
   onOverlayStateChange?: (isActive: boolean) => void;
+  onOpenCocoon?: () => void;
 }
 
-export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, onOverlayStateChange }: ExploreProps) {
+export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, onOverlayStateChange, onOpenCocoon }: ExploreProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
 
@@ -1544,60 +1547,58 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 boxShadow: "10px 0 40px rgba(0, 0, 0, 0.5)"
               }}
             >
-              {/* Top content */}
-              <div className="px-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-1">
-                {/* Profile/Channel Card - Fitted left-top below back button, smaller avatar, no X */}
-                <div className="flex flex-col items-start text-left gap-3 mt-4 w-full">
-                  <div className="w-10 h-10 rounded-full border border-app-border overflow-hidden bg-app-bg flex items-center justify-center shadow-md">
-                    {swrUser?.telegram_channel_photo ? (
-                      <img 
-                        src={swrUser.telegram_channel_photo} 
-                        alt="Channel photo" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User size={18} className="text-text-sub/40" />
-                    )}
-                  </div>
-
-                  {swrUser?.telegram_channel ? (
-                    <div className="flex flex-col gap-0.5 w-full overflow-hidden">
-                      <h3 className="text-text-main font-bold text-xs uppercase truncate tracking-tight w-full">
-                        {swrUser.telegram_channel_title || "My Channel"}
-                      </h3>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-app-accent truncate w-full">
-                        @{swrUser.telegram_channel.replace("@", "")}
-                      </p>
-                      
-                      {/* Subscriber Count */}
-                      <div className="mt-1 flex items-center gap-1.5 text-[9px] text-text-sub font-bold uppercase tracking-wider">
-                        <BarChart2 size={10} className="text-app-accent shrink-0" />
-                        <span className="truncate">{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subs</span>
-                      </div>
-                    </div>
+              {/* Fixed Channel Header (pinned at top so menu scrolls below) */}
+              <div className="px-4 pt-2 pb-3 flex flex-col items-start text-left gap-3 w-full shrink-0 border-b border-white/[0.06]">
+                <div className="w-14 h-14 rounded-2xl border border-white/10 overflow-hidden bg-app-bg flex items-center justify-center shadow-lg shrink-0">
+                  {swrUser?.telegram_channel_photo ? (
+                    <img 
+                      src={swrUser.telegram_channel_photo} 
+                      alt="Channel photo" 
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="flex flex-col items-start gap-2 w-full">
-                      <h3 className="text-text-main font-bold text-[10px] uppercase tracking-wide">
-                        No channel
-                      </h3>
-                      <button
-                        onClick={() => {
-                          setIsDrawerOpen(false);
-                          setIsConnectBluOpen(true);
-                        }}
-                        className="w-full py-2 bg-app-accent text-app-bg font-bold uppercase text-[9px] tracking-wider rounded-xl shadow-lg active:scale-95 transition-all"
-                      >
-                        Connect
-                      </button>
-                    </div>
+                    <User size={24} className="text-text-sub/40" />
                   )}
                 </div>
 
-                <div className="h-px bg-white/[0.05] my-1" />
+                {swrUser?.telegram_channel ? (
+                  <div className="flex flex-col gap-0.5 w-full overflow-hidden">
+                    <h3 className="text-white font-black text-xs uppercase truncate tracking-tight w-full">
+                      {swrUser.telegram_channel_title || "My Channel"}
+                    </h3>
+                    <p className="text-[10px] font-black uppercase tracking-wide text-app-accent truncate w-full">
+                      @{swrUser.telegram_channel.replace("@", "")}
+                    </p>
+                    
+                    {/* Subscriber Count */}
+                    <div className="mt-1 flex items-center gap-1.5 text-[9px] text-text-sub font-black uppercase tracking-wider">
+                      <BarChart2 size={10} className="text-app-accent shrink-0" />
+                      <span className="truncate">{(swrUser.telegram_channel_subscribers ?? 0).toLocaleString()} subs</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-start gap-2 w-full">
+                    <h3 className="text-white font-black text-[10px] uppercase tracking-wide">
+                      No channel
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setIsDrawerOpen(false);
+                        setIsConnectBluOpen(true);
+                      }}
+                      className="w-full py-2 bg-app-accent text-app-bg font-black uppercase text-[9px] tracking-wider rounded-xl shadow-lg active:scale-95 transition-all"
+                    >
+                      Connect
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                {/* Section 1: Topics & Blu AI */}
+              {/* Scrollable Menu Items */}
+              <div className="px-4 py-3 flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-1">
+                {/* Section 1: Topics, Blu AI & Cocoon */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Topics</div>
+                  <div className="text-[8px] font-black text-text-muted uppercase tracking-widest px-2 mb-1">Topics</div>
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
@@ -1608,20 +1609,46 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <Search size={20} className="text-white shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Topics</span>
                   </button>
+                  
+                  {/* Blu AI with clean vector Bot icon */}
                   <button
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <img src="/ai icon.png" alt="Blu AI" className="w-7 h-7 shrink-0 object-contain" />
+                    <Bot size={20} className="text-cyan-400 shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
+                  </button>
+
+                  {/* Cocoon Pill (Dynamic Island style) directly below Blu AI */}
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      if (onOpenCocoon) {
+                        onOpenCocoon();
+                      } else {
+                        window.dispatchEvent(new CustomEvent("openCocoon"));
+                      }
+                    }}
+                    className="flex items-center gap-2.5 px-3 py-2 my-0.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl hover:bg-white/10 active:scale-95 transition-all cursor-pointer w-fit shadow-md"
+                  >
+                    <img 
+                      src="/cocoon_egg.webp" 
+                      alt="Cocoon" 
+                      loading="eager"
+                      className="w-4 h-5 object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-transform"
+                      onError={(e) => { (e.target as any).src = "https://cdn-icons-png.flaticon.com/512/3233/3233150.png" }}
+                    />
+                    <span className="text-[10px] font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                      Cocoon
+                    </span>
                   </button>
                 </div>
 
-                <div className="h-px bg-white/[0.05] my-1" />
+                <div className="h-px bg-white/[0.05] my-0.5" />
 
-                {/* Section 2: Swap, Wave Tools & AI Studio */}
+                {/* Section 2: Swap & Wave Tools (AI Studio removed) */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Ecosystem</div>
+                  <div className="text-[8px] font-black text-text-muted uppercase tracking-widest px-2 mb-1">Ecosystem</div>
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
@@ -1632,20 +1659,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <Repeat2 size={20} className="text-white shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Swap</span>
                   </button>
+
+                  {/* Wave Tools with clean vector Layers icon */}
                   <button
                     onClick={(e) => showTooltip("wave-tools", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <img src="/wave tools.png" alt="Wave Tools" className="w-7 h-7 shrink-0 object-contain" />
+                    <Layers size={20} className="text-cyan-400 shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Wave Tools</span>
                   </button>
-                  <button
-                    onClick={(e) => showTooltip("ai-studio", e)}
-                    className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
-                  >
-                    <img src="/ai icon.png" alt="AI Studio" className="w-7 h-7 shrink-0 object-contain" />
-                    <span className="text-white text-[12px] font-black uppercase tracking-wider">AI Studio</span>
-                  </button>
+
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
@@ -1658,11 +1681,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </button>
                 </div>
 
-                <div className="h-px bg-white/[0.05] my-1" />
+                <div className="h-px bg-white/[0.05] my-0.5" />
 
                 {/* Section 2.5: Star Pill */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Earn</div>
+                  <div className="text-[8px] font-black text-text-muted uppercase tracking-widest px-2 mb-1">Earn</div>
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
@@ -1678,14 +1701,13 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       {(swrUser?.stars_balance ?? 0).toLocaleString()}
                     </span>
                   </button>
-
                 </div>
 
-                <div className="h-px bg-white/[0.05] my-1" />
+                <div className="h-px bg-white/[0.05] my-0.5" />
 
                 {/* Section 3: Analytics & Premium */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Growth</div>
+                  <div className="text-[8px] font-black text-text-muted uppercase tracking-widest px-2 mb-1">Growth</div>
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);
@@ -1718,11 +1740,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   </button>
                 </div>
 
-                <div className="h-px bg-white/[0.05] my-1" />
+                <div className="h-px bg-white/[0.05] my-0.5" />
 
                 {/* Section 4: Feedback & Support */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-[8px] font-bold text-text-muted uppercase tracking-widest px-2 mb-1">Support</div>
+                  <div className="text-[8px] font-black text-text-muted uppercase tracking-widest px-2 mb-1">Support</div>
                   <button
                     onClick={() => {
                       setIsDrawerOpen(false);

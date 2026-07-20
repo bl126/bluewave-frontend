@@ -1310,6 +1310,7 @@ export default function LandingPage() {
                 setProfileOpen(true);
               }}
               onOverlayStateChange={setExploreOverlayActive}
+              onOpenCocoon={() => setCocoonOpen(true)}
             />
           </div>
         )}
