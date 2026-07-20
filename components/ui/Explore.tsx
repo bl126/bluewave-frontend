@@ -1276,68 +1276,70 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             return (
                               <div 
                                 onClick={handleAdClick}
-                                className="w-full bg-zinc-950/90 border border-white/[0.08] rounded-[2rem] p-5 mb-4 flex flex-col shadow-2xl relative cursor-pointer active:scale-[0.99] transition-all hover:bg-white/[0.02]"
+                                className="px-4 py-3.5 border-b border-white/[0.06] relative hover:bg-white/[0.01] transition-all cursor-pointer w-full text-left"
                               >
-                                {/* Header Row: Logo Avatar + Title + "Sponsored" badge */}
-                                <div className="flex items-center justify-between gap-3 mb-3">
-                                  <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-black/40 flex items-center justify-center shrink-0 shadow-md">
+                                <div className="flex gap-3.5 w-full items-start">
+                                  {/* Avatar */}
+                                  <div className="shrink-0 relative">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm relative">
                                       {ad.avatar_url ? (
                                         <img src={ad.avatar_url} alt="" className="w-full h-full object-cover" />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-xs uppercase">
+                                        <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
                                           {(ad.title || "S")[0]}
                                         </div>
                                       )}
                                     </div>
-                                    <div className="flex flex-col min-w-0">
-                                      <h3 className="text-white font-black text-[13px] uppercase truncate tracking-tight">
-                                        {ad.title || "Sponsored Post"}
-                                      </h3>
-                                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider">Ad</span>
+                                  </div>
+
+                                  {/* Right Content Column */}
+                                  <div className="flex-1 min-w-0 pt-0.5">
+                                    {/* Header Row: Title + Sponsored Badge + Ad tag */}
+                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                      <div className="flex items-center gap-2 min-w-0 truncate">
+                                        <span className="text-white font-bold text-[15px] truncate uppercase tracking-tight">
+                                          {ad.title || "Sponsored"}
+                                        </span>
+                                        <span className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                                          Sponsored
+                                        </span>
+                                      </div>
+                                      <span className="text-[12px] text-white/60 font-bold uppercase shrink-0">
+                                        Ad
+                                      </span>
                                     </div>
-                                  </div>
 
-                                  <span className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-emerald-500/20 shrink-0">
-                                    Sponsored
-                                  </span>
-                                </div>
-
-                                {/* Caption text */}
-                                {ad.caption && (
-                                  <div className="mb-3">
-                                    <LinkedText text={ad.caption} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap font-medium" />
-                                  </div>
-                                )}
-
-                                {/* Media Banner (Image or Video) */}
-                                {ad.banner_url && (
-                                  <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full max-h-[400px]">
-                                    {isVideo ? (
-                                      <video 
-                                        src={ad.banner_url} 
-                                        autoPlay 
-                                        loop 
-                                        muted 
-                                        playsInline 
-                                        className="w-full h-auto max-h-[400px] object-cover" 
-                                      />
-                                    ) : (
-                                      <img 
-                                        src={ad.banner_url} 
-                                        alt="Sponsored media" 
-                                        className="w-full h-auto max-h-[400px] object-contain" 
-                                        loading="lazy" 
-                                      />
+                                    {/* Caption */}
+                                    {ad.caption && (
+                                      <LinkedText text={ad.caption} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap mb-3" />
                                     )}
-                                  </div>
-                                )}
 
-                                {/* Action / Views Bar: Only Views (BarChart2 icon) */}
-                                <div className="flex items-center justify-end pt-1 border-t border-white/[0.04]">
-                                  <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-black uppercase tracking-widest">
-                                    <BarChart2 size={16} />
-                                    <span>{(ad.views_count || 1).toLocaleString()}</span>
+                                    {/* Media Banner (Image or Video) */}
+                                    {ad.banner_url && (
+                                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full">
+                                        {isVideo ? (
+                                          <AutoPlayVideo src={ad.banner_url} />
+                                        ) : (
+                                          <img 
+                                            src={ad.banner_url} 
+                                            alt="Sponsored media" 
+                                            className="w-full h-auto max-h-[400px] object-contain" 
+                                            loading="lazy" 
+                                          />
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Action / Views Bar (Exact same border & view count as channel posts) */}
+                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/60">
+                                      <div className="flex items-center gap-6">
+                                        {/* Empty left gap for alignment consistency */}
+                                      </div>
+                                      <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-black uppercase tracking-widest ml-auto">
+                                        <BarChart2 size={16} />
+                                        <span>{(ad.views_count || 1).toLocaleString()}</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
