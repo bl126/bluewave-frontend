@@ -178,9 +178,19 @@ export default function CocoonOverlay({ isOpen, onClose }: CocoonOverlayProps) {
               <a 
                 href="https://cocoon.org" 
                 target="_blank" 
-                className="w-full h-12 bg-white text-black font-semibold text-sm flex items-center justify-center gap-2 rounded-full transition-all active:scale-[0.97] hover:bg-white/95 shadow-md"
+                rel="noopener noreferrer"
+                className="w-full h-12 bg-white text-black font-bold text-sm flex items-center justify-center gap-2 rounded-full transition-all active:scale-[0.97] hover:bg-white/95 shadow-md"
               >
                 <span>Learn More</span>
+                <ExternalLink size={14} />
+              </a>
+              <a 
+                href="https://cocoonmeme.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full h-12 bg-purple-600/30 border border-purple-500/30 text-purple-200 font-bold text-sm flex items-center justify-center gap-2 rounded-full transition-all active:scale-[0.97] hover:bg-purple-600/40 shadow-md"
+              >
+                <span>Cocoon Community</span>
                 <ExternalLink size={14} />
               </a>
               <button 

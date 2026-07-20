@@ -259,7 +259,7 @@ export default function ConnectBluModal({
         }
 
         const queryParam = handle ? `?channel=${encodeURIComponent(handle)}` : '';
-        getApi(`/api/telegram/channel/analytics/${telegramId}${queryParam}`)
+        getApi(`/telegram/channel/analytics/${telegramId}${queryParam}`)
             .then((res: any) => {
                 setAnalyticsData(res);
                 setCachedAnalytics(telegramId, handle, res);

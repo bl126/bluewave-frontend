@@ -1549,7 +1549,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             >
               {/* Fixed Channel Header (pinned at top so menu scrolls below) */}
               <div className="px-4 pt-2 pb-3 flex flex-col items-start text-left gap-3 w-full shrink-0 border-b border-white/[0.06]">
-                <div className="w-14 h-14 rounded-2xl border border-white/10 overflow-hidden bg-app-bg flex items-center justify-center shadow-lg shrink-0">
+                <div className="w-14 h-14 rounded-full border border-white/10 overflow-hidden bg-app-bg flex items-center justify-center shadow-lg shrink-0">
                   {swrUser?.telegram_channel_photo ? (
                     <img 
                       src={swrUser.telegram_channel_photo} 
@@ -1563,7 +1563,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
                 {swrUser?.telegram_channel ? (
                   <div className="flex flex-col gap-0.5 w-full overflow-hidden">
-                    <h3 className="text-white font-black text-xs uppercase truncate tracking-tight w-full">
+                    <h3 className="text-white font-black text-sm uppercase truncate tracking-wider w-full">
                       {swrUser.telegram_channel_title || "My Channel"}
                     </h3>
                     <p className="text-[10px] font-black uppercase tracking-wide text-app-accent truncate w-full">
@@ -1610,12 +1610,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Topics</span>
                   </button>
                   
-                  {/* Blu AI with clean vector Bot icon */}
+                  {/* Blu AI with clean vector Sparkles icon */}
                   <button
                     onClick={(e) => showTooltip("blu-ai", e)}
                     className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-white/[0.04] active:scale-[0.98] transition-all text-left w-full"
                   >
-                    <Bot size={20} className="text-cyan-400 shrink-0" />
+                    <Sparkles size={20} className="text-cyan-400 shrink-0" />
                     <span className="text-white text-[12px] font-black uppercase tracking-wider">Blu AI</span>
                   </button>
 
@@ -4688,6 +4688,8 @@ function PostDetailModal({
     }
   };
 
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
+
   // 🔗 Open commenter's Telegram profile
   const openCommenterProfile = (username?: string, tgId?: number) => {
     const twa = (window as any).Telegram?.WebApp;
@@ -4703,68 +4705,112 @@ function PostDetailModal({
     else window.open(link, "_blank");
   };
 
-  const renderComments = (parentId: number | null = null, depth = 0) => {
-    return localComments
-      .filter(c => c.parent_id === parentId)
-      .map(comment => (
-        <div key={comment.id} id={`comment-${comment.id}`} className="flex flex-col">
-          <div className={`flex gap-3 py-4 ${depth > 0 ? "ml-6 border-l border-white/5 pl-4" : ""} ${comment.id === commentId ? "bg-cyan-500/5 rounded-xl px-2 -mx-2" : ""}`}>
-            {/* Avatar — clickable to open Telegram profile */}
-            <button
-              onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
-              className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40 shadow-sm active:scale-90 transition-transform"
-            >
-              {comment.user.photo ? (
-                <img src={comment.user.photo} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-[10px]">
-                  {comment.user.name?.[0]}
+  const toggleExpandReplies = (parentId: number) => {
+    setExpandedReplies(prev => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId);
+      else next.add(parentId);
+      return next;
+    });
+  };
+
+  const renderComments = (parentId: number | null = null, depth = 0): React.ReactNode => {
+    const allChildComments = localComments.filter(c => c.parent_id === parentId);
+    if (allChildComments.length === 0) return null;
+
+    const isExpanded = parentId !== null && expandedReplies.has(parentId);
+    // If depth > 0 (replies) and not expanded, show max 2 replies initially
+    const visibleComments = (depth > 0 && !isExpanded) ? allChildComments.slice(0, 2) : allChildComments;
+    const remainingCount = allChildComments.length - visibleComments.length;
+
+    return (
+      <>
+        {visibleComments.map(comment => (
+          <div key={comment.id} id={`comment-${comment.id}`} className="flex flex-col">
+            <div className={`flex gap-3 py-4 ${depth > 0 ? "ml-6 border-l border-white/10 pl-4" : ""} ${comment.id === commentId ? "bg-cyan-500/5 rounded-xl px-2 -mx-2" : ""}`}>
+              {/* Avatar — clickable to open Telegram profile */}
+              <button
+                onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
+                className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/10 bg-black/40 shadow-sm active:scale-90 transition-transform"
+              >
+                {comment.user.photo ? (
+                  <img src={comment.user.photo} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-cyan-500/10 text-cyan-400 font-black text-xs">
+                    {comment.user.name?.[0]}
+                  </div>
+                )}
+              </button>
+              
+              <div className="flex-1 min-w-0">
+                {/* Comment Header: Name + Time on Left, Heart Like on Top-Right */}
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <button
+                      onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
+                      className="text-white font-bold text-[13px] truncate tracking-tight uppercase hover:text-cyan-400 transition-colors active:scale-95"
+                    >
+                      {comment.user.name}
+                    </button>
+                    <span className="text-[10px] text-white/50 font-mono shrink-0">
+                      {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+
+                  {/* Heart Like Button — Right Aligned with 18px Icon */}
+                  <button
+                    onClick={() => handleToggleLike(comment.id)}
+                    className={`flex items-center gap-1.5 p-1 rounded-lg transition-all active:scale-90 shrink-0 ${comment.is_liked ? "text-rose-500" : "text-white/40 hover:text-white"}`}
+                  >
+                    <Heart size={18} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={2.5} />
+                    {comment.likes_count > 0 && <span className="text-[11px] font-black font-mono">{comment.likes_count}</span>}
+                  </button>
                 </div>
-              )}
-            </button>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                {/* Name — also clickable to open Telegram profile */}
-                <button
-                  onClick={() => openCommenterProfile(comment.user.username, comment.user.tg_id)}
-                  className="text-white font-bold text-[11px] truncate tracking-tight uppercase hover:text-cyan-400 transition-colors active:scale-95"
-                >
-                  {comment.user.name}
-                </button>
-                <span className="text-[9px] text-white/70 font-mono">{new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-              {/* Comment image — show if exists */}
-              {comment.media_url && (
-                <div className="mb-3 rounded-2xl overflow-hidden border border-white/10 max-w-[240px]">
-                  <img src={comment.media_url} alt="comment media" className="w-full h-auto object-cover" loading="lazy" />
+
+                {/* Comment image — show if exists */}
+                {comment.media_url && (
+                  <div className="mb-3 rounded-2xl overflow-hidden border border-white/10 max-w-[280px]">
+                    <img src={comment.media_url} alt="comment media" className="w-full h-auto object-cover" loading="lazy" />
+                  </div>
+                )}
+
+                {/* Comment Text Content — Crisp 15px font */}
+                <LinkedText text={comment.content} className="text-[15px] text-white/95 leading-relaxed mb-2.5 whitespace-pre-wrap font-medium" />
+
+                {/* Reply Action Button */}
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setReplyTo(comment);
+                      const input = document.getElementById('comment-input');
+                      input?.focus();
+                    }}
+                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-cyan-400 transition-colors active:scale-95"
+                  >
+                    <MessageCircle size={13} strokeWidth={2.5} />
+                    <span>Reply</span>
+                  </button>
                 </div>
-              )}
-              <LinkedText text={comment.content} className="text-[13px] text-white/80 leading-relaxed mb-3 whitespace-pre-wrap" />
-              <div className="flex items-center gap-6">
-                <button
-                  onClick={() => handleToggleLike(comment.id)}
-                  className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest transition-colors ${comment.is_liked ? "text-rose-500 hover:text-rose-600" : "text-white/70 hover:text-white"}`}
-                >
-                  <Heart size={11} fill={comment.is_liked ? "currentColor" : "none"} strokeWidth={3} />
-                  {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
-                </button>
-                <button
-                  onClick={() => {
-                    setReplyTo(comment);
-                    const input = document.getElementById('comment-input');
-                    input?.focus();
-                  }}
-                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors"
-                >
-                  <MessageCircle size={11} strokeWidth={3} />
-                  <span>Reply</span>
-                </button>
               </div>
             </div>
+
+            {/* Render Nested Children */}
+            {renderComments(comment.id, depth + 1)}
           </div>
-          {renderComments(comment.id, depth + 1)}
-        </div>
-      ));
+        ))}
+
+        {/* View More Replies Dropdown Button (shown when depth > 0 and replies exceed 2) */}
+        {depth > 0 && remainingCount > 0 && (
+          <button
+            onClick={() => toggleExpandReplies(parentId!)}
+            className="ml-6 pl-4 py-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-cyan-400 hover:text-cyan-300 transition-all active:scale-95"
+          >
+            <ChevronDown size={14} className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+            <span>{isExpanded ? "Show fewer replies" : `View ${remainingCount} more ${remainingCount === 1 ? "reply" : "replies"}`}</span>
+          </button>
+        )}
+      </>
+    );
   };
 
   if (typeof document === "undefined") return null;
