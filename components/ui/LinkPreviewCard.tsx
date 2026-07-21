@@ -1,7 +1,6 @@
 "use client";
 
 import { useApi } from "@/lib/useApi";
-import { ExternalLink } from "lucide-react";
 
 interface LinkPreviewCardProps {
   url: string;
@@ -46,24 +45,11 @@ export default function LinkPreviewCard({ url }: LinkPreviewCardProps) {
       onClick={handleOpenLink}
       className="my-2.5 w-full max-w-full bg-zinc-950/80 hover:bg-zinc-900/90 border border-white/10 border-l-[3.5px] border-l-white/60 rounded-2xl p-3.5 shadow-xl transition-all cursor-pointer group select-none relative overflow-hidden break-words"
     >
-      {/* Top Header: Site Name & Icon */}
-      <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
-        <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-          {data?.favicon_url && (
-            <img
-              src={data.favicon_url}
-              alt=""
-              className="w-3.5 h-3.5 rounded-full object-cover shrink-0 opacity-80"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = "none";
-              }}
-            />
-          )}
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/75 truncate">
-            {siteName}
-          </span>
-        </div>
-        <ExternalLink size={12} className="text-white/40 group-hover:text-white/90 transition-colors shrink-0" />
+      {/* Top Header: Site Name */}
+      <div className="mb-1 min-w-0">
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-white/75 truncate block">
+          {siteName}
+        </span>
       </div>
 
       {/* Title */}
