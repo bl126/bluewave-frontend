@@ -517,6 +517,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   // Touch/Swipe
   const touchStart = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   // New posts pill & avatars
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
   const [newPostsAvatars, setNewPostsAvatars] = useState<string[]>([]);
