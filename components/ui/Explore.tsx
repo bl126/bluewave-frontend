@@ -517,10 +517,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   // Touch/Swipe
   const touchStart = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-
-  // New posts pill
+  // New posts pill & avatars
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
+  const [newPostsAvatars, setNewPostsAvatars] = useState<string[]>([]);
 
   // Status Popups & Background Action
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -548,6 +547,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
 
     const hasOverlay = Boolean(
+      lbIndex !== null ||
       isSubmitMiniAppOpen ||
       isMiniAppsOpen ||
       selectedPost ||
@@ -561,7 +561,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     if (hasOverlay) {
       const handleTelegramBackClick = () => {
-        if (isSubmitMiniAppOpen) {
+        if (lbIndex !== null) {
+          setLbIndex(null);
+        } else if (isSubmitMiniAppOpen) {
           setIsSubmitMiniAppOpen(false);
         } else if (isMiniAppsOpen) {
           setIsMiniAppsOpen(false);
@@ -690,13 +692,15 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
   }, [notifications, mutate]);
 
-  // Track latest post ID for new-posts pill
+  // Track latest post ID & extract author avatars for new-posts pill
   useEffect(() => {
     if (initialPosts && initialPosts.length > 0) {
       const topId = initialPosts[0]?.id;
       if (!latestKnownPostId) {
         setLatestKnownPostId(topId);
       } else if (topId !== latestKnownPostId) {
+        const avatars = initialPosts.slice(0, 3).map((p: any) => p.channel?.photo_url || p.user?.photo_url || p.telegram_channel_photo).filter(Boolean);
+        setNewPostsAvatars(avatars);
         setNewPostsAvailable(true);
       }
     }
@@ -951,12 +955,17 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   // Scroll to top + refresh
   const handleNewPostsPill = () => {
-    setActiveTab("foryou");
+    const newSeed = Math.floor(Math.random() * 1000000);
+    setFeedSeed(newSeed);
+    setPagedPosts([]);
+    setOffset(0);
     setNewPostsAvailable(false);
-    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    setFeedSeed(Math.floor(Math.random() * 1000000));
+    setNewPostsAvatars([]);
+    if (latestKnownPostId) {
+      setLatestKnownPostId(null);
+    }
     mutate();
-    if (initialPosts && initialPosts.length > 0) setLatestKnownPostId(initialPosts[0]?.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle tab switch
@@ -1181,21 +1190,34 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         </motion.div>
       )}
 
-      {/* New Posts Pill */}
+      {/* New Posts Pill (Redesigned with X-style overlapping circular avatars) */}
       <AnimatePresence>
         {newPostsAvailable && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            initial={{ opacity: 0, y: -12, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            exit={{ opacity: 0, y: -12, scale: 0.9 }}
             className="fixed left-0 right-0 z-[140] flex justify-center pointer-events-none"
-            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 292 : 200}px)` }}
+            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 240 : 160}px)` }}
           >
             <button
               onClick={handleNewPostsPill}
-              className="px-5 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg border border-white/20 active:scale-95 transition-all flex items-center gap-1.5 pointer-events-auto"
+              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-[12px] font-bold rounded-full shadow-[0_8px_30px_rgba(6,182,212,0.4)] border border-white/25 active:scale-95 transition-all flex items-center gap-2.5 pointer-events-auto cursor-pointer"
             >
-              {t("explore.new_posts_pill")}
+              <ArrowUp size={16} strokeWidth={3} className="text-white shrink-0" />
+              {newPostsAvatars.length > 0 && (
+                <div className="flex -space-x-2.5 overflow-hidden items-center shrink-0">
+                  {newPostsAvatars.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt=""
+                      className="w-6 h-6 rounded-full border-2 border-cyan-500 object-cover shadow-sm bg-black"
+                    />
+                  ))}
+                </div>
+              )}
+              <span className="font-extrabold tracking-wide text-white">posted</span>
             </button>
           </motion.div>
         )}
@@ -3572,34 +3594,20 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
     if (typeof window !== "undefined") {
       if (!(window as any).bwActiveSheets) (window as any).bwActiveSheets = [];
       (window as any).bwActiveSheets.push("lightbox");
+      window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
     }
 
-    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
-    if (tg?.BackButton) {
-      const handleTgBack = () => {
-        onClose();
-      };
-      lightboxBackRef.current = handleTgBack;
-      tg.BackButton.show();
-      tg.BackButton.onClick(handleTgBack);
-
-      return () => {
-        if (lightboxBackRef.current) {
-          tg.BackButton.offClick(lightboxBackRef.current);
-          lightboxBackRef.current = null;
+    return () => {
+      if (typeof window !== "undefined") {
+        if ((window as any).bwActiveSheets) {
+          (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
         }
-        if (typeof window !== "undefined") {
-          if ((window as any).bwActiveSheets) {
-            (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
-          }
-          // Delay restore event to allow React state updates to flush first
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
-          }, 50);
-        }
-      };
-    }
-  }, [onClose]);
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
+        }, 50);
+      }
+    };
+  }, []);
 
   // Local window event fallback
   useEffect(() => {
