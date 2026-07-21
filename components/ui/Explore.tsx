@@ -526,6 +526,72 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isPostingBackground, setIsPostingBackground] = useState(false);
   const [connectPrompt, setConnectPrompt] = useState(false);
 
+  // Centralized Telegram BackButton Manager across all overlays
+  useEffect(() => {
+    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+    if (!tg?.BackButton) return;
+
+    const hasOverlay = Boolean(
+      lightboxItems ||
+      isSubmitMiniAppOpen ||
+      isMiniAppsOpen ||
+      selectedPost ||
+      isSearchOpen ||
+      isDrawerOpen ||
+      isProfileOpen ||
+      isLeaderboardSheetOpen ||
+      isConnectBluOpen ||
+      isPremiumOpen
+    );
+
+    const handleTelegramBackClick = () => {
+      if (lightboxItems) {
+        setLightboxItems(null);
+      } else if (isSubmitMiniAppOpen) {
+        setIsSubmitMiniAppOpen(false);
+      } else if (isMiniAppsOpen) {
+        setIsMiniAppsOpen(false);
+      } else if (selectedPost) {
+        setSelectedPost(null);
+      } else if (isSearchOpen) {
+        setIsSearchOpen(false);
+      } else if (isProfileOpen) {
+        setIsProfileOpen(false);
+      } else if (isDrawerOpen) {
+        setIsDrawerOpen(false);
+      } else if (isConnectBluOpen) {
+        setIsConnectBluOpen(false);
+      } else if (isPremiumOpen) {
+        setIsPremiumOpen(false);
+      } else if (isLeaderboardSheetOpen) {
+        setIsLeaderboardSheetOpen(false);
+      }
+    };
+
+    if (hasOverlay) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(handleTelegramBackClick);
+    } else {
+      tg.BackButton.offClick(handleTelegramBackClick);
+      tg.BackButton.hide();
+    }
+
+    return () => {
+      tg.BackButton.offClick(handleTelegramBackClick);
+    };
+  }, [
+    lightboxItems,
+    isSubmitMiniAppOpen,
+    isMiniAppsOpen,
+    selectedPost,
+    isSearchOpen,
+    isDrawerOpen,
+    isProfileOpen,
+    isLeaderboardSheetOpen,
+    isConnectBluOpen,
+    isPremiumOpen,
+  ]);
+
 
 
   const { data: notifications, loading: loadingNotifications, mutate: mutateNotifications } = useApi(
@@ -571,7 +637,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
   }, [dbMiniApps]);
 
-  const miniAppsList = dbMiniApps || [];
+  const miniAppsList = (dbMiniApps && dbMiniApps.length > 0)
+    ? dbMiniApps
+    : (cachedMiniApps && cachedMiniApps.length > 0)
+      ? cachedMiniApps
+      : MOCK_MINI_APPS;
 
   // Fetch Explore Ads
   const { data: dbAds } = useApi(isOpen ? "/explore/ads" : null);
@@ -2207,7 +2277,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
             style={{
-              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 65px)",
+              paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
             }}
           >
@@ -2332,7 +2402,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               })()}
             </div>
 
-            {/* White FAB Button */}
+            {/* White FAB Button (matching main Explore FAB position right-5 bottom-36) */}
             <button
               onClick={() => {
                 if (!subAppUsername && (swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username)) {
@@ -2340,7 +2410,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 }
                 setIsSubmitMiniAppOpen(true);
               }}
-              className="fixed bottom-10 right-6 z-[1025] w-14 h-14 rounded-full bg-white text-black font-black text-2xl shadow-[0_0_30px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
+              className="fixed right-5 bottom-36 z-[1025] w-12 h-12 rounded-full bg-white text-black font-black text-xl shadow-[0_0_25px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
               title="Submit Mini App"
             >
               +
