@@ -527,27 +527,31 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [connectPrompt, setConnectPrompt] = useState(false);
 
   // Centralized Telegram BackButton Manager across all overlays
+  const [backTrigger, setBackTrigger] = useState(0);
+
+  useEffect(() => {
+    const handleRestore = () => setBackTrigger((prev) => prev + 1);
+    window.addEventListener("bwRestoreBackHandler", handleRestore);
+    return () => window.removeEventListener("bwRestoreBackHandler", handleRestore);
+  }, []);
+
   useEffect(() => {
     const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
     if (!tg?.BackButton) return;
 
     const hasOverlay = Boolean(
-      lightboxItems ||
       isSubmitMiniAppOpen ||
       isMiniAppsOpen ||
       selectedPost ||
       isSearchOpen ||
       isDrawerOpen ||
-      isProfileOpen ||
       isLeaderboardSheetOpen ||
       isConnectBluOpen ||
       isPremiumOpen
     );
 
     const handleTelegramBackClick = () => {
-      if (lightboxItems) {
-        setLightboxItems(null);
-      } else if (isSubmitMiniAppOpen) {
+      if (isSubmitMiniAppOpen) {
         setIsSubmitMiniAppOpen(false);
       } else if (isMiniAppsOpen) {
         setIsMiniAppsOpen(false);
@@ -555,8 +559,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         setSelectedPost(null);
       } else if (isSearchOpen) {
         setIsSearchOpen(false);
-      } else if (isProfileOpen) {
-        setIsProfileOpen(false);
       } else if (isDrawerOpen) {
         setIsDrawerOpen(false);
       } else if (isConnectBluOpen) {
@@ -580,13 +582,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       tg.BackButton.offClick(handleTelegramBackClick);
     };
   }, [
-    lightboxItems,
+    backTrigger,
     isSubmitMiniAppOpen,
     isMiniAppsOpen,
     selectedPost,
     isSearchOpen,
     isDrawerOpen,
-    isProfileOpen,
     isLeaderboardSheetOpen,
     isConnectBluOpen,
     isPremiumOpen,
@@ -3550,13 +3551,11 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
       return () => {
         tg.BackButton.offClick(handleTgBack);
-        if (typeof window !== "undefined" && (window as any).bwActiveSheets) {
-          (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
-          if ((window as any).bwActiveSheets.length > 0) {
-            tg.BackButton.show();
-          } else {
-            tg.BackButton.hide();
+        if (typeof window !== "undefined") {
+          if ((window as any).bwActiveSheets) {
+            (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
           }
+          window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
         }
       };
     }
