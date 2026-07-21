@@ -1077,6 +1077,11 @@ export default function LandingPage() {
     if (syncData.unread_explore_notifications !== undefined) {
       setUnreadExploreCount(syncData.unread_explore_notifications);
     }
+    if (syncData.maintenance !== undefined) {
+      const ADMIN_IDS = [5023869471, 5511825370, 7834249676];
+      const isUserAdmin = telegramUser?.id && ADMIN_IDS.includes(Number(telegramUser.id));
+      setIsMaintenanceMode(Boolean(syncData.maintenance) && !isUserAdmin);
+    }
     
     // Sync SWR Cache Atomicly
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
