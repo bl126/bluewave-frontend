@@ -528,6 +528,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
   // Centralized Telegram BackButton Manager across all overlays
   const [backTrigger, setBackTrigger] = useState(0);
+  const backHandlerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const handleRestore = () => setBackTrigger((prev) => prev + 1);
@@ -538,6 +539,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   useEffect(() => {
     const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
     if (!tg?.BackButton) return;
+
+    // Remove previous handler first (use same ref)
+    if (backHandlerRef.current) {
+      tg.BackButton.offClick(backHandlerRef.current);
+      backHandlerRef.current = null;
+    }
 
     const hasOverlay = Boolean(
       isSubmitMiniAppOpen ||
@@ -550,36 +557,37 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       isPremiumOpen
     );
 
-    const handleTelegramBackClick = () => {
-      if (isSubmitMiniAppOpen) {
-        setIsSubmitMiniAppOpen(false);
-      } else if (isMiniAppsOpen) {
-        setIsMiniAppsOpen(false);
-      } else if (selectedPost) {
-        setSelectedPost(null);
-      } else if (isSearchOpen) {
-        setIsSearchOpen(false);
-      } else if (isDrawerOpen) {
-        setIsDrawerOpen(false);
-      } else if (isConnectBluOpen) {
-        setIsConnectBluOpen(false);
-      } else if (isPremiumOpen) {
-        setIsPremiumOpen(false);
-      } else if (isLeaderboardSheetOpen) {
-        setIsLeaderboardSheetOpen(false);
-      }
-    };
-
     if (hasOverlay) {
+      const handleTelegramBackClick = () => {
+        if (isSubmitMiniAppOpen) {
+          setIsSubmitMiniAppOpen(false);
+        } else if (isMiniAppsOpen) {
+          setIsMiniAppsOpen(false);
+        } else if (selectedPost) {
+          setSelectedPost(null);
+        } else if (isSearchOpen) {
+          setIsSearchOpen(false);
+        } else if (isDrawerOpen) {
+          setIsDrawerOpen(false);
+        } else if (isConnectBluOpen) {
+          setIsConnectBluOpen(false);
+        } else if (isPremiumOpen) {
+          setIsPremiumOpen(false);
+        } else if (isLeaderboardSheetOpen) {
+          setIsLeaderboardSheetOpen(false);
+        }
+      };
+      backHandlerRef.current = handleTelegramBackClick;
       tg.BackButton.show();
       tg.BackButton.onClick(handleTelegramBackClick);
     } else {
-      tg.BackButton.offClick(handleTelegramBackClick);
       tg.BackButton.hide();
     }
 
     return () => {
-      tg.BackButton.offClick(handleTelegramBackClick);
+      if (backHandlerRef.current) {
+        tg.BackButton.offClick(backHandlerRef.current);
+      }
     };
   }, [
     backTrigger,
@@ -625,20 +633,31 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     return undefined;
   });
 
-  // Fetch Ecosystem Mini Apps & Bots
-  const { data: dbMiniApps, mutate: mutateMiniApps } = useApi(isOpen ? `/explore/mini_apps?tg_id=${telegramUser?.id}` : null, {
-    fallbackData: cachedMiniApps
+  // Fetch Ecosystem Mini Apps & Bots — always fetch when Explore is open OR mini apps section is open
+  const miniAppsKey = (isOpen || isMiniAppsOpen) && telegramUser?.id
+    ? `/explore/mini_apps?tg_id=${telegramUser.id}`
+    : (isOpen || isMiniAppsOpen)
+      ? `/explore/mini_apps`
+      : null;
+  const { data: dbMiniApps, mutate: mutateMiniApps } = useApi(miniAppsKey, {
+    fallbackData: cachedMiniApps,
+    revalidateOnMount: true,
+    dedupingInterval: 1000,
   });
 
   useEffect(() => {
-    if (dbMiniApps && dbMiniApps.length > 0) {
+    if (dbMiniApps && Array.isArray(dbMiniApps) && dbMiniApps.length > 0) {
       if (typeof window !== "undefined") {
         localStorage.setItem("bw_mini_apps", JSON.stringify(dbMiniApps));
       }
     }
   }, [dbMiniApps]);
 
-  const miniAppsList = dbMiniApps || cachedMiniApps || [];
+  const miniAppsList = Array.isArray(dbMiniApps) && dbMiniApps.length > 0
+    ? dbMiniApps
+    : Array.isArray(cachedMiniApps) && cachedMiniApps.length > 0
+      ? cachedMiniApps
+      : [];
 
   // Hide Bottom Navigation bar when Mini App Fullscreen is open
   useEffect(() => {
@@ -2408,19 +2427,21 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               })()}
             </div>
 
-            {/* White FAB Button */}
-            <button
-              onClick={() => {
-                if (!subAppUsername && (swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username)) {
-                  setSubAppUsername(swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username || "");
-                }
-                setIsSubmitMiniAppOpen(true);
-              }}
-              className="fixed right-5 bottom-8 z-[2025] w-12 h-12 rounded-full bg-white text-black font-black text-xl shadow-[0_0_25px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
-              title="Submit Mini App"
-            >
-              +
-            </button>
+            {/* White FAB Button — hidden when submit sheet is open */}
+            {!isSubmitMiniAppOpen && (
+              <button
+                onClick={() => {
+                  if (!subAppUsername && (swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username)) {
+                    setSubAppUsername(swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username || "");
+                  }
+                  setIsSubmitMiniAppOpen(true);
+                }}
+                className="fixed right-5 bottom-24 z-[2025] w-12 h-12 rounded-full bg-white text-black font-black text-xl shadow-[0_0_25px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
+                title="Submit Mini App"
+              >
+                +
+              </button>
+            )}
 
             {/* ─── Submit Mini App Bottom Sheet ─── */}
             <AnimatePresence>
@@ -2429,7 +2450,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[1050] bg-black/80 backdrop-blur-xl flex flex-col justify-end"
+                  className="fixed inset-0 z-[2050] bg-black/80 backdrop-blur-xl flex flex-col justify-end"
                   onClick={() => setIsSubmitMiniAppOpen(false)}
                 >
                   <motion.div
@@ -3539,6 +3560,8 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   const [mounted, setMounted] = useState(false);
 
   // Telegram Native Back Button Integration with Active Sheet Stack
+  const lightboxBackRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined") {
@@ -3548,19 +3571,26 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
     const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
     if (tg?.BackButton) {
-      tg.BackButton.show();
       const handleTgBack = () => {
         onClose();
       };
+      lightboxBackRef.current = handleTgBack;
+      tg.BackButton.show();
       tg.BackButton.onClick(handleTgBack);
 
       return () => {
-        tg.BackButton.offClick(handleTgBack);
+        if (lightboxBackRef.current) {
+          tg.BackButton.offClick(lightboxBackRef.current);
+          lightboxBackRef.current = null;
+        }
         if (typeof window !== "undefined") {
           if ((window as any).bwActiveSheets) {
             (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
           }
-          window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
+          // Delay restore event to allow React state updates to flush first
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
+          }, 50);
         }
       };
     }
@@ -3631,9 +3661,9 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
             exit={{ x: -60, opacity: 0 }}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className="w-full h-full flex items-center justify-center p-3 relative cursor-grab active:cursor-grabbing"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
+            drag={true}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.3}
             onDragEnd={(_, info) => {
               if (scale === 1) {
                 // Swipe up or down to dismiss
