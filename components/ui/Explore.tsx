@@ -1188,34 +1188,35 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         </motion.div>
       )}
 
-      {/* New Posts Pill (Pure White X-style pill with circular avatars — disappears when scrolling down) */}
+      {/* New Posts Pill (Pure White X-style pill — positioned directly below tabs header) */}
       <AnimatePresence>
         {newPostsAvailable && showChrome && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
           <motion.div
-            initial={{ opacity: 0, y: -12, scale: 0.9 }}
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.9 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
             className="fixed left-0 right-0 z-[140] flex justify-center pointer-events-none"
-            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 240 : 160}px)` }}
+            style={{ top: `calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + ${showLiveTray ? 150 : 105}px)` }}
           >
             <button
               onClick={handleNewPostsPill}
-              className="px-4 py-2 bg-white text-black text-[12px] font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/30 active:scale-95 transition-all flex items-center gap-2.5 pointer-events-auto cursor-pointer"
+              className="px-3.5 py-1.5 bg-white text-black text-[12px] font-bold rounded-full shadow-[0_8px_25px_rgba(0,0,0,0.6)] border border-white/40 active:scale-95 transition-all flex items-center gap-2 pointer-events-auto cursor-pointer max-w-fit"
             >
-              <ArrowUp size={16} strokeWidth={3} className="text-black shrink-0" />
-              {newPostsAvatars.length > 0 && (
-                <div className="flex -space-x-2.5 overflow-hidden items-center shrink-0">
-                  {newPostsAvatars.map((url, i) => (
-                    <img
-                      key={i}
-                      src={url}
-                      alt=""
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover shadow-sm bg-black"
-                    />
-                  ))}
-                </div>
-              )}
-              <span className="font-black tracking-wide text-black uppercase text-[11px]">posted</span>
+              <ArrowUp size={15} strokeWidth={3} className="text-black shrink-0" />
+              <div className="flex -space-x-2 overflow-hidden items-center shrink-0">
+                {(newPostsAvatars.length > 0 ? newPostsAvatars : ["https://api.dicebear.com/7.x/identicon/svg?seed=wave"]).map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="w-5 h-5 rounded-full border border-black object-cover shadow-sm bg-zinc-900"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="font-extrabold tracking-wide text-black uppercase text-[11px] shrink-0">posted</span>
             </button>
           </motion.div>
         )}
