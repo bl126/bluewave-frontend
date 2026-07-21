@@ -4457,11 +4457,12 @@ function PostCard({
           {/* Rich Link Preview Card (Telegram style) */}
           {(() => {
             if (!post.content) return null;
-            const match = post.content.match(/https?:\/\/[^\s<"']+/i);
+            const match = post.content.match(/(https?:\/\/[^\s<"']+|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot|co|tv)(?:\/[^\s<"']*)?)/i);
             if (!match) return null;
-            const linkUrl = match[0];
-            const hasMedia = (post.media_urls && post.media_urls.length > 0) || post.media_url;
-            if (hasMedia) return null;
+            let linkUrl = match[0].replace(/[.,)!?]+$/, "");
+            if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
+              linkUrl = "https://" + linkUrl;
+            }
             return <LinkPreviewCard url={linkUrl} />;
           })()}
 
