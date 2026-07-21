@@ -3222,12 +3222,35 @@ function AutoPlayVideo({ src }: { src: string }) {
 // ----------------------------------------------------------------------------
 // 📸 Media Lightbox (Swipeable)
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// 📸 Modern Clean Lightbox (Gesture Driven, Pinch Zoom, Telegram Back Button)
+// ----------------------------------------------------------------------------
 function Lightbox({ items, index, onClose }: { items: { url: string, type: string }[], index: number, onClose: () => void }) {
   const [curr, setCurr] = useState(index);
   const [scale, setScale] = useState(1);
-  const { t } = useLanguage();
+  const [touchStartDist, setTouchStartDist] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Local interceptor for native back button
+  // Telegram Native Back Button Integration
+  useEffect(() => {
+    setMounted(true);
+    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+    if (tg?.BackButton) {
+      tg.BackButton.show();
+      const handleTgBack = () => {
+        onClose();
+      };
+      tg.BackButton.onClick(handleTgBack);
+      return () => {
+        tg.BackButton.offClick(handleTgBack);
+        if (!((window as any).bwActiveSheets?.length > 0)) {
+          tg.BackButton.hide();
+        }
+      };
+    }
+  }, [onClose]);
+
+  // Local window event fallback
   useEffect(() => {
     const handleBack = (e: Event) => {
       onClose();
@@ -3237,83 +3260,73 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
     return () => window.removeEventListener("bwNativeBack", handleBack);
   }, [onClose]);
 
-  // Reset zoom on index change
+  // Reset scale on item change
   useEffect(() => {
     setScale(1);
   }, [curr]);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   if (!mounted) return null;
 
-  const handleZoomIn = () => setScale(s => Math.min(4, s + 0.5));
-  const handleZoomOut = () => setScale(s => Math.max(1, s - 0.5));
-  const handleResetZoom = () => setScale(1);
+  // Pinch-to-zoom touch handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setTouchStartDist(dist);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDist !== null) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDist;
+      setScale(prev => Math.min(4, Math.max(1, prev * (1 + (factor - 1) * 0.1))));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartDist(null);
+  };
 
   return createPortal(
     <motion.div 
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
       className="fixed inset-0 z-[1200] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
     >
-      {/* Lightbox Controls */}
-      <div className="absolute top-6 left-6 right-6 z-[1210] flex items-center justify-between text-white/80" onClick={e => e.stopPropagation()}>
-        <span className="text-[12px] font-black font-mono tracking-widest bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-          {curr + 1} / {items.length}
-        </span>
-        <div className="flex items-center gap-2">
-          {scale > 1 && (
-            <button 
-              onClick={handleResetZoom} 
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-xs font-black uppercase tracking-wider"
-            >
-              1x
-            </button>
-          )}
-          <button 
-            onClick={handleZoomOut} 
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-lg font-bold"
-          >
-            -
-          </button>
-          <button 
-            onClick={handleZoomIn} 
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-lg font-bold"
-          >
-            +
-          </button>
-          <button 
-            onClick={onClose} 
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 active:scale-95 transition-all text-sm font-bold ml-2"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <div className="w-full flex-1 relative flex items-center justify-center overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div 
+        className="w-full flex-1 relative flex items-center justify-center overflow-hidden" 
+        onClick={e => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
          <motion.div 
             key={curr}
-            initial={{ x: 100, opacity: 0 }}
+            initial={{ x: 80, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -100, opacity: 0 }}
-            className="w-full h-full flex items-center justify-center p-4 touch-none relative"
-            drag={scale === 1 ? true : true}
+            exit={{ x: -80, opacity: 0 }}
+            className="w-full h-full flex items-center justify-center p-2 touch-none relative"
+            drag={true}
             dragConstraints={scale > 1 ? undefined : { left: 0, right: 0, top: 0, bottom: 0 }}
             dragElastic={scale > 1 ? 0.1 : 0.8}
             onDragEnd={(_, info) => {
               if (scale === 1) {
-                // Swipe down/up to dismiss
-                if (Math.abs(info.offset.y) > 120) {
+                // Swipe up or down to dismiss
+                if (Math.abs(info.offset.y) > 100) {
                   onClose();
                 }
                 // Swipe left/right to navigate
-                else if (info.offset.x > 100 && curr > 0) {
+                else if (info.offset.x > 80 && curr > 0) {
                   setCurr(curr - 1);
-                } else if (info.offset.x < -100 && curr < items.length - 1) {
+                } else if (info.offset.x < -80 && curr < items.length - 1) {
                   setCurr(curr + 1);
                 }
               }
@@ -3321,39 +3334,38 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
             style={{ scale }}
             onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
          >
-            {/* Horizontal swipe navigation buttons for ease of use */}
-            {scale === 1 && curr > 0 && (
-              <div 
-                onClick={() => setCurr(curr - 1)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 text-white cursor-pointer active:scale-95 transition-all z-[1205]"
-              >
-                ◀
-              </div>
-            )}
-            {scale === 1 && curr < items.length - 1 && (
-              <div 
-                onClick={() => setCurr(curr + 1)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-black/60 text-white cursor-pointer active:scale-95 transition-all z-[1205]"
-              >
-                ▶
-              </div>
-            )}
-
             {items[curr].type === "photo" ? (
-              <img src={items[curr].url} className="max-w-full max-h-[90vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-lg transition-transform duration-100" />
+              <img 
+                src={items[curr].url} 
+                className="max-w-full max-h-[92vh] object-contain shadow-2xl rounded-xl transition-transform duration-100" 
+                alt="Media preview"
+              />
             ) : (
-              <video src={items[curr].url} controls autoPlay className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
+              <video 
+                src={items[curr].url} 
+                controls 
+                autoPlay 
+                className="max-w-full max-h-[92vh] rounded-xl shadow-2xl" 
+              />
             )}
          </motion.div>
       </div>
 
+      {/* Bottom Animated Indicator Dots Only */}
       {items.length > 1 && (
-        <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-2.5">
+        <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-[1210]">
           {items.map((_, i) => (
             <motion.div 
               key={i} 
-              animate={{ width: i === curr ? 24 : 6, backgroundColor: i === curr ? "#ffffff" : "rgba(255,255,255,0.2)" }}
-              className="h-1.5 rounded-full transition-all" 
+              animate={{ 
+                width: i === curr ? 24 : 6, 
+                backgroundColor: i === curr ? "#ffffff" : "rgba(255,255,255,0.25)" 
+              }}
+              className="h-1.5 rounded-full transition-all cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurr(i);
+              }}
             />
           ))}
         </div>
@@ -3363,13 +3375,45 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   );
 }
 
+// Helper to check video extensions
+function anyVideoExt(url: string) {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes(".mp4") || lower.includes(".webm") || lower.includes(".mov") || lower.includes(".m4v");
+}
+
 // ----------------------------------------------------------------------------
 // 🖼️ Media Collage Component
 // ----------------------------------------------------------------------------
-function MediaCollage({ items }: { items: { url: string, type: string }[] }) {
+function MediaCollage({ items }: { items: any }) {
   const [lbIndex, setLbIndex] = useState<number | null>(null);
-  if (!items || items.length === 0) return null;
-  const validItems = items.filter(item => item.url);
+  if (!items) return null;
+
+  let rawList: any[] = [];
+  if (typeof items === "string") {
+    try {
+      rawList = JSON.parse(items);
+    } catch {
+      rawList = items.split(",").map((u: string) => u.trim());
+    }
+  } else if (Array.isArray(items)) {
+    rawList = items;
+  }
+
+  const validItems: { url: string; type: string }[] = rawList
+    .map((item: any) => {
+      if (typeof item === "string" && item.trim()) {
+        const isVid = anyVideoExt(item);
+        return { url: item.trim(), type: isVid ? "video" : "photo" };
+      }
+      if (item && typeof item === "object" && item.url) {
+        const isVid = item.type === "video" || anyVideoExt(item.url);
+        return { url: item.url, type: isVid ? "video" : "photo" };
+      }
+      return null;
+    })
+    .filter(Boolean) as { url: string; type: string }[];
+
   const count = validItems.length;
   if (count === 0) return null;
 
@@ -4505,125 +4549,6 @@ function NotificationsView({
   );
 }
 
-function GifPickerModal({
-  isOpen,
-  onClose,
-  onSelectGif
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelectGif: (gifUrl: string) => void;
-}) {
-  const [searchTerm, setSearchTerm] = useState("crypto");
-  const [gifs, setGifs] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const categories = ["Crypto", "Bullish", "WAGMI", "Reaction", "GM", "Hype", "Fire", "LOL", "Rocket", "Meme"];
-
-  const fetchGifs = async (query: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=cw33n8E59jM7T7jVqX7R8pG5K9L1xZ00&q=${encodeURIComponent(query)}&limit=20&rating=g`);
-      if (res.ok) {
-        const data = await res.json();
-        const urls = (data.data || []).map((g: any) => g.images?.fixed_height?.url || g.images?.original?.url).filter(Boolean);
-        if (urls.length > 0) {
-          setGifs(urls);
-          setLoading(false);
-          return;
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-    setGifs([
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9C1nyePlaac92/giphy.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/trN9F5u8OQOW4/giphy.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlHFRbmaZtBRhXG/giphy.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3hveThqOXN2NDJleDkzbWRyYmY3OGtrMHA0ZjF6Znhhcmxqd3ZwYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tXGgHju4xH8B2/giphy.gif"
-    ]);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchGifs(searchTerm);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
-      <motion.div
-        initial={{ y: "100%", opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: "100%", opacity: 0 }}
-        className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-t-[2.5rem] sm:rounded-3xl p-5 flex flex-col gap-4 max-h-[80vh] shadow-2xl"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-white font-extrabold text-base tracking-tight uppercase">Choose a GIF</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-2 bg-black/50 border border-white/10 rounded-2xl">
-          <Search size={16} className="text-white/40" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              fetchGifs(e.target.value);
-            }}
-            placeholder="Search GIFs..."
-            className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none font-medium"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSearchTerm(cat);
-                fetchGifs(cat);
-              }}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider shrink-0 transition-all ${
-                searchTerm.toLowerCase() === cat.toLowerCase()
-                  ? "bg-cyan-500 text-black shadow-md"
-                  : "bg-white/5 border border-white/10 text-white/70 hover:bg-white/10"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar min-h-[260px] grid grid-cols-2 gap-2 pr-1">
-          {loading ? (
-            <div className="col-span-2 flex items-center justify-center py-12 text-white/50">
-              <Loader2 size={24} className="animate-spin" />
-            </div>
-          ) : gifs.map((url, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                onSelectGif(url);
-                onClose();
-              }}
-              className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black/40 hover:border-cyan-400 active:scale-95 transition-all shadow-md group"
-            >
-              <img src={url} alt="GIF" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
 function PostDetailModal({
   post: initialPost,
   commentId,
@@ -4648,7 +4573,6 @@ function PostDetailModal({
   const [loading, setLoading] = useState(!initialPost.content);
   const [commentImage, setCommentImage] = useState<string | null>(null); // base64 preview
   const [commentImageUploading, setCommentImageUploading] = useState(false);
-  const [isGifModalOpen, setIsGifModalOpen] = useState(false);
   const [isInputExpanded, setIsInputExpanded] = useState(false);
   const commentImageInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -5290,13 +5214,6 @@ function PostDetailModal({
                 </button>
 
                 <button
-                  onClick={() => setIsGifModalOpen(true)}
-                  className="px-2 py-0.5 rounded-lg border border-white/30 text-[10px] font-black text-white/80 uppercase tracking-widest hover:border-white hover:text-white transition-colors"
-                >
-                  GIF
-                </button>
-
-                <button
                   onClick={() => setIsInputExpanded(true)}
                   className="p-1.5 rounded-full text-white/70 hover:text-white transition-colors"
                 >
@@ -5356,20 +5273,13 @@ function PostDetailModal({
 
               {/* Bottom Action Toolbar */}
               <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                {/* Left Toolbar Icons: Image & GIF */}
+                {/* Left Toolbar Icons: Image */}
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => commentImageInputRef.current?.click()}
                     className="p-1.5 rounded-full text-white/70 hover:text-white active:scale-90 transition-all"
                   >
                     <ImageIcon size={20} />
-                  </button>
-
-                  <button
-                    onClick={() => setIsGifModalOpen(true)}
-                    className="px-2 py-0.5 rounded-lg border border-white/30 text-[10px] font-black text-white/80 uppercase tracking-widest hover:border-white hover:text-white active:scale-90 transition-all"
-                  >
-                    GIF
                   </button>
                 </div>
 
@@ -5407,16 +5317,6 @@ function PostDetailModal({
             </div>
           )}
         </div>
-
-        {/* GIF Picker Modal */}
-        <GifPickerModal
-          isOpen={isGifModalOpen}
-          onClose={() => setIsGifModalOpen(false)}
-          onSelectGif={(gifUrl) => {
-            setCommentImage(gifUrl);
-            setIsInputExpanded(true);
-          }}
-        />
 
         {/* Star Gift Modal integration inside PostDetailModal */}
         <StarGiftModal
