@@ -4459,6 +4459,11 @@ function PostCard({
           {/* Rich Link Preview Card (Telegram style) */}
           {(() => {
             if (!post.content) return null;
+            // Suppress rich link preview if post already has attached media (images/videos)
+            const hasAttachedMedia = (post.media_urls && post.media_urls.length > 0) || Boolean(post.media_url);
+            if (hasAttachedMedia) return null;
+
+            // Only match the VERY FIRST link in the post content
             const match = post.content.match(/(https?:\/\/[^\s<"']+|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot|co|tv)(?:\/[^\s<"']*)?)/i);
             if (!match) return null;
             let linkUrl = match[0].replace(/[.,)!?]+$/, "");
@@ -5385,6 +5390,11 @@ function PostDetailModal({
               {/* Rich Link Preview Card (Telegram style) inside PostDetailModal */}
               {(() => {
                 if (!post.content) return null;
+                // Suppress rich link preview if post already has attached media (images/videos)
+                const hasAttachedMedia = (post.media_urls && post.media_urls.length > 0) || Boolean(post.media_url);
+                if (hasAttachedMedia) return null;
+
+                // Only match the VERY FIRST link in the post content
                 const match = post.content.match(/(https?:\/\/[^\s<"']+|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot|co|tv)(?:\/[^\s<"']*)?)/i);
                 if (!match) return null;
                 let linkUrl = match[0].replace(/[.,)!?]+$/, "");
