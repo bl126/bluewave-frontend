@@ -554,7 +554,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       isDrawerOpen ||
       isLeaderboardSheetOpen ||
       isConnectBluOpen ||
-      isPremiumOpen
+      isPremiumOpen ||
+      isOpen
     );
 
     if (hasOverlay) {
@@ -575,6 +576,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           setIsPremiumOpen(false);
         } else if (isLeaderboardSheetOpen) {
           setIsLeaderboardSheetOpen(false);
+        } else if (isOpen) {
+          onClose?.();
         }
       };
       backHandlerRef.current = handleTelegramBackClick;
@@ -599,6 +602,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     isLeaderboardSheetOpen,
     isConnectBluOpen,
     isPremiumOpen,
+    isOpen,
+    onClose,
   ]);
 
 
@@ -2314,7 +2319,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             {/* Categories strip matching MissionCenter control rectangle */}
             <div className="w-full mb-4 shrink-0 px-6">
               <div className="flex items-center gap-1 w-full bg-zinc-950/80 border border-white/20 rounded-full p-1 backdrop-blur-xl shadow-lg shadow-black/40 overflow-x-auto no-scrollbar scroll-smooth">
-                {["All", "Wallets", "Swaps & DeFi", "Payments", "NFT & Marketplaces", "Dev Infra", "Explorers", "Naming & Identity"].map((tab) => {
+                {["All", "Games", "Wallets", "Swaps & DeFi", "Payments", "NFT & Marketplaces", "Dev Infra", "Explorers", "Naming & Identity"].map((tab) => {
                   const isActive = activeMiniAppsTab === tab;
                   return (
                     <button
@@ -2478,21 +2483,18 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                         if (!subAppName.trim() || !subAppUsername.trim() || !subAppLink.trim() || isSubmittingMiniApp) return;
                         setIsSubmittingMiniApp(true);
                         try {
-                          const apiBase = (process.env.NEXT_PUBLIC_API_URL || "https://api.bluewave.xyz") + "/api";
-                          const res = await fetch(`${apiBase}/mini-apps/submit`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              tg_id: telegramUser?.id,
-                              name: subAppName.trim(),
-                              username: subAppUsername.trim(),
-                              link: subAppLink.trim(),
-                              category: subAppCategory,
-                              description: subAppDescription.trim(),
-                              icon_b64: subAppIconB64,
-                            }),
+                          const userTgId = Number(telegramUser?.id || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id || 0);
+                          const res = await postApi("/mini-apps/submit", {
+                            tg_id: userTgId,
+                            name: subAppName.trim(),
+                            username: subAppUsername.trim(),
+                            link: subAppLink.trim(),
+                            category: subAppCategory || "Games",
+                            description: subAppDescription.trim(),
+                            icon_b64: subAppIconB64,
                           });
-                          if (res.ok) {
+
+                          if (res && (res.success || res.mini_app)) {
                             setIsSubmitMiniAppOpen(false);
                             setSubAppName("");
                             setSubAppUsername("");
@@ -2502,10 +2504,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             setSubAppIconPreview(null);
                             if (mutateMiniApps) mutateMiniApps();
                           } else {
-                            alert("Failed to submit mini app. Please try again.");
+                            alert(res?.error || "Failed to submit mini app. Please try again.");
                           }
                         } catch (err) {
                           console.error("Submit mini app error:", err);
+                          alert("Failed to submit mini app. Please try again.");
                         } finally {
                           setIsSubmittingMiniApp(false);
                         }
@@ -2594,6 +2597,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onChange={(e) => setSubAppCategory(e.target.value)}
                           className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40 cursor-pointer"
                         >
+                          <option value="Games">Games</option>
                           <option value="Wallets">Wallets</option>
                           <option value="Swaps & DeFi">Swaps & DeFi</option>
                           <option value="Payments">Payments</option>
