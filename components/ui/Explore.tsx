@@ -547,7 +547,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
 
     const hasOverlay = Boolean(
-      lbIndex !== null ||
       isSubmitMiniAppOpen ||
       isMiniAppsOpen ||
       selectedPost ||
@@ -561,9 +560,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     if (hasOverlay) {
       const handleTelegramBackClick = () => {
-        if (lbIndex !== null) {
-          setLbIndex(null);
-        } else if (isSubmitMiniAppOpen) {
+        if (isSubmitMiniAppOpen) {
           setIsSubmitMiniAppOpen(false);
         } else if (isMiniAppsOpen) {
           setIsMiniAppsOpen(false);
@@ -3753,6 +3750,27 @@ function anyVideoExt(url: string) {
 // ----------------------------------------------------------------------------
 function MediaCollage({ items }: { items: any }) {
   const [lbIndex, setLbIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (lbIndex === null) return;
+    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+    if (!tg?.BackButton) return;
+
+    const handleTgBack = () => {
+      setLbIndex(null);
+    };
+
+    tg.BackButton.show();
+    tg.BackButton.onClick(handleTgBack);
+
+    return () => {
+      tg.BackButton.offClick(handleTgBack);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("bwRestoreBackHandler"));
+      }, 50);
+    };
+  }, [lbIndex]);
+
   if (!items) return null;
 
   let rawList: any[] = [];
