@@ -309,6 +309,15 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [activeSearchTab, setActiveSearchTab] = useState("Topics");
   const [isMiniAppsOpen, setIsMiniAppsOpen] = useState(false);
   const [activeMiniAppsTab, setActiveMiniAppsTab] = useState("All");
+  const [isSubmitMiniAppOpen, setIsSubmitMiniAppOpen] = useState(false);
+  const [subAppName, setSubAppName] = useState("");
+  const [subAppUsername, setSubAppUsername] = useState("");
+  const [subAppLink, setSubAppLink] = useState("");
+  const [subAppCategory, setSubAppCategory] = useState("Utilities");
+  const [subAppDescription, setSubAppDescription] = useState("");
+  const [subAppIconB64, setSubAppIconB64] = useState<string | null>(null);
+  const [subAppIconPreview, setSubAppIconPreview] = useState<string | null>(null);
+  const [isSubmittingMiniApp, setIsSubmittingMiniApp] = useState(false);
   const [isConnectBluOpen, setIsConnectBluOpen] = useState(false);
   const [connectBluAnalytics, setConnectBluAnalytics] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -550,7 +559,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   });
 
   // Fetch Ecosystem Mini Apps & Bots
-  const { data: dbMiniApps } = useApi(isOpen ? "/explore/mini_apps" : null, {
+  const { data: dbMiniApps, mutate: mutateMiniApps } = useApi(isOpen ? `/explore/mini_apps?tg_id=${telegramUser?.id}` : null, {
     fallbackData: cachedMiniApps
   });
 
@@ -2247,7 +2256,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 return (
                   <div className="space-y-4">
                     {filteredApps.map((app: any) => {
+                      const isPending = app.status === "pending";
                       const handleOpen = () => {
+                        if (isPending) return;
                         const link = app.deep_link || app.link || `https://t.me/${app.username}`;
                         const twa = (window as any).Telegram?.WebApp;
                         if (twa?.openTelegramLink) {
@@ -2260,26 +2271,39 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       return (
                         <div
                           key={app.id}
-                          className="flex items-center justify-between border-b border-white/[0.04] pb-4 mb-4 text-left"
+                          className={`flex items-center justify-between p-3.5 mb-3 text-left rounded-2xl transition-all ${
+                            isPending
+                              ? "bg-red-950/20 border border-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+                              : "border-b border-white/[0.04]"
+                          }`}
                         >
                           <div className="flex items-center gap-3.5 min-w-0">
                             {/* Circular Logo */}
-                            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/[0.08] bg-white/5 shrink-0 flex items-center justify-center relative shadow-[0_0_12px_rgba(0,0,0,0.3)]">
+                            <div className={`w-12 h-12 rounded-full overflow-hidden border shrink-0 flex items-center justify-center relative shadow-[0_0_12px_rgba(0,0,0,0.3)] ${
+                              isPending ? "border-red-500/80 bg-red-950/40" : "border-white/[0.08] bg-white/5"
+                            }`}>
                               {app.photo_url ? (
                                 <img src={app.photo_url} className="w-full h-full object-cover" alt="" />
                               ) : app.photo ? (
                                 <img src={app.photo} className="w-full h-full object-cover" alt="" />
                               ) : (
-                                <span className="text-sm font-black uppercase text-app-accent">
+                                <span className={`text-sm font-black uppercase ${isPending ? "text-red-400" : "text-app-accent"}`}>
                                   {app.name?.[0]}
                                 </span>
                               )}
                             </div>
 
                             <div className="min-w-0">
-                              <h4 className="text-white text-[13px] font-black uppercase tracking-tight truncate">
-                                {app.name}
-                              </h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-white text-[13px] font-black uppercase tracking-tight truncate">
+                                  {app.name}
+                                </h4>
+                                {isPending && (
+                                  <span className="px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-widest bg-red-500/20 border border-red-500/60 text-red-400 animate-pulse shrink-0">
+                                    Awaiting Approval
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-text-muted font-mono text-[9.5px] font-bold truncate mt-0.5">
                                 @{app.username}
                               </p>
@@ -2291,9 +2315,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
                           <button
                             onClick={handleOpen}
-                            className="px-5 py-2 rounded-full bg-white text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 active:scale-95 transition-all shrink-0 ml-4 border border-white/20 shadow-md"
+                            disabled={isPending}
+                            className={`px-5 py-2 rounded-full font-black uppercase text-[10px] tracking-widest transition-all shrink-0 ml-4 border ${
+                              isPending
+                                ? "bg-red-500/20 text-red-300 border-red-500/40 opacity-70 cursor-not-allowed"
+                                : "bg-white text-black hover:opacity-90 active:scale-95 border-white/20 shadow-md"
+                            }`}
                           >
-                            Open
+                            {isPending ? "Pending" : "Open"}
                           </button>
                         </div>
                       );
@@ -2302,6 +2331,208 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 );
               })()}
             </div>
+
+            {/* White FAB Button */}
+            <button
+              onClick={() => {
+                if (!subAppUsername && (swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username)) {
+                  setSubAppUsername(swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username || "");
+                }
+                setIsSubmitMiniAppOpen(true);
+              }}
+              className="fixed bottom-10 right-6 z-[1025] w-14 h-14 rounded-full bg-white text-black font-black text-2xl shadow-[0_0_30px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
+              title="Submit Mini App"
+            >
+              +
+            </button>
+
+            {/* ─── Submit Mini App Bottom Sheet ─── */}
+            <AnimatePresence>
+              {isSubmitMiniAppOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[1050] bg-black/80 backdrop-blur-xl flex flex-col justify-end"
+                  onClick={() => setIsSubmitMiniAppOpen(false)}
+                >
+                  <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 220 }}
+                    className="w-full max-w-lg mx-auto bg-zinc-950/95 border-t border-white/15 rounded-t-3xl p-6 text-white shadow-2xl flex flex-col max-h-[88vh] overflow-y-auto custom-scrollbar"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mb-4 shrink-0" />
+
+                    <div className="text-center mb-6">
+                      <h3 className="text-base font-black uppercase tracking-wider text-white">
+                        Connect Your Mini App to the Waves
+                      </h3>
+                      <p className="text-[11px] text-white/60 font-medium mt-1 leading-relaxed">
+                        The Waves team will verify ownership and approve your app before publishing.
+                      </p>
+                    </div>
+
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (!subAppName.trim() || !subAppUsername.trim() || !subAppLink.trim() || isSubmittingMiniApp) return;
+                        setIsSubmittingMiniApp(true);
+                        try {
+                          const apiBase = (process.env.NEXT_PUBLIC_API_URL || "https://api.bluewave.xyz") + "/api";
+                          const res = await fetch(`${apiBase}/mini-apps/submit`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              tg_id: telegramUser?.id,
+                              name: subAppName.trim(),
+                              username: subAppUsername.trim(),
+                              link: subAppLink.trim(),
+                              category: subAppCategory,
+                              description: subAppDescription.trim(),
+                              icon_b64: subAppIconB64,
+                            }),
+                          });
+                          if (res.ok) {
+                            setIsSubmitMiniAppOpen(false);
+                            setSubAppName("");
+                            setSubAppUsername("");
+                            setSubAppLink("");
+                            setSubAppDescription("");
+                            setSubAppIconB64(null);
+                            setSubAppIconPreview(null);
+                            if (mutateMiniApps) mutateMiniApps();
+                          } else {
+                            alert("Failed to submit mini app. Please try again.");
+                          }
+                        } catch (err) {
+                          console.error("Submit mini app error:", err);
+                        } finally {
+                          setIsSubmittingMiniApp(false);
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      {/* Logo uploader */}
+                      <div className="flex flex-col items-center gap-2">
+                        <label className="w-20 h-20 rounded-2xl border border-white/20 bg-white/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative shadow-inner">
+                          {subAppIconPreview ? (
+                            <img src={subAppIconPreview} alt="Logo" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="flex flex-col items-center text-white/40">
+                              <span className="text-xl">+</span>
+                              <span className="text-[9px] font-black uppercase tracking-widest mt-1">Logo</span>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const result = reader.result as string;
+                                setSubAppIconPreview(result);
+                                setSubAppIconB64(result.split(",")[1]);
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+                        <span className="text-[10px] font-bold text-white/50 uppercase">App Icon / Logo</span>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/60 block mb-1">
+                          App Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Gram Casino"
+                          value={subAppName}
+                          onChange={(e) => setSubAppName(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/60 block mb-1">
+                          Telegram @Username (Auto-Filled)
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. gramcasinobot"
+                          value={subAppUsername}
+                          onChange={(e) => setSubAppUsername(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/60 block mb-1">
+                          Mini App Deep Link / WebApp URL
+                        </label>
+                        <input
+                          type="url"
+                          required
+                          placeholder="e.g. https://t.me/gramcasinobot/app"
+                          value={subAppLink}
+                          onChange={(e) => setSubAppLink(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/60 block mb-1">
+                          Category
+                        </label>
+                        <select
+                          value={subAppCategory}
+                          onChange={(e) => setSubAppCategory(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40 cursor-pointer"
+                        >
+                          <option value="Wallets">Wallets</option>
+                          <option value="Swaps & DeFi">Swaps & DeFi</option>
+                          <option value="Payments">Payments</option>
+                          <option value="NFT & Marketplaces">NFT & Marketplaces</option>
+                          <option value="Dev Infra">Dev Infra</option>
+                          <option value="Explorers">Explorers</option>
+                          <option value="Naming & Identity">Naming & Identity</option>
+                          <option value="Utilities">Utilities</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/60 block mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          rows={3}
+                          placeholder="Brief description of what your app does..."
+                          value={subAppDescription}
+                          onChange={(e) => setSubAppDescription(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-medium outline-none focus:border-white/40"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmittingMiniApp}
+                        className="w-full py-3.5 rounded-xl bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-white/90 active:scale-95 transition-all shadow-lg"
+                      >
+                        {isSubmittingMiniApp ? "Submitting..." : "Submit Mini App"}
+                      </button>
+                    </form>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
@@ -3223,7 +3454,7 @@ function AutoPlayVideo({ src }: { src: string }) {
 // 📸 Media Lightbox (Swipeable)
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-// 📸 Modern Clean Lightbox (Gesture Driven, Smooth Zoom, Back Button Stack)
+// 📸 Modern Clean Lightbox (Gesture Driven, Smooth Touch Swipe, Back Button Stack)
 // ----------------------------------------------------------------------------
 function Lightbox({ items, index, onClose }: { items: { url: string, type: string }[], index: number, onClose: () => void }) {
   const [curr, setCurr] = useState(index);
@@ -3278,9 +3509,8 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
   if (!mounted) return null;
 
-  // Touch handlers with stopPropagation to prevent tab switching
+  // Touch handlers for pinch zoom
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
     if (e.touches.length === 2) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -3291,7 +3521,6 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
     if (e.touches.length === 2 && touchStartDist !== null) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -3302,8 +3531,7 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
+  const handleTouchEnd = () => {
     setTouchStartDist(null);
   };
 
@@ -3314,11 +3542,6 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[1200] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-      onPointerMove={(e) => e.stopPropagation()}
     >
       <div 
         className="w-full flex-1 relative flex items-center justify-center overflow-hidden" 
@@ -3333,14 +3556,10 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -60, opacity: 0 }}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="w-full h-full flex items-center justify-center p-3 touch-none relative"
-            drag={true}
-            dragConstraints={
-              scale > 1 
-                ? { left: -120 * (scale - 1), right: 120 * (scale - 1), top: -120 * (scale - 1), bottom: 120 * (scale - 1) }
-                : { left: 0, right: 0, top: 0, bottom: 0 }
-            }
-            dragElastic={0.15}
+            className="w-full h-full flex items-center justify-center p-3 relative cursor-grab active:cursor-grabbing"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
             onDragEnd={(_, info) => {
               if (scale === 1) {
                 // Swipe up or down to dismiss
@@ -3348,9 +3567,9 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
                   onClose();
                 }
                 // Swipe left/right to navigate
-                else if (info.offset.x > 70 && curr > 0) {
+                else if (info.offset.x > 40 && curr > 0) {
                   setCurr(curr - 1);
-                } else if (info.offset.x < -70 && curr < items.length - 1) {
+                } else if (info.offset.x < -40 && curr < items.length - 1) {
                   setCurr(curr + 1);
                 }
               }
@@ -3364,7 +3583,7 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
             {items[curr].type === "photo" ? (
               <img 
                 src={items[curr].url} 
-                className="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-xl" 
+                className="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-xl pointer-events-none" 
                 alt="Media preview"
               />
             ) : (
