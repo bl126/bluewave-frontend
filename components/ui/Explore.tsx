@@ -1188,9 +1188,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         </motion.div>
       )}
 
-      {/* New Posts Pill (Redesigned with X-style overlapping circular avatars) */}
+      {/* New Posts Pill (Pure White X-style pill with circular avatars — disappears when scrolling down) */}
       <AnimatePresence>
-        {newPostsAvailable && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
+        {newPostsAvailable && showChrome && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
           <motion.div
             initial={{ opacity: 0, y: -12, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1200,9 +1200,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           >
             <button
               onClick={handleNewPostsPill}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-[12px] font-bold rounded-full shadow-[0_8px_30px_rgba(6,182,212,0.4)] border border-white/25 active:scale-95 transition-all flex items-center gap-2.5 pointer-events-auto cursor-pointer"
+              className="px-4 py-2 bg-white text-black text-[12px] font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/30 active:scale-95 transition-all flex items-center gap-2.5 pointer-events-auto cursor-pointer"
             >
-              <ArrowUp size={16} strokeWidth={3} className="text-white shrink-0" />
+              <ArrowUp size={16} strokeWidth={3} className="text-black shrink-0" />
               {newPostsAvatars.length > 0 && (
                 <div className="flex -space-x-2.5 overflow-hidden items-center shrink-0">
                   {newPostsAvatars.map((url, i) => (
@@ -1210,12 +1210,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       key={i}
                       src={url}
                       alt=""
-                      className="w-6 h-6 rounded-full border-2 border-cyan-500 object-cover shadow-sm bg-black"
+                      className="w-6 h-6 rounded-full border-2 border-white object-cover shadow-sm bg-black"
                     />
                   ))}
                 </div>
               )}
-              <span className="font-extrabold tracking-wide text-white">posted</span>
+              <span className="font-black tracking-wide text-black uppercase text-[11px]">posted</span>
             </button>
           </motion.div>
         )}
@@ -5579,12 +5579,12 @@ function PostDetailModal({
         <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-zinc-950/95 to-transparent pt-4 pb-[calc(env(safe-area-inset-bottom,16px)+16px)] px-4 max-w-xl mx-auto z-[600] pointer-events-auto">
           {/* Reply Banner */}
           {replyTo && (
-            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-cyan-500/10 px-4 py-1.5 mb-2 rounded-xl border border-cyan-500/20">
-              <span className="text-[10px] font-black text-cyan-400 uppercase tracking-wider">
+            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center justify-between bg-white/10 px-3 py-1 mb-2 rounded-lg border border-white/15">
+              <span className="text-[10px] font-extrabold text-white/80 uppercase tracking-wider">
                 Replying to <span className="text-white font-bold">{replyTo.user.name}</span>
               </span>
-              <button onClick={() => setReplyTo(null)} className="text-cyan-400 p-0.5 hover:text-white">
-                <X size={14} />
+              <button onClick={() => setReplyTo(null)} className="text-white/60 p-0.5 hover:text-white">
+                <X size={13} />
               </button>
             </motion.div>
           )}
@@ -5643,11 +5643,11 @@ function PostDetailModal({
               </div>
             </div>
           ) : (
-            /* ─── EXPANDED CARD STATE (Matching Reference Images 1 & 3) ─── */
-            <div className="w-full bg-zinc-900/95 border border-white/15 rounded-[2rem] p-4 flex flex-col gap-3 shadow-2xl backdrop-blur-2xl">
+            /* ─── COMPACT EXPANDED CARD STATE ─── */
+            <div className="w-full bg-zinc-900/95 border border-white/15 rounded-2xl p-3 flex flex-col gap-2 shadow-2xl backdrop-blur-2xl">
               {/* Top Input Row: Avatar + Textarea + Contract Icon */}
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm mt-1">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15 bg-black/40 shrink-0 shadow-sm mt-0.5">
                   {(telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url)) ? (
                     <img 
                       src={telegramUser?.photo || telegramUser?.photo_url || telegramUser?.telegram_channel_photo || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.photo_url} 
@@ -5655,7 +5655,7 @@ function PostDetailModal({
                       alt="User avatar"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-cyan-500/20 text-cyan-400 font-black text-xs">
+                    <div className="w-full h-full flex items-center justify-center bg-white/20 text-white font-black text-xs">
                       {(telegramUser?.first_name || telegramUser?.username || "U")[0]}
                     </div>
                   )}
@@ -5667,56 +5667,56 @@ function PostDetailModal({
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Post your reply"
-                  rows={3}
-                  className="flex-1 bg-transparent text-white text-sm font-medium outline-none resize-none placeholder-white/40 leading-relaxed custom-scrollbar pt-1"
+                  rows={2}
+                  className="flex-1 bg-transparent text-white text-xs font-medium outline-none resize-none placeholder-white/40 leading-relaxed custom-scrollbar pt-0.5"
                 />
 
                 <button
                   onClick={() => setIsInputExpanded(false)}
-                  className="p-1 text-white/50 hover:text-white transition-colors"
+                  className="p-1 text-white/50 hover:text-white transition-colors shrink-0"
                 >
-                  <Minimize2 size={18} />
+                  <Minimize2 size={16} />
                 </button>
               </div>
 
-              {/* Attached Media Thumbnail Preview (Matching Image 3) */}
+              {/* Attached Media Thumbnail Preview */}
               {commentImage && (
-                <div className="relative inline-block w-24 h-24 rounded-2xl overflow-hidden border border-white/15 shadow-lg ml-11 my-1">
+                <div className="relative inline-block w-20 h-20 rounded-xl overflow-hidden border border-white/15 shadow-lg ml-9 my-0.5">
                   <img src={commentImage} alt="attached media" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setCommentImage(null)}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white active:scale-90 transition-transform shadow-md"
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white active:scale-90 transition-transform shadow-md"
                   >
-                    <X size={12} />
+                    <X size={10} />
                   </button>
                 </div>
               )}
 
               {/* Bottom Action Toolbar */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between pt-1.5 border-t border-white/10">
                 {/* Left Toolbar Icons: Image */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => commentImageInputRef.current?.click()}
-                    className="p-1.5 rounded-full text-white/70 hover:text-white active:scale-90 transition-all"
+                    className="p-1 rounded-full text-white/70 hover:text-white active:scale-90 transition-all"
                   >
-                    <ImageIcon size={20} />
+                    <ImageIcon size={18} />
                   </button>
                 </div>
 
                 {/* Right Toolbar: Character Ring + Bold Reply Pill Button */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   {/* Character Progress Ring */}
-                  <div className="w-5 h-5 relative flex items-center justify-center">
+                  <div className="w-4 h-4 relative flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
-                      <circle cx="10" cy="10" r="8" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
+                      <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
                       <circle
-                        cx="10" cy="10" r="8"
-                        stroke={content.length > 250 ? "#ef4444" : "#00e6ff"}
+                        cx="8" cy="8" r="6"
+                        stroke={content.length > 250 ? "#ef4444" : "#ffffff"}
                         strokeWidth="2"
                         fill="none"
-                        strokeDasharray={50}
-                        strokeDashoffset={Math.max(0, 50 - (content.length / 280) * 50)}
+                        strokeDasharray={38}
+                        strokeDashoffset={Math.max(0, 38 - (content.length / 280) * 38)}
                       />
                     </svg>
                   </div>
