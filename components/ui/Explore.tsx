@@ -3223,7 +3223,7 @@ function AutoPlayVideo({ src }: { src: string }) {
 // 📸 Media Lightbox (Swipeable)
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-// 📸 Modern Clean Lightbox (Gesture Driven, Pinch Zoom, Telegram Back Button)
+// 📸 Modern Clean Lightbox (Gesture Driven, Smooth Zoom, Back Button Stack)
 // ----------------------------------------------------------------------------
 function Lightbox({ items, index, onClose }: { items: { url: string, type: string }[], index: number, onClose: () => void }) {
   const [curr, setCurr] = useState(index);
@@ -3231,9 +3231,14 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   const [touchStartDist, setTouchStartDist] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Telegram Native Back Button Integration
+  // Telegram Native Back Button Integration with Active Sheet Stack
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      if (!(window as any).bwActiveSheets) (window as any).bwActiveSheets = [];
+      (window as any).bwActiveSheets.push("lightbox");
+    }
+
     const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
     if (tg?.BackButton) {
       tg.BackButton.show();
@@ -3241,10 +3246,16 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
         onClose();
       };
       tg.BackButton.onClick(handleTgBack);
+
       return () => {
         tg.BackButton.offClick(handleTgBack);
-        if (!((window as any).bwActiveSheets?.length > 0)) {
-          tg.BackButton.hide();
+        if (typeof window !== "undefined" && (window as any).bwActiveSheets) {
+          (window as any).bwActiveSheets = (window as any).bwActiveSheets.filter((s: string) => s !== "lightbox");
+          if ((window as any).bwActiveSheets.length > 0) {
+            tg.BackButton.show();
+          } else {
+            tg.BackButton.hide();
+          }
         }
       };
     }
@@ -3267,8 +3278,9 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
   if (!mounted) return null;
 
-  // Pinch-to-zoom touch handlers
+  // Touch handlers with stopPropagation to prevent tab switching
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
     if (e.touches.length === 2) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -3279,17 +3291,19 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
     if (e.touches.length === 2 && touchStartDist !== null) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
-      const factor = dist / touchStartDist;
-      setScale(prev => Math.min(4, Math.max(1, prev * (1 + (factor - 1) * 0.1))));
+      const ratio = dist / touchStartDist;
+      setScale(Math.min(2.2, Math.max(1, ratio)));
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setTouchStartDist(null);
   };
 
@@ -3300,6 +3314,11 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[1200] bg-black/95 flex flex-col items-center justify-center select-none backdrop-blur-3xl"
       onClick={onClose}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerMove={(e) => e.stopPropagation()}
     >
       <div 
         className="w-full flex-1 relative flex items-center justify-center overflow-hidden" 
@@ -3310,34 +3329,42 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
       >
          <motion.div 
             key={curr}
-            initial={{ x: 80, opacity: 0 }}
+            initial={{ x: 60, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -80, opacity: 0 }}
-            className="w-full h-full flex items-center justify-center p-2 touch-none relative"
+            exit={{ x: -60, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="w-full h-full flex items-center justify-center p-3 touch-none relative"
             drag={true}
-            dragConstraints={scale > 1 ? undefined : { left: 0, right: 0, top: 0, bottom: 0 }}
-            dragElastic={scale > 1 ? 0.1 : 0.8}
+            dragConstraints={
+              scale > 1 
+                ? { left: -120 * (scale - 1), right: 120 * (scale - 1), top: -120 * (scale - 1), bottom: 120 * (scale - 1) }
+                : { left: 0, right: 0, top: 0, bottom: 0 }
+            }
+            dragElastic={0.15}
             onDragEnd={(_, info) => {
               if (scale === 1) {
                 // Swipe up or down to dismiss
-                if (Math.abs(info.offset.y) > 100) {
+                if (Math.abs(info.offset.y) > 90) {
                   onClose();
                 }
                 // Swipe left/right to navigate
-                else if (info.offset.x > 80 && curr > 0) {
+                else if (info.offset.x > 70 && curr > 0) {
                   setCurr(curr - 1);
-                } else if (info.offset.x < -80 && curr < items.length - 1) {
+                } else if (info.offset.x < -70 && curr < items.length - 1) {
                   setCurr(curr + 1);
                 }
               }
             }}
             style={{ scale }}
-            onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              setScale(s => s === 1 ? 1.8 : 1);
+            }}
          >
             {items[curr].type === "photo" ? (
               <img 
                 src={items[curr].url} 
-                className="max-w-full max-h-[92vh] object-contain shadow-2xl rounded-xl transition-transform duration-100" 
+                className="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-xl" 
                 alt="Media preview"
               />
             ) : (
@@ -3345,7 +3372,7 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
                 src={items[curr].url} 
                 controls 
                 autoPlay 
-                className="max-w-full max-h-[92vh] rounded-xl shadow-2xl" 
+                className="max-w-full max-h-[90vh] rounded-xl shadow-2xl" 
               />
             )}
          </motion.div>
@@ -3353,7 +3380,10 @@ function Lightbox({ items, index, onClose }: { items: { url: string, type: strin
 
       {/* Bottom Animated Indicator Dots Only */}
       {items.length > 1 && (
-        <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-[1210]">
+        <div 
+          className="absolute bottom-10 left-0 right-0 flex justify-center gap-2 z-[1210]"
+          onClick={(e) => e.stopPropagation()}
+        >
           {items.map((_, i) => (
             <motion.div 
               key={i} 
