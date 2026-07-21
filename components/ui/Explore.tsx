@@ -638,11 +638,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
   }, [dbMiniApps]);
 
-  const miniAppsList = (dbMiniApps && dbMiniApps.length > 0)
-    ? dbMiniApps
-    : (cachedMiniApps && cachedMiniApps.length > 0)
-      ? cachedMiniApps
-      : MOCK_MINI_APPS;
+  const miniAppsList = dbMiniApps || cachedMiniApps || [];
+
+  // Hide Bottom Navigation bar when Mini App Fullscreen is open
+  useEffect(() => {
+    if (isMiniAppsOpen) {
+      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "down" }));
+    } else {
+      window.dispatchEvent(new CustomEvent("scrollDirectionChanged", { detail: "up" }));
+    }
+  }, [isMiniAppsOpen]);
 
   // Fetch Explore Ads
   const { data: dbAds } = useApi(isOpen ? "/explore/ads" : null);
@@ -2276,7 +2281,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[1019] bg-app-bg flex flex-col"
+            className="fixed inset-0 z-[2000] bg-app-bg flex flex-col"
             style={{
               paddingTop: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 60px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)"
@@ -2403,7 +2408,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               })()}
             </div>
 
-            {/* White FAB Button (matching main Explore FAB position right-5 bottom-36) */}
+            {/* White FAB Button */}
             <button
               onClick={() => {
                 if (!subAppUsername && (swrUser?.username || (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.username)) {
@@ -2411,7 +2416,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 }
                 setIsSubmitMiniAppOpen(true);
               }}
-              className="fixed right-5 bottom-36 z-[1025] w-12 h-12 rounded-full bg-white text-black font-black text-xl shadow-[0_0_25px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
+              className="fixed right-5 bottom-8 z-[2025] w-12 h-12 rounded-full bg-white text-black font-black text-xl shadow-[0_0_25px_rgba(255,255,255,0.45)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/30"
               title="Submit Mini App"
             >
               +
