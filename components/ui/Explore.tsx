@@ -2504,11 +2504,11 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                             setSubAppIconPreview(null);
                             if (mutateMiniApps) mutateMiniApps();
                           } else {
-                            alert(res?.error || "Failed to submit mini app. Please try again.");
+                            alert(res?.detail || res?.error || "Failed to submit mini app. Please try again.");
                           }
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error("Submit mini app error:", err);
-                          alert("Failed to submit mini app. Please try again.");
+                          alert(err?.message || "Failed to submit mini app. Please try again.");
                         } finally {
                           setIsSubmittingMiniApp(false);
                         }
