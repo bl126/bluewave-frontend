@@ -3896,17 +3896,18 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
         <span className="inline whitespace-pre-wrap">
           {parts.map((part, i) => {
             if (!part) return null;
+            const displayPart = part.length > 40 ? part.slice(0, 37) + "..." : part;
             if (/^https?:\/\//i.test(part)) {
               return (
-                <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
-                  {part}
+                <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors break-all inline">
+                  {displayPart}
                 </a>
               );
             }
             if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
               return (
-                <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
-                  {part}
+                <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors break-all inline">
+                  {displayPart}
                 </a>
               );
             }
@@ -3974,20 +3975,21 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
 
   const parts = text.split(/(https?:\/\/[^\s]+|@\w{3,}|#\w{2,}|\$[A-Za-z]{2,}|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)(?:\/[^\s]*)?)/gi);
   return (
-    <p className={`${className} whitespace-pre-wrap`}>
+    <p className={`${className} whitespace-pre-wrap break-words [word-break:break-word] overflow-wrap-anywhere`}>
       {parts.map((part, i) => {
         if (!part) return null;
+        const displayPart = part.length > 40 ? part.slice(0, 37) + "..." : part;
         if (/^https?:\/\//i.test(part)) {
           return (
-            <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
-              {part}
+            <a key={i} href={part} onClick={(e) => openExternalLink(part, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors break-all inline">
+              {displayPart}
             </a>
           );
         }
         if (/^(?:[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot)/i.test(part)) {
           return (
-            <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors">
-              {part}
+            <a key={i} href={`https://${part}`} onClick={(e) => openExternalLink(`https://${part}`, e)} className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-500/30 underline-offset-4 transition-colors break-all inline">
+              {displayPart}
             </a>
           );
         }
@@ -5378,7 +5380,19 @@ function PostDetailModal({
                 </div>
               </div>
 
-              <LinkedText text={post.content} showFull={true} className="text-xl text-white font-medium leading-[1.6] tracking-tight mb-8 whitespace-pre-wrap selection:bg-cyan-500/30" />
+              <LinkedText text={post.content} showFull={true} className="text-xl text-white font-medium leading-[1.6] tracking-tight mb-4 whitespace-pre-wrap selection:bg-cyan-500/30 break-words [word-break:break-word]" />
+
+              {/* Rich Link Preview Card (Telegram style) inside PostDetailModal */}
+              {(() => {
+                if (!post.content) return null;
+                const match = post.content.match(/(https?:\/\/[^\s<"']+|(?:\b[\w-]+\.)+(?:com|xyz|net|org|io|me|app|bot|co|tv)(?:\/[^\s<"']*)?)/i);
+                if (!match) return null;
+                let linkUrl = match[0].replace(/[.,)!?]+$/, "");
+                if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
+                  linkUrl = "https://" + linkUrl;
+                }
+                return <LinkPreviewCard url={linkUrl} />;
+              })()}
 
               {post.media_urls && post.media_urls.length > 0 && (
                 <MediaCollage items={post.media_urls} />
