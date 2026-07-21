@@ -66,6 +66,7 @@ import StarGiftModal, {
   saveStarGiftAmount,
   type StarGiftModalMode,
 } from "@/components/explore/StarGiftModal";
+import LinkPreviewCard from "./LinkPreviewCard";
 
 const openChannel = (handle: string) => {
   const clean = handle.replace(/^@/, "");
@@ -4452,6 +4453,17 @@ function PostCard({
           </div>
 
           <LinkedText text={post.content} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap mb-3" />
+
+          {/* Rich Link Preview Card (Telegram style) */}
+          {(() => {
+            if (!post.content) return null;
+            const match = post.content.match(/https?:\/\/[^\s<"']+/i);
+            if (!match) return null;
+            const linkUrl = match[0];
+            const hasMedia = (post.media_urls && post.media_urls.length > 0) || post.media_url;
+            if (hasMedia) return null;
+            return <LinkPreviewCard url={linkUrl} />;
+          })()}
 
           {/* Signal Content */}
           {post.post_type === 'live_scheduled' ? null : post.media_urls && post.media_urls.length > 0 ? (
