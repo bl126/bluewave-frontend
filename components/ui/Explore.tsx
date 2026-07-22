@@ -1188,7 +1188,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         </motion.div>
       )}
 
-      {/* New Posts Pill (Pure White X-style pill — positioned directly below tabs header) */}
+      {/* New Posts Pill (Pure White X-style pill — enlarged to fit 32px channel avatars) */}
       <AnimatePresence>
         {newPostsAvailable && showChrome && activeTab !== "leaderboard" && activeTab !== "notifications" && activeTab !== "following" && (
           <motion.div
@@ -1200,23 +1200,23 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
           >
             <button
               onClick={handleNewPostsPill}
-              className="px-4 py-2 bg-white text-black text-[12px] font-bold rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.8)] border border-white/60 active:scale-95 transition-all flex items-center gap-2.5 pointer-events-auto cursor-pointer max-w-fit"
+              className="px-5 py-2.5 bg-white text-black text-[13px] font-extrabold rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.85)] border-2 border-white/80 active:scale-95 transition-all flex items-center gap-3 pointer-events-auto cursor-pointer max-w-fit"
             >
-              <ArrowUp size={16} strokeWidth={3} className="text-black shrink-0" />
-              <div className="flex -space-x-2.5 overflow-hidden items-center shrink-0">
+              <ArrowUp size={18} strokeWidth={3} className="text-black shrink-0" />
+              <div className="flex -space-x-3 overflow-hidden items-center shrink-0 py-0.5">
                 {(newPostsAvatars.length > 0 ? newPostsAvatars : ["https://api.dicebear.com/7.x/identicon/svg?seed=wave"]).map((url, i) => (
                   <img
                     key={i}
                     src={url}
                     alt=""
-                    className="w-7 h-7 rounded-full border-2 border-black object-cover shadow-sm bg-zinc-900"
+                    className="w-8 h-8 rounded-full border-2 border-black object-cover shadow-md bg-zinc-900 shrink-0"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = "none";
                     }}
                   />
                 ))}
               </div>
-              <span className="font-black tracking-wide text-black uppercase text-[12px] shrink-0">posted</span>
+              <span className="font-black tracking-wider text-black uppercase text-[12px] shrink-0 ml-0.5">posted</span>
             </button>
           </motion.div>
         )}
