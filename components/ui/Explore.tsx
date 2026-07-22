@@ -2027,6 +2027,122 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
+      {/* Promote Project Bottom Sheet Modal (Positions above bottom nav with z-[999]) */}
+      <AnimatePresence>
+        {isPromoteSheetOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-end justify-center pointer-events-auto"
+            onClick={() => setIsPromoteSheetOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-zinc-950 border-t border-white/15 rounded-t-[2.5rem] p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={18} className="text-cyan-400" />
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider">Promote Your Project</h3>
+                </div>
+                <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/50 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="text-xs text-white/70 font-medium">
+                reach thousands of verified humans on the waves. Submit your banner image and details for approval.
+              </p>
+
+              {/* Inputs */}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Title *</label>
+                  <input
+                    type="text"
+                    value={promoteTitle}
+                    onChange={(e) => setPromoteTitle(e.target.value)}
+                    placeholder="e.g. TG STARS ON GETGEMS"
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Description</label>
+                  <textarea
+                    rows={2}
+                    value={promoteDesc}
+                    onChange={(e) => setPromoteDesc(e.target.value)}
+                    placeholder="Get Stars 30% cheaper than inside Telegram"
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400 resize-none"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image URL *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoteImageUrl}
+                      onChange={(e) => setPromoteImageUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => promoteFileInputRef.current?.click()}
+                      className="px-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold shrink-0 flex items-center gap-1"
+                    >
+                      <ImageIcon size={16} /> Upload
+                    </button>
+                  </div>
+                  <input
+                    ref={promoteFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePromoteImageSelect}
+                  />
+                </div>
+
+                {promoteImageUrl && (
+                  <div className="w-full h-36 rounded-2xl overflow-hidden border border-white/15 bg-black/40 mt-1">
+                    <img src={promoteImageUrl} alt="preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Destination Link (Optional)</label>
+                  <input
+                    type="text"
+                    value={promoteTargetUrl}
+                    onChange={(e) => setPromoteTargetUrl(e.target.value)}
+                    placeholder="https://t.me/your_channel or https://..."
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              {promoteError && <p className="text-xs text-red-400 font-bold">{promoteError}</p>}
+
+              <button
+                onClick={handleSubmitPromoteBanner}
+                disabled={isSubmittingPromote}
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                {isSubmittingPromote ? <Loader2 size={16} className="animate-spin" /> : "Submit Promotion Banner"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ─── Fullscreen Search View (App Theme, Center Input below safe area, no X button) ─── */}
       <AnimatePresence>
         {isSearchOpen && (
@@ -3604,122 +3720,6 @@ function PremiumPage({
               </p>
             </div>
           )}
-
-          {/* Promote Project Bottom Sheet Modal (Positions above bottom nav with z-[999]) */}
-          <AnimatePresence>
-            {isPromoteSheetOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-end justify-center pointer-events-auto"
-                onClick={() => setIsPromoteSheetOpen(false)}
-              >
-                <motion.div
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-lg bg-zinc-950 border-t border-white/15 rounded-t-[2.5rem] p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={18} className="text-cyan-400" />
-                      <h3 className="text-sm font-black text-white uppercase tracking-wider">Promote Your Project</h3>
-                    </div>
-                    <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/50 hover:text-white">
-                      <X size={20} />
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-white/70 font-medium">
-                    reach thousands of verified humans on the waves. Submit your banner image and details for approval.
-                  </p>
-
-                  {/* Inputs */}
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Title *</label>
-                      <input
-                        type="text"
-                        value={promoteTitle}
-                        onChange={(e) => setPromoteTitle(e.target.value)}
-                        placeholder="e.g. TG STARS ON GETGEMS"
-                        className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Description</label>
-                      <textarea
-                        rows={2}
-                        value={promoteDesc}
-                        onChange={(e) => setPromoteDesc(e.target.value)}
-                        placeholder="Get Stars 30% cheaper than inside Telegram"
-                        className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400 resize-none"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image URL *</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={promoteImageUrl}
-                          onChange={(e) => setPromoteImageUrl(e.target.value)}
-                          placeholder="https://..."
-                          className="flex-1 bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => promoteFileInputRef.current?.click()}
-                          className="px-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold shrink-0 flex items-center gap-1"
-                        >
-                          <ImageIcon size={16} /> Upload
-                        </button>
-                      </div>
-                      <input
-                        ref={promoteFileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handlePromoteImageSelect}
-                      />
-                    </div>
-
-                    {promoteImageUrl && (
-                      <div className="w-full h-36 rounded-2xl overflow-hidden border border-white/15 bg-black/40 mt-1">
-                        <img src={promoteImageUrl} alt="preview" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Destination Link (Optional)</label>
-                      <input
-                        type="text"
-                        value={promoteTargetUrl}
-                        onChange={(e) => setPromoteTargetUrl(e.target.value)}
-                        placeholder="https://t.me/your_channel or https://..."
-                        className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
-                      />
-                    </div>
-                  </div>
-
-                  {promoteError && <p className="text-xs text-red-400 font-bold">{promoteError}</p>}
-
-                  <button
-                    onClick={handleSubmitPromoteBanner}
-                    disabled={isSubmittingPromote}
-                    className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
-                  >
-                    {isSubmittingPromote ? <Loader2 size={16} className="animate-spin" /> : "Submit Promotion Banner"}
-                  </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </motion.div>
     </div>,
