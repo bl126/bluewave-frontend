@@ -1,5 +1,6 @@
 "use client";
 
+import useSWR from "swr";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -527,6 +528,64 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isPostingBackground, setIsPostingBackground] = useState(false);
   const [connectPrompt, setConnectPrompt] = useState(false);
 
+  // Promote Project Sheet State
+  const [isPromoteSheetOpen, setIsPromoteSheetOpen] = useState(false);
+  const [promoteTitle, setPromoteTitle] = useState("");
+  const [promoteDesc, setPromoteDesc] = useState("");
+  const [promoteImageUrl, setPromoteImageUrl] = useState("");
+  const [promoteTargetUrl, setPromoteTargetUrl] = useState("");
+  const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [isSubmittingPromote, setIsSubmittingPromote] = useState(false);
+  const promoteFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // SWR for Carousel Banners
+  const { data: carouselData } = useSWR('/explore/carousel', () => fetcher('/explore/carousel'), { refreshInterval: 30000 });
+  const carouselBanners = carouselData?.banners || [];
+
+  const handlePromoteImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await postApi("/upload", formData);
+      if (res?.url) {
+        setPromoteImageUrl(res.url);
+      }
+    } catch (err) {
+      console.error("Image upload failed:", err);
+    }
+  };
+
+  const handleSubmitPromoteBanner = async () => {
+    if (!promoteTitle.trim() || !promoteImageUrl.trim()) {
+      setPromoteError("Title and Image URL are required.");
+      return;
+    }
+    setPromoteError(null);
+    setIsSubmittingPromote(true);
+    try {
+      await postApi("/explore/carousel/submit", {
+        user_id: telegramUser?.id || 0,
+        title: promoteTitle.trim(),
+        description: promoteDesc.trim(),
+        image_url: promoteImageUrl.trim(),
+        target_url: promoteTargetUrl.trim(),
+      });
+      setSuccessMessage("Your promotion banner has been submitted for review!");
+      setPromoteTitle("");
+      setPromoteDesc("");
+      setPromoteImageUrl("");
+      setPromoteTargetUrl("");
+      setIsPromoteSheetOpen(false);
+      mutateNotifications();
+    } catch (err: any) {
+      setPromoteError(err.message || "Failed to submit banner.");
+    } finally {
+      setIsSubmittingPromote(false);
+    }
+  };
+
   // Centralized Telegram BackButton Manager across all overlays
   const [backTrigger, setBackTrigger] = useState(0);
   const backHandlerRef = useRef<(() => void) | null>(null);
@@ -548,6 +607,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     }
 
     const hasOverlay = Boolean(
+      isPromoteSheetOpen ||
       isSubmitMiniAppOpen ||
       isMiniAppsOpen ||
       selectedPost ||
@@ -561,7 +621,9 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
 
     if (hasOverlay) {
       const handleTelegramBackClick = () => {
-        if (isSubmitMiniAppOpen) {
+        if (isPromoteSheetOpen) {
+          setIsPromoteSheetOpen(false);
+        } else if (isSubmitMiniAppOpen) {
           setIsSubmitMiniAppOpen(false);
         } else if (isMiniAppsOpen) {
           setIsMiniAppsOpen(false);
@@ -1384,7 +1446,12 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onStarGiftSuccess={() => mutateNotifications()}
                           onOpenBuyStars={tryOpenBuyStars}
                         />
-                        {(index + 1) % MINI_APP_INSERT_EVERY === 0 ? (
+                        {(index + 1) % 5 === 0 ? (
+                          <ExploreCarousel
+                            banners={carouselBanners}
+                            onOpenPromote={() => setIsPromoteSheetOpen(true)}
+                          />
+                        ) : (index + 1) % MINI_APP_INSERT_EVERY === 0 ? (
                           <MiniAppCarousel
                             apps={miniAppsList}
                             loading={!dbMiniApps || dbMiniApps.length === 0}
@@ -3539,6 +3606,122 @@ function PremiumPage({
           )}
         </div>
       </motion.div>
+
+      {/* Promote Project Bottom Sheet Modal (Positions above bottom nav with z-[999]) */}
+      <AnimatePresence>
+        {isPromoteSheetOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-end justify-center pointer-events-auto"
+            onClick={() => setIsPromoteSheetOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-zinc-950 border-t border-white/15 rounded-t-[2.5rem] p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={18} className="text-cyan-400" />
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider">Promote Your Project</h3>
+                </div>
+                <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/50 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="text-xs text-white/70 font-medium">
+                reach thousands of verified humans on the waves. Submit your banner image and details for approval.
+              </p>
+
+              {/* Inputs */}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Title *</label>
+                  <input
+                    type="text"
+                    value={promoteTitle}
+                    onChange={(e) => setPromoteTitle(e.target.value)}
+                    placeholder="e.g. TG STARS ON GETGEMS"
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Description</label>
+                  <textarea
+                    rows={2}
+                    value={promoteDesc}
+                    onChange={(e) => setPromoteDesc(e.target.value)}
+                    placeholder="Get Stars 30% cheaper than inside Telegram"
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400 resize-none"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image URL *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoteImageUrl}
+                      onChange={(e) => setPromoteImageUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => promoteFileInputRef.current?.click()}
+                      className="px-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold shrink-0 flex items-center gap-1"
+                    >
+                      <ImageIcon size={16} /> Upload
+                    </button>
+                  </div>
+                  <input
+                    ref={promoteFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePromoteImageSelect}
+                  />
+                </div>
+
+                {promoteImageUrl && (
+                  <div className="w-full h-36 rounded-2xl overflow-hidden border border-white/15 bg-black/40 mt-1">
+                    <img src={promoteImageUrl} alt="preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Destination Link (Optional)</label>
+                  <input
+                    type="text"
+                    value={promoteTargetUrl}
+                    onChange={(e) => setPromoteTargetUrl(e.target.value)}
+                    placeholder="https://t.me/your_channel or https://..."
+                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              {promoteError && <p className="text-xs text-red-400 font-bold">{promoteError}</p>}
+
+              <button
+                onClick={handleSubmitPromoteBanner}
+                disabled={isSubmittingPromote}
+                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                {isSubmittingPromote ? <Loader2 size={16} className="animate-spin" /> : "Submit Promotion Banner"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>,
     document.body
   );
@@ -4053,6 +4236,140 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
         return part;
       })}
     </p>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 🌟 GetGems-Style Explore Hero Carousel (Repeated every 5 posts)
+// ----------------------------------------------------------------------------
+function ExploreCarousel({
+  banners,
+  onOpenPromote,
+}: {
+  banners: any[];
+  onOpenPromote: () => void;
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+
+  // Combine approved banners + "Promote Your Project" card as final card
+  const totalCards = banners.length + 1;
+
+  // Autoplay timer (every 4 seconds)
+  useEffect(() => {
+    if (totalCards <= 1) return;
+    const timer = setInterval(() => {
+      if (isDraggingRef.current) return;
+      setActiveIdx((prev) => {
+        const next = (prev + 1) % totalCards;
+        if (scrollRef.current) {
+          const cardWidth = scrollRef.current.clientWidth * 0.85;
+          scrollRef.current.scrollTo({ left: next * cardWidth, behavior: "smooth" });
+        }
+        return next;
+      });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [totalCards]);
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const cardWidth = scrollRef.current.clientWidth * 0.85;
+    const idx = Math.round(scrollRef.current.scrollLeft / cardWidth);
+    if (idx !== activeIdx && idx >= 0 && idx < totalCards) {
+      setActiveIdx(idx);
+    }
+  };
+
+  return (
+    <div className="w-full my-4 px-3 flex flex-col gap-2.5">
+      {/* Carousel Header with Top-Right Plus Icon Shortcut */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} className="text-cyan-400" />
+          <span className="text-xs font-black text-white uppercase tracking-wider">Spotlights</span>
+        </div>
+        <button
+          onClick={onOpenPromote}
+          className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center gap-1.5 px-2.5"
+        >
+          <Plus size={14} className="text-white shrink-0" />
+          <span className="text-[10px] font-black uppercase text-white/90">Promote</span>
+        </button>
+      </div>
+
+      {/* Snap-Scrolling Horizontal Carousel */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        onTouchStart={() => { isDraggingRef.current = true; }}
+        onTouchEnd={() => { setTimeout(() => { isDraggingRef.current = false; }, 1000); }}
+        className="flex gap-3 overflow-x-auto custom-scrollbar snap-x snap-mandatory pb-2 scroll-smooth"
+      >
+        {banners.map((b, i) => (
+          <div
+            key={b.id || i}
+            onClick={() => {
+              if (b.target_url && typeof window !== "undefined") {
+                const tg = (window as any).Telegram?.WebApp;
+                if (tg?.openLink) {
+                  tg.openLink(b.target_url);
+                } else {
+                  window.open(b.target_url, "_blank");
+                }
+              }
+            }}
+            className="snap-center shrink-0 w-[85%] max-w-sm bg-zinc-900/90 border border-white/15 rounded-3xl p-3 flex flex-col gap-2.5 cursor-pointer shadow-xl hover:border-white/30 transition-all active:scale-[0.98]"
+          >
+            {/* Banner Image */}
+            <div className="w-full h-44 rounded-2xl overflow-hidden bg-black/40 border border-white/10 relative">
+              <img src={b.image_url} alt={b.title} className="w-full h-full object-cover" />
+            </div>
+            {/* Banner Title & Description */}
+            <div className="flex flex-col gap-0.5 px-1 pb-1">
+              <h3 className="text-sm font-black text-white uppercase tracking-wide truncate">{b.title}</h3>
+              {b.description && (
+                <p className="text-xs text-white/60 font-medium line-clamp-2 leading-tight">{b.description}</p>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Final Card: "Promote Your Project" */}
+        <div
+          onClick={onOpenPromote}
+          className="snap-center shrink-0 w-[85%] max-w-sm bg-gradient-to-br from-cyan-500/20 via-blue-600/20 to-zinc-900/95 border border-cyan-500/30 rounded-3xl p-4 flex flex-col items-center justify-center text-center gap-3 cursor-pointer shadow-2xl hover:border-cyan-400/50 transition-all active:scale-[0.98] min-h-[220px]"
+        >
+          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg border border-white/20">
+            <Plus size={28} strokeWidth={2.5} />
+          </div>
+          <div className="flex flex-col gap-1 max-w-xs">
+            <h3 className="text-sm font-black text-white uppercase tracking-wide">Promote Your Project</h3>
+            <p className="text-xs text-cyan-300/80 font-medium leading-relaxed">
+              reach thousands of verified humans on the waves
+            </p>
+          </div>
+          <button className="px-4 py-1.5 bg-white text-black text-[11px] font-black uppercase rounded-full shadow-md active:scale-95 transition-all">
+            Submit Banner
+          </button>
+        </div>
+      </div>
+
+      {/* Pagination Dot Indicators */}
+      {totalCards > 1 && (
+        <div className="flex items-center justify-center gap-1.5 pt-0.5">
+          {Array.from({ length: totalCards }).map((_, idx) => (
+            <div
+              key={idx}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeIdx === idx ? "w-5 bg-white" : "w-1.5 bg-white/20"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
