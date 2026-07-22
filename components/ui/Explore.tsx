@@ -539,7 +539,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const promoteFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // SWR for Carousel Banners
-  const { data: carouselData } = useSWR('/explore/carousel', () => fetcher('/explore/carousel'), { refreshInterval: 30000 });
+  const { data: carouselData } = useSWR('/explore/carousel', () => getApi('/explore/carousel'), { refreshInterval: 30000 });
   const carouselBanners = carouselData?.banners || [];
 
   const handlePromoteImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
