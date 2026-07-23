@@ -2034,7 +2034,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-end justify-center pointer-events-auto"
+            className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-end justify-center pointer-events-auto"
             onClick={() => setIsPromoteSheetOpen(false)}
           >
             <motion.div
@@ -2043,20 +2043,20 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-zinc-950 border-t border-white/15 rounded-t-[2.5rem] p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
+              className="w-full max-w-lg bg-[#18181a] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
             >
+              {/* Drag Handle from uiskill.md */}
+              <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-1 shrink-0" />
+
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={18} className="text-cyan-400" />
-                  <h3 className="text-sm font-black text-white uppercase tracking-wider">Promote Your Project</h3>
-                </div>
-                <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/50 hover:text-white">
-                  <X size={20} />
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Promote Your Project</h3>
+                <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/40 hover:text-white transition-colors">
+                  <X size={18} />
                 </button>
               </div>
 
-              <p className="text-xs text-white/70 font-medium">
+              <p className="text-[11px] text-white/50 leading-relaxed font-medium">
                 reach thousands of verified humans on the waves. Submit your banner image and details for approval.
               </p>
 
@@ -2069,7 +2069,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     value={promoteTitle}
                     onChange={(e) => setPromoteTitle(e.target.value)}
                     placeholder="e.g. TG STARS ON GETGEMS"
-                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
                   />
                 </div>
 
@@ -2080,7 +2080,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     value={promoteDesc}
                     onChange={(e) => setPromoteDesc(e.target.value)}
                     placeholder="Get Stars 30% cheaper than inside Telegram"
-                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400 resize-none"
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 resize-none transition-all"
                   />
                 </div>
 
@@ -2092,14 +2092,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       value={promoteImageUrl}
                       onChange={(e) => setPromoteImageUrl(e.target.value)}
                       placeholder="https://..."
-                      className="flex-1 bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                      className="flex-1 bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => promoteFileInputRef.current?.click()}
-                      className="px-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold shrink-0 flex items-center gap-1"
+                      className="px-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1.5 active:scale-95 transition-all"
                     >
-                      <ImageIcon size={16} /> Upload
+                      <ImageIcon size={14} /> Upload
                     </button>
                   </div>
                   <input
@@ -2112,7 +2112,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 </div>
 
                 {promoteImageUrl && (
-                  <div className="w-full h-36 rounded-2xl overflow-hidden border border-white/15 bg-black/40 mt-1">
+                  <div className="w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-black/40 mt-1">
                     <img src={promoteImageUrl} alt="preview" className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -2124,7 +2124,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     value={promoteTargetUrl}
                     onChange={(e) => setPromoteTargetUrl(e.target.value)}
                     placeholder="https://t.me/your_channel or https://..."
-                    className="w-full bg-zinc-900 border border-white/15 rounded-2xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-cyan-400"
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
                   />
                 </div>
               </div>
@@ -2134,7 +2134,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               <button
                 onClick={handleSubmitPromoteBanner}
                 disabled={isSubmittingPromote}
-                className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3.5 bg-white hover:bg-white/90 text-black text-xs font-black uppercase tracking-wider rounded-full shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
               >
                 {isSubmittingPromote ? <Loader2 size={16} className="animate-spin" /> : "Submit Promotion Banner"}
               </button>
@@ -4283,19 +4283,15 @@ function ExploreCarousel({
   };
 
   return (
-    <div className="w-full my-4 px-3 flex flex-col gap-2.5">
-      {/* Carousel Header with Top-Right Plus Icon Shortcut */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-cyan-400" />
-          <span className="text-xs font-black text-white uppercase tracking-wider">Spotlights</span>
-        </div>
+    <div className="w-full py-5 border-y border-white/5 bg-white/[0.02] overflow-hidden my-4">
+      {/* Carousel Header with Top-Right Plus Icon Shortcut (No Text) */}
+      <div className="px-5 mb-4 flex items-center justify-between">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main">Spotlights</h3>
         <button
           onClick={onOpenPromote}
-          className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center gap-1.5 px-2.5"
+          className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 text-text-muted hover:text-white transition-all flex items-center justify-center cursor-pointer border border-white/5"
         >
-          <Plus size={14} className="text-white shrink-0" />
-          <span className="text-[10px] font-black uppercase text-white/90">Promote</span>
+          <Plus size={14} />
         </button>
       </div>
 
@@ -4305,7 +4301,10 @@ function ExploreCarousel({
         onScroll={handleScroll}
         onTouchStart={() => { isDraggingRef.current = true; }}
         onTouchEnd={() => { setTimeout(() => { isDraggingRef.current = false; }, 1000); }}
-        className="flex gap-3 overflow-x-auto custom-scrollbar snap-x snap-mandatory pb-2 scroll-smooth"
+        className="flex items-center gap-5 overflow-x-auto custom-scrollbar px-5 pb-2 hide-scrollbar snap-x scroll-smooth"
+        onTouchStartCapture={(e) => e.stopPropagation()}
+        onTouchMoveCapture={(e) => e.stopPropagation()}
+        onTouchEndCapture={(e) => e.stopPropagation()}
       >
         {banners.map((b, i) => (
           <div
@@ -4320,37 +4319,37 @@ function ExploreCarousel({
                 }
               }
             }}
-            className="snap-center shrink-0 w-[85%] max-w-sm bg-zinc-900/90 border border-white/15 rounded-3xl p-3 flex flex-col gap-2.5 cursor-pointer shadow-xl hover:border-white/30 transition-all active:scale-[0.98]"
+            className="snap-center shrink-0 w-[85%] max-w-sm bg-white/[0.02] border border-white/[0.06] rounded-2xl p-3 flex flex-col gap-3 cursor-pointer shadow-lg hover:border-white/15 transition-all active:scale-[0.98]"
           >
             {/* Banner Image */}
-            <div className="w-full h-44 rounded-2xl overflow-hidden bg-black/40 border border-white/10 relative">
+            <div className="w-full h-40 rounded-xl overflow-hidden bg-black/40 border border-white/5 relative">
               <img src={b.image_url} alt={b.title} className="w-full h-full object-cover" />
             </div>
             {/* Banner Title & Description */}
-            <div className="flex flex-col gap-0.5 px-1 pb-1">
-              <h3 className="text-sm font-black text-white uppercase tracking-wide truncate">{b.title}</h3>
+            <div className="flex flex-col gap-1 px-1 pb-1">
+              <h3 className="text-xs font-black text-white uppercase tracking-wide truncate">{b.title}</h3>
               {b.description && (
-                <p className="text-xs text-white/60 font-medium line-clamp-2 leading-tight">{b.description}</p>
+                <p className="text-[11px] text-white/60 font-medium line-clamp-2 leading-normal">{b.description}</p>
               )}
             </div>
           </div>
         ))}
 
-        {/* Final Card: "Promote Your Project" */}
+        {/* Final Card: "Promote Your Project" (Neutral, Glass Style) */}
         <div
           onClick={onOpenPromote}
-          className="snap-center shrink-0 w-[85%] max-w-sm bg-gradient-to-br from-cyan-500/20 via-blue-600/20 to-zinc-900/95 border border-cyan-500/30 rounded-3xl p-4 flex flex-col items-center justify-center text-center gap-3 cursor-pointer shadow-2xl hover:border-cyan-400/50 transition-all active:scale-[0.98] min-h-[220px]"
+          className="snap-center shrink-0 w-[85%] max-w-sm bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-4 cursor-pointer shadow-lg hover:border-white/15 transition-all active:scale-[0.98] min-h-[220px]"
         >
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg border border-white/20">
-            <Plus size={28} strokeWidth={2.5} />
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center shadow-md active:scale-95 transition-all">
+            <Plus size={24} strokeWidth={2} />
           </div>
-          <div className="flex flex-col gap-1 max-w-xs">
-            <h3 className="text-sm font-black text-white uppercase tracking-wide">Promote Your Project</h3>
-            <p className="text-xs text-cyan-300/80 font-medium leading-relaxed">
+          <div className="flex flex-col gap-1.5 max-w-xs">
+            <h3 className="text-xs font-black text-white uppercase tracking-wide">Promote Your Project</h3>
+            <p className="text-[11px] text-white/50 font-medium leading-relaxed">
               reach thousands of verified humans on the waves
             </p>
           </div>
-          <button className="px-4 py-1.5 bg-white text-black text-[11px] font-black uppercase rounded-full shadow-md active:scale-95 transition-all">
+          <button className="px-5 py-2 bg-white text-black text-[10px] font-black uppercase rounded-full shadow-md hover:bg-white/90 active:scale-95 transition-all">
             Submit Banner
           </button>
         </div>
@@ -4358,12 +4357,12 @@ function ExploreCarousel({
 
       {/* Pagination Dot Indicators */}
       {totalCards > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-0.5">
+        <div className="flex items-center justify-center gap-1.5 pt-1.5">
           {Array.from({ length: totalCards }).map((_, idx) => (
             <div
               key={idx}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                activeIdx === idx ? "w-5 bg-white" : "w-1.5 bg-white/20"
+              className={`h-1 rounded-full transition-all duration-300 ${
+                activeIdx === idx ? "w-4 bg-white" : "w-1 bg-white/20"
               }`}
             />
           ))}
