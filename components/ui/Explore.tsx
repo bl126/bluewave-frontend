@@ -548,16 +548,30 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const handlePromoteImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await postApi("/upload", formData);
-      if (res?.url) {
-        setPromoteImageUrl(res.url);
+    
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Str = reader.result as string;
+        const b64 = base64Str.split(",")[1];
+        const ext = file.name.split(".").pop() || "jpg";
+        
+        const res = await postApi("/explore/upload_comment_image", {
+          user_id: telegramUser?.id || 0,
+          image_b64: b64,
+          ext: ext
+        });
+        
+        if (res && res.url) {
+          setPromoteImageUrl(res.url);
+        } else {
+          console.error("Upload response error:", res);
+        }
+      } catch (err) {
+        console.error("Image upload failed:", err);
       }
-    } catch (err) {
-      console.error("Image upload failed:", err);
-    }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmitPromoteBanner = async () => {
@@ -1449,103 +1463,115 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                           onStarGiftSuccess={() => mutateNotifications()}
                           onOpenBuyStars={tryOpenBuyStars}
                         />
+                        {/* Feed Insertions: Spaced highlights every 5 posts */}
                         {(index + 1) % 5 === 0 ? (
-                          <ExploreCarousel
-                            banners={carouselBanners}
-                            onOpenPromote={() => setIsPromoteSheetOpen(true)}
-                          />
-                        ) : (index + 1) % MINI_APP_INSERT_EVERY === 0 ? (
-                          <MiniAppCarousel
-                            apps={miniAppsList}
-                            loading={!dbMiniApps || dbMiniApps.length === 0}
-                            onViewAll={() => {
-                              setIsMiniAppsOpen(true);
-                              setActiveMiniAppsTab("All");
-                            }}
-                          />
-                        ) : (index + 1) % 10 === 0 && adsList.length > 0 ? (
                           (() => {
-                            const adIndex = Math.floor((index + 1) / 10) % adsList.length;
-                            const ad = adsList[adIndex];
-                            if (!ad) return null;
+                            // Mini App Carousel: every 20th post (20, 40, 60, etc.)
+                            if ((index + 1) % MINI_APP_INSERT_EVERY === 0) {
+                              return (
+                                <MiniAppCarousel
+                                  apps={miniAppsList}
+                                  loading={!dbMiniApps || dbMiniApps.length === 0}
+                                  onViewAll={() => {
+                                    setIsMiniAppsOpen(true);
+                                    setActiveMiniAppsTab("All");
+                                  }}
+                                />
+                              );
+                            }
+                            
+                            // Ad: every 10th post, except multiples of 20 (i.e. 10, 30, 50, etc.)
+                            if ((index + 1) % 10 === 0 && adsList.length > 0) {
+                              const adIndex = Math.floor((index + 1) / 10) % adsList.length;
+                              const ad = adsList[adIndex];
+                              if (!ad) return null;
 
-                            const handleAdClick = (e: React.MouseEvent) => {
-                              postApi(`/explore/ad/${ad.id}/view`, {}).catch(() => {});
-                              openExternalLink(ad.link_url, e);
-                            };
+                              const handleAdClick = (e: React.MouseEvent) => {
+                                postApi(`/explore/ad/${ad.id}/view`, {}).catch(() => {});
+                                openExternalLink(ad.link_url, e);
+                              };
 
-                            const isVideo = ad.media_type === 'video' || (ad.banner_url && /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(ad.banner_url));
+                              const isVideo = ad.media_type === 'video' || (ad.banner_url && /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(ad.banner_url));
 
-                            return (
-                              <div 
-                                onClick={handleAdClick}
-                                className="px-4 py-3.5 border-b border-white/[0.06] relative hover:bg-white/[0.01] transition-all cursor-pointer w-full text-left"
-                              >
-                                <div className="flex gap-3.5 w-full items-start">
-                                  {/* Avatar */}
-                                  <div className="shrink-0 relative">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm relative">
-                                      {ad.avatar_url ? (
-                                        <img src={ad.avatar_url} alt="" className="w-full h-full object-cover" />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
-                                          {(ad.title || "S")[0]}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Right Content Column */}
-                                  <div className="flex-1 min-w-0 pt-0.5">
-                                    {/* Header Row: Title + Sponsored Badge + Ad tag */}
-                                    <div className="flex items-center justify-between gap-2 mb-1">
-                                      <div className="flex items-center gap-2 min-w-0 truncate">
-                                        <span className="text-white font-bold text-[15px] truncate uppercase tracking-tight">
-                                          {ad.title || "Sponsored"}
-                                        </span>
-                                        <span className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
-                                          Sponsored
-                                        </span>
-                                      </div>
-                                      <span className="text-[12px] text-white/60 font-bold uppercase shrink-0">
-                                        Ad
-                                      </span>
-                                    </div>
-
-                                    {/* Caption */}
-                                    {ad.caption && (
-                                      <LinkedText text={ad.caption} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap mb-3" />
-                                    )}
-
-                                    {/* Media Banner (Image or Video) */}
-                                    {ad.banner_url && (
-                                      <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full">
-                                        {isVideo ? (
-                                          <AutoPlayVideo src={ad.banner_url} />
+                              return (
+                                <div 
+                                  onClick={handleAdClick}
+                                  className="px-4 py-3.5 border-b border-white/[0.06] relative hover:bg-white/[0.01] transition-all cursor-pointer w-full text-left"
+                                >
+                                  <div className="flex gap-3.5 w-full items-start">
+                                    {/* Avatar */}
+                                    <div className="shrink-0 relative">
+                                      <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black/40 shadow-sm relative">
+                                        {ad.avatar_url ? (
+                                          <img src={ad.avatar_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                          <img 
-                                            src={ad.banner_url} 
-                                            alt="Sponsored media" 
-                                            className="w-full h-auto max-h-[400px] object-contain" 
-                                            loading="lazy" 
-                                          />
+                                          <div className="w-full h-full flex items-center justify-center text-cyan-500 bg-cyan-500/10 font-black text-xs">
+                                            {(ad.title || "S")[0]}
+                                          </div>
                                         )}
                                       </div>
-                                    )}
+                                    </div>
 
-                                    {/* Action / Views Bar (Exact same border & view count as channel posts) */}
-                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/60">
-                                      <div className="flex items-center gap-6">
-                                        {/* Empty left gap for alignment consistency */}
+                                    {/* Right Content Column */}
+                                    <div className="flex-1 min-w-0 pt-0.5">
+                                      {/* Header Row: Title + Sponsored Badge + Ad tag */}
+                                      <div className="flex items-center justify-between gap-2 mb-1">
+                                        <div className="flex items-center gap-2 min-w-0 truncate">
+                                          <span className="text-white font-bold text-[15px] truncate uppercase tracking-tight">
+                                            {ad.title || "Sponsored"}
+                                          </span>
+                                          <span className="bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                                            Sponsored
+                                          </span>
+                                        </div>
+                                        <span className="text-[12px] text-white/60 font-bold uppercase shrink-0">
+                                          Ad
+                                        </span>
                                       </div>
-                                      <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-black uppercase tracking-widest ml-auto">
-                                        <BarChart2 size={16} />
-                                        <span>{(ad.views_count || 1).toLocaleString()}</span>
+
+                                      {/* Caption */}
+                                      {ad.caption && (
+                                        <LinkedText text={ad.caption} className="text-[15px] text-white/95 leading-relaxed break-words whitespace-pre-wrap mb-3" />
+                                      )}
+
+                                      {/* Media Banner (Image or Video) */}
+                                      {ad.banner_url && (
+                                        <div className="mb-4 rounded-2xl overflow-hidden border border-white/5 bg-black/20 shadow-inner w-full">
+                                          {isVideo ? (
+                                            <AutoPlayVideo src={ad.banner_url} />
+                                          ) : (
+                                            <img 
+                                              src={ad.banner_url} 
+                                              alt="Sponsored media" 
+                                              className="w-full h-auto max-h-[400px] object-contain" 
+                                              loading="lazy" 
+                                            />
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* Action / Views Bar (Exact same border & view count as channel posts) */}
+                                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06] w-full text-white/60">
+                                        <div className="flex items-center gap-6">
+                                          {/* Empty left gap for alignment consistency */}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-black uppercase tracking-widest ml-auto">
+                                          <BarChart2 size={16} />
+                                          <span>{(ad.views_count || 1).toLocaleString()}</span>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
+                              );
+                            }
+
+                            // Default: every other 5th post (5, 15, 25, 35, etc.) -> ExploreCarousel
+                            return (
+                              <ExploreCarousel
+                                banners={carouselBanners}
+                                onOpenPromote={() => setIsPromoteSheetOpen(true)}
+                              />
                             );
                           })()
                         ) : null}
