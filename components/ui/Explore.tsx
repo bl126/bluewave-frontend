@@ -460,6 +460,16 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
 
+  // Promote Project Sheet State
+  const [isPromoteSheetOpen, setIsPromoteSheetOpen] = useState(false);
+  const [promoteTitle, setPromoteTitle] = useState("");
+  const [promoteDesc, setPromoteDesc] = useState("");
+  const [promoteImageUrl, setPromoteImageUrl] = useState("");
+  const [promoteTargetUrl, setPromoteTargetUrl] = useState("");
+  const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [isSubmittingPromote, setIsSubmittingPromote] = useState(false);
+  const promoteFileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Monitor active overlays and notify parent for dynamic z-index stacking
   const isAnyOverlayActive = !!(
     isDrawerOpen ||
@@ -472,7 +482,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
     buyStarsWalletGateOpen ||
     withdrawOpen ||
     isPremiumOpen ||
-    isAnalyticsChannelSheetOpen
+    isAnalyticsChannelSheetOpen ||
+    isPromoteSheetOpen
   );
 
   useEffect(() => {
@@ -528,15 +539,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [isPostingBackground, setIsPostingBackground] = useState(false);
   const [connectPrompt, setConnectPrompt] = useState(false);
 
-  // Promote Project Sheet State
-  const [isPromoteSheetOpen, setIsPromoteSheetOpen] = useState(false);
-  const [promoteTitle, setPromoteTitle] = useState("");
-  const [promoteDesc, setPromoteDesc] = useState("");
-  const [promoteImageUrl, setPromoteImageUrl] = useState("");
-  const [promoteTargetUrl, setPromoteTargetUrl] = useState("");
-  const [promoteError, setPromoteError] = useState<string | null>(null);
-  const [isSubmittingPromote, setIsSubmittingPromote] = useState(false);
-  const promoteFileInputRef = useRef<HTMLInputElement | null>(null);
+
 
   // SWR for Carousel Banners
   const { data: carouselData } = useSWR('/explore/carousel', () => getApi('/explore/carousel'), { refreshInterval: 30000 });
@@ -2049,11 +2052,8 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-1 shrink-0" />
 
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">Promote Your Project</h3>
-                <button onClick={() => setIsPromoteSheetOpen(false)} className="p-1 text-white/40 hover:text-white transition-colors">
-                  <X size={18} />
-                </button>
+              <div className="flex items-center justify-center border-b border-white/5 pb-3 w-full">
+                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] text-center">Promote Your Project</h3>
               </div>
 
               <p className="text-[11px] text-white/50 leading-relaxed font-medium">
@@ -2068,7 +2068,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     type="text"
                     value={promoteTitle}
                     onChange={(e) => setPromoteTitle(e.target.value)}
-                    placeholder="e.g. TG STARS ON GETGEMS"
+                    placeholder="e.g. TG STARS ON GHOSTERDEX"
                     className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
                   />
                 </div>
@@ -2085,23 +2085,29 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image URL *</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promoteImageUrl}
-                      onChange={(e) => setPromoteImageUrl(e.target.value)}
-                      placeholder="https://..."
-                      className="flex-1 bg-white/[0.02] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs font-medium outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all"
-                    />
-                    <button
-                      type="button"
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image *</label>
+                  
+                  {!promoteImageUrl ? (
+                    <div
                       onClick={() => promoteFileInputRef.current?.click()}
-                      className="px-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1.5 active:scale-95 transition-all"
+                      className="w-full h-32 border border-dashed border-white/20 hover:border-white/45 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer bg-white/[0.01] hover:bg-white/[0.03] active:scale-[0.99] transition-all"
                     >
-                      <ImageIcon size={14} /> Upload
-                    </button>
-                  </div>
+                      <ImageIcon size={20} className="text-white/40" />
+                      <span className="text-[10px] font-black uppercase tracking-wider text-white/50">Upload Banner Image</span>
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                      <img src={promoteImageUrl} alt="Uploaded Banner" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => promoteFileInputRef.current?.click()}
+                        className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/75 hover:bg-black/90 text-white rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 backdrop-blur-sm border border-white/10 active:scale-95 transition-all"
+                      >
+                        <ImageIcon size={12} /> Change Image
+                      </button>
+                    </div>
+                  )}
+
                   <input
                     ref={promoteFileInputRef}
                     type="file"
@@ -2110,12 +2116,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                     onChange={handlePromoteImageSelect}
                   />
                 </div>
-
-                {promoteImageUrl && (
-                  <div className="w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-black/40 mt-1">
-                    <img src={promoteImageUrl} alt="preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
 
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Destination Link (Optional)</label>
@@ -4285,8 +4285,7 @@ function ExploreCarousel({
   return (
     <div className="w-full py-5 border-y border-white/5 bg-white/[0.02] overflow-hidden my-4">
       {/* Carousel Header with Top-Right Plus Icon Shortcut (No Text) */}
-      <div className="px-5 mb-4 flex items-center justify-between">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main">Spotlights</h3>
+      <div className="px-5 mb-4 flex justify-end">
         <button
           onClick={onOpenPromote}
           className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 text-text-muted hover:text-white transition-all flex items-center justify-center cursor-pointer border border-white/5"
