@@ -774,7 +774,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
       if (!latestKnownPostId) {
         setLatestKnownPostId(topId);
       } else if (topId !== latestKnownPostId) {
-        const avatars = initialPosts.slice(0, 3).map((p: any) => p.channel?.photo_url || p.user?.photo_url || p.telegram_channel_photo).filter(Boolean);
+        const avatars = initialPosts.slice(0, 3).map((p: any) => p.channel?.photo || p.channel?.photo_url || p.user?.photo_url || p.telegram_channel_photo).filter(Boolean);
         setNewPostsAvatars(avatars);
         setNewPostsAvailable(true);
       }
