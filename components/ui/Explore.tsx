@@ -535,7 +535,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
   const [newPostsAvatars, setNewPostsAvatars] = useState<string[]>([]);
 
   // Status Popups & Background Action
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPostingBackground, setIsPostingBackground] = useState(false);
   const [connectPrompt, setConnectPrompt] = useState(false);
 
@@ -589,7 +588,6 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         image_url: promoteImageUrl.trim(),
         target_url: promoteTargetUrl.trim(),
       });
-      setSuccessMessage("Your promotion banner has been submitted for review!");
       setPromoteTitle("");
       setPromoteDesc("");
       setPromoteImageUrl("");
@@ -1731,22 +1729,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="fixed left-1/2 -translate-x-1/2 z-[300] bg-white text-black px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg border border-white/20"
-            style={{ top: "calc(env(safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 200px)" }}
-          >
-            <div className="w-5 h-5 bg-black/5 rounded-full flex items-center justify-center">
-              <Rocket size={12} className="animate-pulse" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.15em]">{successMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* ─── Connect Prompt Popup ─── */}
       <AnimatePresence>
