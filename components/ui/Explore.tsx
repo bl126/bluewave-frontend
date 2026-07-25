@@ -2055,7 +2055,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-[#18181a] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
+              className="w-full max-w-lg bg-black/75 backdrop-blur-xl border-t border-white/[0.08] rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom,0px)+85px)] flex flex-col gap-4 shadow-2xl overflow-y-auto max-h-[85vh]"
             >
               {/* Drag Handle from uiskill.md */}
               <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-1 shrink-0" />
@@ -2065,14 +2065,14 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] text-center">Promote Your Project</h3>
               </div>
 
-              <p className="text-[11px] text-white/50 leading-relaxed font-medium">
+              <p className="text-[11px] text-white/80 leading-relaxed font-medium">
                 reach thousands of verified humans on the waves. Submit your banner image and details for approval.
               </p>
 
               {/* Inputs */}
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Title *</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/90">Banner Title *</label>
                   <input
                     type="text"
                     value={promoteTitle}
@@ -2083,7 +2083,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Description</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/90">Description</label>
                   <textarea
                     rows={2}
                     value={promoteDesc}
@@ -2094,7 +2094,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Banner Image *</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/90">Banner Image *</label>
                   
                   {!promoteImageUrl ? (
                     <div
@@ -2102,7 +2102,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                       className="w-full h-32 border border-dashed border-white/20 hover:border-white/45 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer bg-white/[0.01] hover:bg-white/[0.03] active:scale-[0.99] transition-all"
                     >
                       <ImageIcon size={20} className="text-white/40" />
-                      <span className="text-[10px] font-black uppercase tracking-wider text-white/50">Upload Banner Image</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-white/85">Upload Banner Image</span>
                     </div>
                   ) : (
                     <div className="relative w-full h-36 rounded-xl overflow-hidden border border-white/10 bg-black/40">
@@ -2127,7 +2127,7 @@ export default function Explore({ isOpen, onClose, telegramUser, onGoToProfile, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-white/60">Destination Link (Optional)</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-white/90">Destination Link (Optional)</label>
                   <input
                     type="text"
                     value={promoteTargetUrl}
@@ -4251,6 +4251,15 @@ function LinkedText({ text, className = "", showFull = false }: { text: string, 
 // ----------------------------------------------------------------------------
 // 🌟 GetGems-Style Explore Hero Carousel (Repeated every 5 posts)
 // ----------------------------------------------------------------------------
+const formatExternalUrl = (url: string) => {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (/^(https?:\/\/|tg:\/\/)/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 function ExploreCarousel({
   banners,
   onOpenPromote,
@@ -4292,9 +4301,9 @@ function ExploreCarousel({
   };
 
   return (
-    <div className="w-full py-5 border-y border-white/5 bg-white/[0.02] overflow-hidden my-4">
+    <div className="w-full py-3.5 border-b border-white/[0.06] overflow-hidden relative">
       {/* Carousel Header with Top-Right Plus Icon Shortcut (No Text) */}
-      <div className="px-5 mb-4 flex justify-end">
+      <div className="px-5 mb-1.5 flex justify-end">
         <button
           onClick={onOpenPromote}
           className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 text-text-muted hover:text-white transition-all flex items-center justify-center cursor-pointer border border-white/5"
@@ -4320,10 +4329,11 @@ function ExploreCarousel({
             onClick={() => {
               if (b.target_url && typeof window !== "undefined") {
                 const tg = (window as any).Telegram?.WebApp;
+                const formattedUrl = formatExternalUrl(b.target_url);
                 if (tg?.openLink) {
-                  tg.openLink(b.target_url);
+                  tg.openLink(formattedUrl);
                 } else {
-                  window.open(b.target_url, "_blank");
+                  window.open(formattedUrl, "_blank");
                 }
               }
             }}
@@ -5062,6 +5072,7 @@ function NotificationsView({
     }
   };
   const getTitle = (n: any) => {
+    if (n.title) return n.title;
     if (n.type.startsWith("verified_acknowledgment_milestone")) return t("notifications.verified_milestone_title");
     if (n.type.startsWith("new_follower_milestone")) return t("notifications.follower_milestone_title");
     if (n.type.startsWith("verified_repost_milestone")) return t("notifications.repost_milestone_title") || "Reposts Milestone";
@@ -5078,6 +5089,7 @@ function NotificationsView({
     return t("notifications.notification_type");
   };
   const getMessage = (n: any) => {
+    if (n.message) return n.message;
     if (n.type.startsWith("verified_acknowledgment_milestone")) {
       const count = n.type.split("_").pop() || "1";
       return t("notifications.verified_milestone_msg").replace("{{count}}", count.toString());
