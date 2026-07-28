@@ -377,7 +377,7 @@
     "ben_1": "• Verified Human Distribution",
     "ben_2": "• Advanced channel analytics",
     "ben_3": "• Sentiment tracking & AI insights",
-    "placeholder": "@yourchannel",
+    "placeholder": "@yourchannel or t.me/channel_link",
     "verify_btn": "Verify Channel",
     "verifying": "Verifying...",
     "connected_btn": "CONNECTED",
