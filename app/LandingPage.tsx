@@ -525,6 +525,19 @@ export default function LandingPage() {
           return;
         }
 
+        // 🛡️ FRONTEND STATIC MAINTENANCE MODE OVERRIDE
+        const FRONTEND_MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
+        if (FRONTEND_MAINTENANCE) {
+          const ADMIN_IDS = [5023869471, 5511825370, 7834249676];
+          const isUserAdmin = effectiveTgId && ADMIN_IDS.includes(Number(effectiveTgId));
+          if (!isUserAdmin) {
+            console.warn("Frontend Maintenance Mode is active. Displaying Maintenance Overlay.");
+            setIsMaintenanceMode(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         // 🔗 Capture start_param (Referrer or Post Linking)
         const startParam = tg?.initDataUnsafe?.start_param;
         let referrerId = null;
@@ -588,6 +601,21 @@ export default function LandingPage() {
             window.localStorage.removeItem("bw_init_cache");
             setTimeout(() => window.location.reload(), 1000);
             return;
+          }
+
+          // 📡 Connection failure fallback: If backend (Render) is down/offline
+          const errorMsg = String(data.error).toLowerCase();
+          const isConnectionError = errorMsg.includes("fetch") || errorMsg.includes("network") || errorMsg.includes("load") || errorMsg.includes("aborted");
+          
+          if (isConnectionError) {
+            console.warn("Backend connection failed. Activating Maintenance fallback.");
+            const ADMIN_IDS = [5023869471, 5511825370, 7834249676];
+            const isUserAdmin = effectiveTgId && ADMIN_IDS.includes(Number(effectiveTgId));
+            if (!isUserAdmin) {
+              setIsMaintenanceMode(true);
+              setIsLoading(false);
+              return;
+            }
           }
 
           setIsLoading(false);
